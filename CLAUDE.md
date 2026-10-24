@@ -1,0 +1,91 @@
+# Pipeline — working agreements
+
+Salesforce DX project (source API 68.0). Orgs are referenced by alias; **no default target org is set**, so always pass `-o UAT|DEV|PROD` explicitly. Authorised on this machine: `UAT` (`reeves@prod.com.uat`, sandbox), `DEV` (`reeves@prod.com.anz`, sandbox), `PROD` (`reeves@prod.com`).
+
+Owner: Robert Reeves, advanced Salesforce administrator (does not write code). Claude writes the code and runs the UAT/DEV commands (deploys, queries, tests); PROD is Robert's, by Gearset. Sibling projects `../Accruals` (ACCRURA, the closest model for the manager web app), `../NPI`, `../COVRA` (with BOARDRA and ROSTRA) and `../APAC Events` (the mobile reference) show how he likes to work and how his screens look; they are **reference only** and are not part of this repo.
+
+## What Pipeline is
+
+A tool built on the custom object **`SalesRisks__c`** (label **Opportunities & Risks**; Robert wrote it as "SalesRisks_C"). Pipeline is opportunity management for the sales field, done in this custom object instead of standard Opportunity: a one-stop-shop screen (Apex plus LWC, like COVRA and ACCRURA) to enter, find, update, roll up and review opportunities and risks. **Two experiences: a mobile rep view (my opportunities, stale nudges, quick updates and Chatter debriefs) and a web manager/reporting app (team, value, age, slice by business unit, country, state; first priority).** First scope: **implant opportunities and risks**; ROSA capital equipment comes later. Full brief and decisions: `docs/Pipeline_Requirements.md`.
+
+Facts about the object (UAT schema read 2026-10-24; confirm in PROD before relying on them):
+
+- **UAT and PROD differ on this object** (UAT has `Status__c` and `Total_Annual_Value__c`, PROD has neither; PROD uses `IsClosed__c`). Build against PROD's shape and check a field in both orgs before using it.
+- Fields of note: `Stage__c` (Plan, Action, Commit/Contract, 1st Case, 5th Case ... Closed Won, Deal Lost and more), `Status__c` (In Progress / Closed), `IsClosed__c`, `AmountPerYear__c` (Expected Annual Value), `Total_Annual_Value__c`, `Close_Date__c`, `Account__c` (Primary HCP), `Healthcare_Facility__c`, `Portfolio__c`, `Technology__c`, `Priority__c` (rep), `State_Priority__c`, `National_Priority__c`, `OnHold__c`, `Link_To_ROSA_Deal__c` (self lookup), `Days_Since_Last_Stage_Change__c`, plus Owner/Manager/State/Country text formulas and `pbi...` Power BI formulas. Currency is multi-currency (`CurrencyIsoCode`, default AUD).
+- Teams (used by BOARDRA/ROSTRA, maintained by Robert): `Team__c` (`Manager__c`, `Parent_Team__c`, `Country__c` AU/NZ, `States__c`, `Is_Sales_Agency__c`) and `Team_Member__c` (`User__c`, `Team__c`, `Active__c`). PROD: 26 teams, 180 members. Reference only.
+- Children: `Sales_Risks_Snapshot__c`, `Sales_Risks_Stage_History__c`, `Robotics__c`, `ROSA_Add_On__c`, `ZB_Edge__c`, `Hashtag_Reporter__c`.
+- The object already has a field `Pipeline_Technology__c` ("Supporting Technologies"). Not ours; Robert says ignore the overlap.
+- `Opportunities and Risks/exports/` (one level up, outside this repo) holds Name export/import CSVs for PROD and UAT; reference only, may hold real data, never copy into this repo.
+
+## Build methodology (same as Accruals and NPI; Robert: "this is how I like to build my projects")
+
+1. **UAT first.** UAT is an up-to-date copy of production, so it is where we build and test. Do not build in DEV first.
+2. **Then DEV, every time.** After every UAT build or update, deploy the same source to DEV so the two stay level.
+3. **Robert takes over from there.** When UAT and DEV are aligned and he is happy, he releases to PROD using Gearset. **Never deploy to PROD from the CLI.**
+4. **Git tracks everything.** Commit only when asked; Robert expects everything (including mockups and docs, but never credentials or real data) to be pushed. Commits use his GitHub noreply email `53199990+Daboose@users.noreply.github.com` (set in this repo's local git config). **Remote `origin` = `https://github.com/Daboose/Pipeline.git` (private; Robert, 2026-10-24).** Commit and push only when he says so.
+5. **Dry run first** (`sf project deploy start --dry-run -o UAT ...`), then the real deploy as a separate step. Apex deploys name their tests (`--test-level RunSpecifiedTests --tests ...`) and go with their test classes so PROD meets the 75% coverage gate. A Lightning web component change alone deploys without tests.
+6. Confirm which org is meant before deploying to any org; before deploying to DEV, confirm UAT is done. Say before testing in UAT, because Robert tests there himself.
+7. Check facts about real data (counts, formats, coverage) with **read-only queries in PROD**, never UAT, and say so when recording them.
+8. A mockup conversation is not a go-ahead: wait for "build". No DEV (not even a dry run) until he says UAT is fine.
+
+## Hard rules for everything we build (carried over from Accruals; **confirmed by Robert for Pipeline, 2026-10-24**)
+
+1. **Never change anything that already exists.** No edits to any existing class, trigger, flow, LWC, object, field, permission set or setting outside Pipeline, unless Robert has given explicit 100% sign-off for that specific item. `SalesRisks__c` and its children have many existing automations: **read them, do not change them**. To reuse something, clone it into a Pipeline-named component or call its public code without editing it.
+2. **Everything we create carries one prefix so any admin can spot it.** **Confirmed by Robert, 2026-10-24: `Pipeline`** (the existing `Pipeline_Technology__c` field does not matter). **The tool is simply called "Pipeline"** (Robert, 2026-10-24; "My Pipeline" dropped).
+   - Objects `Pipeline_...__c` / `__mdt` / `__e`; Apex classes, tests, triggers `Pipeline...`; LWCs `pipeline...` (lowercase first letter, camelCase); permission sets, flows, tabs, apps, labels, static resources, reports `Pipeline_...`.
+   - A new field on `SalesRisks__c` itself needs Robert's sign-off first. Prefer a separate Pipeline object linked to the record.
+3. **Describe everything.** Every object, field, permission set, flow, custom metadata type and LWC gets a `<description>`; user-facing fields also get help text. Every Apex class opens with a header comment saying what it is for, who calls it, and what it touches. A deployed description can be at most 255 characters.
+
+## How we work
+
+- Requirements are dictated in chat. Capture decisions in `docs/Pipeline_Requirements.md` **as they are made**; keep `docs/Pipeline_Team_Questions.md` in step with the open questions. **Questions for the business live only in that file** (plain statements followed by the question; no "I", "we" or "us"; no Salesforce terms, the readers are business people).
+- Discuss → confirm → build. **For anything to do with design, Robert likes to see a standalone HTML mockup first** (`docs/mockups/`, settled ones moved to `docs/mockups/archive/`). Each mockup opens with an "About this mockup" panel (what it shows, a try-it list that works, what is not shown yet), uses invented data only, and has a simulated Salesforce navigation bar with a Full screen button.
+- Keep `docs/Pipeline_Build_Spec.md` as the record of what is built and update the Status section below at the end of each working session so the next one can pick up cold. Update documentation as we go, not at the end.
+
+## Design system (same theme as NPI, COVRA, BOARDRA, ROSTRA and ACCRURA)
+
+Dark "lifted navy" look. Full detail: `../Accruals/CLAUDE.md` (Design system), `../NPI/CLAUDE.md` and `../COVRA/CLAUDE.md` (Brand palette). Rebuild the shared pieces as `pipeline...` components; never edit or import another project's.
+
+- **Colours:** page `#141e2e`, panels `#1a2740`, lines `#2f4163` (lighter border `#5b6f93` with a soft shadow where panels need lifting), buttons and selected states indigo `#6366f1` (white text), focus/hover `#a5b4fc`, brand yellow `#fbbf24` for the wordmark. Colour meanings are fixed per project; pick Pipeline's own and record them here.
+- **Buttons:** pill-shaped, bold capitals, 0.08em letter spacing; primary (indigo), secondary (outlined), ghost (text), danger (red). Native `<button type="button">`, never lightning-button.
+- **Controls:** fixed choices are dropdowns or sliders (segmented control, instant toggles), never text boxes; our own chevron on dropdowns; pill search boxes; tables with draggable, resettable column widths. A "please wait" covers the screen during a change or refresh (Robert hates a frozen screen).
+- **Screens:** desktop, its own tab in its own app, which opens a Visualforce page hosting the LWC through an Aura app (the NPI/ACCRURA pattern), first seen as a standard tab with a Full screen icon; working screens are never modals.
+- **Brand (Robert, 2026-10-24):** the tool is called **Pipeline**, dark theme again, wordmark **"pipe" in amber (#fbbf24) and "line" in white**. **Splash screen tagline (chosen by Robert): "Keep your deals close, and your risks closer."** Artwork and generator for other brands live in `../COVRA/wallboard/brand/` (copy, do not edit).
+- **Lightning Web Security gotchas:** `blob:` downloads are blocked (use a `data:` anchor); never bind `disabled` on an `<option>`; browsers cache old component definitions after a deploy (hard refresh with Cmd+Shift+R); use a partial record to update a master-detail child; plain Apex queries honour field and object access in these orgs (read setup data with `AccessLevel.SYSTEM_MODE`); add Apex classes to the permission sets in the same change that creates them.
+- Show a version on screen, kept in one constant, and raise it with each change that goes out (ACCRURA does this).
+
+## Mobile (reference: `../APAC Events`; Robert, 2026-10-24: "it's really important we get the mobile app correct")
+
+What APAC Events learned, from its CLAUDE.md, `../APAC-Events-Phone-Screen-Styling-Guide.md` and `../MOBILE and DESKTOP LWC HOW WE DID IT` (lessons to check against Pipeline's design, not yet decisions):
+
+- A Lightning web component **quick action cannot run in the Salesforce mobile app**; APAC used an Aura wrapper (`isEmbedded` selected the phone template). A component placed in a record page or app page is a different case and must be tested.
+- **Full-screen layers only get the whole screen when they sit in the page itself**, not in a quick-action or highlights-panel popup (`../WHY A PAGE BUTTON WORKS AND HIGHLIGHT PANEL DOESNT.txt`).
+- Phone method: measure every layer from screen edge to text; separate what we control from what Salesforce controls; one layer per rule in a phone-only block (`@media (max-width: 767px)`); keep workarounds in their own labelled block; hunt stacked spacers (safe-area inset plus fixed gaps).
+- Native Salesforce inputs render taller in the mobile app; replace `lightning-input type="search"` with a plain input styled by us, text at 16px or iOS zooms. Hover styles stick on iOS: use `@media (hover: hover)`.
+- **Judge phone work on the phone, in the Salesforce mobile app, not in browser emulation.** Annotated phone screenshots from Robert are the feedback loop; say what was and was not verified.
+- Pattern: a display component plus a pure model `.js` for the logic.
+
+## Status (end of session, 2026-10-24)
+
+**Nothing is built, deployed or committed; git remote `origin` is set (https://github.com/Daboose/Pipeline.git, private), nothing pushed.** The repo is scaffolded (tooling copied from Accruals; `npm install` done). The first session was all discussion and read-only checks of PROD and UAT; **no org was changed.** 58 numbered questions: 38 answered, 4 partly, 16 open (`docs/Pipeline_Questions_For_Robert.md`, "Where we are" at the top).
+
+**Decided so far (detail in `docs/Pipeline_Requirements.md`, sections 4 to 5H):**
+
+- **Name and look:** "Pipeline", dark theme, wordmark "pipe" amber + "line" white, splash tagline "Keep your deals close, and your risks closer."
+- **Two experiences:** manager web app first (definitely), rep mobile after (APAC Events is the mobile reference). Implant opportunities (Hip, Knee, Extremities, CMFT), Risks, ZBEdge in scope; Sports Medicine and Trauma (Thailand) recognised; ROSA later. All countries, focus on AU/NZ, prove Royden's SG/MY/TH view with UAT sample deals.
+- **Choosing data:** Teams mode (from Teams, nesting for "everyone below") or manual mode (country, state = owner's state, segment = record type, brand = `Brand__c`), combinable; open/closed/both everywhere; closed starts with a small recent range; Opportunities and Risks never combined; opens on default filter, else team, else country. Saved filters (like COVRA): own, shareable one-to-one or by a team manager to their team, sharing gives a copy; one record per filter with JSON.
+- **Access:** respects org-wide sharing; no extra data permissions; editing any field in play for the deal type.
+- **Stale rules:** Chatter from the rep (current to 30 days, needs update 30 to 90, very old over 90); stage change warning at 90 days; On Hold deals exempt; age from created date; value = `AmountPerYear__c` (expected annual revenue uplift), shown per currency, never mixed; no export for now.
+- **Quarter and year:** adjust `Expected_Closure_Quarter__c` to year-qualified values; backfill (current or next occurrence); validation rule on open, not-on-hold deals (current quarter allowed). **Needs design, dry run and Robert's go-ahead; PROD by Gearset.**
+- **Data facts and audit:** `docs/Pipeline_Unused_Fields.md`. UAT and PROD differ on `SalesRisks__c` (PROD lacks `Status__c` and `Total_Annual_Value__c`).
+
+**Next session, in order:** (1) get Robert's answers to Q44, Q19, Q20; (2) before the validation rule is designed, find what sets `Latest_Chatter_Date__c` and `Last_Stage_Change_Date__c` (read-only); (3) **mockup of the manager web app** in `docs/mockups/` (About panel, invented data, simulated Salesforce nav bar), wait for his sign-off and the word "build"; (4) later: Robert's sample-opportunity walkthrough (Q11), then the rep mobile questions, then the surgeon/usage/med-ed side notes (Q29 to Q35).
+
+**Robert's Teams work (PROD, 2026-10-24):** he is fixing Teams; 16 AU/NZ owners of open deals were still in no team at the last check. `Team__c.Country__c` has only AU and NZ (needs Singapore, Malaysia, Thailand before those teams can exist; Q44).
+
+## Tooling
+
+- Prettier (with Apex and XML plugins), ESLint and LWC Jest run via a husky pre-commit hook (`lint-staged`). `npm run lint`, `npm run test:unit`, `npm run prettier`.
+- `sf` (Salesforce CLI) and Google Chrome are on this machine; headless Chrome is used to screenshot and test mockups and screens. Test scripts live in the scratchpad, never in the repo.
+- Robert (2026-10-24): Claude may freely **read and compare UAT and PROD data** (read-only). Changing anything that exists needs his explicit permission.
+- Postman CLI is at `/Users/robertreeves/.local/bin/postman` (not on PATH), if an API is ever involved.
