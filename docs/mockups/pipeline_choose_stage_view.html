@@ -154,30 +154,6 @@
         background: var(--indigo);
         color: #fff;
       }
-      .fun {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 4px;
-      }
-      .fseg {
-        border-radius: 8px;
-        padding: 6px 12px;
-        text-align: center;
-        color: #fff;
-        font-size: 11px;
-        line-height: 1.25;
-        overflow: hidden;
-        white-space: nowrap;
-        text-overflow: ellipsis;
-        min-height: 36px;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-      }
-      .fseg b {
-        font-size: 12px;
-      }
 
       .bar {
         display: grid;
@@ -215,7 +191,7 @@
       }
       .three {
         display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns: max-content;
         gap: 12px;
       }
       .row2 {
@@ -246,6 +222,104 @@
           grid-template-columns: 1fr;
         }
       }
+      .fnl {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+        width: 100%;
+      }
+      .fs {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        text-align: center;
+      }
+      .fs.z {
+        opacity: 0.45;
+      }
+      .ft {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1px;
+        min-width: 0;
+        overflow: hidden;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+      }
+      .ft b {
+        font-size: 16px;
+        line-height: 1.15;
+        white-space: nowrap;
+      }
+      .ft span {
+        font-size: 11px;
+        opacity: 0.95;
+        white-space: normal;
+        line-height: 1.2;
+        max-width: 100%;
+      }
+      .slim .ft b {
+        font-size: 13px;
+      }
+      .slim .ft span {
+        font-size: 10px;
+      }
+      .fnl {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+        width: 100%;
+      }
+      .fs {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        text-align: center;
+      }
+      .fs.z {
+        filter: saturate(0.55) brightness(0.8);
+      }
+      .ft {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1px;
+        min-width: 0;
+        overflow: hidden;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+      }
+      .ft b {
+        font-size: var(--v, 16px);
+        line-height: 1.12;
+        white-space: nowrap;
+      }
+      .ft span {
+        font-size: var(--s, 11px);
+        font-weight: 600;
+        line-height: 1.15;
+        max-width: 100%;
+      }
+      .ft.inl {
+        flex-direction: row;
+        justify-content: center;
+        gap: 16px;
+        align-items: center;
+      }
+      .ft.inl {
+        flex-direction: row;
+        justify-content: center;
+        gap: 16px;
+        align-items: center;
+      }
+      .fnl.chips {
+        width: max-content;
+        max-width: 100%;
+      }
+      .fnl.chips .fs {
+        padding: 0 22px;
+      }
     </style>
   </head>
   <body>
@@ -256,37 +330,19 @@
         Comparison page, not a Pipeline screen. Invented numbers only.
       </p>
       <div class="about">
-        <b class="h">ABOUT THIS PAGE</b>
-        Each type (Opportunities, Risks, ROSA) gets its own stage component on
-        the main screen. These are the three ways to draw it, shown on the same
-        invented numbers so they can be compared. The number of deals and their
-        value sit inside each stage.
-        <b class="h">THE THREE VIEWS</b>
-        <ul>
-          <li>
-            <b>1. Funnel, width follows the deals:</b> the stage with the most
-            deals is the widest; a stage with no deals is narrow.
-          </li>
-          <li>
-            <b>2. Funnel, even steps:</b> the stages step down evenly from the
-            first to the last, whatever the numbers. Looks like a classic
-            funnel.
-          </li>
-          <li>
-            <b>3. Compact bars:</b> a plain list with a bar beside each stage.
-          </li>
-        </ul>
+        <b class="h">ABOUT THIS PAGE</b> The stage chips as you chose: medium
+        text, one line each ("Plan (3) A$649k"), a colour per stage.
+        <b>No wasted width:</b> every chip is as wide as the longest one (the
+        longest stage name plus its value), and the box around them hugs the
+        chips.
         <b class="h">TRY IT</b>
         <ul>
           <li>
-            Two examples are shown: Opportunities (every stage has deals) and
-            Risks (some stages have none).
+            All three types with invented numbers: implant opportunities, risks
+            (long names, empty stages) and ROSA.
           </li>
           <li>Use <b>Dark / light</b> at the top right to see both modes.</li>
-          <li>
-            Tell me the number (1, 2 or 3) of the view you like best. It applies
-            to all three types.
-          </li>
+          <li>Say if anything needs to change.</li>
         </ul>
       </div>
       <div id="grid"></div>
@@ -300,86 +356,144 @@
         );
       };
 
+      /* Funnel drawing: shared by the screen and the comparison page.
+         data = [{st, n, v (text), g (number used for size)}]; mode = sf | even | wide */
+      let FUNNEL_SIDE = 28;
+      let FUNNEL_TS = "L";
+      const FUNNEL_TEXT = {
+        M: { v: 22, s: 15, row: false },
+        L: { v: 28, s: 19, row: false },
+        XL: { v: 34, s: 23, row: false },
+        ROW: { v: 26, s: 22, row: true },
+        ROWM: { v: 22, s: 19, row: true }
+      };
+      const FUNNEL_COLOURS = [
+        "#2f80ed",
+        "#0ea5e9",
+        "#7c3aed",
+        "#a855f7",
+        "#14b8a6"
+      ];
+      function funnelHtml(data, mode, compact) {
+        const n = data.length;
+        const tp = FUNNEL_TEXT[FUNNEL_TS] || FUNNEL_TEXT.L;
+        const k = compact ? 0.86 : 1;
+        const tv = tp.v * k;
+        const ts = tp.s * k;
+        const textBoxH = tp.row ? ts * 1.25 + 24 : tv * 1.15 + ts * 1.25 + 18;
+        const minH = compact ? 36 : 46;
+        const evenH = compact ? 38 : 56;
+        const gmax = Math.max(1, ...data.map((x) => x.g));
+        const gsum = data.reduce((a, x) => a + x.g, 0) || 1;
+        const totalH = compact ? 190 : 290;
+        let hs, tops, bots;
+        if (mode === "chips") {
+          /* five chips stacked, all the same width: not a funnel */
+          hs = data.map(() => tp.s * 1.25 + 14);
+          tops = data.map(() => 100);
+          bots = data.map(() => 100);
+        } else if (mode === "shape") {
+          /* Robert's shape: the first stage narrows gently from full width, the middle
+             stages are plain rectangles at that width, the last narrows gently again */
+          const side =
+            typeof FUNNEL_SIDE === "number"
+              ? FUNNEL_SIDE
+              : 20; /* percent the sides come in */
+          const tail = Math.round(
+            side * 0.6
+          ); /* the last stage tapers in a little more */
+          hs = data.map(() => textBoxH);
+          tops = data.map((_, i) => (i === 0 ? 100 : 100 - side));
+          bots = data.map((_, i) =>
+            i === n - 1 ? 100 - side - tail : 100 - side
+          );
+        } else if (mode === "sf") {
+          hs = data.map((x) => Math.max(minH, (totalH * x.g) / gsum));
+          const T = hs.reduce((a, b) => a + b, 0);
+          let y = 0;
+          const wAt = (yy) => 100 - 62 * (yy / T);
+          tops = [];
+          bots = [];
+          hs.forEach((h) => {
+            tops.push(wAt(y));
+            bots.push(wAt(y + h));
+            y += h;
+          });
+        } else if (mode === "even") {
+          hs = data.map(() => evenH);
+          tops = data.map((_, i) => 100 - 62 * (i / n));
+          bots = data.map((_, i) => 100 - 62 * ((i + 1) / n));
+        } else {
+          /* width follows value, but never narrower than a floor so the names stay readable;
+             each stage is at least as wide as every stage below it, so it is always a funnel */
+          const floor = mode === "wider" ? 84 : 70;
+          hs = data.map(() => evenH + 6);
+          const raw = data.map((x) => floor + ((100 - floor) * x.g) / gmax);
+          tops = raw.map((_, i) => Math.max(...raw.slice(i)));
+          bots = tops.map((t, i) => (i < n - 1 ? tops[i + 1] : t * 0.86));
+        }
+        return `<div class="fnl${mode === "chips" ? " chips" : ""}">${data
+          .map((x, i) => {
+            const a = (100 - tops[i]) / 2;
+            const b = (100 - bots[i]) / 2;
+            const inner =
+              mode === "chips" ? 100 : Math.min(tops[i], bots[i]) * 0.98;
+            const label = `${x.st} (${x.n})`;
+            const body = tp.row
+              ? `<span>${label}</span><b>${x.v}</b>`
+              : `<b>${x.v}</b><span>${label}</span>`;
+            return `<div class="fs${x.n ? "" : " z"}" style="height:${hs[i].toFixed(1)}px;background:${FUNNEL_COLOURS[i % 5]};${mode === "chips" ? "border-radius:8px" : `clip-path:polygon(${a.toFixed(2)}% 0,${(100 - a).toFixed(2)}% 0,${(100 - b).toFixed(2)}% 100%,${b.toFixed(2)}% 100%)`}"><div class="ft${tp.row ? " inl" : ""}" style="width:${inner.toFixed(1)}%;--v:${tv.toFixed(1)}px;--s:${ts.toFixed(1)}px">${body}</div></div>`;
+          })
+          .join("")}</div>`;
+      }
+
+      /* make every chip list as wide as the widest one, no wider */
+      function fitChips() {
+        const lists = [...document.querySelectorAll(".fnl.chips")];
+        lists.forEach((f) => (f.style.width = ""));
+        const w = Math.max(
+          0,
+          ...lists.map((f) => Math.ceil(f.getBoundingClientRect().width))
+        );
+        if (w) lists.forEach((f) => (f.style.width = w + "px"));
+      }
       var DATA = [
         {
           name: "Opportunities",
           stages: [
-            ["Plan", 3, "A$649k"],
-            ["Action", 1, "A$91k"],
-            ["Commit", 2, "A$268k"],
-            ["1st Case", 3, "A$637k"],
-            ["5th Case", 2, "A$236k"]
+            ["Plan", 3, "A$649k", 649],
+            ["Action", 1, "A$91k", 91],
+            ["Commit", 2, "A$268k", 268],
+            ["1st Case", 3, "A$637k", 637],
+            ["5th Case", 2, "A$236k", 236]
           ]
         },
         {
           name: "Risks",
           stages: [
-            ["Unhappy", 0, "–"],
-            ["Meeting With Competitors", 0, "–"],
-            ["1st Case Competitor", 3, "A$373k"],
-            ["Multiple Cases Competitor", 0, "–"],
-            ["Settled", 1, "A$146k"]
+            ["Unhappy", 0, "–", 0],
+            ["Meeting With Competitors", 0, "–", 0],
+            ["1st Case Competitor", 3, "A$373k", 373],
+            ["Multiple Cases Competitor", 0, "–", 0],
+            ["Settled", 1, "A$146k", 146]
+          ]
+        },
+        {
+          name: "ROSA",
+          stages: [
+            ["Sales Pipeline", 1, "A$1.2m", 1200],
+            ["Surgeon Engagement", 2, "A$1.9m", 1900],
+            ["Executive Presentation", 1, "A$837k", 837],
+            ["Negotiation", 1, "A$640k", 640]
           ]
         }
       ];
-      var VIEWS = [
-        ["1", "Funnel: width follows the deals", "funnel"],
-        ["2", "Funnel: even steps", "steps"],
-        ["3", "Compact bars", "bars"]
-      ];
-      var shades = ["#6366f1", "#5a5ce0", "#5154cf", "#484bbd", "#3f42ab"];
-      function viz(d, v) {
-        var mx =
-          Math.max.apply(
-            null,
-            d.stages.map(function (s) {
-              return s[1];
-            })
-          ) || 1;
-        if (v === "bars")
-          return d.stages
-            .map(function (s) {
-              return (
-                '<div class="bar"><span>' +
-                s[0] +
-                '</span><span class="track"><span class="fill" style="display:block;width:' +
-                (100 * s[1]) / mx +
-                '%"></span></span><span class="n">' +
-                s[1] +
-                " · " +
-                s[2] +
-                "</span></div>"
-              );
-            })
-            .join("");
-        return (
-          '<div class="fun">' +
-          d.stages
-            .map(function (s, i) {
-              var w =
-                v === "funnel"
-                  ? Math.max(72, (100 * s[1]) / mx)
-                  : 100 - i * (24 / (d.stages.length - 1));
-              return (
-                '<div class="fseg" style="width:' +
-                w +
-                "%;background:" +
-                shades[Math.min(i, 4)] +
-                '"><b>' +
-                s[0] +
-                "</b>" +
-                s[1] +
-                (s[1] === 1 ? " deal" : " deals") +
-                " · " +
-                s[2] +
-                "</div>"
-              );
-            })
-            .join("") +
-          "</div>"
-        );
-      }
+      var VIEWS = [["", "Medium text, fitted width", "ROWM"]];
+      window.__x = 1;
       document.getElementById("grid").innerHTML = DATA.map(function (d) {
+        var data = d.stages.map(function (x) {
+          return { st: x[0], n: x[1], v: x[2], g: x[3] };
+        });
         return (
           '<div class="tsh">' +
           d.name +
@@ -389,15 +503,16 @@
               '<div class="row2"><div class="num">' +
               v[0] +
               '</div><div class="nm">' +
-              v[1] +
+              v[2 - 2 + 1] +
               "</div>" +
-              viz(d, v[2]) +
+              ((FUNNEL_TS = v[2]), funnelHtml(data, "chips", false)) +
               "</div>"
             );
           }).join("") +
           "</div>"
         );
       }).join("");
+      fitChips();
     </script>
   </body>
 </html>
