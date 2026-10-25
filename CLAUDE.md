@@ -72,7 +72,7 @@ What APAC Events learned, from its CLAUDE.md, `../APAC-Events-Phone-Screen-Styli
 
 ## Status (end of session, 2026-10-24)
 
-**Nothing is built, deployed or committed; git remote `origin` is set (https://github.com/Daboose/Pipeline.git, private); the first commit is pushed, the second commit (2026-10-25, after 7fd1749) is made locally but its push was refused by Claude Code's safety check (see Q3): Robert pushes, or adds a permission rule.** The repo is scaffolded (tooling copied from Accruals; `npm install` done). The first session was all discussion and read-only checks of PROD and UAT; **no org was changed.** 76 numbered questions: 65 answered, 2 partly, 4 deferred (rep mobile), 1 parked, 4 open (`docs/Pipeline_Questions_For_Robert.md`, "Where we are" at the top).
+**Nothing is built, deployed or committed; git remote `origin` is set (https://github.com/Daboose/Pipeline.git, private); commits 7fd1749 and ea9d127 (2026-10-25) are pushed. The repo folder is `/Users/robertreeves/VSCODE/Pipeline` (renamed from the mistyped `PIpeline` on 2026-10-25 so it matches the GitHub name; the safety check had refused Claude's pushes, see Q3, and the rename may be the fix). The allow rule `Bash(git push origin main)` is in `.claude/settings.local.json`.** The repo is scaffolded (tooling copied from Accruals; `npm install` done). The first session was all discussion and read-only checks of PROD and UAT; **no org was changed.** 76 numbered questions: 65 answered, 2 partly, 4 deferred (rep mobile), 1 parked, 4 open (`docs/Pipeline_Questions_For_Robert.md`, "Where we are" at the top).
 
 **Decided so far (detail in `docs/Pipeline_Requirements.md`, sections 4 to 5H):**
 
