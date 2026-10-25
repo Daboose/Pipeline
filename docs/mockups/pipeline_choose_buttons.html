@@ -1,0 +1,416 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Pipeline: choose the on/off buttons</title>
+    <style>
+      :root {
+        --page: #0e1623;
+        --bg: #141e2e;
+        --panel: #1a2740;
+        --panel2: #20304f;
+        --line: #2f4163;
+        --edge: #5b6f93;
+        --text: #e8edf5;
+        --muted: #8b9bb0;
+        --pipe: #fdb827;
+        --indigo: #6366f1;
+        --indigo2: #a5b4fc;
+        --ok: #4ee0b0;
+        --warn: #fb923c;
+        --bad: #f87171;
+        --shadow: 0 8px 20px rgba(0, 0, 0, 0.55);
+        --sfbar: #0a3d66;
+        --ppanel: #171b24;
+        --pgroup: #1e232e;
+        --pfield: #11151c;
+        --pline: #2c3444;
+      }
+      :root[data-theme="light"] {
+        --page: #e9edf4;
+        --bg: #f4f6fa;
+        --panel: #ffffff;
+        --panel2: #eef2fa;
+        --line: #d5dcea;
+        --edge: #b3bfd6;
+        --text: #1b2640;
+        --muted: #5d6b85;
+        --pipe: #b7791f;
+        --indigo: #4f46e5;
+        --indigo2: #4338ca;
+        --ok: #0f9d74;
+        --warn: #c2570c;
+        --bad: #dc2626;
+        --shadow: 0 8px 20px rgba(30, 45, 80, 0.18);
+        --ppanel: #eef2fa;
+        --pgroup: rgba(120, 140, 190, 0.07);
+        --pfield: #ffffff;
+        --pline: #d5dcea;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family:
+          -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        font-size: 14px;
+      }
+      .wrap {
+        max-width: 1180px;
+        margin: 0 auto;
+        padding: 18px 16px 40px;
+      }
+      h1 {
+        font-size: 13px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--pipe);
+        margin: 0 0 4px;
+      }
+      .sub {
+        color: var(--muted);
+        margin: 0 0 14px;
+      }
+      .about {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 12px 16px;
+        margin-bottom: 18px;
+      }
+      .about b.h {
+        display: block;
+        color: var(--pipe);
+        font-size: 11px;
+        letter-spacing: 0.14em;
+        margin: 8px 0 3px;
+      }
+      .about ul {
+        margin: 0;
+        padding-left: 18px;
+        color: var(--muted);
+      }
+      .row {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 14px 16px;
+        margin-bottom: 12px;
+        display: grid;
+        grid-template-columns: 220px 1fr;
+        gap: 16px;
+        align-items: center;
+      }
+      .row .num {
+        font-size: 26px;
+        font-weight: 800;
+        color: var(--pipe);
+        line-height: 1;
+      }
+      .row .nm {
+        font-weight: 700;
+        margin: 4px 0 2px;
+      }
+      .row .ds {
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .themebtn {
+        float: right;
+        border: 1px solid var(--edge);
+        background: transparent;
+        color: var(--text);
+        border-radius: 999px;
+        padding: 6px 14px;
+        font-weight: 700;
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+      }
+      .seg {
+        display: inline-flex;
+        border: 1px solid var(--edge);
+        border-radius: 999px;
+        overflow: hidden;
+      }
+      .seg button {
+        border: 0;
+        background: transparent;
+        color: var(--muted);
+        padding: 0 16px;
+        height: 34px;
+        font-weight: 700;
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+      }
+      .seg button.on {
+        background: var(--indigo);
+        color: #fff;
+      }
+      .ktogs {
+        display: inline-flex;
+        gap: 8px;
+      }
+      .ktog {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        height: 34px;
+        padding: 0 8px 0 14px;
+        border-radius: 999px;
+        border: 1px solid var(--edge);
+        background: transparent;
+        color: var(--muted);
+        font-weight: 700;
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      .ktog.on {
+        border-color: var(--indigo);
+        background: rgba(99, 102, 241, 0.18);
+        color: var(--text);
+      }
+      .kbox {
+        width: 18px;
+        height: 18px;
+        border-radius: 5px;
+        border: 2px solid var(--edge);
+        display: grid;
+        place-items: center;
+        color: #fff;
+      }
+      .kbox.round {
+        border-radius: 50%;
+      }
+      .kbox svg {
+        opacity: 0;
+      }
+      .ktog.on .kbox {
+        background: var(--indigo);
+        border-color: var(--indigo);
+      }
+      .ktog.on .kbox svg {
+        opacity: 1;
+      }
+      .kswitch {
+        width: 30px;
+        height: 16px;
+        border-radius: 999px;
+        border: 1px solid var(--edge);
+        position: relative;
+        flex: none;
+      }
+      .kswitch span {
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: var(--muted);
+        transition: 0.15s;
+      }
+      .ktog.on .kswitch {
+        background: var(--indigo);
+        border-color: var(--indigo);
+      }
+      .ktog.on .kswitch span {
+        left: 16px;
+        background: #fff;
+      }
+      .ktog.k-lead {
+        padding: 0 14px;
+        gap: 0;
+      }
+      .klead {
+        display: inline-grid;
+        width: 0;
+        overflow: hidden;
+        opacity: 0;
+        transition: 0.15s;
+        color: var(--indigo2);
+      }
+      .ktog.on .klead {
+        width: 18px;
+        opacity: 1;
+      }
+
+      @media (max-width: 760px) {
+        .row {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <button class="themebtn" id="theme">Dark / light</button>
+      <h1>Pipeline: choose the on/off buttons</h1>
+      <p class="sub">
+        Comparison page, not a Pipeline screen. Invented labels only.
+      </p>
+      <div class="about">
+        <b class="h">ABOUT THIS PAGE</b> These are the five looks for the three
+        buttons at the top of the main screen: <b>Opportunities</b>,
+        <b>Risks</b> and <b>ROSA</b>. Each button switches that type on or off;
+        the main screen then shows one section for every type that is on. At
+        least one always stays on.
+        <b class="h">TRY IT</b>
+        <ul>
+          <li>
+            Click the buttons in each row. They work, and each row starts with
+            Opportunities and ROSA on.
+          </li>
+          <li>Use <b>Dark / light</b> at the top right to see both modes.</li>
+          <li>Tell me the number (1 to 5) of the look you like best.</li>
+        </ul>
+        <b class="h">NOT SHOWN</b>
+        Everything else on the screen. This page is only about the three
+        buttons.
+      </div>
+      <div class="row">
+        <div>
+          <div class="num">1</div>
+          <div class="nm">Tick box on the right</div>
+          <div class="ds">
+            A pill with a small tick box on the right. Ticked and filled when
+            on.
+          </div>
+        </div>
+        <div class="demo" data-style="tick"></div>
+      </div>
+      <div class="row">
+        <div>
+          <div class="num">2</div>
+          <div class="nm">Round tick on the right</div>
+          <div class="ds">
+            The same, with a round tick circle instead of a square box.
+          </div>
+        </div>
+        <div class="demo" data-style="circle"></div>
+      </div>
+      <div class="row">
+        <div>
+          <div class="num">3</div>
+          <div class="nm">Small switch</div>
+          <div class="ds">A pill with a little slide switch on the right.</div>
+        </div>
+        <div class="demo" data-style="switch"></div>
+      </div>
+      <div class="row">
+        <div>
+          <div class="num">4</div>
+          <div class="nm">Tick before the word</div>
+          <div class="ds">
+            No box. A tick appears before the word when it is on, and the pill
+            is tinted.
+          </div>
+        </div>
+        <div class="demo" data-style="lead"></div>
+      </div>
+      <div class="row">
+        <div>
+          <div class="num">5</div>
+          <div class="nm">Joined buttons</div>
+          <div class="ds">
+            One joined strip of three buttons; each lit button is on. (How
+            Opportunities and Risks looked in the first mockups.)
+          </div>
+        </div>
+        <div class="demo" data-style="seg"></div>
+      </div>
+    </div>
+    <script>
+      document.getElementById("theme").onclick = function () {
+        var r = document.documentElement;
+        r.setAttribute(
+          "data-theme",
+          r.getAttribute("data-theme") === "light" ? "dark" : "light"
+        );
+      };
+
+      var CHECK =
+        '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+      var KINDS = [
+        ["opp", "Opportunities"],
+        ["risk", "Risks"],
+        ["rosa", "ROSA"]
+      ];
+      document.querySelectorAll(".demo").forEach(function (box) {
+        var st = box.dataset.style,
+          on = ["opp", "rosa"];
+        function draw() {
+          if (st === "seg") {
+            box.innerHTML =
+              '<span class="seg">' +
+              KINDS.map(function (k) {
+                return (
+                  '<button class="' +
+                  (on.indexOf(k[0]) > -1 ? "on" : "") +
+                  '" data-k="' +
+                  k[0] +
+                  '">' +
+                  k[1] +
+                  "</button>"
+                );
+              }).join("") +
+              "</span>";
+          } else {
+            box.innerHTML =
+              '<span class="ktogs">' +
+              KINDS.map(function (k) {
+                var o = on.indexOf(k[0]) > -1;
+                var ind =
+                  st === "tick"
+                    ? '<span class="kbox">' + CHECK + "</span>"
+                    : st === "circle"
+                      ? '<span class="kbox round">' + CHECK + "</span>"
+                      : st === "switch"
+                        ? '<span class="kswitch"><span></span></span>'
+                        : "";
+                var lead =
+                  st === "lead"
+                    ? '<span class="klead">' + CHECK + "</span>"
+                    : "";
+                return (
+                  '<button class="ktog ' +
+                  (o ? "on" : "") +
+                  " k-" +
+                  st +
+                  '" data-k="' +
+                  k[0] +
+                  '">' +
+                  lead +
+                  "<span>" +
+                  k[1] +
+                  "</span>" +
+                  ind +
+                  "</button>"
+                );
+              }).join("") +
+              "</span>";
+          }
+          box.querySelectorAll("button").forEach(function (b) {
+            b.onclick = function () {
+              var k = b.dataset.k,
+                i = on.indexOf(k);
+              if (i > -1) {
+                if (on.length > 1) on.splice(i, 1);
+              } else on.push(k);
+              draw();
+            };
+          });
+        }
+        draw();
+      });
+    </script>
+  </body>
+</html>

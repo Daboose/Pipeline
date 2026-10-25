@@ -1,0 +1,1537 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Pipeline mockup v1: manager screen</title>
+    <style>
+      :root {
+        --page: #0e1623;
+        --bg: #141e2e;
+        --panel: #1a2740;
+        --panel2: #20304f;
+        --line: #2f4163;
+        --edge: #5b6f93;
+        --text: #e8edf5;
+        --muted: #8b9bb0;
+        --pipe: #fbbf24;
+        --indigo: #6366f1;
+        --indigo2: #a5b4fc;
+        --ok: #4ee0b0;
+        --warn: #fb923c;
+        --bad: #f87171;
+        --shadow: 0 8px 20px rgba(0, 0, 0, 0.55);
+        --sfbar: #0a3d66;
+      }
+      :root[data-theme="light"] {
+        --page: #e9edf4;
+        --bg: #f4f6fa;
+        --panel: #ffffff;
+        --panel2: #eef2fa;
+        --line: #d5dcea;
+        --edge: #b3bfd6;
+        --text: #1b2640;
+        --muted: #5d6b85;
+        --pipe: #b7791f;
+        --indigo: #4f46e5;
+        --indigo2: #4338ca;
+        --ok: #0f9d74;
+        --warn: #c2570c;
+        --bad: #dc2626;
+        --shadow: 0 8px 20px rgba(30, 45, 80, 0.18);
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--page);
+        color: var(--text);
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-size: 13px;
+      }
+      button {
+        font-family: inherit;
+        cursor: pointer;
+      }
+      .wrapper {
+        padding: 16px 20px 40px;
+      }
+      h1 {
+        font-size: 15px;
+        letter-spacing: 0.14em;
+        margin: 0 0 8px;
+      }
+      .about {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 12px 18px;
+        max-width: 1180px;
+        line-height: 1.55;
+        color: var(--text);
+      }
+      .about b.h {
+        color: var(--pipe);
+        letter-spacing: 0.08em;
+      }
+      .about ul {
+        margin: 4px 0 8px;
+        padding-left: 20px;
+      }
+      .mockopts {
+        display: flex;
+        gap: 22px;
+        flex-wrap: wrap;
+        margin: 12px 0 10px;
+        color: var(--muted);
+        font-size: 12px;
+        align-items: center;
+      }
+      .sfbar {
+        height: 44px;
+        background: var(--sfbar);
+        border-radius: 8px 8px 0 0;
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        padding: 0 16px;
+        color: #dbeafe;
+      }
+      .sfbar .appname {
+        font-weight: 700;
+        color: #fff;
+      }
+      .sfbar .tab {
+        padding: 4px 10px;
+        border-bottom: 3px solid #fff;
+        font-weight: 600;
+        color: #fff;
+      }
+      .fullscreen h1,
+      .fullscreen .sfbar,
+      .fullscreen .about,
+      .fullscreen .mockopts {
+        display: none;
+      }
+      .fullscreen .wrapper {
+        padding: 0;
+      }
+      .fullscreen .app {
+        border-radius: 0;
+        min-height: 100vh;
+        border: 0;
+      }
+      /* segmented control */
+      .seg {
+        display: inline-flex;
+        border: 1px solid var(--edge);
+        border-radius: 999px;
+        overflow: hidden;
+        background: transparent;
+      }
+      .seg button {
+        border: 0;
+        background: transparent;
+        color: var(--muted);
+        height: 32px;
+        padding: 0 14px;
+        font-weight: 700;
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      .seg button.on {
+        background: var(--indigo);
+        color: #fff;
+      }
+      .btn {
+        height: 34px;
+        padding: 0 16px;
+        border-radius: 999px;
+        border: 1px solid var(--indigo);
+        background: var(--indigo);
+        color: #fff;
+        font-weight: 700;
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      .btn.sec {
+        background: transparent;
+        color: var(--indigo2);
+      }
+      .btn.ghost {
+        border-color: transparent;
+        background: transparent;
+        color: var(--muted);
+      }
+      .btn.danger {
+        background: transparent;
+        border-color: var(--bad);
+        color: var(--bad);
+      }
+      /* the app */
+      .app {
+        position: relative;
+        background: var(--bg);
+        border: 1px solid var(--line);
+        border-radius: 0 0 8px 8px;
+        min-height: 760px;
+        overflow: hidden;
+      }
+      .top {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 10px 18px;
+        border-bottom: 1px solid var(--line);
+      }
+      .cog,
+      .fsbtn {
+        height: 34px;
+        border-radius: 999px;
+        border: 1px solid var(--edge);
+        background: transparent;
+        color: var(--text);
+        font-weight: 700;
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        padding: 0 14px;
+        text-transform: uppercase;
+      }
+      .cog {
+        width: 38px;
+        padding: 0;
+        font-size: 17px;
+      }
+      .mark {
+        font-size: 22px;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        margin-left: 4px;
+      }
+      .mark .a {
+        color: var(--pipe);
+      }
+      .ver {
+        color: var(--muted);
+        font-size: 11px;
+      }
+      .sp {
+        flex: 1;
+      }
+      /* selection bar */
+      .selbar {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        padding: 10px 18px;
+        border-bottom: 1px solid var(--line);
+        background: var(--bg);
+      }
+      .chips {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+        flex: 1;
+        min-width: 200px;
+      }
+      .chip {
+        border: 1px solid var(--edge);
+        border-radius: 999px;
+        padding: 3px 10px;
+        font-size: 12px;
+        color: var(--text);
+        background: var(--panel);
+      }
+      .chip i {
+        color: var(--muted);
+        font-style: normal;
+        margin-right: 4px;
+      }
+      .select {
+        height: 34px;
+        border-radius: 999px;
+        border: 1px solid var(--edge);
+        background: var(--panel);
+        color: var(--text);
+        padding: 0 30px 0 14px;
+        font-size: 12px;
+        appearance: none;
+        background-image:
+          linear-gradient(45deg, transparent 50%, var(--muted) 50%),
+          linear-gradient(135deg, var(--muted) 50%, transparent 50%);
+        background-position:
+          calc(100% - 16px) 14px,
+          calc(100% - 11px) 14px;
+        background-size:
+          5px 5px,
+          5px 5px;
+        background-repeat: no-repeat;
+      }
+      /* data selectors panel */
+      .selpanel {
+        background: var(--panel);
+        border-bottom: 1px solid var(--edge);
+        box-shadow: var(--shadow);
+        padding: 14px 18px 16px;
+        position: relative;
+        z-index: 5;
+      }
+      .selpanel.fly {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 98px;
+        transform: translateY(-110%);
+        opacity: 0;
+        pointer-events: none;
+        transition:
+          transform 0.35s cubic-bezier(0.2, 0.9, 0.3, 1.1),
+          opacity 0.2s;
+      }
+      .selpanel.fly.open {
+        transform: translateY(0);
+        opacity: 1;
+        pointer-events: auto;
+      }
+      .selpanel.docked {
+        position: static;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 14px 18px;
+      }
+      .fld label.t {
+        display: block;
+        font-size: 10px;
+        letter-spacing: 0.12em;
+        color: var(--muted);
+        text-transform: uppercase;
+        margin-bottom: 5px;
+        font-weight: 700;
+      }
+      .fld .select {
+        width: 100%;
+      }
+      .pills {
+        display: flex;
+        gap: 5px;
+        flex-wrap: wrap;
+      }
+      .pill {
+        border: 1px solid var(--edge);
+        background: transparent;
+        color: var(--muted);
+        border-radius: 999px;
+        padding: 4px 11px;
+        font-size: 12px;
+      }
+      .pill.on {
+        background: var(--indigo);
+        border-color: var(--indigo);
+        color: #fff;
+      }
+      .modebar {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 12px;
+        flex-wrap: wrap;
+      }
+      .staleBox {
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 8px 10px;
+        background: var(--panel2);
+      }
+      .switch {
+        width: 38px;
+        height: 22px;
+        border-radius: 999px;
+        border: 1px solid var(--edge);
+        background: transparent;
+        position: relative;
+        flex: none;
+        padding: 0;
+      }
+      .switch::after {
+        content: "";
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: var(--muted);
+        transition: 0.15s;
+      }
+      .switch.on {
+        background: var(--indigo);
+        border-color: var(--indigo);
+      }
+      .switch.on::after {
+        left: 18px;
+        background: #fff;
+      }
+      .staleBox small {
+        color: var(--muted);
+        line-height: 1.4;
+        display: block;
+        margin-top: 2px;
+      }
+      .actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 14px;
+        align-items: center;
+      }
+      /* content */
+      .content {
+        padding: 14px 18px 24px;
+      }
+      .kpis {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 14px;
+      }
+      .kpi {
+        background: var(--panel);
+        border: 1px solid var(--edge);
+        border-radius: 12px;
+        padding: 10px 16px;
+        box-shadow: var(--shadow);
+        min-width: 190px;
+      }
+      .kpi .l {
+        font-size: 10px;
+        letter-spacing: 0.12em;
+        color: var(--muted);
+        text-transform: uppercase;
+        font-weight: 700;
+      }
+      .kpi .v {
+        font-size: 26px;
+        font-weight: 700;
+        margin-top: 2px;
+      }
+      .kpi .s {
+        color: var(--muted);
+        font-size: 11px;
+        margin-top: 1px;
+      }
+      .two {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-bottom: 14px;
+      }
+      .card {
+        background: var(--panel);
+        border: 1px solid var(--edge);
+        border-radius: 12px;
+        padding: 12px 16px;
+        box-shadow: var(--shadow);
+      }
+      .card h3 {
+        margin: 0 0 8px;
+        font-size: 12px;
+        letter-spacing: 0.12em;
+        color: var(--pipe);
+        text-transform: uppercase;
+      }
+      .bar {
+        display: grid;
+        grid-template-columns: 150px 1fr 120px;
+        align-items: center;
+        gap: 10px;
+        margin: 5px 0;
+        font-size: 12px;
+      }
+      .bar .track {
+        height: 12px;
+        border-radius: 6px;
+        background: var(--panel2);
+        overflow: hidden;
+      }
+      .bar .fill {
+        height: 100%;
+        background: var(--indigo);
+        border-radius: 6px;
+      }
+      .bar .fill.over {
+        background: var(--bad);
+      }
+      .bar .n {
+        color: var(--muted);
+        text-align: right;
+        font-size: 11px;
+      }
+      table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        font-size: 12px;
+      }
+      th {
+        text-align: left;
+        font-size: 10px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+        padding: 7px 8px;
+        border-bottom: 1px solid var(--line);
+        position: sticky;
+        top: 0;
+        background: var(--panel);
+        cursor: pointer;
+        white-space: nowrap;
+      }
+      td {
+        padding: 6px 8px;
+        border-bottom: 1px solid var(--line);
+        white-space: nowrap;
+      }
+      tr.click:hover td {
+        background: var(--panel2);
+        cursor: pointer;
+      }
+      td.num,
+      th.num {
+        text-align: right;
+      }
+      .tag {
+        display: inline-block;
+        border-radius: 999px;
+        padding: 1px 9px;
+        font-size: 11px;
+        font-weight: 600;
+        border: 1px solid;
+      }
+      .tag.ok {
+        color: var(--ok);
+        border-color: var(--ok);
+      }
+      .tag.warn {
+        color: var(--warn);
+        border-color: var(--warn);
+      }
+      .tag.bad {
+        color: var(--bad);
+        border-color: var(--bad);
+      }
+      .tag.hold {
+        color: var(--muted);
+        border-color: var(--edge);
+      }
+      .star {
+        color: var(--pipe);
+      }
+      .legend {
+        display: flex;
+        gap: 16px;
+        flex-wrap: wrap;
+        color: var(--muted);
+        font-size: 11px;
+        margin: 4px 0 8px;
+      }
+      /* settings flyout */
+      .flyout {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        width: 400px;
+        background: var(--panel);
+        border-right: 1px solid var(--edge);
+        box-shadow: var(--shadow);
+        z-index: 20;
+        transform: translateX(-105%);
+        transition: transform 0.28s ease;
+        padding: 16px 18px;
+        overflow: auto;
+      }
+      .flyout.open {
+        transform: none;
+      }
+      .flyout h2 {
+        font-size: 12px;
+        letter-spacing: 0.14em;
+        color: var(--pipe);
+        text-transform: uppercase;
+        margin: 18px 0 8px;
+      }
+      .flyout h2:first-of-type {
+        margin-top: 8px;
+      }
+      .frow {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 7px 9px;
+        margin-bottom: 6px;
+        background: var(--panel2);
+      }
+      .frow .nm {
+        flex: 1;
+      }
+      .frow small {
+        color: var(--muted);
+        display: block;
+      }
+      .mini {
+        border: 1px solid var(--edge);
+        background: transparent;
+        color: var(--muted);
+        border-radius: 999px;
+        font-size: 10px;
+        padding: 2px 8px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+      .scrim {
+        position: absolute;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.35);
+        z-index: 15;
+        display: none;
+      }
+      .scrim.on {
+        display: block;
+      }
+      .empty {
+        padding: 30px;
+        text-align: center;
+        color: var(--muted);
+      }
+      .toast {
+        position: absolute;
+        right: 18px;
+        bottom: 18px;
+        background: var(--panel);
+        border: 1px solid var(--edge);
+        border-radius: 10px;
+        padding: 9px 14px;
+        box-shadow: var(--shadow);
+        z-index: 30;
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrapper" id="wrap">
+      <h1>PIPELINE MOCKUP v1: MANAGER SCREEN</h1>
+      <div class="about">
+        <b class="h">ABOUT THIS MOCKUP</b>
+        <div>
+          The first look at the <b>manager web screen</b>: choose which deals to
+          look at (the <b>data selectors</b>), then see the totals, the stages,
+          the quarters, each rep, and the deals, with the 30 and 90 day warning
+          colours. <b>All names, teams and numbers are invented.</b> Nothing is
+          built in Salesforce.
+        </div>
+        <b class="h">TRY IT</b>
+        <ul>
+          <li>
+            <b>Cog (top left)</b> opens the settings flyout: <b>Dark | Light</b>
+            works now (the first saved preference), and your saved
+            <b>filters</b> (star = opens by default, Share gives the other
+            person their own copy).
+          </li>
+          <li>
+            <b>Full screen (top right)</b> drops the Salesforce bar (in the real
+            tool it opens a new full-screen tab). Press it again to come back.
+          </li>
+          <li>
+            <b>Opportunities | Risks</b> are never mixed.
+            <b>Open | Closed | Both</b>
+            is on every view (closed starts at the last 12 months).
+          </li>
+          <li>
+            <b>Change selection</b> opens the data selectors. <b>Team</b> mode
+            picks a team (with everyone below), <b>Manual</b> mode picks
+            country, state, segment, brand, owner, stage, quarter, priority; you
+            can use both. <b>Apply</b> closes the panel. Try
+            <i>Southeast Asia (sample)</i>, then manual: Singapore + Malaysia +
+            Thailand, Extremities.
+          </li>
+          <li>
+            <b>Needs attention</b> toggle (the "stale" filter, wording not
+            final) shows only deals past 30 or 90 days. Deals on hold are never
+            flagged.
+          </li>
+          <li>
+            Click a <b>rep</b> row to focus on that person; click a column
+            heading to sort the deal list; <b>My filters</b> loads a saved view.
+          </li>
+          <li>
+            Totals are <b>per currency</b>, never mixed (try Australia and New
+            Zealand together).
+          </li>
+        </ul>
+        <b class="h">NOT SHOWN YET</b>
+        <div>
+          Editing a deal, the Chatter feed, the splash screen, the mobile rep
+          screen, the surgeon summary, usages and med ed events, loading and
+          empty-state polish. Colours (mint = current, orange = needs update,
+          red = very old) are proposals.
+        </div>
+      </div>
+      <div class="mockopts">
+        <span>Mockup options:</span>
+        <span
+          >Selector style
+          <span class="seg" id="segStyle"
+            ><button class="on" data-v="fly">Fly-down panel</button
+            ><button data-v="docked">Always visible</button></span
+          ></span
+        >
+        <span
+          >Stale wording
+          <select class="select" id="staleWord">
+            <option>Needs attention</option>
+            <option>Gone quiet</option>
+            <option>Overdue for an update</option>
+            <option>Stale</option>
+          </select></span
+        >
+      </div>
+      <div class="sfbar">
+        <span class="appname">Pipeline</span
+        ><span class="tab">Pipeline Home</span
+        ><span style="opacity: 0.7">Opportunities &amp; Risks</span
+        ><span style="opacity: 0.7">Accounts</span>
+      </div>
+
+      <div class="app" id="app">
+        <div class="top">
+          <button class="cog" id="cog" title="Settings">⚙</button>
+          <span class="mark"><span class="a">pipe</span>line</span>
+          <span class="ver">v0.1 mockup · As at 25 Oct 2026, 9:05 am</span>
+          <span class="sp"></span>
+          <button class="fsbtn" id="fs">⤢ Full screen</button>
+        </div>
+        <div class="selbar">
+          <span class="seg" id="segKind"
+            ><button class="on" data-v="opp">Opportunities</button
+            ><button data-v="risk">Risks</button></span
+          >
+          <span class="seg" id="segStatus"
+            ><button class="on" data-v="open">Open</button
+            ><button data-v="closed">Closed</button
+            ><button data-v="both">Both</button></span
+          >
+          <span class="chips" id="chips"></span>
+          <select class="select" id="myfilters"></select>
+          <button class="btn sec" id="changeSel">Change selection ▾</button>
+        </div>
+        <div class="selpanel fly" id="selpanel"></div>
+        <div class="content" id="content"></div>
+
+        <div class="scrim" id="scrim"></div>
+        <aside class="flyout" id="flyout"></aside>
+        <div class="toast" id="toast"></div>
+      </div>
+    </div>
+
+    <script>
+      /* ---------- invented data ---------- */
+      let seed = 42;
+      const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+      const pick = (a) => a[Math.floor(rnd() * a.length)];
+      const TEAMS = [
+        {
+          id: "t1",
+          name: "Casey Rowan, Sales Director AU",
+          c: "AU",
+          parent: null
+        },
+        {
+          id: "t2",
+          name: "Harper Lane, State Manager NSW",
+          c: "AU",
+          parent: "t1"
+        },
+        {
+          id: "t3",
+          name: "Team Harbour (Jordan Blake)",
+          c: "AU",
+          parent: "t2",
+          st: "NSW",
+          reps: ["Alex Morgan", "Sam Rivera", "Priya Nair", "Tom Becker"]
+        },
+        {
+          id: "t4",
+          name: "Team Ridge (Mia Chen)",
+          c: "AU",
+          parent: "t2",
+          st: "NSW",
+          reps: ["Noah Fraser", "Leah Ortiz", "Ben Walsh"]
+        },
+        {
+          id: "t5",
+          name: "Drew Keller, State Manager VIC",
+          c: "AU",
+          parent: "t1"
+        },
+        {
+          id: "t6",
+          name: "Team Bayside (Ruby Ellis)",
+          c: "AU",
+          parent: "t5",
+          st: "VIC",
+          reps: ["Kai Dunn", "Zoe Hart", "Liam Park"]
+        },
+        {
+          id: "t7",
+          name: "Quinn Archer, State Manager WA",
+          c: "AU",
+          parent: "t1",
+          st: "WA",
+          reps: ["Eli Shaw", "Nina Cole"]
+        },
+        {
+          id: "t8",
+          name: "Taylor Reed, Sales Director NZ",
+          c: "NZ",
+          parent: null
+        },
+        {
+          id: "t9",
+          name: "Team Kiwi North (Robin Page)",
+          c: "NZ",
+          parent: "t8",
+          reps: ["Aroha Tane", "Sione Latu"]
+        },
+        { id: "t10", name: "Southeast Asia (sample)", c: "SG", parent: null },
+        {
+          id: "t11",
+          name: "Team Singapore (Wei Tan)",
+          c: "SG",
+          parent: "t10",
+          reps: ["Mei Lim"]
+        },
+        {
+          id: "t12",
+          name: "Team Malaysia (Aiman Hassan)",
+          c: "MY",
+          parent: "t10",
+          reps: ["Farah Yusof"]
+        },
+        {
+          id: "t13",
+          name: "Team Thailand (Somchai Rattan)",
+          c: "TH",
+          parent: "t10",
+          reps: ["Nok Chai"]
+        }
+      ];
+      const CUR = { AU: "AUD", NZ: "NZD", SG: "SGD", MY: "MYR", TH: "THB" };
+      const SYM = { AUD: "A$", NZD: "NZ$", SGD: "S$", MYR: "RM", THB: "฿" };
+      const SCALE = { AUD: 1, NZD: 1.05, SGD: 0.9, MYR: 3, THB: 24 };
+      const OPPSTAGES = ["Plan", "Action", "Commit", "1st Case", "5th Case"];
+      const RISKSTAGES = [
+        "Unhappy",
+        "Meeting With Competitors",
+        "1st Case Competitor",
+        "Multiple Cases Competitor",
+        "Settled"
+      ];
+      const SEGS = ["Hip", "Knee", "Extremities", "CMFT"];
+      const BRANDS = [
+        "Persona",
+        "Taperloc",
+        "Nexgen",
+        "Oxford",
+        "Vanguard",
+        "G7",
+        "Comprehensive",
+        "ZNN"
+      ];
+      const QTRS = ["Q4 2026", "Q1 2027", "Q2 2027", "Q3 2027", "Q4 2027"];
+      const SURN = [
+        "Patel",
+        "Nguyen",
+        "Okafor",
+        "Lindqvist",
+        "Moreau",
+        "Haddad",
+        "Castillo",
+        "Brandt",
+        "Tanaka",
+        "Reilly",
+        "Sandhu",
+        "Vance",
+        "Kowalski",
+        "Mbeki",
+        "Larsen",
+        "Quinn"
+      ];
+      const teamOf = {};
+      TEAMS.forEach((t) => (t.reps || []).forEach((r) => (teamOf[r] = t)));
+      const REPS = Object.keys(teamOf);
+      const deals = [];
+      let n = 1000;
+      REPS.forEach((rep) => {
+        const t = teamOf[rep];
+        const count = 4 + Math.floor(rnd() * 6);
+        for (let i = 0; i < count; i++) {
+          const risk = rnd() < 0.2;
+          const closed = rnd() < 0.3;
+          const seg = pick(SEGS);
+          const cur = CUR[t.c];
+          const sd = Math.floor(Math.pow(rnd(), 1.6) * 260);
+          const cd = Math.floor(Math.pow(rnd(), 1.4) * 170);
+          deals.push({
+            id: "D" + n++,
+            rep,
+            team: t.name,
+            country: t.c,
+            state: t.st || "",
+            surgeon:
+              "Dr " + pick("ABCDEFGHJKLMNPRSTW".split("")) + ". " + pick(SURN),
+            kind: risk ? "risk" : "opp",
+            segment: risk ? "Risk" : seg,
+            brand: pick(BRANDS),
+            brand2: rnd() < 0.2 ? pick(BRANDS) : "",
+            stage: closed
+              ? risk
+                ? pick(["Closed Retained", "Lost Business"])
+                : pick(["Conversion", "Unsuccessful Conversion"])
+              : pick(risk ? RISKSTAGES : OPPSTAGES),
+            closed,
+            closedAgo: closed ? Math.floor(rnd() * 700) : 0,
+            cur,
+            value:
+              Math.round(((rnd() * 280 + 20) * 1000 * SCALE[cur]) / 1000) *
+              1000,
+            q: pick(QTRS),
+            stageDays: sd,
+            chatterDays: cd,
+            age: Math.max(sd, cd) + Math.floor(rnd() * 400),
+            prio: rnd() < 0.5,
+            hold: !closed && rnd() < 0.07
+          });
+        }
+      });
+      /* ---------- state ---------- */
+      const S = {
+        kind: "opp",
+        status: "open",
+        style: "fly",
+        team: "",
+        below: true,
+        countries: [],
+        states: [],
+        segs: [],
+        brands: [],
+        owner: "",
+        stages: [],
+        quarter: "",
+        prio: false,
+        stale: false,
+        closedRange: "12",
+        sort: ["value", -1],
+        rows: 25,
+        theme: "dark"
+      };
+      const SAVED = [
+        { n: "My team, open", d: true, s: { team: "t3", below: true } },
+        {
+          n: "NSW Hip, Persona",
+          d: false,
+          s: {
+            countries: ["AU"],
+            states: ["NSW"],
+            segs: ["Hip"],
+            brands: ["Persona"]
+          }
+        },
+        {
+          n: "Southeast Asia Extremities",
+          d: false,
+          s: { countries: ["SG", "MY", "TH"], segs: ["Extremities"] }
+        }
+      ];
+      const $ = (id) => document.getElementById(id);
+      const money = (v, c) =>
+        (SYM[c] || "") +
+        (v >= 1e6
+          ? (v / 1e6).toFixed(2) + "m"
+          : v >= 1e3
+            ? Math.round(v / 1e3) + "k"
+            : v);
+      const desc = (id) => {
+        const r = [id];
+        TEAMS.filter((t) => t.parent === id).forEach((t) =>
+          r.push(...desc(t.id))
+        );
+        return r;
+      };
+      const staleWord = () => $("staleWord").value;
+      function chatterBand(d) {
+        return d.chatterDays <= 30
+          ? "ok"
+          : d.chatterDays <= 90
+            ? "warn"
+            : "bad";
+      }
+      function flagged(d) {
+        return !d.closed && !d.hold && (d.stageDays > 90 || d.chatterDays > 30);
+      }
+      function filtered(ignoreOwner) {
+        let teamIds = null;
+        if (S.team) {
+          teamIds = S.below ? desc(S.team) : [S.team];
+        }
+        return deals.filter((d) => {
+          if (d.kind !== S.kind) return false;
+          if (S.status === "open" && d.closed) return false;
+          if (S.status === "closed" && !d.closed) return false;
+          if (
+            d.closed &&
+            S.status !== "open" &&
+            d.closedAgo > S.closedRange * 30
+          )
+            return false;
+          if (
+            teamIds &&
+            !TEAMS.filter((t) => teamIds.includes(t.id)).some(
+              (t) => t.name === d.team
+            )
+          )
+            return false;
+          if (S.countries.length && !S.countries.includes(d.country))
+            return false;
+          if (S.states.length && !S.states.includes(d.state)) return false;
+          if (S.segs.length && d.kind === "opp" && !S.segs.includes(d.segment))
+            return false;
+          if (
+            S.brands.length &&
+            !S.brands.includes(d.brand) &&
+            !S.brands.includes(d.brand2)
+          )
+            return false;
+          if (!ignoreOwner && S.owner && d.rep !== S.owner) return false;
+          if (S.stages.length && !S.stages.includes(d.stage)) return false;
+          if (S.quarter && d.q !== S.quarter) return false;
+          if (S.prio && !d.prio) return false;
+          if (S.stale && !flagged(d)) return false;
+          return true;
+        });
+      }
+      /* ---------- render ---------- */
+      function pills(id, opts, sel, cb) {
+        return (
+          `<div class="pills" data-p="${id}">` +
+          opts
+            .map(
+              ([v, l]) =>
+                `<button class="pill ${sel.includes(v) ? "on" : ""}" data-v="${v}">${l}</button>`
+            )
+            .join("") +
+          `</div>`
+        );
+      }
+      function renderPanel() {
+        const kindStages = S.kind === "opp" ? OPPSTAGES : RISKSTAGES;
+        const teamOpts = [
+          '<option value="">(no team: use manual choices only)</option>'
+        ]
+          .concat(
+            TEAMS.map((t) => {
+              let depth = 0,
+                p = t;
+              while (p.parent) {
+                depth++;
+                p = TEAMS.find((x) => x.id === p.parent);
+              }
+              return `<option value="${t.id}" ${S.team === t.id ? "selected" : ""}>${"   ".repeat(depth)}${t.name}</option>`;
+            })
+          )
+          .join("");
+        $("selpanel").innerHTML = `
+          <div class="modebar"><b style="letter-spacing:.12em;font-size:11px;color:var(--pipe)">DATA SELECTORS</b>
+            <span style="color:var(--muted)">Use a team, go manual, or combine them. You see only what sharing allows; anything else just comes back empty.</span></div>
+          <div class="grid">
+            <div class="fld"><label class="t">Team</label><select class="select" id="fTeam">${teamOpts}</select>
+              <label style="display:flex;gap:6px;margin-top:6px;color:var(--muted)"><input type="checkbox" id="fBelow" ${S.below ? "checked" : ""}/> Include teams below</label></div>
+            <div class="fld"><label class="t">Country</label>${pills(
+              "countries",
+              Object.keys(CUR).map((c) => [c, c]),
+              S.countries
+            )}</div>
+            <div class="fld"><label class="t">State (Australia)</label>${pills(
+              "states",
+              ["NSW", "VIC", "QLD", "WA", "SA", "TAS", "ACT"].map((c) => [
+                c,
+                c
+              ]),
+              S.states
+            )}</div>
+            <div class="fld"><label class="t">Segment ${S.kind === "risk" ? "(risks have none)" : ""}</label>${pills(
+              "segs",
+              SEGS.map((c) => [c, c]),
+              S.segs
+            )}</div>
+            <div class="fld"><label class="t">Brand</label>${pills(
+              "brands",
+              BRANDS.map((c) => [c, c]),
+              S.brands
+            )}</div>
+            <div class="fld"><label class="t">Owner</label><select class="select" id="fOwner"><option value="">(anyone)</option>${REPS.map((r) => `<option ${S.owner === r ? "selected" : ""}>${r}</option>`).join("")}</select></div>
+            <div class="fld"><label class="t">Stage</label>${pills(
+              "stages",
+              kindStages.map((c) => [c, c]),
+              S.stages
+            )}</div>
+            <div class="fld"><label class="t">Expected close quarter</label><select class="select" id="fQ"><option value="">(any)</option>${QTRS.map((q) => `<option ${S.quarter === q ? "selected" : ""}>${q}</option>`).join("")}</select>
+              <label style="display:flex;gap:6px;margin-top:6px;color:var(--muted)"><input type="checkbox" id="fPrio" ${S.prio ? "checked" : ""}/> Rep priority only</label></div>
+            <div class="fld" style="grid-column: span 2"><label class="t">${staleWord()}</label>
+              <div class="staleBox"><button class="switch ${S.stale ? "on" : ""}" id="fStale"></button>
+                <div><b>Only show deals that ${staleWord() === "Stale" ? "are stale" : "need attention"}</b>
+                <small>Open deals with no stage change for over 90 days, or no update from the rep in over 30 days. Deals on hold are never included.</small></div></div></div>
+            <div class="fld" style="grid-column: span 2"><label class="t">Closed deals shown (when Closed or Both)</label>
+              <select class="select" id="fRange">${[
+                ["3", "Last 3 months"],
+                ["12", "Last 12 months"],
+                ["24", "Last 24 months"],
+                ["999", "All"]
+              ]
+                .map(
+                  ([v, l]) =>
+                    `<option value="${v}" ${S.closedRange === v ? "selected" : ""}>${l}</option>`
+                )
+                .join("")}</select></div>
+          </div>
+          <div class="actions"><button class="btn" id="apply">Apply</button><button class="btn sec" id="reset">Reset</button>
+            <button class="btn ghost" id="saveF">Save as filter…</button></div>`;
+        const P = $("selpanel");
+        P.querySelectorAll(".pills").forEach((el) =>
+          el.querySelectorAll("button").forEach(
+            (b) =>
+              (b.onclick = () => {
+                const k = el.dataset.p;
+                const v = b.dataset.v;
+                S[k] = S[k].includes(v)
+                  ? S[k].filter((x) => x !== v)
+                  : S[k].concat(v);
+                renderPanel();
+              })
+          )
+        );
+        $("fTeam").onchange = (e) => (S.team = e.target.value);
+        $("fBelow").onchange = (e) => (S.below = e.target.checked);
+        $("fOwner").onchange = (e) => (S.owner = e.target.value);
+        $("fQ").onchange = (e) => (S.quarter = e.target.value);
+        $("fPrio").onchange = (e) => (S.prio = e.target.checked);
+        $("fRange").onchange = (e) => (S.closedRange = e.target.value);
+        $("fStale").onclick = () => {
+          S.stale = !S.stale;
+          renderPanel();
+        };
+        $("apply").onclick = () => {
+          renderAll();
+          closePanel();
+        };
+        $("reset").onclick = () => {
+          Object.assign(S, {
+            team: "",
+            countries: [],
+            states: [],
+            segs: [],
+            brands: [],
+            owner: "",
+            stages: [],
+            quarter: "",
+            prio: false,
+            stale: false
+          });
+          renderPanel();
+          renderAll();
+        };
+        $("saveF").onclick = () => {
+          const nm = "Saved view " + (SAVED.length + 1);
+          SAVED.push({ n: nm, d: false, s: snapshot() });
+          renderMy();
+          renderFly();
+          toast(
+            "Saved as “" +
+              nm +
+              "”. It is now in My filters and in the cog panel."
+          );
+        };
+      }
+      function snapshot() {
+        return {
+          team: S.team,
+          below: S.below,
+          countries: S.countries.slice(),
+          states: S.states.slice(),
+          segs: S.segs.slice(),
+          brands: S.brands.slice(),
+          owner: S.owner,
+          stages: S.stages.slice(),
+          quarter: S.quarter,
+          prio: S.prio,
+          stale: S.stale
+        };
+      }
+      function chipsHtml() {
+        const c = [];
+        const t = TEAMS.find((x) => x.id === S.team);
+        if (t)
+          c.push(
+            `<span class="chip">${t.name.startsWith("Team") ? "" : "<i>Team</i>"}${t.name}${S.below ? " + below" : ""}</span>`
+          );
+        if (S.countries.length)
+          c.push(
+            `<span class="chip"><i>Country</i>${S.countries.join(", ")}</span>`
+          );
+        if (S.states.length)
+          c.push(
+            `<span class="chip"><i>State</i>${S.states.join(", ")}</span>`
+          );
+        if (S.segs.length)
+          c.push(
+            `<span class="chip"><i>Segment</i>${S.segs.join(", ")}</span>`
+          );
+        if (S.brands.length)
+          c.push(
+            `<span class="chip"><i>Brand</i>${S.brands.join(", ")}</span>`
+          );
+        if (S.owner)
+          c.push(`<span class="chip"><i>Owner</i>${S.owner} ✕</span>`);
+        if (S.stages.length)
+          c.push(
+            `<span class="chip"><i>Stage</i>${S.stages.join(", ")}</span>`
+          );
+        if (S.quarter)
+          c.push(`<span class="chip"><i>Close</i>${S.quarter}</span>`);
+        if (S.prio)
+          c.push(`<span class="chip"><i>Priority</i>rep priority</span>`);
+        if (S.stale)
+          c.push(`<span class="chip"><i>${staleWord()}</i>only</span>`);
+        if (S.status !== "open")
+          c.push(
+            `<span class="chip"><i>Closed range</i>${S.closedRange === "999" ? "all" : "last " + S.closedRange + " months"}</span>`
+          );
+        if (!c.length)
+          c.push(`<span class="chip"><i>Everything you can see</i></span>`);
+        return c.join("");
+      }
+      function renderAll() {
+        $("chips").innerHTML = chipsHtml();
+        const rows = filtered();
+        const open = rows.filter((d) => !d.closed);
+        const curs = [...new Set(rows.map((d) => d.cur))];
+        let kp = `<div class="kpi"><div class="l">${S.status === "open" ? "Open deals" : "Deals shown"}</div><div class="v">${rows.length}</div><div class="s">${S.kind === "opp" ? "opportunities" : "risks"}</div></div>`;
+        curs.forEach((c) => {
+          const v = rows
+            .filter((d) => d.cur === c)
+            .reduce((a, d) => a + d.value, 0);
+          kp += `<div class="kpi"><div class="l">Expected annual ${S.kind === "opp" ? "revenue" : "value at risk"} · ${c}</div><div class="v">${money(v, c)}</div><div class="s">${rows.filter((d) => d.cur === c).length === 1 ? "1 deal" : rows.filter((d) => d.cur === c).length + " deals"}</div></div>`;
+        });
+        const upd = open.filter(
+          (d) => !d.hold && d.chatterDays > 30 && d.chatterDays <= 90
+        ).length;
+        const old = open.filter((d) => !d.hold && d.chatterDays > 90).length;
+        const stg = open.filter((d) => !d.hold && d.stageDays > 90).length;
+        kp += `<div class="kpi"><div class="l">${staleWord()}</div><div class="v" style="color:var(--warn)">${open.filter(flagged).length}</div><div class="s">${upd} need an update · ${old} very old · ${stg} no stage move in 90 days</div></div>`;
+        const kindStages = S.kind === "opp" ? OPPSTAGES : RISKSTAGES;
+        const mx = Math.max(
+          1,
+          ...kindStages.map((s) => rows.filter((d) => d.stage === s).length)
+        );
+        const stageBars = kindStages
+          .map((s) => {
+            const r = rows.filter((d) => d.stage === s);
+            const by = curs
+              .map((c) => {
+                const v = r
+                  .filter((d) => d.cur === c)
+                  .reduce((a, d) => a + d.value, 0);
+                return v ? money(v, c) : "";
+              })
+              .filter(Boolean)
+              .join(" · ");
+            return `<div class="bar"><span>${s}</span><span class="track"><span class="fill" style="display:block;width:${(100 * r.length) / mx}%"></span></span><span class="n">${r.length} · ${by || "–"}</span></div>`;
+          })
+          .join("");
+        const qmx = Math.max(
+          1,
+          ...QTRS.map((q) => rows.filter((d) => d.q === q).length)
+        );
+        const qBars = QTRS.map((q) => {
+          const r = rows.filter((d) => d.q === q);
+          const by = curs
+            .map((c) => {
+              const v = r
+                .filter((d) => d.cur === c)
+                .reduce((a, d) => a + d.value, 0);
+              return v ? money(v, c) : "";
+            })
+            .filter(Boolean)
+            .join(" · ");
+          return `<div class="bar"><span>${q}</span><span class="track"><span class="fill" style="display:block;width:${(100 * r.length) / qmx}%"></span></span><span class="n">${r.length} · ${by || "–"}</span></div>`;
+        }).join("");
+        const people = [...new Set(filtered(true).map((d) => d.rep))];
+        const repRows = people
+          .map((p) => {
+            const r = filtered(true).filter((d) => d.rep === p);
+            const o = r.filter((d) => !d.closed);
+            const val =
+              curs.length === 1
+                ? money(
+                    r.reduce((a, d) => a + d.value, 0),
+                    r[0].cur
+                  )
+                : r
+                    .map((d) => d.cur)
+                    .filter((v, i, a) => a.indexOf(v) === i)
+                    .map((c) =>
+                      money(
+                        r
+                          .filter((d) => d.cur === c)
+                          .reduce((a, d) => a + d.value, 0),
+                        c
+                      )
+                    )
+                    .join(" · ");
+            const u = o.filter(
+              (d) => !d.hold && d.chatterDays > 30 && d.chatterDays <= 90
+            ).length;
+            const w = o.filter((d) => !d.hold && d.chatterDays > 90).length;
+            const sg = o.filter((d) => !d.hold && d.stageDays > 90).length;
+            const worst = Math.max(
+              0,
+              ...o.filter((d) => !d.hold).map((d) => d.chatterDays)
+            );
+            return `<tr class="click" data-rep="${p}"><td>${p}${S.owner === p ? " ◀" : ""}</td><td>${teamOf[p].name.split("(")[0]}</td><td class="num">${o.length}</td><td class="num">${val}</td><td class="num">${u ? `<span class="tag warn">${u}</span>` : "–"}</td><td class="num">${w ? `<span class="tag bad">${w}</span>` : "–"}</td><td class="num">${sg ? `<span class="tag bad">${sg}</span>` : "–"}</td><td class="num">${o.length ? worst + " d" : "–"}</td></tr>`;
+          })
+          .join("");
+        const [sk, sd] = S.sort;
+        const sorted = rows
+          .slice()
+          .sort((a, b) => (a[sk] > b[sk] ? 1 : a[sk] < b[sk] ? -1 : 0) * sd);
+        const dealRows = sorted
+          .slice(0, S.rows)
+          .map(
+            (d) =>
+              `<tr><td>${d.surgeon}${d.prio ? ' <span class="star">★</span>' : ""}</td><td>${d.segment}</td><td>${d.brand}${d.brand2 ? " +1" : ""}</td><td>${d.stage}</td><td class="num">${money(d.value, d.cur)}</td><td>${d.q}</td><td>${d.rep}</td><td class="num">${d.closed ? "–" : d.hold ? '<span class="tag hold">On hold</span>' : `<span class="tag ${chatterBand(d)}">${d.chatterDays} d</span>`}</td><td class="num">${d.closed || d.hold ? "–" : `<span class="tag ${d.stageDays > 90 ? "bad" : "ok"}">${d.stageDays} d</span>`}</td><td class="num">${d.age} d</td><td>${d.closed ? "Closed" : d.hold ? "On hold" : "Open"}</td></tr>`
+          )
+          .join("");
+        const th = (k, l, num) =>
+          `<th class="${num ? "num" : ""}" data-s="${k}">${l}${S.sort[0] === k ? (S.sort[1] > 0 ? " ▲" : " ▼") : ""}</th>`;
+        $("content").innerHTML =
+          rows.length || people.length
+            ? `
+          <div class="kpis">${kp}</div>
+          <div class="two"><div class="card"><h3>By stage</h3>${stageBars}</div><div class="card"><h3>By expected close quarter</h3>${qBars}</div></div>
+          <div class="card" style="margin-bottom:14px"><h3>${S.team ? "Team" : "People"}</h3>
+            <table><thead><tr><th>Rep</th><th>Team</th><th class="num">Open</th><th class="num">Expected annual ${S.kind === "opp" ? "revenue" : "value"}</th><th class="num">Needs update<br>(30–90 d)</th><th class="num">Very old<br>(over 90 d)</th><th class="num">No stage move<br>(90 d)</th><th class="num">Longest quiet</th></tr></thead><tbody>${repRows}</tbody></table></div>
+          <div class="card"><h3>Deals (${rows.length})</h3>
+            <div class="legend"><span><span class="tag ok">current</span> rep posted in last 30 days</span><span><span class="tag warn">needs update</span> 30–90 days</span><span><span class="tag bad">very old</span> over 90 days</span><span>Stage: <span class="tag bad">red</span> = no move in over 90 days</span><span><span class="tag hold">On hold</span> no warnings</span><span><span class="star">★</span> rep priority</span></div>
+            <table><thead><tr>${th("surgeon", "Surgeon")}${th("segment", "Segment")}${th("brand", "Brand")}${th("stage", "Stage")}${th("value", "Value / year", 1)}${th("q", "Close")}${th("rep", "Owner")}${th("chatterDays", "Rep last posted", 1)}${th("stageDays", "Last stage move", 1)}${th("age", "Deal age", 1)}${th("closed", "Status")}</tr></thead><tbody>${dealRows}</tbody></table>
+            ${rows.length > S.rows ? `<div style="text-align:center;margin-top:10px"><button class="btn sec" id="more">Show more (${rows.length - S.rows} left)</button></div>` : ""}</div>`
+            : `<div class="card empty"><b>No deals to show.</b><br>Nothing matches these selections, or sharing does not give you access to these deals. (For example, a Singapore user choosing an Australian team sees nothing.)</div>`;
+        document.querySelectorAll("tr[data-rep]").forEach(
+          (tr) =>
+            (tr.onclick = () => {
+              S.owner = S.owner === tr.dataset.rep ? "" : tr.dataset.rep;
+              renderAll();
+              renderPanel();
+            })
+        );
+        document.querySelectorAll("th[data-s]").forEach(
+          (h) =>
+            (h.onclick = () => {
+              S.sort = [
+                h.dataset.s,
+                S.sort[0] === h.dataset.s ? -S.sort[1] : -1
+              ];
+              renderAll();
+            })
+        );
+        if ($("more"))
+          $("more").onclick = () => {
+            S.rows += 25;
+            renderAll();
+          };
+      }
+      function renderMy() {
+        $("myfilters").innerHTML =
+          '<option value="">My filters…</option>' +
+          SAVED.map(
+            (f, i) => `<option value="${i}">${f.d ? "★ " : ""}${f.n}</option>`
+          ).join("");
+      }
+      function loadFilter(i) {
+        Object.assign(
+          S,
+          {
+            team: "",
+            below: true,
+            countries: [],
+            states: [],
+            segs: [],
+            brands: [],
+            owner: "",
+            stages: [],
+            quarter: "",
+            prio: false,
+            stale: false
+          },
+          JSON.parse(JSON.stringify(SAVED[i].s))
+        );
+        renderPanel();
+        renderAll();
+      }
+      function renderFly() {
+        $("flyout").innerHTML =
+          `<div style="display:flex;align-items:center"><b style="font-size:15px;letter-spacing:.1em">SETTINGS</b><span class="sp"></span><button class="mini" id="closeFly">Close ✕</button></div>
+          <h2>Appearance</h2><div class="seg" id="segTheme"><button data-v="dark" class="${S.theme === "dark" ? "on" : ""}">Dark</button><button data-v="light" class="${S.theme === "light" ? "on" : ""}">Light</button></div>
+          <div style="color:var(--muted);margin-top:6px">Saved for you. Your choice opens every time.</div>
+          <h2>My filters</h2>${SAVED.map((f, i) => `<div class="frow"><span class="star" style="cursor:pointer" data-def="${i}">${f.d ? "★" : "☆"}</span><div class="nm">${f.n}<small>${f.d ? "Opens by default" : "Click the star to open by default"}</small></div><button class="mini" data-load="${i}">Open</button><button class="mini" data-share="${i}">Share</button><button class="mini" data-del="${i}">Delete</button></div>`).join("")}
+          <div style="color:var(--muted);margin-top:6px">Share gives the other person their own copy to keep, change or delete. A team manager can also share with their whole team. Never with everybody.</div>
+          <h2>When Pipeline opens</h2><div style="color:var(--muted)">Your default filter; if you have none, your team; if you have no team, your own country.</div>
+          <h2>Closed deals</h2><div style="color:var(--muted)">Start with the last 12 months; widen when you need to (in Change selection).</div>
+          <h2>About</h2><div style="color:var(--muted)">Pipeline · version 0.1 (mockup)</div>`;
+        $("closeFly").onclick = closeFly;
+        document.querySelectorAll("#segTheme button").forEach(
+          (b) =>
+            (b.onclick = () => {
+              S.theme = b.dataset.v;
+              document.documentElement.dataset.theme = S.theme;
+              renderFly();
+            })
+        );
+        document.querySelectorAll("[data-def]").forEach(
+          (b) =>
+            (b.onclick = () => {
+              SAVED.forEach(
+                (f, i) => (f.d = i === +b.dataset.def ? !f.d : false)
+              );
+              renderFly();
+              renderMy();
+            })
+        );
+        document.querySelectorAll("[data-load]").forEach(
+          (b) =>
+            (b.onclick = () => {
+              loadFilter(+b.dataset.load);
+              closeFly();
+            })
+        );
+        document.querySelectorAll("[data-del]").forEach(
+          (b) =>
+            (b.onclick = () => {
+              SAVED.splice(+b.dataset.del, 1);
+              renderFly();
+              renderMy();
+            })
+        );
+        document
+          .querySelectorAll("[data-share]")
+          .forEach(
+            (b) =>
+              (b.onclick = () =>
+                toast(
+                  "Share “" +
+                    SAVED[+b.dataset.share].n +
+                    "” with a person: they get their own copy (not shown in this mockup)."
+                ))
+          );
+      }
+      function openFly() {
+        $("flyout").classList.add("open");
+        $("scrim").classList.add("on");
+      }
+      function closeFly() {
+        $("flyout").classList.remove("open");
+        $("scrim").classList.remove("on");
+      }
+      function openPanel() {
+        $("selpanel").classList.add("open");
+      }
+      function closePanel() {
+        if (S.style === "fly") $("selpanel").classList.remove("open");
+      }
+      function toast(t) {
+        const e = $("toast");
+        e.textContent = t;
+        e.style.display = "block";
+        clearTimeout(toast.t);
+        toast.t = setTimeout(() => (e.style.display = "none"), 3200);
+      }
+      /* ---------- wiring ---------- */
+      document.querySelectorAll("#segKind button").forEach(
+        (b) =>
+          (b.onclick = () => {
+            S.kind = b.dataset.v;
+            S.stages = [];
+            S.segs = [];
+            document
+              .querySelectorAll("#segKind button")
+              .forEach((x) => x.classList.toggle("on", x === b));
+            renderPanel();
+            renderAll();
+          })
+      );
+      document.querySelectorAll("#segStatus button").forEach(
+        (b) =>
+          (b.onclick = () => {
+            S.status = b.dataset.v;
+            document
+              .querySelectorAll("#segStatus button")
+              .forEach((x) => x.classList.toggle("on", x === b));
+            renderAll();
+          })
+      );
+      document.querySelectorAll("#segStyle button").forEach(
+        (b) =>
+          (b.onclick = () => {
+            S.style = b.dataset.v;
+            document
+              .querySelectorAll("#segStyle button")
+              .forEach((x) => x.classList.toggle("on", x === b));
+            const p = $("selpanel");
+            p.classList.toggle("fly", S.style === "fly");
+            p.classList.toggle("docked", S.style === "docked");
+            p.classList.remove("open");
+            $("changeSel").style.display = S.style === "fly" ? "" : "none";
+          })
+      );
+      $("changeSel").onclick = () =>
+        $("selpanel").classList.contains("open") ? closePanel() : openPanel();
+      $("cog").onclick = openFly;
+      $("scrim").onclick = closeFly;
+      $("fs").onclick = () => {
+        const f = document.body.classList.toggle("fullscreen");
+        $("fs").textContent = f ? "⤡ Exit full screen" : "⤢ Full screen";
+      };
+      $("myfilters").onchange = (e) => {
+        if (e.target.value !== "") loadFilter(+e.target.value);
+        e.target.value = "";
+      };
+      $("staleWord").onchange = () => {
+        renderPanel();
+        renderAll();
+      };
+      document.documentElement.dataset.theme = "dark";
+      loadFilter(0);
+      renderMy();
+      renderFly();
+    </script>
+  </body>
+</html>

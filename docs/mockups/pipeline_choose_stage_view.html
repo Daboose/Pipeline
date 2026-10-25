@@ -1,0 +1,403 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Pipeline: choose the stage view</title>
+    <style>
+      :root {
+        --page: #0e1623;
+        --bg: #141e2e;
+        --panel: #1a2740;
+        --panel2: #20304f;
+        --line: #2f4163;
+        --edge: #5b6f93;
+        --text: #e8edf5;
+        --muted: #8b9bb0;
+        --pipe: #fdb827;
+        --indigo: #6366f1;
+        --indigo2: #a5b4fc;
+        --ok: #4ee0b0;
+        --warn: #fb923c;
+        --bad: #f87171;
+        --shadow: 0 8px 20px rgba(0, 0, 0, 0.55);
+        --sfbar: #0a3d66;
+        --ppanel: #171b24;
+        --pgroup: #1e232e;
+        --pfield: #11151c;
+        --pline: #2c3444;
+      }
+      :root[data-theme="light"] {
+        --page: #e9edf4;
+        --bg: #f4f6fa;
+        --panel: #ffffff;
+        --panel2: #eef2fa;
+        --line: #d5dcea;
+        --edge: #b3bfd6;
+        --text: #1b2640;
+        --muted: #5d6b85;
+        --pipe: #b7791f;
+        --indigo: #4f46e5;
+        --indigo2: #4338ca;
+        --ok: #0f9d74;
+        --warn: #c2570c;
+        --bad: #dc2626;
+        --shadow: 0 8px 20px rgba(30, 45, 80, 0.18);
+        --ppanel: #eef2fa;
+        --pgroup: rgba(120, 140, 190, 0.07);
+        --pfield: #ffffff;
+        --pline: #d5dcea;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family:
+          -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        font-size: 14px;
+      }
+      .wrap {
+        max-width: 1180px;
+        margin: 0 auto;
+        padding: 18px 16px 40px;
+      }
+      h1 {
+        font-size: 13px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--pipe);
+        margin: 0 0 4px;
+      }
+      .sub {
+        color: var(--muted);
+        margin: 0 0 14px;
+      }
+      .about {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 12px 16px;
+        margin-bottom: 18px;
+      }
+      .about b.h {
+        display: block;
+        color: var(--pipe);
+        font-size: 11px;
+        letter-spacing: 0.14em;
+        margin: 8px 0 3px;
+      }
+      .about ul {
+        margin: 0;
+        padding-left: 18px;
+        color: var(--muted);
+      }
+      .row {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 14px 16px;
+        margin-bottom: 12px;
+        display: grid;
+        grid-template-columns: 220px 1fr;
+        gap: 16px;
+        align-items: center;
+      }
+      .row .num {
+        font-size: 26px;
+        font-weight: 800;
+        color: var(--pipe);
+        line-height: 1;
+      }
+      .row .nm {
+        font-weight: 700;
+        margin: 4px 0 2px;
+      }
+      .row .ds {
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .themebtn {
+        float: right;
+        border: 1px solid var(--edge);
+        background: transparent;
+        color: var(--text);
+        border-radius: 999px;
+        padding: 6px 14px;
+        font-weight: 700;
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+      }
+      .seg {
+        display: inline-flex;
+        border: 1px solid var(--edge);
+        border-radius: 999px;
+        overflow: hidden;
+      }
+      .seg button {
+        border: 0;
+        background: transparent;
+        color: var(--muted);
+        padding: 0 16px;
+        height: 34px;
+        font-weight: 700;
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+      }
+      .seg button.on {
+        background: var(--indigo);
+        color: #fff;
+      }
+      .fun {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+      }
+      .fseg {
+        border-radius: 8px;
+        padding: 6px 12px;
+        text-align: center;
+        color: #fff;
+        font-size: 11px;
+        line-height: 1.25;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        min-height: 36px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+      .fseg b {
+        font-size: 12px;
+      }
+
+      .bar {
+        display: grid;
+        grid-template-columns: 150px 1fr 120px;
+        align-items: center;
+        gap: 10px;
+        margin: 5px 0;
+        font-size: 12px;
+      }
+      .bar .track {
+        height: 12px;
+        border-radius: 6px;
+        background: var(--panel2);
+        overflow: hidden;
+      }
+      .bar .fill {
+        height: 100%;
+        background: var(--indigo);
+        border-radius: 6px;
+      }
+      .bar .n {
+        color: var(--muted);
+        text-align: right;
+        font-size: 11px;
+      }
+      .tsh {
+        font-size: 13px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        font-weight: 800;
+        color: var(--pipe);
+        margin: 14px 0 8px;
+        padding-bottom: 6px;
+        border-bottom: 1px solid var(--line);
+      }
+      .three {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+      }
+      .row2 {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 12px 14px;
+      }
+      .row2 .num {
+        font-size: 24px;
+        font-weight: 800;
+        color: var(--pipe);
+        line-height: 1;
+      }
+      .row2 .nm {
+        font-weight: 700;
+        margin: 4px 0 10px;
+        font-size: 12px;
+      }
+      @media (max-width: 900px) {
+        .three {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 760px) {
+        .row {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <button class="themebtn" id="theme">Dark / light</button>
+      <h1>Pipeline: choose the stage view</h1>
+      <p class="sub">
+        Comparison page, not a Pipeline screen. Invented numbers only.
+      </p>
+      <div class="about">
+        <b class="h">ABOUT THIS PAGE</b>
+        Each type (Opportunities, Risks, ROSA) gets its own stage component on
+        the main screen. These are the three ways to draw it, shown on the same
+        invented numbers so they can be compared. The number of deals and their
+        value sit inside each stage.
+        <b class="h">THE THREE VIEWS</b>
+        <ul>
+          <li>
+            <b>1. Funnel, width follows the deals:</b> the stage with the most
+            deals is the widest; a stage with no deals is narrow.
+          </li>
+          <li>
+            <b>2. Funnel, even steps:</b> the stages step down evenly from the
+            first to the last, whatever the numbers. Looks like a classic
+            funnel.
+          </li>
+          <li>
+            <b>3. Compact bars:</b> a plain list with a bar beside each stage.
+          </li>
+        </ul>
+        <b class="h">TRY IT</b>
+        <ul>
+          <li>
+            Two examples are shown: Opportunities (every stage has deals) and
+            Risks (some stages have none).
+          </li>
+          <li>Use <b>Dark / light</b> at the top right to see both modes.</li>
+          <li>
+            Tell me the number (1, 2 or 3) of the view you like best. It applies
+            to all three types.
+          </li>
+        </ul>
+      </div>
+      <div id="grid"></div>
+    </div>
+    <script>
+      document.getElementById("theme").onclick = function () {
+        var r = document.documentElement;
+        r.setAttribute(
+          "data-theme",
+          r.getAttribute("data-theme") === "light" ? "dark" : "light"
+        );
+      };
+
+      var DATA = [
+        {
+          name: "Opportunities",
+          stages: [
+            ["Plan", 3, "A$649k"],
+            ["Action", 1, "A$91k"],
+            ["Commit", 2, "A$268k"],
+            ["1st Case", 3, "A$637k"],
+            ["5th Case", 2, "A$236k"]
+          ]
+        },
+        {
+          name: "Risks",
+          stages: [
+            ["Unhappy", 0, "–"],
+            ["Meeting With Competitors", 0, "–"],
+            ["1st Case Competitor", 3, "A$373k"],
+            ["Multiple Cases Competitor", 0, "–"],
+            ["Settled", 1, "A$146k"]
+          ]
+        }
+      ];
+      var VIEWS = [
+        ["1", "Funnel: width follows the deals", "funnel"],
+        ["2", "Funnel: even steps", "steps"],
+        ["3", "Compact bars", "bars"]
+      ];
+      var shades = ["#6366f1", "#5a5ce0", "#5154cf", "#484bbd", "#3f42ab"];
+      function viz(d, v) {
+        var mx =
+          Math.max.apply(
+            null,
+            d.stages.map(function (s) {
+              return s[1];
+            })
+          ) || 1;
+        if (v === "bars")
+          return d.stages
+            .map(function (s) {
+              return (
+                '<div class="bar"><span>' +
+                s[0] +
+                '</span><span class="track"><span class="fill" style="display:block;width:' +
+                (100 * s[1]) / mx +
+                '%"></span></span><span class="n">' +
+                s[1] +
+                " · " +
+                s[2] +
+                "</span></div>"
+              );
+            })
+            .join("");
+        return (
+          '<div class="fun">' +
+          d.stages
+            .map(function (s, i) {
+              var w =
+                v === "funnel"
+                  ? Math.max(72, (100 * s[1]) / mx)
+                  : 100 - i * (24 / (d.stages.length - 1));
+              return (
+                '<div class="fseg" style="width:' +
+                w +
+                "%;background:" +
+                shades[Math.min(i, 4)] +
+                '"><b>' +
+                s[0] +
+                "</b>" +
+                s[1] +
+                (s[1] === 1 ? " deal" : " deals") +
+                " · " +
+                s[2] +
+                "</div>"
+              );
+            })
+            .join("") +
+          "</div>"
+        );
+      }
+      document.getElementById("grid").innerHTML = DATA.map(function (d) {
+        return (
+          '<div class="tsh">' +
+          d.name +
+          '</div><div class="three">' +
+          VIEWS.map(function (v) {
+            return (
+              '<div class="row2"><div class="num">' +
+              v[0] +
+              '</div><div class="nm">' +
+              v[1] +
+              "</div>" +
+              viz(d, v[2]) +
+              "</div>"
+            );
+          }).join("") +
+          "</div>"
+        );
+      }).join("");
+    </script>
+  </body>
+</html>
