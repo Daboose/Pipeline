@@ -1,0 +1,151 @@
+<template>
+  <div class="wrap">
+    <div class="flbl">Save what is on the screen</div>
+    <div class="saverow">
+      <input
+        class="in name"
+        type="text"
+        maxlength="80"
+        placeholder="Name this filter"
+        value={name}
+        oninput={handleName}
+      />
+      <button
+        type="button"
+        class="btn"
+        onclick={handleSaveNew}
+        disabled={cantSave}
+      >
+        Save
+      </button>
+    </div>
+    <div class="saverow" lwc:if={activeName}>
+      <span class="hint">Open: {activeName}</span>
+      <span class="sp"></span>
+      <button
+        type="button"
+        class="btn sec"
+        onclick={handleUpdate}
+        disabled={busy}
+      >
+        Update it
+      </button>
+    </div>
+    <div class="msg ok" lwc:if={message}>{message}</div>
+    <div class="msg bad" lwc:if={error}>{error}</div>
+
+    <div class="flbl top">My filters</div>
+    <div class="hint" lwc:if={noFilters}>
+      You have no saved filters yet. Choose what you want to look at, name it
+      above and press Save.
+    </div>
+    <template for:each={rows} for:item="f">
+      <div class="frow" key={f.id}>
+        <div class="line">
+          <button
+            type="button"
+            class={f.starCls}
+            data-id={f.id}
+            onclick={handleStar}
+            title={f.starTitle}
+            aria-label={f.starTitle}
+          >
+            {f.star}
+          </button>
+          <div class="nm">{f.name}<small>{f.sub}</small></div>
+          <button
+            type="button"
+            class="mini"
+            data-id={f.id}
+            onclick={handleOpen}
+          >
+            Open
+          </button>
+          <button
+            type="button"
+            class="mini"
+            data-id={f.id}
+            onclick={handleShareOpen}
+          >
+            Share
+          </button>
+          <button
+            type="button"
+            class="mini"
+            data-id={f.id}
+            onclick={handleDeleteAsk}
+          >
+            Delete
+          </button>
+        </div>
+
+        <div class="confirm" lwc:if={f.deleting}>
+          <span>Delete “{f.name}”?</span>
+          <span class="sp"></span>
+          <button type="button" class="mini" onclick={handleDeleteNo}>
+            Keep it
+          </button>
+          <button
+            type="button"
+            class="mini danger"
+            data-id={f.id}
+            onclick={handleDeleteYes}
+          >
+            Delete
+          </button>
+        </div>
+
+        <div class="share" lwc:if={f.sharing}>
+          <div class="hint">
+            Sharing gives the other person their own copy to keep, change or
+            delete.
+          </div>
+          <input
+            class="in"
+            type="text"
+            placeholder="Find a person by name"
+            value={term}
+            oninput={handleTerm}
+          />
+          <div class="people">
+            <template for:each={results} for:item="p">
+              <button
+                type="button"
+                class={p.cls}
+                key={p.id}
+                data-id={p.id}
+                onclick={handlePerson}
+              >
+                {p.name}<small>{p.title}</small>
+              </button>
+            </template>
+          </div>
+          <div class="saverow">
+            <button
+              type="button"
+              class="btn"
+              data-id={f.id}
+              onclick={handleShareSend}
+              disabled={cantShare}
+            >
+              Share with {chosenText}
+            </button>
+            <button
+              type="button"
+              class="btn sec"
+              data-id={f.id}
+              onclick={handleShareTeam}
+              disabled={busy}
+              lwc:if={isManager}
+            >
+              Share with my team
+            </button>
+            <button type="button" class="btn ghost" onclick={handleShareClose}>
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    </template>
+  </div>
+</template>

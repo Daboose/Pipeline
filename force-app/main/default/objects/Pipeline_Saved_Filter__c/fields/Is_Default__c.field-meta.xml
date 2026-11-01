@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+  <fullName>Is_Default__c</fullName>
+  <defaultValue>false</defaultValue>
+  <description
+  >Pipeline: ticked on the one saved filter Pipeline opens on for its owner. At most one per person; set by the Pipeline screen.</description>
+  <inlineHelpText
+  >Pipeline opens on the filter that is ticked here. Set by the star in the Pipeline screen.</inlineHelpText>
+  <label>Opens by Default</label>
+  <trackTrending>false</trackTrending>
+  <type>Checkbox</type>
+</CustomField>

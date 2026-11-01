@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+  <apiVersion>68.0</apiVersion>
+  <description
+  >Pipeline: the Change selection panel (Choose Your Data): team tree, owner, country, state, priority, portfolio, brand, stages, close-quarter range and needs attention. Edits a copy; nothing changes on the screen until Apply. Changes no data.</description>
+  <isExposed>false</isExposed>
+</LightningComponentBundle>

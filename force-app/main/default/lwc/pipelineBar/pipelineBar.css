@@ -1,0 +1,122 @@
+@import "c/pipelineStyles";
+
+:host {
+  display: block;
+}
+.bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  padding: 10px 18px;
+  border-bottom: 1px solid var(--line);
+  background: var(--bg);
+}
+.ktogs {
+  display: inline-flex;
+  gap: 8px;
+}
+.ktog {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--edge);
+  background: transparent;
+  color: var(--muted);
+  border-radius: 999px;
+  padding: 7px 8px 7px 16px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.ktog.on {
+  color: var(--text);
+  border-color: var(--indigo);
+  background: rgba(99, 102, 241, 0.14);
+}
+.kbox {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid var(--edge);
+  position: relative;
+  flex: none;
+}
+.ktog.on .kbox {
+  background: var(--indigo);
+  border-color: var(--indigo);
+}
+.ktog.on .kbox::after {
+  content: "";
+  position: absolute;
+  left: 6px;
+  top: 2px;
+  width: 5px;
+  height: 10px;
+  border-right: 2.5px solid #fff;
+  border-bottom: 2.5px solid #fff;
+  transform: rotate(45deg);
+}
+.seg {
+  display: inline-flex;
+  border: 1px solid var(--edge);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.seg button {
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  padding: 8px 18px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.seg button.on {
+  background: var(--indigo);
+  color: #fff;
+}
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-width: 0;
+  max-width: 560px;
+}
+.chip {
+  border: 1px solid var(--edge);
+  border-radius: 999px;
+  padding: 3px 12px;
+  font-size: 13px;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+.chip i {
+  font-style: normal;
+  color: var(--muted);
+  margin-right: 6px;
+}
+.sp {
+  flex: 1;
+}
+.quick {
+  min-width: 190px;
+  max-width: 280px;
+}
+.change .chev {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-left: 6px;
+  margin-top: -3px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg);
+}

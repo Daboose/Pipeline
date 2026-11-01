@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+  <apiVersion>68.0</apiVersion>
+  <description
+  >Pipeline: the shell of the Pipeline tool. Loads the signed-in person's deals, keeps their choices and settings, and shows a section per deal type: a manager sees their team, a rep sees their own. Hosted by the Visualforce page PipelineApp.</description>
+  <isExposed>true</isExposed>
+  <targets>
+    <target>lightning__Tab</target>
+  </targets>
+</LightningComponentBundle>

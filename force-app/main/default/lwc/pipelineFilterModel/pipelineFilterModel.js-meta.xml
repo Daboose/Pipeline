@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+  <apiVersion>68.0</apiVersion>
+  <description
+  >Pipeline: the rules for what a person has chosen to look at (deal types, stages, Open / Closed / Both / Custom, team, country, quarters): defaults, chips and which deals match. No screen; used by the bar, selection panel and shell.</description>
+  <isExposed>false</isExposed>
+</LightningComponentBundle>

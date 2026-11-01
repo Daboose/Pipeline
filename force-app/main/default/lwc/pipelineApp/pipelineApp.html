@@ -1,0 +1,245 @@
+<template>
+  <div class={rootClass} data-theme={theme}>
+    <header class="top">
+      <button
+        type="button"
+        class="icb"
+        onclick={handleSettingsOpen}
+        title="Your settings"
+        aria-label="Your settings"
+      >
+        <svg
+          viewBox="0 0 24 24"
+          width="22"
+          height="22"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <circle cx="12" cy="12" r="3.2"></circle>
+          <path
+            d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.03 1.56V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1.11-1.56 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.56-1.03H3a2 2 0 1 1 0-4h.09a1.7 1.7 0 0 0 1.56-1.11 1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34h.01a1.7 1.7 0 0 0 1.03-1.56V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1.03 1.56 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87v.01a1.7 1.7 0 0 0 1.56 1.03H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.56 1.03z"
+          ></path>
+        </svg>
+      </button>
+      <c-pipeline-pipe
+        class="brand"
+        variant="logo"
+        a="PIPE"
+        b="LINE"
+      ></c-pipeline-pipe>
+      <span class="who" lwc:if={ctx}>{whoText}</span>
+      <span class="ver2" lwc:if={ctx}>{versionText}</span>
+      <span class="sp"></span>
+      <button
+        type="button"
+        class={fsCls}
+        onclick={handleFullScreen}
+        title={fsText}
+        aria-label={fsText}
+      >
+        <svg
+          class="i-expand"
+          viewBox="0 0 24 24"
+          width="22"
+          height="22"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"></path>
+        </svg>
+        <svg
+          class="i-collapse"
+          viewBox="0 0 24 24"
+          width="22"
+          height="22"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"></path>
+        </svg>
+      </button>
+    </header>
+
+    <c-pipeline-bar
+      lwc:if={ready}
+      filter={filter}
+      choices={choices}
+      teams={teams}
+      is-rep={isRep}
+      saved-filters={savedFilters}
+      active-filter-id={activeFilterId}
+      onkindtoggle={handleKindToggle}
+      onstatuspick={handleStatusPick}
+      onopenpanel={handleOpenPanel}
+      onquickopen={handleQuickOpen}
+    ></c-pipeline-bar>
+
+    <div class="err" lwc:if={error}>{error}</div>
+
+    <main class="main" lwc:if={ready}>
+      <div class="note" lwc:if={truncated}>
+        More deals match than can be shown. Narrow the choices with Change
+        selection.
+      </div>
+
+      <div class="dcols" style={dcolsStyle}>
+        <template for:each={sections} for:item="s">
+          <c-pipeline-type-summary
+            key={s.kind}
+            kind={s.kind}
+            deals={s.deals}
+            stage-order={stageOrder}
+            summary-open={sumOpen}
+            status={filterStatus}
+            onsummarytoggle={handleSummaryToggle}
+          ></c-pipeline-type-summary>
+        </template>
+      </div>
+
+      <c-pipeline-team-table
+        lwc:if={showTeamTable}
+        deals={dealsForPeople}
+        kinds={filter.kinds}
+        team-names={teamNames}
+        selected-owner={filter.ownerId}
+        team-picked={teamPicked}
+        initial-open={teamStartsOpen}
+        onpickrep={handlePickRep}
+        onteamtoggle={handleTeamToggle}
+      ></c-pipeline-team-table>
+
+      <div class="legend">
+        <span><span class="tag ok">current</span> posted in last 30 days</span>
+        <span><span class="tag warn">needs update</span> 30–90 days</span>
+        <span><span class="tag bad">very old</span> over 90 days</span>
+        <span
+          >Stage: <span class="tag bad">red</span> = no move in over 90
+          days</span
+        >
+        <span><span class="tag hold">On hold</span> no warnings</span>
+        <span><span class="star">★</span> rep priority</span>
+      </div>
+
+      <template for:each={sections} for:item="s">
+        <c-pipeline-type-list
+          key={s.kind}
+          kind={s.kind}
+          deals={s.deals}
+          columns={s.columns}
+          widths={s.widths}
+          initial-open={s.listOpen}
+          alt-tint={settings.altTint}
+          oncolumnschange={handleColumnsChange}
+          onwidthschange={handleWidthsChange}
+          ondealopen={handleDealOpen}
+          onlisttoggle={handleListToggle}
+        ></c-pipeline-type-list>
+      </template>
+    </main>
+
+    <c-pipeline-selection
+      lwc:if={panelOpen}
+      open={panelOn}
+      filter={filter}
+      choices={choices}
+      teams={teams}
+      options={options}
+      is-manager={isManager}
+      start-team={startTeam}
+      record-types={recordTypes}
+      cols={settings.cols}
+      onapply={handlePanelApply}
+      onreset={handlePanelReset}
+      oncancel={handlePanelCancel}
+      onfilterschanged={handleFiltersChanged}
+    ></c-pipeline-selection>
+
+    <c-pipeline-deal
+      lwc:if={flyDeal}
+      open={flyOn}
+      deal={flyDeal}
+      index={flyIndex}
+      total={flyTotal}
+      is-manager={isManager}
+      viewer-id={viewerId}
+      onclose={handleDealClose}
+      onprev={handleDealPrev}
+      onnext={handleDealNext}
+      ondealsaved={handleDealSaved}
+    ></c-pipeline-deal>
+
+    <div class={settingsScrimCls} onclick={handleSettingsClose}></div>
+    <aside
+      class={settingsFlyCls}
+      aria-hidden={settingsHidden}
+      aria-label="Your settings"
+    >
+      <div class="fhead">
+        <c-pipeline-pipe variant="wide" a="YOUR" b="SETTINGS"></c-pipeline-pipe>
+        <span class="sp"></span>
+        <button
+          type="button"
+          class="rbtn"
+          onclick={handleSettingsClose}
+          title="Close"
+          aria-label="Close"
+        >
+          &#10005;
+        </button>
+      </div>
+      <div class="flbl">Look</div>
+      <div class="seg" role="group" aria-label="Dark or light">
+        <button
+          type="button"
+          class={darkCls}
+          data-theme="dark"
+          onclick={handleTheme}
+        >
+          Dark
+        </button>
+        <button
+          type="button"
+          class={lightCls}
+          data-theme="light"
+          onclick={handleTheme}
+        >
+          Light
+        </button>
+      </div>
+      <label class="check">
+        <input
+          type="checkbox"
+          checked={settings.altTint}
+          onchange={handleTint}
+        />
+        <span>Tint every second rep</span>
+      </label>
+      <div class="flbl top">My filters</div>
+      <c-pipeline-filters
+        filters={savedFilters}
+        snapshot={snapshot}
+        active-id={activeFilterId}
+        is-manager={isManager}
+        onopenfilter={handleOpenFilter}
+        onfilterschanged={handleFiltersChanged}
+      ></c-pipeline-filters>
+      <div class="ver">Pipeline version {version}</div>
+    </aside>
+
+    <div class="busy" lwc:if={busy}>
+      <div class="busybox">Please wait…</div>
+    </div>
+  </div>
+</template>

@@ -1,0 +1,20 @@
+<template>
+  <section class="card">
+    <h3>{heading}</h3>
+    <div class="none" lwc:if={loading}>Counting the surgeries…</div>
+    <div class="none" lwc:if={error}>{error}</div>
+    <div class="none" lwc:if={noSurgeon}>
+      This deal has no Primary HCP, so there are no surgeries to show.
+    </div>
+    <div class="bars" lwc:if={hasData}>
+      <template for:each={rows} for:item="r">
+        <div class="qr" key={r.type}>
+          <span class="lab">{r.type}</span>
+          <span class="track"><span class="fill" style={r.style}></span></span>
+          <span class="n">{r.count}</span>
+        </div>
+      </template>
+    </div>
+    <div class="foot" lwc:if={hasData}>{note}</div>
+  </section>
+</template>

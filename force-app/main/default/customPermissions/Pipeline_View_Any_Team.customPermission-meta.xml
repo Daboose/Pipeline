@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomPermission xmlns="http://soap.sforce.com/2006/04/metadata">
+  <description
+  >Pipeline: lets a person who is not named as a team's manager still use the manager view: look at any team, at no team (everything sharing allows), and find any owner. Granted by the Pipeline Team Viewer permission set.</description>
+  <isLicensed>false</isLicensed>
+  <label>Pipeline: View Any Team</label>
+</CustomPermission>

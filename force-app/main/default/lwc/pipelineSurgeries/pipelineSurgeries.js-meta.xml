@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+  <apiVersion>68.0</apiVersion>
+  <description
+  >Pipeline: the surgeon's surgeries card in the deal flyout: surgeries in the last 12 months by type, counting only past surgeries that have usage items. Reads only; changes no data.</description>
+  <isExposed>false</isExposed>
+</LightningComponentBundle>

@@ -1,0 +1,57 @@
+<template>
+  <div class="bar">
+    <div class="ktogs">
+      <template for:each={kindButtons} for:item="k">
+        <button
+          type="button"
+          key={k.kind}
+          class={k.cls}
+          data-kind={k.kind}
+          onclick={handleKind}
+          aria-pressed={k.on}
+        >
+          <span>{k.label}</span><span class="kbox"></span>
+        </button>
+      </template>
+    </div>
+
+    <div class="seg" role="group" aria-label="Open or closed">
+      <template for:each={statusButtons} for:item="s">
+        <button
+          type="button"
+          key={s.value}
+          class={s.cls}
+          data-value={s.value}
+          onclick={handleStatus}
+        >
+          {s.label}
+        </button>
+      </template>
+    </div>
+
+    <div class="chips">
+      <template for:each={chips} for:item="c">
+        <span class="chip" key={c.key}
+          ><i lwc:if={c.label}>{c.label}</i>{c.text}</span
+        >
+      </template>
+    </div>
+
+    <span class="sp"></span>
+
+    <select
+      class="in quick"
+      lwc:if={hasFilters}
+      onchange={handleQuickOpen}
+      aria-label="My filters"
+    >
+      <option value="" selected={noFilterSelected}>My filters…</option>
+      <template for:each={filterOptions} for:item="o">
+        <option key={o.id} value={o.id} selected={o.selected}>{o.label}</option>
+      </template>
+    </select>
+    <button type="button" class="btn change" onclick={handleOpenPanel}>
+      Change selection <span class="chev"></span>
+    </button>
+  </div>
+</template>

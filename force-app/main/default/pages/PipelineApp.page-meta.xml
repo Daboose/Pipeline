@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ApexPage xmlns="http://soap.sforce.com/2006/04/metadata">
+  <apiVersion>68.0</apiVersion>
+  <availableInTouch>false</availableInTouch>
+  <confirmationTokenRequired>false</confirmationTokenRequired>
+  <description
+  >Pipeline: the full-screen page that hosts the Pipeline tool (the pipelineApp Lightning Web Component, through the Lightning Out app PipelineOut). Shows the Pipeline loading screen while it starts. Opened by the Pipeline tab and by the Full screen button.</description>
+  <label>Pipeline App</label>
+</ApexPage>

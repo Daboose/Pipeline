@@ -1,0 +1,147 @@
+@import "c/pipelineStyles";
+
+:host {
+  display: block;
+}
+.wrap {
+  margin-top: 6px;
+}
+.flbl {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+.flbl.top {
+  margin-top: 22px;
+}
+.saverow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 6px 0;
+}
+.sp {
+  flex: 1;
+}
+.name {
+  flex: 1;
+  min-width: 0;
+}
+.hint {
+  color: var(--muted);
+  font-size: 14px;
+}
+.msg {
+  margin: 8px 0;
+  font-size: 14px;
+  font-weight: 700;
+}
+.msg.ok {
+  color: var(--ok);
+}
+.msg.bad {
+  color: var(--bad);
+}
+.btn[disabled] {
+  opacity: 0.45;
+  cursor: default;
+}
+.frow {
+  border-top: 1px solid var(--pline);
+  padding: 8px 0;
+}
+.line {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.nm {
+  flex: 1;
+  min-width: 0;
+  font-size: 15px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+.nm small {
+  display: block;
+  font-weight: 400;
+  color: var(--muted);
+  font-size: 12px;
+}
+.star {
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: 20px;
+  cursor: pointer;
+  padding: 0 4px;
+}
+.star.on {
+  color: var(--pipe);
+}
+.mini {
+  border: 1px solid var(--edge);
+  background: transparent;
+  color: var(--indigo2);
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.mini.danger {
+  color: var(--bad);
+  border-color: var(--bad);
+}
+.confirm {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  color: var(--bad);
+  font-size: 14px;
+}
+.share {
+  margin-top: 8px;
+  padding: 10px 12px;
+  background: var(--pgroup);
+  border: 1px solid var(--pline);
+  border-radius: 10px;
+}
+.share .in {
+  width: 100%;
+  margin-top: 8px;
+}
+.people {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 8px;
+}
+.person {
+  text-align: left;
+  border: 1px solid var(--pline);
+  background: var(--pfield);
+  color: var(--text);
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 14px;
+  cursor: pointer;
+}
+.person small {
+  margin-left: 8px;
+  color: var(--muted);
+}
+.person.on {
+  border-color: var(--indigo);
+  background: var(--indigo);
+  color: #fff;
+}
+.person.on small {
+  color: #fff;
+}

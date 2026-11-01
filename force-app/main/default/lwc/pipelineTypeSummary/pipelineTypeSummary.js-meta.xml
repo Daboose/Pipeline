@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+  <apiVersion>68.0</apiVersion>
+  <description
+  >Pipeline: the summary panel for one kind of deal (opportunities, risks or ROSA): totals, a line of late deals, and when opened the stage chips and close-quarter bars. Reads only; changes no data.</description>
+  <isExposed>false</isExposed>
+</LightningComponentBundle>

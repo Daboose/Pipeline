@@ -1,0 +1,47 @@
+<template>
+  <section class="card">
+    <div class="dhead">
+      <div class="tshead">{title}<small>{countText}</small></div>
+      <span class="sp"></span>
+      <button
+        type="button"
+        class="rbtn"
+        onclick={handleToggle}
+        title={toggleTitle}
+        aria-label={toggleTitle}
+      >
+        <span class={chevClass}></span>
+      </button>
+    </div>
+
+    <div class="dstats">
+      <template for:each={stats} for:item="s">
+        <div class="st" key={s.key}>
+          <div class="l">{s.label}</div>
+          <div class={s.cls}>{s.value}</div>
+        </div>
+      </template>
+    </div>
+    <div class="dnote">{note}</div>
+
+    <template lwc:if={summaryOpen}>
+      <h3>By stage</h3>
+      <div class="chips">
+        <template for:each={stageChips} for:item="c">
+          <div class="chip" key={c.stage} style={c.style}>
+            <span class="cn">{c.label}</span>
+            <span class="cv">{c.value}</span>
+          </div>
+        </template>
+      </div>
+      <h3>By expected close quarter</h3>
+      <template for:each={quarterRows} for:item="q">
+        <div class="qr" key={q.quarter}>
+          <span>{q.quarter}</span>
+          <span class="track"><span class="fill" style={q.style}></span></span>
+          <span class="n">{q.count} · {q.value}</span>
+        </div>
+      </template>
+    </template>
+  </section>
+</template>

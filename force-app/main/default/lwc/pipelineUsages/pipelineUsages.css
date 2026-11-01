@@ -1,0 +1,153 @@
+@import "c/pipelineStyles";
+
+:host {
+  display: block;
+}
+.card {
+  background: var(--panel);
+  border: 1px solid var(--edge);
+  border-radius: 14px;
+  padding: 14px 18px 16px;
+}
+.lhead {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+h3 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--pipe);
+}
+.sp {
+  flex: 1;
+}
+.none {
+  color: var(--muted);
+  padding: 6px 0;
+}
+.rates {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+.rate {
+  background: var(--pfield);
+  border: 1px solid var(--pline);
+  border-radius: 10px;
+  padding: 6px 12px;
+}
+.rate.mine {
+  border: 2px solid var(--indigo);
+}
+.rate small {
+  display: block;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.rate b {
+  font-size: 18px;
+  letter-spacing: 0.02em;
+}
+.rate.r0 b {
+  color: var(--text);
+}
+.rate.r1 b {
+  color: var(--pipe);
+}
+.rate.r2 b {
+  color: var(--muted);
+}
+.rate.r3 b {
+  color: var(--warn);
+}
+.warn {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+  margin: 10px 0 4px;
+  padding: 8px 12px;
+  border: 1px solid var(--pline);
+  border-radius: 10px;
+  font-size: 15px;
+}
+.warn.w {
+  border-color: var(--pipe);
+  background: rgba(253, 184, 39, 0.1);
+}
+.note {
+  color: var(--muted);
+  font-size: 14px;
+}
+.mini {
+  border: 1px solid var(--edge);
+  background: transparent;
+  color: var(--indigo2);
+  border-radius: 999px;
+  padding: 3px 12px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.ustbl {
+  width: 100%;
+  margin-top: 12px;
+  border-collapse: collapse;
+  font-size: 15px;
+}
+.ustbl th {
+  text-align: left;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  background: var(--panel2);
+  padding: 8px 12px;
+}
+.ustbl td {
+  padding: 7px 12px;
+  border-bottom: 1px solid var(--line);
+}
+.num {
+  text-align: right;
+}
+.uh td {
+  font-weight: 800;
+  padding-top: 14px;
+  border-top: 2px solid var(--edge);
+  border-bottom: 1px solid var(--line);
+}
+.ustbl tbody:first-of-type .uh td {
+  border-top: 0;
+}
+.up td {
+  font-weight: 700;
+  padding-bottom: 0;
+}
+.sub {
+  padding-left: 28px;
+  color: var(--muted);
+}
+tr.mine td {
+  background: rgba(99, 102, 241, 0.12);
+}
+.zb {
+  color: var(--pipe);
+  font-weight: 700;
+}
+.foot {
+  color: var(--muted);
+  font-size: 13px;
+  margin-top: 8px;
+}

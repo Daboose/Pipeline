@@ -1,0 +1,54 @@
+@import "c/pipelineStyles";
+
+:host {
+  display: block;
+}
+.card {
+  background: var(--panel);
+  border: 1px solid var(--edge);
+  border-radius: 14px;
+  padding: 14px 18px 16px;
+}
+h3 {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--pipe);
+}
+.none {
+  color: var(--muted);
+  padding: 6px 0;
+}
+.qr {
+  display: grid;
+  grid-template-columns: 170px minmax(120px, 440px) auto;
+  gap: 14px;
+  align-items: center;
+  margin: 8px 0;
+  font-size: 16px;
+}
+.lab {
+  white-space: nowrap;
+}
+.track {
+  height: 16px;
+  border-radius: 99px;
+  background: rgba(99, 102, 241, 0.18);
+  overflow: hidden;
+}
+.fill {
+  display: block;
+  height: 100%;
+  background: var(--indigo);
+  border-radius: 99px;
+}
+.n {
+  font-weight: 700;
+}
+.foot {
+  color: var(--muted);
+  font-size: 13px;
+  margin-top: 8px;
+}

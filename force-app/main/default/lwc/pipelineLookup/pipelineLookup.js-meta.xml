@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+  <apiVersion>68.0</apiVersion>
+  <description
+  >Pipeline: a picker for a lookup field (a deal's Primary HCP or Healthcare facility). Uses Salesforce's own lookup search, so the field's lookup filter decides what can be picked. Announces the choice; saves nothing.</description>
+  <isExposed>false</isExposed>
+</LightningComponentBundle>

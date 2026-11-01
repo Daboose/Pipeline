@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+  <apiVersion>68.0</apiVersion>
+  <description
+  >Pipeline: the deal flyout. Opens over the screen with the stage path, key numbers, the deal's fields (editable, saved with Salesforce's own record service so validation and automations behave as on the standard page) and its Chatter.</description>
+  <isExposed>false</isExposed>
+</LightningComponentBundle>

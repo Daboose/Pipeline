@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+  <apiVersion>68.0</apiVersion>
+  <description
+  >Pipeline: the filter bar under the header: the three deal-type buttons, Open / Closed / Both / Custom, chips saying what is being looked at, My filters and Change selection. Announces what was pressed; changes no data.</description>
+  <isExposed>false</isExposed>
+</LightningComponentBundle>

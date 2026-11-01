@@ -1,0 +1,152 @@
+<template>
+  <section class="card">
+    <div class="lhead">
+      <h3>{listTitle}</h3>
+      <span class="sp"></span>
+      <button
+        type="button"
+        class="btn sec"
+        lwc:if={showCollapseAll}
+        onclick={handleCollapseAll}
+      >
+        {collapseAllText}
+      </button>
+      <div class="colwrap" lwc:if={listOpen}>
+        <button type="button" class="btn sec" onclick={handlePicker}>
+          Columns
+        </button>
+        <div class="backdrop" lwc:if={pickerOpen} onclick={handlePicker}></div>
+        <div class="picker" lwc:if={pickerOpen}>
+          <template for:each={pickerItems} for:item="c">
+            <label class="pk" key={c.id}>
+              <input
+                type="checkbox"
+                checked={c.on}
+                data-id={c.id}
+                onchange={handleColumn}
+              />
+              <span>{c.label}</span>
+            </label>
+          </template>
+          <div class="pkfoot">
+            <button
+              type="button"
+              class="btn ghost"
+              onclick={handleColumnsReset}
+            >
+              Reset columns
+            </button>
+            <button type="button" class="btn ghost" onclick={handleWidthsReset}>
+              Reset widths
+            </button>
+          </div>
+        </div>
+      </div>
+      <button
+        type="button"
+        class="rbtn"
+        onclick={handleListToggle}
+        title={listToggleTitle}
+        aria-label={listToggleTitle}
+      >
+        <span class={listChev}></span>
+      </button>
+    </div>
+
+    <template lwc:if={listOpen}>
+      <div class="empty" lwc:if={noDeals}>
+        No deals match what you have chosen.
+      </div>
+      <div class="tablewrap" lwc:else>
+        <table class="tbl" style={tableStyle}>
+          <colgroup lwc:if={hasWidths}>
+            <template for:each={colWidths} for:item="c">
+              <col key={c.id} style={c.style} />
+            </template>
+          </colgroup>
+          <thead>
+            <tr>
+              <th lwc:if={grouped} data-id="__rep">
+                <span class="lab">Sales rep</span>
+                <i
+                  class="rz"
+                  data-id="__rep"
+                  title="Drag to resize. Double-click to reset all widths."
+                  onmousedown={handleResizeStart}
+                  ondblclick={handleWidthsReset}
+                ></i>
+              </th>
+              <template for:each={headCols} for:item="c">
+                <th key={c.id} class={c.cls} data-id={c.id}>
+                  <span
+                    class="lab"
+                    data-id={c.id}
+                    onclick={handleSort}
+                    title="Click to sort"
+                    >{c.label}<span class="arrow">{c.arrow}</span></span
+                  >
+                  <i
+                    class="rz"
+                    data-id={c.id}
+                    title="Drag to resize. Double-click to reset all widths."
+                    onmousedown={handleResizeStart}
+                    ondblclick={handleWidthsReset}
+                  ></i>
+                </th>
+              </template>
+            </tr>
+          </thead>
+          <tbody>
+            <template for:each={rows} for:item="r">
+              <tr
+                key={r.id}
+                class={r.cls}
+                data-id={r.id}
+                onclick={handleOpenDeal}
+                lwc:if={r.notAgg}
+              >
+                <td
+                  lwc:if={r.showRep}
+                  class="repcell"
+                  rowspan={r.span}
+                  data-rep={r.rep}
+                  onclick={handleRepToggle}
+                >
+                  <span class="gchev" lwc:if={r.multi}
+                    ><span class={r.chev}></span
+                  ></span>
+                  <b>{r.rep}</b>
+                  <small lwc:if={r.summary}>{r.summary}</small>
+                </td>
+                <template for:each={r.cells} for:item="c">
+                  <td key={c.id} class={c.cls} title={c.title}>
+                    <span lwc:if={c.tag} class={c.tagCls}>{c.text}</span>
+                    <template lwc:else>{c.text}</template>
+                  </td>
+                </template>
+              </tr>
+              <tr key={r.id} class={r.cls} lwc:else>
+                <td class="repcell" data-rep={r.rep} onclick={handleRepToggle}>
+                  <span class="gchev"><span class={r.chev}></span></span>
+                  <b>{r.rep}</b>
+                  <small>{r.summary}</small>
+                </td>
+                <template for:each={r.cells} for:item="c">
+                  <td key={c.id} class={c.cls}>
+                    <span lwc:if={c.tag} class={c.tagCls}>{c.text}</span>
+                    <template lwc:else>{c.text}</template>
+                  </td>
+                </template>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+        <div class="more" lwc:if={hasMore}>
+          <button type="button" class="btn sec" onclick={handleMore}>
+            Show {moreCount} more ({remaining} left)
+          </button>
+        </div>
+      </div>
+    </template>
+  </section>
+</template>

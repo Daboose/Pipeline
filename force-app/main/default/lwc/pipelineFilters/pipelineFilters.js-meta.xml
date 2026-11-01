@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+  <apiVersion>68.0</apiVersion>
+  <description
+  >Pipeline: the My filters part of the settings panel. Save, update, open, delete and share a person's saved filters, and mark the one Pipeline opens on. Changes only the person's own saved filters, never a deal.</description>
+  <isExposed>false</isExposed>
+</LightningComponentBundle>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+  <apiVersion>68.0</apiVersion>
+  <description
+  >Pipeline: the chrome pipe picture with two-colour live words laid over it (the PIPELINE wordmark and the pipe headings such as Choose Your Data). Shows only; changes no data.</description>
+  <isExposed>false</isExposed>
+</LightningComponentBundle>

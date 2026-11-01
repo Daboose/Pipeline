@@ -1,0 +1,39 @@
+<template>
+  <div class="wrap">
+    <div class="chosen" lwc:if={hasValue}>
+      <span class="nm">{valueName}</span>
+      <button
+        type="button"
+        class="x"
+        onclick={handleClear}
+        aria-label="Clear"
+        title="Clear"
+      >
+        ✕
+      </button>
+    </div>
+    <input
+      lwc:else
+      class="in search"
+      type="text"
+      placeholder={placeholder}
+      value={term}
+      oninput={handleTerm}
+    />
+    <div class="list" lwc:if={showList}>
+      <template for:each={results} for:item="r">
+        <button
+          type="button"
+          key={r.id}
+          class="opt"
+          data-id={r.id}
+          data-name={r.name}
+          onclick={handlePick}
+        >
+          {r.name}<small>{r.sub}</small>
+        </button>
+      </template>
+      <div class="none" lwc:if={noResults}>Nothing found</div>
+    </div>
+  </div>
+</template>

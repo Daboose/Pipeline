@@ -1,0 +1,92 @@
+<template>
+  <section class="card">
+    <h3>Chatter</h3>
+    <textarea
+      class="compose"
+      placeholder="Write a post. Use @ to mention people (type their full name)."
+      value={draft}
+      onchange={handleDraft}
+      oninput={handleDraft}
+    ></textarea>
+    <div class="postrow">
+      <span class="err" lwc:if={error}>{error}</span>
+      <span class="sp"></span>
+      <button
+        type="button"
+        class="btn"
+        onclick={handlePost}
+        disabled={cantPost}
+      >
+        Post
+      </button>
+    </div>
+
+    <div class="feed">
+      <div class="none" lwc:if={noPosts}>
+        Nobody has posted on this deal yet.
+      </div>
+      <template for:each={posts} for:item="p">
+        <div class="post" key={p.id}>
+          <div class="meta">
+            <b>{p.who}</b> <span class="when">{p.ago}</span>
+          </div>
+          <div class="text">
+            <template for:each={p.parts} for:item="t">
+              <span key={t.key} class={t.cls}>{t.text}</span>
+            </template>
+          </div>
+          <template for:each={p.replies} for:item="r">
+            <div class="reply" key={r.id}>
+              <div class="meta">
+                <b>{r.who}</b> <span class="when">{r.ago}</span>
+              </div>
+              <div class="text">
+                <template for:each={r.parts} for:item="t">
+                  <span key={t.key} class={t.cls}>{t.text}</span>
+                </template>
+              </div>
+            </div>
+          </template>
+          <button
+            type="button"
+            class="mini"
+            data-id={p.id}
+            onclick={handleReplyOpen}
+            lwc:if={p.canReply}
+          >
+            Reply
+          </button>
+          <div class="replybox" lwc:if={p.replying}>
+            <textarea
+              class="compose small"
+              placeholder="Write a reply"
+              data-id={p.id}
+              onchange={handleReplyDraft}
+              oninput={handleReplyDraft}
+            ></textarea>
+            <div class="postrow">
+              <span class="sp"></span>
+              <button
+                type="button"
+                class="btn ghost"
+                data-id={p.id}
+                onclick={handleReplyCancel}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                class="btn"
+                data-id={p.id}
+                onclick={handleReplySend}
+                disabled={cantReply}
+              >
+                Reply
+              </button>
+            </div>
+          </div>
+        </div>
+      </template>
+    </div>
+  </section>
+</template>

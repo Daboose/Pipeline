@@ -1,0 +1,72 @@
+@import "c/pipelineStyles";
+
+:host {
+  display: block;
+  max-width: 100%;
+}
+.card {
+  width: 100%;
+  background: var(--panel);
+  border: 1px solid var(--edge);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+  padding: 12px 18px 16px;
+}
+.lhead {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.lhead h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.count {
+  color: var(--muted);
+  font-size: 14px;
+}
+.sp {
+  flex: 1;
+}
+.tablewrap {
+  overflow-x: auto;
+  margin-top: 8px;
+}
+.tbl {
+  border-collapse: collapse;
+  font-size: 15px;
+  width: 100%;
+}
+.tbl th {
+  text-align: left;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+.tbl td {
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+.num {
+  text-align: right;
+}
+.tbl tbody tr {
+  cursor: pointer;
+}
+.tbl tbody tr.sel td {
+  background: rgba(99, 102, 241, 0.16);
+}
+@media (hover: hover) {
+  .tbl tbody tr:hover td {
+    background: rgba(99, 102, 241, 0.1);
+  }
+}

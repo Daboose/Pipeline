@@ -1,0 +1,19 @@
+<template>
+  <span class="wrap" style={wrapStyle}>
+    <img src={src} alt="" />
+    <svg class="over" viewBox={viewBox} aria-hidden="true">
+      <text
+        x={textX}
+        y="1500"
+        dy="0.36em"
+        text-anchor="middle"
+        font-size={fontSize}
+        font-weight="800"
+        letter-spacing={spacing}
+      >
+        <tspan fill="#fdb827">{a}</tspan>
+        <tspan fill="#eef3fa">{bText}</tspan>
+      </text>
+    </svg>
+  </span>
+</template>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+  <apiVersion>68.0</apiVersion>
+  <description
+  >Pipeline: Chatter on one deal inside the deal flyout. Shows the newest posts and replies, and lets the person post and reply as themselves, with @Name mentions. Does what the deal's own feed does.</description>
+  <isExposed>false</isExposed>
+</LightningComponentBundle>

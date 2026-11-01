@@ -1,0 +1,80 @@
+<template>
+  <section class="card">
+    <div class="lhead">
+      <h3>{heading}</h3>
+      <span class="sp"></span>
+      <button
+        type="button"
+        class="rbtn"
+        onclick={handleToggle}
+        title={toggleTitle}
+        aria-label={toggleTitle}
+      >
+        <span class={chevClass}></span>
+      </button>
+    </div>
+
+    <div class="none" lwc:if={loading}>Reading the usages…</div>
+    <div class="none" lwc:if={error}>{error}</div>
+    <div class="none" lwc:if={noSurgeon}>
+      This deal has no Primary HCP, so there are no usages to show.
+    </div>
+
+    <template lwc:if={hasData}>
+      <div class="rates">
+        <template for:each={ratings} for:item="r">
+          <div class={r.cls} key={r.area}>
+            <small>{r.area}</small>
+            <b>{r.text}</b>
+          </div>
+        </template>
+      </div>
+
+      <div class={warnCls}>
+        <span>{updatedText}</span>
+        <span lwc:if={showAsk}>
+          <button type="button" class="mini" onclick={handleAsk}>
+            Ask {ownerFirst} to check them
+          </button>
+        </span>
+        <span class="note" lwc:if={showRepNote}>
+          Update these usages the next time you see this surgeon.
+        </span>
+      </div>
+
+      <template lwc:if={open}>
+        <div class="none" lwc:if={noLines}>
+          No usages are recorded for this surgeon.
+        </div>
+        <table class="ustbl" lwc:else>
+          <thead>
+            <tr>
+              <th>Portfolio</th>
+              <th>Company</th>
+              <th class="num">Cases per year</th>
+            </tr>
+          </thead>
+          <template for:each={groups} for:item="g">
+            <tbody key={g.hospital}>
+              <tr class="uh">
+                <td colspan="3">{g.hospital}</td>
+              </tr>
+              <template for:each={g.rows} for:item="r">
+                <tr key={r.key} class={r.cls}>
+                  <td class={r.labelCls}>{r.label}</td>
+                  <td class={r.companyCls}>{r.company}</td>
+                  <td class="num">{r.cases}</td>
+                </tr>
+              </template>
+            </tbody>
+          </template>
+        </table>
+        <div class="foot">
+          Grouped by hospital. "ZB" is Zimmer Biomet; the rest are competitors.
+          A hip has two lines, stems and cups, because the two can be different
+          brands.
+        </div>
+      </template>
+    </template>
+  </section>
+</template>

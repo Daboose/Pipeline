@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomTab xmlns="http://soap.sforce.com/2006/04/metadata">
+  <description
+  >Pipeline: opens Pipeline, the opportunity, risk and ROSA tool (Visualforce page PipelineApp), inside Salesforce. The Full screen button inside it opens it on its own page.</description>
+  <label>Pipeline</label>
+  <motif>Custom5: Hospital</motif>
+  <page>PipelineApp</page>
+</CustomTab>

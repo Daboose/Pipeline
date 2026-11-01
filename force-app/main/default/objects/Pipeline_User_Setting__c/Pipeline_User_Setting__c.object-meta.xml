@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
+  <actionOverrides>
+    <actionName>Accept</actionName>
+    <type>Default</type>
+  </actionOverrides>
+  <allowInChatterGroups>false</allowInChatterGroups>
+  <compactLayoutAssignment>SYSTEM</compactLayoutAssignment>
+  <deploymentStatus>Deployed</deploymentStatus>
+  <description
+  >Pipeline: one record per person holding their own Pipeline screen choices (dark or light, columns, tint and so on) as a block of JSON. Created and read only by the Pipeline screen. Private to the person who owns it.</description>
+  <enableActivities>false</enableActivities>
+  <enableBulkApi>true</enableBulkApi>
+  <enableFeeds>false</enableFeeds>
+  <enableHistory>false</enableHistory>
+  <enableReports>false</enableReports>
+  <enableSearch>false</enableSearch>
+  <enableSharing>true</enableSharing>
+  <enableStreamingApi>true</enableStreamingApi>
+  <label>Pipeline User Setting</label>
+  <nameField>
+    <displayFormat>PUS-{0000}</displayFormat>
+    <label>Pipeline User Setting Number</label>
+    <trackHistory>false</trackHistory>
+    <type>AutoNumber</type>
+  </nameField>
+  <pluralLabel>Pipeline User Settings</pluralLabel>
+  <sharingModel>Private</sharingModel>
+  <visibility>Public</visibility>
+</CustomObject>

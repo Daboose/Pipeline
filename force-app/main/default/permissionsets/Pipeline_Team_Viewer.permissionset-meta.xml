@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<PermissionSet xmlns="http://soap.sforce.com/2006/04/metadata">
+  <customPermissions>
+    <enabled>true</enabled>
+    <name>Pipeline_View_Any_Team</name>
+  </customPermissions>
+  <description
+  >Pipeline: for people not named as a team's manager who still need to look at teams (a director's office, the tool's owner). Gives the manager view: any team, no team, owner search. Needs Pipeline User too. Gives no extra access to deals.</description>
+  <hasActivationRequired>false</hasActivationRequired>
+  <label>Pipeline Team Viewer</label>
+</PermissionSet>

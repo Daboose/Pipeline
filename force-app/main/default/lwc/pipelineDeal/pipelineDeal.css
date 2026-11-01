@@ -1,0 +1,341 @@
+@import "c/pipelineStyles";
+
+:host {
+  display: block;
+}
+.scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: rgba(6, 11, 20, 0.55);
+  -webkit-backdrop-filter: blur(5px);
+  backdrop-filter: blur(5px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+.scrim.on {
+  opacity: 1;
+  pointer-events: auto;
+}
+.fly {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 88vw;
+  z-index: 61;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  border-left: 3px solid var(--indigo);
+  box-shadow: var(--shadow);
+  transform: translateX(105%);
+  visibility: hidden;
+  transition:
+    transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+    visibility 0s linear 0.4s;
+}
+.fly.on {
+  transform: none;
+  visibility: visible;
+  transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .scrim,
+  .fly,
+  .fly.on {
+    transition: none;
+  }
+}
+.fhead {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--line);
+}
+.ttl .name {
+  font-size: 22px;
+  font-weight: 800;
+}
+.ttl .sub {
+  color: var(--muted);
+  font-size: 14px;
+}
+.sp {
+  flex: 1;
+}
+.pos {
+  color: var(--muted);
+  font-size: 14px;
+  min-width: 52px;
+  text-align: center;
+}
+.rbtn[disabled] {
+  opacity: 0.35;
+  cursor: default;
+}
+.chev.left {
+  transform: rotate(135deg);
+  margin: 0 0 0 4px;
+}
+.chev.right {
+  transform: rotate(-45deg);
+  margin: 0 4px 0 0;
+}
+
+/* the stage path, like Salesforce's own */
+.path {
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 900px;
+  margin-left: 8px;
+}
+/* each step is an arrow; --shape is its outline, used again for the inner fill that leaves a coloured ring */
+.pstep {
+  --shape: polygon(
+    0 0,
+    calc(100% - 14px) 0,
+    100% 50%,
+    calc(100% - 14px) 100%,
+    0 100%,
+    14px 50%
+  );
+  /* the same arrow drawn 2 px smaller all round; its slanted corners are moved by 1.64 / 13.1 / 0.37 / 14.37 px (worked out
+     for a 14 px point on a 44 px bar) so the ring is an even 2 px on the slants as well as on the straight edges */
+  --inner: polygon(
+    1.64px 0,
+    calc(100% - 13.1px) 0,
+    calc(100% - 0.37px) 50%,
+    calc(100% - 13.1px) 100%,
+    1.64px 100%,
+    14.37px 50%
+  );
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  border: 0;
+  padding: 0 18px 0 22px;
+  margin-left: -8px;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--muted);
+  background: var(--panel2);
+  cursor: pointer;
+  clip-path: var(--shape);
+}
+.pstep > span {
+  position: relative;
+  z-index: 1;
+}
+.pstep.first {
+  --shape: polygon(
+    0 0,
+    calc(100% - 14px) 0,
+    100% 50%,
+    calc(100% - 14px) 100%,
+    0 100%
+  );
+  --inner: polygon(
+    0 0,
+    calc(100% - 13.1px) 0,
+    calc(100% - 0.37px) 50%,
+    calc(100% - 13.1px) 100%,
+    0 100%
+  );
+  margin-left: 0;
+  padding-left: 14px;
+  border-radius: 8px 0 0 8px;
+}
+.pstep.last {
+  --shape: polygon(0 0, 100% 0, 100% 100%, 0 100%, 14px 50%);
+  --inner: polygon(1.64px 0, 100% 0, 100% 100%, 1.64px 100%, 14.37px 50%);
+  padding-right: 12px;
+  border-radius: 0 8px 8px 0;
+}
+/* stages already passed: outlined in the colour of the stage the deal is at now, so the progress shows */
+.pstep.done {
+  background: var(--ring);
+  color: var(--text);
+}
+.pstep.done::before {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  background: var(--panel);
+  clip-path: var(--inner);
+  border-radius: 6px 0 0 6px;
+}
+.pstep.first.done::before {
+  border-radius: 6px 0 0 6px;
+}
+.pstep:not(.first).done::before {
+  border-radius: 0;
+}
+.pstep.cur {
+  color: #fff;
+}
+.pstep.lost {
+  background: var(--bad);
+  color: #fff;
+}
+
+.strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 36px;
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--line);
+}
+.strip .l,
+.fl {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.strip .v {
+  font-size: 18px;
+  font-weight: 800;
+  margin-top: 2px;
+}
+.unsaved {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 20px;
+  background: rgba(251, 146, 60, 0.14);
+  border-bottom: 1px solid var(--warn);
+  color: var(--warn);
+  font-weight: 700;
+}
+.body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  gap: 18px;
+  align-content: start;
+  padding: 16px 20px 24px;
+}
+.col {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.card {
+  background: var(--panel);
+  border: 1px solid var(--edge);
+  border-radius: 14px;
+  padding: 14px 18px 16px;
+}
+h3 {
+  margin: 0 0 12px;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--pipe);
+}
+.errs {
+  border: 1px solid var(--bad);
+  color: var(--bad);
+  border-radius: 10px;
+  padding: 8px 12px;
+  margin-bottom: 12px;
+  font-size: 14px;
+}
+.okmsg {
+  color: var(--ok);
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 16px;
+}
+.field.wide {
+  grid-column: 1 / -1;
+}
+.field.changed .fl {
+  color: var(--indigo2);
+}
+.fl {
+  margin-bottom: 5px;
+}
+.req {
+  color: var(--bad);
+}
+.in {
+  width: 100%;
+}
+select.in,
+input.in {
+  height: 38px;
+}
+.area {
+  min-height: 90px;
+  height: auto;
+  padding: 10px 12px;
+  background: var(--pfield);
+  border: 1px solid var(--pline);
+  border-radius: 8px;
+  color: var(--text);
+  font: inherit;
+  font-size: 15px;
+  resize: vertical;
+}
+.ro {
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  background: var(--pfield);
+  border: 1px solid var(--pline);
+  border-radius: 8px;
+  color: var(--muted);
+  font-size: 15px;
+}
+.pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.tog {
+  border: 1px solid var(--pline);
+  background: var(--pfield);
+  color: var(--muted);
+  border-radius: 999px;
+  padding: 6px 18px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.tog.on {
+  background: var(--indigo);
+  border-color: var(--indigo);
+  color: #fff;
+}
+.foot {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 20px;
+  border-top: 1px solid var(--line);
+}
+.btn[disabled] {
+  opacity: 0.45;
+  cursor: default;
+}

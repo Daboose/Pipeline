@@ -1,0 +1,105 @@
+@import "c/pipelineStyles";
+
+:host {
+  display: block;
+}
+.card {
+  background: var(--panel);
+  border: 1px solid var(--edge);
+  border-radius: 14px;
+  padding: 14px 18px 16px;
+}
+h3 {
+  margin: 0 0 10px;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--pipe);
+}
+.compose {
+  width: 100%;
+  min-height: 70px;
+  background: var(--pfield);
+  border: 1px solid var(--pline);
+  border-radius: 10px;
+  color: var(--text);
+  font: inherit;
+  font-size: 15px;
+  padding: 10px 12px;
+  resize: vertical;
+}
+.compose.small {
+  min-height: 52px;
+}
+.compose:focus {
+  outline: 2px solid var(--indigo2);
+  outline-offset: 0;
+}
+.postrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0 4px;
+}
+.sp {
+  flex: 1;
+}
+.err {
+  color: var(--bad);
+  font-size: 14px;
+}
+.btn[disabled] {
+  opacity: 0.45;
+  cursor: default;
+}
+.feed {
+  margin-top: 8px;
+}
+.none {
+  color: var(--muted);
+  padding: 8px 0;
+}
+.post {
+  border-top: 1px solid var(--line);
+  padding: 12px 0 8px;
+}
+.meta {
+  font-size: 15px;
+}
+.when {
+  color: var(--muted);
+  font-size: 13px;
+  margin-left: 6px;
+}
+.text {
+  margin-top: 3px;
+  font-size: 15px;
+  line-height: 1.4;
+  white-space: pre-wrap;
+}
+.mention {
+  color: var(--indigo2);
+  font-weight: 600;
+}
+.reply {
+  margin: 8px 0 4px 14px;
+  padding-left: 12px;
+  border-left: 2px solid var(--line);
+}
+.mini {
+  margin-top: 8px;
+  border: 1px solid var(--edge);
+  background: transparent;
+  color: var(--muted);
+  border-radius: 999px;
+  padding: 2px 12px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.replybox {
+  margin: 8px 0 0 14px;
+}

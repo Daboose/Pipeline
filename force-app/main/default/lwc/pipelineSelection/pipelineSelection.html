@@ -1,0 +1,375 @@
+<template>
+  <div class={scrimCls} onclick={handleCancel}></div>
+  <section class={panelCls} role="dialog" aria-label="Choose your data">
+    <div class="phead">
+      <c-pipeline-pipe
+        variant="wide"
+        a="CHOOSE"
+        b="YOUR DATA"
+      ></c-pipeline-pipe>
+      <div class="ktogs">
+        <template for:each={kindButtons} for:item="k">
+          <button
+            type="button"
+            key={k.kind}
+            class={k.cls}
+            data-kind={k.kind}
+            onclick={handleKind}
+            aria-pressed={k.on}
+          >
+            <span>{k.label}</span><span class="kbox"></span>
+          </button>
+        </template>
+      </div>
+      <div class="seg" role="group" aria-label="Open or closed">
+        <template for:each={statusButtons} for:item="s">
+          <button
+            type="button"
+            key={s.value}
+            class={s.cls}
+            data-value={s.value}
+            onclick={handleStatus}
+          >
+            {s.label}
+          </button>
+        </template>
+      </div>
+      <span class="sp"></span>
+      <button type="button" class="btn danger" onclick={handleReset}>
+        Reset
+      </button>
+    </div>
+    <div class="psub">
+      Use a team, go manual, or combine them. You see only what sharing allows;
+      anything else just comes back empty. Nothing changes on the screen until
+      you press Apply.
+    </div>
+
+    <div class="cols">
+      <div class="stack" lwc:if={isManager}>
+        <div class="fld">
+          <div class="t">Team</div>
+          <div class="xchips" lwc:if={teamChipText}>
+            <span class="xchip"
+              >{teamChipText}<button
+                type="button"
+                class="xb"
+                onclick={handleClearTeam}
+                aria-label="Clear team"
+              >
+                ✕
+              </button></span
+            >
+          </div>
+          <input
+            class="in search"
+            type="text"
+            placeholder="Search teams or managers…"
+            value={teamQ}
+            oninput={handleTeamQ}
+          />
+          <div class="tree">
+            <template for:each={treeRows} for:item="r">
+              <div
+                key={r.key}
+                class={r.cls}
+                style={r.style}
+                data-id={r.id}
+                onclick={handlePickTeam}
+              >
+                <span
+                  class="car"
+                  data-car={r.id}
+                  lwc:if={r.showCar}
+                  onclick={handleCaret}
+                >
+                  <span class={r.caretCls}></span>
+                </span>
+                <span class="star" lwc:if={r.star}>★</span>
+                <b lwc:if={r.bold}>{r.name}</b><span lwc:else>{r.name}</span>
+                <small lwc:if={r.sub}>{r.sub}</small>
+              </div>
+            </template>
+            <div class="trow none" lwc:if={noTeamMatch}>No team matches</div>
+          </div>
+          <label class="chk">
+            <input
+              type="checkbox"
+              checked={draft.below}
+              onchange={handleBelow}
+            />
+            <span>Include teams below</span>
+          </label>
+        </div>
+
+        <div class="fld">
+          <div class="t">Owner</div>
+          <div class="xchips" lwc:if={draft.ownerId}>
+            <span class="xchip"
+              >{draft.ownerName}<button
+                type="button"
+                class="xb"
+                onclick={handleClearOwner}
+                aria-label="Clear owner"
+              >
+                ✕
+              </button></span
+            >
+          </div>
+          <input
+            class="in search"
+            type="text"
+            placeholder="Type a name to find anyone…"
+            value={ownerQ}
+            oninput={handleOwnerQ}
+          />
+          <div class="tree" lwc:if={ownerResults.length}>
+            <template for:each={ownerResults} for:item="p">
+              <div
+                class="trow"
+                key={p.id}
+                data-id={p.id}
+                data-name={p.name}
+                onclick={handlePickOwner}
+              >
+                {p.name}<small>{p.title}</small>
+              </div>
+            </template>
+          </div>
+          <div class="hint">
+            Searches every active user, so people with no deals simply return
+            nothing.
+          </div>
+        </div>
+      </div>
+
+      <div class="stack">
+        <div class="row2">
+          <div class="group">
+            <div class="gt">WHERE</div>
+            <div class="fld">
+              <div class="t">Country</div>
+              <div class="pills">
+                <template for:each={countryPills} for:item="p">
+                  <button
+                    type="button"
+                    key={p.value}
+                    class={p.cls}
+                    data-key="countries"
+                    data-value={p.value}
+                    onclick={handlePill}
+                  >
+                    {p.value}
+                  </button>
+                </template>
+                <span class="hint" lwc:if={noCountries}
+                  >No countries in the deals loaded.</span
+                >
+              </div>
+            </div>
+            <div class="fld" lwc:if={showStates}>
+              <div class="t">State (Australia)</div>
+              <div class="pills">
+                <template for:each={statePills} for:item="p">
+                  <button
+                    type="button"
+                    key={p.value}
+                    class={p.cls}
+                    data-key="states"
+                    data-value={p.value}
+                    onclick={handlePill}
+                  >
+                    {p.value}
+                  </button>
+                </template>
+              </div>
+            </div>
+          </div>
+          <div class="group">
+            <div class="gt">ONLY SHOW</div>
+            <label class="chk"
+              ><input
+                type="checkbox"
+                checked={draft.prio}
+                data-key="prio"
+                onchange={handleCheck}
+              /><span>Rep priority</span></label
+            >
+            <label class="chk"
+              ><input
+                type="checkbox"
+                checked={draft.sprio}
+                data-key="sprio"
+                onchange={handleCheck}
+              /><span>State priority</span></label
+            >
+            <label class="chk" lwc:if={hasOpp}
+              ><input
+                type="checkbox"
+                checked={draft.onHold}
+                data-key="onHold"
+                onchange={handleCheck}
+              /><span>On hold{holdNote}</span></label
+            >
+            <div class="hint">Tick to show only those deals.</div>
+          </div>
+        </div>
+
+        <div class="group">
+          <div class="gt">WHAT</div>
+          <div class="fld">
+            <div class="t">Portfolio</div>
+            <div class="pills">
+              <template for:each={segmentPills} for:item="p">
+                <button
+                  type="button"
+                  key={p.value}
+                  class={p.cls}
+                  data-key="segments"
+                  data-value={p.value}
+                  onclick={handlePill}
+                >
+                  {p.value}
+                </button>
+              </template>
+            </div>
+          </div>
+          <div class="fld">
+            <div class="t">Brand</div>
+            <div class="pills">
+              <template for:each={brandPills} for:item="p">
+                <button
+                  type="button"
+                  key={p.value}
+                  class={p.cls}
+                  data-key="brands"
+                  data-value={p.value}
+                  onclick={handlePill}
+                >
+                  {p.value}
+                </button>
+              </template>
+              <span class="hint" lwc:if={brandHint}>{brandHint}</span>
+            </div>
+          </div>
+          <div class="hint" lwc:if={hasRosa}>
+            Portfolio and brand apply to opportunities and risks, not to ROSA.
+          </div>
+        </div>
+
+        <div class="group">
+          <div class="gt">STAGE</div>
+          <template for:each={stageGroups} for:item="g">
+            <div key={g.kind}>
+              <div class="sglabel" lwc:if={g.showLabel}>{g.label}</div>
+              <div class="pills">
+                <template for:each={g.pills} for:item="p">
+                  <button
+                    type="button"
+                    key={p.value}
+                    class={p.cls}
+                    data-value={p.value}
+                    onclick={handleStage}
+                  >
+                    {p.value}
+                  </button>
+                </template>
+              </div>
+            </div>
+          </template>
+          <div class="hint">
+            In each row the open stages come first, then the closed ones. The
+            Open / Closed / Both / Custom switch at the top follows these.
+          </div>
+        </div>
+
+        <div class="group">
+          <div class="gt">EXPECTED CLOSE QUARTER</div>
+          <div class="qrow">
+            <span class="hint">From</span>
+            <select class="in" data-key="qFrom" onchange={handleQuarter}>
+              <option value="" selected={noFrom}>(any)</option>
+              <template for:each={fromOptions} for:item="o"
+                ><option key={o.value} value={o.value} selected={o.selected}>
+                  {o.value}
+                </option></template
+              >
+            </select>
+            <span class="hint">to</span>
+            <select class="in" data-key="qTo" onchange={handleQuarter}>
+              <option value="" selected={noTo}>(any)</option>
+              <template for:each={toOptions} for:item="o"
+                ><option key={o.value} value={o.value} selected={o.selected}>
+                  {o.value}
+                </option></template
+              >
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div class="fld wide">
+        <div class="t">Needs attention</div>
+        <div class="stale">
+          <button
+            type="button"
+            class={staleCls}
+            onclick={handleStale}
+            aria-pressed={draft.stale}
+            aria-label="Only show deals that need attention"
+          ></button>
+          <div>
+            <b>Only show deals that need attention</b>
+            <small
+              >Open deals with no stage change for over 90 days, or no post on
+              the deal in over 30 days. Deals on hold are never included.</small
+            >
+          </div>
+        </div>
+      </div>
+      <div class="fld wide" lwc:if={hasClosed}>
+        <div class="t">Closed deals shown</div>
+        <select class="in" onchange={handleRange}>
+          <template for:each={rangeOptions} for:item="r"
+            ><option key={r.value} value={r.value} selected={r.selected}>
+              {r.label}
+            </option></template
+          >
+        </select>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button type="button" class="btn sec" onclick={handleSaveOpen}>
+        Save as filter…
+      </button>
+      <template lwc:if={saving}>
+        <input
+          class="in"
+          type="text"
+          maxlength="80"
+          placeholder="Name this filter"
+          value={saveName}
+          oninput={handleSaveName}
+        />
+        <button
+          type="button"
+          class="btn sec"
+          onclick={handleSaveGo}
+          disabled={cantSave}
+        >
+          Save
+        </button>
+      </template>
+      <span class="msg ok" lwc:if={message}>{message}</span>
+      <span class="msg bad" lwc:if={error}>{error}</span>
+      <span class="sp"></span>
+      <button type="button" class="btn sec" onclick={handleCancel}>
+        Cancel
+      </button>
+      <button type="button" class="btn" onclick={handleApply}>Apply</button>
+    </div>
+  </section>
+</template>

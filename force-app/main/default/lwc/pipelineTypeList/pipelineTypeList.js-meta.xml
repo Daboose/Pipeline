@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+  <apiVersion>68.0</apiVersion>
+  <description
+  >Pipeline: the list of deals for one kind (opportunities, risks or ROSA), grouped by sales rep, with a Columns picker, sorting and draggable column widths. Click a deal to open it. Reads only; changes no data.</description>
+  <isExposed>false</isExposed>
+</LightningComponentBundle>

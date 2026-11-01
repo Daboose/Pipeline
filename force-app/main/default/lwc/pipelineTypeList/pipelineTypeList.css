@@ -1,0 +1,182 @@
+@import "c/pipelineStyles";
+
+:host {
+  display: block;
+  max-width: 100%;
+}
+.card {
+  width: 100%;
+  background: var(--panel);
+  border: 1px solid var(--edge);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+  padding: 12px 18px 16px;
+}
+/* the top of each list: a band across the whole card, tinted with the brand amber, so the three lists are easy to tell apart when scrolling */
+.lhead {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: -12px -18px 12px;
+  padding: 10px 18px;
+  border-radius: 13px 13px 0 0;
+  background: rgba(253, 184, 39, 0.14);
+  background: color-mix(in srgb, var(--pipe) 16%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--pipe) 38%, transparent);
+}
+.lhead h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--pipe);
+}
+.sp {
+  flex: 1;
+}
+.colwrap {
+  position: relative;
+}
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+}
+.picker {
+  position: absolute;
+  right: 0;
+  top: 42px;
+  z-index: 21;
+  background: var(--ppanel);
+  border: 1px solid var(--edge);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  padding: 10px 14px;
+  min-width: 230px;
+}
+.pk {
+  display: flex;
+  gap: 9px;
+  align-items: center;
+  padding: 4px 0;
+  font-size: 15px;
+  cursor: pointer;
+}
+.pkfoot {
+  display: flex;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.tablewrap {
+  overflow-x: auto;
+}
+.tbl {
+  border-collapse: collapse;
+  font-size: 15px;
+  width: 100%;
+}
+.tbl th {
+  position: relative;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+  user-select: none;
+}
+.tbl th .lab {
+  cursor: pointer;
+}
+.tbl td {
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.num {
+  text-align: right;
+}
+.arrow {
+  margin-left: 4px;
+  color: var(--indigo2);
+}
+/* the drag handle on each column's right edge */
+.rz {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 10px;
+  cursor: col-resize;
+}
+.rz::after {
+  content: "";
+  position: absolute;
+  right: 3px;
+  top: 22%;
+  bottom: 22%;
+  width: 2px;
+  border-radius: 1px;
+  background: var(--edge);
+}
+.rz:hover::after {
+  background: var(--indigo2);
+  top: 0;
+  bottom: 0;
+}
+.tbl tbody tr {
+  cursor: pointer;
+}
+@media (hover: hover) {
+  .tbl tbody tr:hover td {
+    background: rgba(99, 102, 241, 0.1);
+  }
+}
+/* the first row of each sales rep has a heavier line above it */
+.tbl tr.gfirst td {
+  border-top: 2px solid var(--edge);
+}
+.tbl tr.alt td {
+  background: rgba(99, 102, 241, 0.06);
+}
+.repcell {
+  min-width: 170px;
+  vertical-align: top;
+  cursor: pointer;
+  border-right: 1px solid var(--line);
+}
+.repcell small {
+  display: block;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 400;
+}
+.gchev {
+  display: inline-block;
+  width: 18px;
+}
+.gchev .chev {
+  width: 7px;
+  height: 7px;
+  margin: 0;
+  vertical-align: middle;
+  transform: rotate(-45deg);
+}
+.gchev .chev.up {
+  transform: rotate(45deg);
+}
+.empty {
+  color: var(--muted);
+  padding: 14px 4px;
+  font-size: 15px;
+}
+.more {
+  padding: 12px 0 2px;
+}

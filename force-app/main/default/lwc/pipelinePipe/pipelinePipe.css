@@ -1,0 +1,27 @@
+:host {
+  display: inline-block;
+  line-height: 0;
+}
+.wrap {
+  position: relative;
+  display: inline-block;
+}
+img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.over {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  font-family:
+    Poppins,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    sans-serif;
+}

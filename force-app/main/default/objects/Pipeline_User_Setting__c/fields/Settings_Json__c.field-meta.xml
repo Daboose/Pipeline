@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+  <fullName>Settings_Json__c</fullName>
+  <description
+  >Pipeline: the person's own screen choices (dark or light, tint, columns and so on) written by the Pipeline screen as JSON. Not meant to be edited by hand.</description>
+  <inlineHelpText
+  >Written by the Pipeline screen. Not meant to be edited by hand.</inlineHelpText>
+  <label>Settings JSON</label>
+  <length>32768</length>
+  <trackTrending>false</trackTrending>
+  <type>LongTextArea</type>
+  <visibleLines>6</visibleLines>
+</CustomField>
