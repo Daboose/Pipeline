@@ -42,7 +42,7 @@ function stableJson(value) {
  * Usages, Surgeries and Chatter, saved filters); 0.10 follows the final mockup: a filter bar with chips and a Change
  * selection panel with Apply, in place of the always-visible Choose Your Data panel.
  */
-const PIPELINE_VERSION = "0.34";
+const PIPELINE_VERSION = "0.40";
 const SLIDE_IN_DELAY_MS = 30; // lets the closed position be drawn first, so the slide runs
 const SLIDE_OUT_MS = 450; // a little longer than the slide itself (0.4 s in the style sheets)
 
@@ -279,9 +279,20 @@ export default class PipelineApp extends LightningElement {
       return null;
     }
   }
+  /** A filter also holds the layout of the lists (which columns, how wide); running it puts that layout on the screen. */
   takeColumns(saved) {
+    const next = { ...this.settings };
+    let any = false;
     if (saved.cols && typeof saved.cols === "object") {
-      this.settings = { ...this.settings, cols: saved.cols };
+      next.cols = saved.cols;
+      any = true;
+    }
+    if (saved.widths && typeof saved.widths === "object") {
+      next.widths = saved.widths;
+      any = true;
+    }
+    if (any) {
+      this.settings = next;
       this.persist();
     }
   }
@@ -538,7 +549,11 @@ export default class PipelineApp extends LightningElement {
   /* ----- saved filters ----- */
   /** What the screen is showing right now, as JSON: the choices and the list columns. */
   get snapshot() {
-    return JSON.stringify({ ...this.filter, cols: this.settings.cols });
+    return JSON.stringify({
+      ...this.filter,
+      cols: this.settings.cols,
+      widths: this.settings.widths
+    });
   }
   openFilterById(id) {
     const row = this.savedFilters.find((f) => f.id === id);
@@ -617,7 +632,7 @@ export default class PipelineApp extends LightningElement {
     );
     return !!(row && row.isDefault);
   }
-  /** What is on the screen no longer matches the filter that was opened (its choices, or its list columns). */
+  /** What is on the screen no longer matches the filter that was opened (its choices, or its list columns and widths). */
   get filterChanged() {
     const row = (this.savedFilters || []).find(
       (f) => f.id === this.activeFilterId
@@ -625,11 +640,14 @@ export default class PipelineApp extends LightningElement {
     const parsed = row && this.parse(row);
     if (!parsed || !this.filter || !this.filter.stages) return false;
     if (stableJson(parsed.filter) !== stableJson(this.filter)) return true;
-    const cols = parsed.saved.cols;
+    const { cols, widths } = parsed.saved;
     return !!(
-      cols &&
-      typeof cols === "object" &&
-      stableJson(cols) !== stableJson(this.settings.cols)
+      (cols &&
+        typeof cols === "object" &&
+        stableJson(cols) !== stableJson(this.settings.cols)) ||
+      (widths &&
+        typeof widths === "object" &&
+        stableJson(widths) !== stableJson(this.settings.widths))
     );
   }
   get canShareWithTeam() {

@@ -394,3 +394,15 @@ Every search box has a round clear button on its right: a circle with a cross ex
 
 Robert did not like filters being handled in three places (the dropdown in the top row, the "My filters" part of the settings panel, and "Save as filter" in Change selection, which could not update an existing filter). Proposal, shown in `docs/mockups/pipeline_filters_v1.html`: the top-row dropdown becomes a button showing the filter you are on (star if default, amber "Changed" if the screen differs); it opens one fly-down "My filters" panel (not a pop-up) like COVRA's: per filter a name (click to run), star (default, only one), pencil (rename), share, bin (confirm in the row), plus at the bottom "Save as new filter…" and "Save over <name>" (only when a filter is active and the screen has changed). "My filters" leaves the settings panel and "Save as filter" leaves Change selection.
 Where filters are kept: Pipeline's own object `Pipeline_Saved_Filter__c` (private to its owner, one record per filter: name, JSON of the choices and columns, default flag); not COVRA's `CoverFilter__c`. UAT holds 2 test filters; PROD none.
+
+## Chatter @mentions with a suggestion list (Robert, 2026-11-01; mockup `docs/mockups/pipeline_mentions_v1.html`, awaiting sign-off and "build")
+
+Robert wants mentions in the deal's Chatter box (posts and replies) to behave like Chatter's own, and does not want the real mention test run until this exists (a typed name that quietly stays plain text is too misleading):
+
+- Typing @ and **three letters** starts a list of matching people (active users). It should be clever: for example "@reeves" finds Robert Reeves (any part of the name).
+- Picking a person turns what was typed into a **chip**: the name goes bold and a different colour so it is plain they are being mentioned, with a small **X** on the chip to remove it.
+- The chip is one unit: deleting backwards through the text and reaching the chip removes the whole chip, not a letter at a time.
+- The chip carries the person's Id, so the right person is mentioned (no matching on typed text, no wrong or missing mention).
+- Until this is built and approved, no live mention test is run in UAT.
+
+Addition (Robert, 2026-11-01): every user lookup, including the mention list, finds **only active users whose Is Portal Enabled is false**, so external users are never offered or mentioned. Built into the mention list, the mention itself, the owner search and the filter-sharing lookups.

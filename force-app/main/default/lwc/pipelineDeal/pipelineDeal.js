@@ -198,6 +198,20 @@ export default class PipelineDeal extends LightningElement {
     }
   }
 
+  /**
+   * Salesforce's page puts a text box's value on as an attribute, which a text box does not show, so the Background
+   * Information (and any other text box) would stay blank. Its value is set here as a property instead; a box the
+   * person is typing in is left alone, and what they have typed (not yet kept) is shown in preference to the record's.
+   */
+  renderedCallback() {
+    this.template.querySelectorAll("textarea[data-api]").forEach((box) => {
+      if (this.template.activeElement === box) return;
+      const want = this.valueOf(box.dataset.api);
+      const text = want === null || want === undefined ? "" : String(want);
+      if (box.value !== text) box.value = text;
+    });
+  }
+
   get recordId() {
     return this._deal ? this._deal.id : undefined;
   }

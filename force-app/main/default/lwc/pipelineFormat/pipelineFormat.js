@@ -134,6 +134,41 @@ export function agoText(iso, now = Date.now()) {
   return `${word} · ${formatDate(iso)}`;
 }
 
+/**
+ * Chatter text as plain text. A post or reply written in Salesforce's own Chatter box is stored as rich text
+ * ("<p>Testing</p>", links, lists, entities such as &amp;); this turns it into plain lines of text, with a person's
+ * mention left as "@Name" (so it can be coloured). Nothing from the markup is ever put on the page as markup.
+ */
+export function chatterText(raw) {
+  const entities = {
+    amp: "&",
+    lt: "<",
+    gt: ">",
+    quot: '"',
+    apos: "'",
+    nbsp: " "
+  };
+  let t = String(raw === null || raw === undefined ? "" : raw);
+  t = t
+    .replace(/<\s*br\s*\/?>/gi, "\n")
+    .replace(/<\/\s*(p|div|h[1-6]|ul|ol|blockquote|pre)\s*>/gi, "\n")
+    .replace(/<\s*li[^>]*>/gi, "• ")
+    .replace(/<\/\s*li\s*>/gi, "\n")
+    .replace(/<[^>]*>/g, "");
+  t = t.replace(/&(#x[0-9a-f]+|#\d+|[a-z]+);/gi, (m, e) => {
+    if (e[0] === "#") {
+      const code =
+        e[1].toLowerCase() === "x"
+          ? parseInt(e.slice(2), 16)
+          : parseInt(e.slice(1), 10);
+      return Number.isFinite(code) ? String.fromCodePoint(code) : m;
+    }
+    const known = entities[e.toLowerCase()];
+    return known === undefined ? m : known;
+  });
+  return t.replace(/\n{3,}/g, "\n\n").trim();
+}
+
 /** Cuts a post into plain pieces and @Name mentions (two capitalised words at most) so the mentions can be coloured. */
 export function mentionParts(text) {
   const out = [];

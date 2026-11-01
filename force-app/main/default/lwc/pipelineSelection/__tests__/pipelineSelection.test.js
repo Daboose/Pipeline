@@ -119,6 +119,23 @@ describe("c-pipeline-selection", () => {
     expect(apply.mock.calls[0][0].detail.filter.teamId).toBe("t1");
   });
 
+  it("opens the team tree down to the chosen team, so it is in view without clicking", async () => {
+    const el = make({
+      filter: { ...defaultFilter(["opp"], CHOICES, ""), teamId: "t2" },
+      startTeam: ""
+    });
+    await Promise.resolve();
+    await Promise.resolve();
+    const rows = [...el.shadowRoot.querySelectorAll(".tree .trow")].map((r) =>
+      r.textContent.trim()
+    );
+    expect(rows.some((r) => r.includes("Director"))).toBe(true);
+    expect(rows.some((r) => r.includes("My patch"))).toBe(true);
+    expect(
+      el.shadowRoot.querySelector(".tree .trow.sel").textContent
+    ).toContain("My patch");
+  });
+
   it("clears the country and state when a team is picked, since the team already says whose deals these are", async () => {
     const el = make({
       filter: {

@@ -7,8 +7,10 @@
  * Latest Chatter Date (an existing Salesforce process does that, not this class), so posting here is the same as posting
  * on the deal page.
  *
- * @Name mentions: a person written as @First Last (an active user, matched by full name) becomes a real Chatter mention,
- * so Salesforce's own notification goes to them, the same as the standard feed.
+ * @mentions: the person picks each name from a list of people (the pipelineMentionBox component), so a mention arrives as
+ * the person's Id, never as typed text; it becomes a real Chatter mention and Salesforce's own notification goes to them,
+ * the same as the standard feed. A mention whose person cannot be found or is no longer active is kept as plain "@Name".
+ * searchPeople finds the people for that list.
  */
 public with sharing class PipelineChatterController {
   private static final Integer MAX_POSTS = 50;
@@ -90,33 +92,40 @@ public with sharing class PipelineChatterController {
     return out;
   }
 
-  /** Posts on the deal as the signed-in person. */
+  /** One piece of a post: plain text (t), or a mention of a person (u = their Id, n = their name as it was picked). */
+  public class Seg {
+    public String t;
+    public String u;
+    public String n;
+  }
+
+  /** Posts on the deal as the signed-in person. The text arrives as pieces: [{"t":"Thanks "},{"u":"005...","n":"Ann Lee"}]. */
   @AuraEnabled
-  public static void post(Id dealId, String text) {
-    String body = clean(text);
+  public static void post(Id dealId, String segmentsJson) {
+    List<Seg> segs = readSegments(segmentsJson);
     if (!viaConnectApi) {
-      insert as user new FeedItem(ParentId = dealId, Body = body);
+      insert as user new FeedItem(ParentId = dealId, Body = plainText(segs));
       return;
     }
     ConnectApi.FeedItemInput input = new ConnectApi.FeedItemInput();
     input.subjectId = dealId;
-    input.body = bodyInput(body);
+    input.body = bodyInput(segs);
     ConnectApi.ChatterFeeds.postFeedElement(null, input);
   }
 
-  /** Replies to a post as the signed-in person. */
+  /** Replies to a post as the signed-in person (the text arrives as pieces, as for post). */
   @AuraEnabled
-  public static void reply(Id feedItemId, String text) {
-    String body = clean(text);
+  public static void reply(Id feedItemId, String segmentsJson) {
+    List<Seg> segs = readSegments(segmentsJson);
     if (!viaConnectApi) {
       insert as user new FeedComment(
         FeedItemId = feedItemId,
-        CommentBody = body
+        CommentBody = plainText(segs)
       );
       return;
     }
     ConnectApi.CommentInput input = new ConnectApi.CommentInput();
-    input.body = bodyInput(body);
+    input.body = bodyInput(segs);
     ConnectApi.ChatterFeeds.postCommentToFeedElement(
       null,
       feedItemId,
@@ -125,120 +134,232 @@ public with sharing class PipelineChatterController {
     );
   }
 
-  private static String clean(String text) {
-    String t = text == null ? '' : text.trim();
-    if (t.length() == 0) {
+  @TestVisible
+  private static List<Seg> readSegments(String segmentsJson) {
+    List<Seg> segs;
+    try {
+      segs = (List<Seg>) JSON.deserialize(segmentsJson, List<Seg>.class);
+    } catch (Exception e) {
       throw new AuraHandledException('Write something to post.');
     }
-    if (t.length() > 5000) {
+    List<Seg> out = new List<Seg>();
+    for (Seg s : segs == null ? new List<Seg>() : segs) {
+      if (s != null && (!String.isEmpty(s.t) || !String.isBlank(s.u))) {
+        out.add(s);
+      }
+    }
+    String text = plainText(out);
+    if (text.trim().length() == 0) {
+      throw new AuraHandledException('Write something to post.');
+    }
+    if (text.length() > 5000) {
       throw new AuraHandledException(
         'That post is too long (the limit is 5000 characters).'
       );
     }
-    return t;
+    return out;
   }
 
-  /** The text split into plain pieces and mentions of real, active people. */
-  private static ConnectApi.MessageBodyInput bodyInput(String text) {
-    Set<String> candidates = candidateNames(text);
-    Map<String, Id> idByName = new Map<String, Id>();
-    if (!candidates.isEmpty()) {
+  /** The pieces as one line of text, mentions written as @Name (what a plain post would hold). */
+  private static String plainText(List<Seg> segs) {
+    String out = '';
+    for (Seg s : segs) {
+      out += String.isBlank(s.u) ? s.t : '@' + (s.n == null ? '' : s.n);
+    }
+    return out;
+  }
+
+  /** The pieces for Chatter: plain text, and a real mention for each person who exists and is active. */
+  private static ConnectApi.MessageBodyInput bodyInput(List<Seg> segs) {
+    Set<Id> wanted = new Set<Id>();
+    for (Seg s : segs) {
+      if (!String.isBlank(s.u) && s.u instanceof Id) {
+        wanted.add((Id) s.u);
+      }
+    }
+    Set<Id> real = new Set<Id>();
+    if (!wanted.isEmpty()) {
       for (User u : [
-        SELECT Id, Name
+        SELECT Id
         FROM User
-        WHERE IsActive = TRUE AND Name IN :candidates
-        LIMIT 200
+        WHERE IsActive = TRUE AND IsPortalEnabled = FALSE AND Id IN :wanted
+        WITH USER_MODE
       ]) {
-        idByName.put(u.Name.toLowerCase(), u.Id);
+        real.add(u.Id);
       }
     }
     ConnectApi.MessageBodyInput body = new ConnectApi.MessageBodyInput();
     body.messageSegments = new List<ConnectApi.MessageSegmentInput>();
-    for (Piece p : splitMentions(text, idByName)) {
-      if (p.userId == null) {
-        ConnectApi.TextSegmentInput t = new ConnectApi.TextSegmentInput();
-        t.text = p.text;
-        body.messageSegments.add(t);
-      } else {
+    for (Seg s : segs) {
+      if (
+        !String.isBlank(s.u) &&
+        s.u instanceof Id &&
+        real.contains((Id) s.u)
+      ) {
         ConnectApi.MentionSegmentInput m = new ConnectApi.MentionSegmentInput();
-        m.id = p.userId;
+        m.id = (Id) s.u;
         body.messageSegments.add(m);
+      } else {
+        ConnectApi.TextSegmentInput t = new ConnectApi.TextSegmentInput();
+        t.text = String.isBlank(s.u) ? s.t : '@' + (s.n == null ? '' : s.n);
+        body.messageSegments.add(t);
       }
     }
     return body;
   }
 
-  /** One piece of a post: plain text, or (when userId is set) a mention of that person. */
-  public class Piece {
-    public String text;
-    public Id userId;
+  public class Person {
+    @AuraEnabled
+    public Id id;
+    @AuraEnabled
+    public String name;
+    @AuraEnabled
+    public String title;
   }
 
-  /** Every one, two or three words that follow an @ in the text: the names that might be people. */
-  @TestVisible
-  private static Set<String> candidateNames(String text) {
-    Set<String> out = new Set<String>();
-    Matcher m = Pattern.compile(
-        '@([\\p{L}][\\p{L}\'\\-\\.]*(?: [\\p{L}][\\p{L}\'\\-\\.]*){0,2})'
-      )
-      .matcher(text);
-    while (m.find()) {
-      List<String> words = m.group(1).split(' ');
-      for (Integer n = 1; n <= words.size(); n++) {
-        out.add(String.join(slice(words, n), ' '));
-      }
-    }
-    return out;
-  }
+  private static final Integer MAX_PEOPLE = 8;
 
   /**
-   * Splits the text at each @Name that matches a known person (the longest name that matches wins, so "@Tom Becker
-   * please" mentions Tom Becker, not "Tom"). An @ that matches nobody stays plain text.
+   * The people to offer when someone types @ and at least three letters. Active, internal people only (never an external
+   * portal user, so nobody outside the company is offered or mentioned). A name matches when every
+   * word typed begins a word of the name, in any order. Only if nobody matches that way is one slip in spelling
+   * forgiven (the first letter must still be right), so "warr" gives Warren and never Darren.
    */
-  @TestVisible
-  private static List<Piece> splitMentions(
-    String text,
-    Map<String, Id> idByLowerName
-  ) {
-    List<Piece> out = new List<Piece>();
-    Matcher m = Pattern.compile(
-        '@([\\p{L}][\\p{L}\'\\-\\.]*(?: [\\p{L}][\\p{L}\'\\-\\.]*){0,2})'
-      )
-      .matcher(text);
-    Integer at = 0;
-    while (m.find()) {
-      List<String> words = m.group(1).split(' ');
-      for (Integer n = words.size(); n >= 1; n--) {
-        String name = String.join(slice(words, n), ' ');
-        if (idByLowerName.containsKey(name.toLowerCase())) {
-          if (m.start() > at) {
-            out.add(plain(text.substring(at, m.start())));
-          }
-          Piece p = new Piece();
-          p.userId = idByLowerName.get(name.toLowerCase());
-          out.add(p);
-          at = m.start() + 1 + name.length();
-          break;
+  @AuraEnabled
+  public static List<Person> searchPeople(String term) {
+    List<String> words = new List<String>();
+    for (
+      String w : (term == null ? '' : term.trim().toLowerCase()).split('\\s+')
+    ) {
+      String clean = w.replaceAll('[^\\p{L}\'.\\-]', '');
+      if (clean.length() > 0 && words.size() < 3) {
+        words.add(clean);
+      }
+    }
+    if (words.isEmpty() || String.join(words, ' ').length() < 3) {
+      return new List<Person>();
+    }
+    String starts = words[0] + '%';
+    String after = '% ' + words[0] + '%';
+    List<User> exact = new List<User>();
+    for (User u : [
+      SELECT Id, Name, Title
+      FROM User
+      WHERE
+        IsActive = TRUE
+        AND IsPortalEnabled = FALSE
+        AND UserType = 'Standard'
+        AND (Name LIKE :starts
+        OR Name LIKE :after)
+      WITH USER_MODE
+      ORDER BY Name
+      LIMIT 200
+    ]) {
+      if (matches(u.Name, words, false)) {
+        exact.add(u);
+      }
+    }
+    if (exact.isEmpty()) {
+      String first = words[0].left(1) + '%';
+      String firstAfter = '% ' + words[0].left(1) + '%';
+      for (User u : [
+        SELECT Id, Name, Title
+        FROM User
+        WHERE
+          IsActive = TRUE
+          AND IsPortalEnabled = FALSE
+          AND UserType = 'Standard'
+          AND (Name LIKE :first
+          OR Name LIKE :firstAfter)
+        WITH USER_MODE
+        ORDER BY Name
+        LIMIT 500
+      ]) {
+        if (matches(u.Name, words, true)) {
+          exact.add(u);
         }
       }
     }
-    if (at < text.length()) {
-      out.add(plain(text.substring(at)));
+    List<Person> out = new List<Person>();
+    for (User u : exact) {
+      if (u.Name.toLowerCase().startsWith(words[0])) {
+        out.add(personOf(u));
+      }
+    }
+    for (User u : exact) {
+      if (!u.Name.toLowerCase().startsWith(words[0])) {
+        out.add(personOf(u));
+      }
+    }
+    while (out.size() > MAX_PEOPLE) {
+      out.remove(out.size() - 1);
     }
     return out;
   }
 
-  private static Piece plain(String s) {
-    Piece p = new Piece();
-    p.text = s;
+  private static Person personOf(User u) {
+    Person p = new Person();
+    p.id = u.Id;
+    p.name = u.Name;
+    p.title = u.Title;
     return p;
   }
 
-  private static List<String> slice(List<String> words, Integer n) {
-    List<String> out = new List<String>();
-    for (Integer i = 0; i < n; i++) {
-      out.add(words[i]);
+  /** Does every typed word begin a word of the name (or, when slips are allowed, come within one slip of one)? */
+  @TestVisible
+  private static Boolean matches(
+    String name,
+    List<String> typed,
+    Boolean slips
+  ) {
+    List<String> nameWords = name.toLowerCase().split('\\s+');
+    for (String q : typed) {
+      Boolean found = false;
+      for (String w : nameWords) {
+        if (
+          w.startsWith(q) ||
+          (slips &&
+          q.length() >= 4 &&
+          w.left(1) == q.left(1) &&
+          withinOne(q, w))
+        ) {
+          found = true;
+          break;
+        }
+      }
+      if (!found) {
+        return false;
+      }
     }
-    return out;
+    return true;
+  }
+
+  /** Is q within one slip (one letter wrong, missing or extra) of the start of w? */
+  @TestVisible
+  private static Boolean withinOne(String q, String w) {
+    for (Integer len = q.length() - 1; len <= q.length() + 1; len++) {
+      if (len > 0 && len <= w.length() && distance(q, w.left(len)) <= 1) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private static Integer distance(String a, String b) {
+    List<Integer> prev = new List<Integer>();
+    for (Integer j = 0; j <= b.length(); j++) {
+      prev.add(j);
+    }
+    for (Integer i = 1; i <= a.length(); i++) {
+      List<Integer> cur = new List<Integer>{ i };
+      for (Integer j = 1; j <= b.length(); j++) {
+        Integer sub =
+          prev[j - 1] +
+          (a.substring(i - 1, i) == b.substring(j - 1, j) ? 0 : 1);
+        cur.add(Math.min(Math.min(prev[j] + 1, cur[j - 1] + 1), sub));
+      }
+      prev = cur;
+    }
+    return prev[b.length()];
   }
 }

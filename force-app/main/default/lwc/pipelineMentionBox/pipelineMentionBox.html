@@ -1,0 +1,38 @@
+<template>
+  <div class="ed">
+    <div class="wrap">
+      <div
+        class="box"
+        contenteditable="true"
+        role="textbox"
+        aria-multiline="true"
+        aria-label={placeholder}
+        data-ph={placeholder}
+        lwc:dom="manual"
+        oninput={handleInput}
+        onkeydown={handleKeydown}
+        onkeyup={handleKeyup}
+        onclick={handleClick}
+        onpaste={handlePaste}
+        onblur={handleBlur}
+      ></div>
+      <div class={listCls} onmousedown={handlePick}>
+        <template for:each={rows} for:item="r">
+          <div class={r.cls} key={r.id} data-i={r.i}>
+            <span
+              ><template for:each={r.parts} for:item="p"
+                ><span key={p.key} class={p.cls}>{p.text}</span></template
+              ></span
+            >
+            <small>{r.title}</small>
+          </div>
+        </template>
+        <div class="note" lwc:if={hint}>{hint}</div>
+      </div>
+    </div>
+    <div class="notify">
+      <template lwc:if={hasMentions}>Notifies: <b>{mentionNames}</b></template>
+      <template lwc:else>Nobody is mentioned yet.</template>
+    </div>
+  </div>
+</template>

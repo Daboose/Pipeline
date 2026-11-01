@@ -155,6 +155,7 @@ public with sharing class PipelineFilterController {
       FROM User
       WHERE
         IsActive = TRUE
+        AND IsPortalEnabled = FALSE
         AND UserType = 'Standard'
         AND Id != :UserInfo.getUserId()
         AND Name LIKE :pattern
@@ -183,7 +184,11 @@ public with sharing class PipelineFilterController {
     for (User u : [
       SELECT Id, Name, Title
       FROM User
-      WHERE IsActive = TRUE AND UserType = 'Standard' AND Name LIKE :pattern
+      WHERE
+        IsActive = TRUE
+        AND IsPortalEnabled = FALSE
+        AND UserType = 'Standard'
+        AND Name LIKE :pattern
       WITH USER_MODE
       ORDER BY Name
       LIMIT 8
@@ -244,7 +249,11 @@ public with sharing class PipelineFilterController {
         [
           SELECT Id
           FROM User
-          WHERE IsActive = TRUE AND UserType = 'Standard' AND Id IN :userIds
+          WHERE
+            IsActive = TRUE
+            AND IsPortalEnabled = FALSE
+            AND UserType = 'Standard'
+            AND Id IN :userIds
         ]
       )
       .keySet();

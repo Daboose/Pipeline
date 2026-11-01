@@ -8,7 +8,8 @@ import {
   quarterRank,
   chatterDays,
   agoText,
-  mentionParts
+  mentionParts,
+  chatterText
 } from "c/pipelineFormat";
 
 const NOW = Date.parse("2026-11-01T00:00:00Z");
@@ -89,5 +90,30 @@ describe("c-pipeline-format", () => {
     ]);
     expect(mentionParts("no mentions").length).toBe(1);
     expect(mentionParts("")).toEqual([]);
+  });
+
+  it("turns Salesforce rich text from Chatter into plain text", () => {
+    expect(chatterText("<p>Testing a reply</p>")).toBe("Testing a reply");
+    expect(chatterText("<p>One</p><p>Two</p>")).toBe("One\nTwo");
+    expect(chatterText("Line<br>break<br/>here")).toBe("Line\nbreak\nhere");
+    expect(
+      chatterText(
+        '<p><a href="/005x">@Robert Reeves</a> look at <b>this</b></p>'
+      )
+    ).toBe("@Robert Reeves look at this");
+    expect(chatterText("<ul><li>a</li><li>b</li></ul>")).toBe("• a\n• b");
+    expect(chatterText("Fish &amp; chips &lt;3 &#39;ok&#39; &nbsp;done")).toBe(
+      "Fish & chips <3 'ok'  done"
+    );
+    expect(chatterText("already plain")).toBe("already plain");
+    expect(chatterText(null)).toBe("");
+  });
+
+  it("never lets markup through as markup", () => {
+    const t = chatterText(
+      '<script>alert(1)</script><img src=x onerror="a()">hi'
+    );
+    expect(t).not.toContain("<");
+    expect(t).toContain("hi");
   });
 });

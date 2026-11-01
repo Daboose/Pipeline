@@ -1,5 +1,11 @@
 import { createElement } from "lwc";
 import PipelineDeal from "c/pipelineDeal";
+import { registerLdsTestWireAdapter } from "@salesforce/sfdx-lwc-jest";
+import { getRecord } from "lightning/uiRecordApi";
+import { getObjectInfo } from "lightning/uiObjectInfoApi";
+
+const recordAdapter = registerLdsTestWireAdapter(getRecord);
+const infoAdapter = registerLdsTestWireAdapter(getObjectInfo);
 
 // the cards inside the flyout read their own data from Salesforce; here they are empty stand-ins
 jest.mock(
@@ -74,5 +80,29 @@ describe("c-pipeline-deal", () => {
     await Promise.resolve();
     expect(el.shadowRoot.querySelector(".fly.on")).not.toBeNull();
     expect(el.shadowRoot.querySelector(".scrim.on")).not.toBeNull();
+  });
+
+  it("shows the Background Information (a text box) from the record, and keeps what is being typed", async () => {
+    const el = createElement("c-pipeline-deal", { is: PipelineDeal });
+    el.deal = deal;
+    el.index = 0;
+    el.total = 1;
+    document.body.appendChild(el);
+    infoAdapter.emit({ fields: { Objective__c: { updateable: true } } });
+    recordAdapter.emit({
+      recordTypeId: "012000000000001",
+      fields: {
+        Objective__c: {
+          value: "Inherited a shoulder business. Strong interest in research."
+        }
+      }
+    });
+    await Promise.resolve();
+    await Promise.resolve();
+    const box = el.shadowRoot.querySelector("textarea[data-api=Objective__c]");
+    expect(box).not.toBeNull();
+    expect(box.value).toBe(
+      "Inherited a shoulder business. Strong interest in research."
+    );
   });
 });

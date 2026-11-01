@@ -1,0 +1,949 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Pipeline mockup: Chatter @mentions (v1)</title>
+    <style>
+      :root {
+        --page: #0e1623;
+        --bg: #141e2e;
+        --panel: #1a2740;
+        --panel2: #20304f;
+        --line: #2f4163;
+        --edge: #5b6f93;
+        --text: #e8edf5;
+        --muted: #8b9bb0;
+        --pipe: #fdb827;
+        --indigo: #6366f1;
+        --indigo2: #a5b4fc;
+        --ok: #4ee0b0;
+        --warn: #fb923c;
+        --bad: #f87171;
+        --shadow: 0 8px 20px rgba(0, 0, 0, 0.55);
+        --sfbar: #0a3d66;
+        --ppanel: #171b24;
+        --pgroup: #1e232e;
+        --pfield: #11151c;
+        --pline: #2c3444;
+        --chipbg: rgba(99, 102, 241, 0.26);
+      }
+      :root[data-theme="light"] {
+        --page: #e9edf4;
+        --bg: #f4f6fa;
+        --panel: #ffffff;
+        --panel2: #eef2fa;
+        --line: #d5dcea;
+        --edge: #b3bfd6;
+        --text: #1b2640;
+        --muted: #5d6b85;
+        --pipe: #b7791f;
+        --indigo: #4f46e5;
+        --indigo2: #4338ca;
+        --ok: #0f9d74;
+        --warn: #c2570c;
+        --bad: #dc2626;
+        --shadow: 0 8px 20px rgba(30, 45, 80, 0.18);
+        --ppanel: #eef2fa;
+        --pgroup: rgba(120, 140, 190, 0.07);
+        --pfield: #ffffff;
+        --pline: #d5dcea;
+        --chipbg: rgba(79, 70, 229, 0.12);
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--page);
+        color: var(--text);
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-size: 13px;
+      }
+      button {
+        font-family: inherit;
+        cursor: pointer;
+      }
+      .wrapper {
+        padding: 16px 20px 40px;
+      }
+      h1 {
+        font-size: 15px;
+        letter-spacing: 0.14em;
+        margin: 0 0 8px;
+      }
+      .about {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 12px 18px;
+        max-width: 1180px;
+        line-height: 1.55;
+      }
+      .about b.h {
+        color: var(--pipe);
+        letter-spacing: 0.08em;
+      }
+      .about ul {
+        margin: 4px 0 8px;
+        padding-left: 20px;
+      }
+      .mockopts {
+        display: flex;
+        gap: 22px;
+        flex-wrap: wrap;
+        margin: 12px 0 10px;
+        color: var(--muted);
+        font-size: 12px;
+        align-items: center;
+      }
+      .sfbar {
+        height: 44px;
+        background: var(--sfbar);
+        border-radius: 8px 8px 0 0;
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        padding: 0 16px;
+        color: #dbeafe;
+      }
+      .sfbar .appname {
+        font-weight: 700;
+        color: #fff;
+      }
+      .sfbar .tab {
+        padding: 4px 10px;
+        border-bottom: 3px solid #fff;
+        font-weight: 600;
+        color: #fff;
+      }
+      .fullscreen h1,
+      .fullscreen .sfbar,
+      .fullscreen .about,
+      .fullscreen .mockopts {
+        display: none;
+      }
+      .fullscreen .wrapper {
+        padding: 0;
+      }
+      .fullscreen .app {
+        border-radius: 0;
+        min-height: 100vh;
+        border: 0;
+      }
+      .seg {
+        display: inline-flex;
+        border: 1px solid var(--edge);
+        border-radius: 999px;
+        overflow: hidden;
+      }
+      .seg button {
+        border: 0;
+        background: transparent;
+        color: var(--muted);
+        height: 32px;
+        padding: 0 14px;
+        font-weight: 700;
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      .seg button.on {
+        background: var(--indigo);
+        color: #fff;
+      }
+      .btn {
+        height: 38px;
+        padding: 0 18px;
+        border-radius: 999px;
+        border: 1px solid var(--indigo);
+        background: var(--indigo);
+        color: #fff;
+        font-weight: 800;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      .btn.sec {
+        background: transparent;
+        color: var(--indigo2);
+      }
+      .btn.small {
+        height: 32px;
+        padding: 0 14px;
+        font-size: 11px;
+      }
+      .btn[disabled] {
+        opacity: 0.45;
+        cursor: default;
+      }
+      .app {
+        position: relative;
+        background: var(--bg);
+        border: 1px solid var(--line);
+        border-radius: 0 0 8px 8px;
+        min-height: 760px;
+        padding: 24px;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+      }
+      .card {
+        width: min(720px, 100%);
+        background: var(--panel);
+        border: 1px solid var(--edge);
+        border-radius: 14px;
+        box-shadow: var(--shadow);
+        padding: 16px 20px 20px;
+      }
+      .card h3 {
+        margin: 0 0 4px;
+        font-size: 18px;
+        letter-spacing: 0.1em;
+        color: var(--pipe);
+        text-transform: uppercase;
+      }
+      .card .deal {
+        color: var(--muted);
+        font-size: 14px;
+        margin-bottom: 12px;
+      }
+      /* the editor */
+      .ed {
+        position: relative;
+      }
+      .box {
+        min-height: 84px;
+        max-height: 220px;
+        overflow-y: auto;
+        background: var(--pfield);
+        color: var(--text);
+        border: 1px solid var(--pline);
+        border-radius: 10px;
+        padding: 10px 12px;
+        font-size: 16px;
+        line-height: 1.7;
+        outline: none;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+      .box:focus {
+        border-color: var(--indigo2);
+      }
+      .box:empty::before {
+        content: attr(data-ph);
+        color: var(--muted);
+      }
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: var(--chipbg);
+        color: var(--indigo2);
+        border: 1px solid var(--indigo);
+        border-radius: 999px;
+        padding: 0 4px 0 10px;
+        margin: 0 1px;
+        font-weight: 800;
+        line-height: 1.5;
+        vertical-align: baseline;
+        user-select: none;
+      }
+      .chip .x {
+        position: relative;
+        width: 18px;
+        height: 18px;
+        border: 0;
+        border-radius: 50%;
+        background: var(--indigo);
+        padding: 0;
+        font-size: 0;
+      }
+      .chip .x::before,
+      .chip .x::after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 8px;
+        height: 2px;
+        border-radius: 1px;
+        background: #fff;
+      }
+      .chip .x::before {
+        transform: translate(-50%, -50%) rotate(45deg);
+      }
+      .chip .x::after {
+        transform: translate(-50%, -50%) rotate(-45deg);
+      }
+      .mention {
+        color: var(--indigo2);
+        font-weight: 800;
+      }
+      .sug {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: calc(100% + 6px);
+        z-index: 10;
+        background: var(--ppanel);
+        border: 1px solid var(--edge);
+        border-radius: 10px;
+        box-shadow: var(--shadow);
+        max-height: 280px;
+        overflow: auto;
+        display: none;
+      }
+      .sug.on {
+        display: block;
+      }
+      .sug .it {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 14px;
+        padding: 9px 14px;
+        border-bottom: 1px solid var(--pline);
+        font-size: 15px;
+        cursor: pointer;
+      }
+      .sug .it:last-child {
+        border-bottom: 0;
+      }
+      .sug .it small {
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .sug .it.sel {
+        background: var(--indigo);
+        color: #fff;
+      }
+      .sug .it.sel small {
+        color: #fff;
+      }
+      .sug .it b {
+        font-weight: 800;
+      }
+      .sug .note {
+        padding: 10px 14px;
+        color: var(--muted);
+        font-size: 14px;
+      }
+      .acts {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-top: 10px;
+        flex-wrap: wrap;
+      }
+      .notify {
+        color: var(--muted);
+        font-size: 14px;
+        flex: 1;
+      }
+      .notify b {
+        color: var(--text);
+      }
+      .feed {
+        margin-top: 20px;
+        border-top: 1px solid var(--pline);
+        padding-top: 6px;
+      }
+      .post {
+        padding: 12px 0;
+        border-bottom: 1px solid var(--pline);
+        font-size: 16px;
+        line-height: 1.5;
+      }
+      .post .who {
+        font-weight: 800;
+      }
+      .post .when {
+        color: var(--muted);
+        font-size: 13px;
+        margin-left: 8px;
+      }
+      .post .body {
+        margin: 4px 0 6px;
+        white-space: pre-wrap;
+      }
+      .reply {
+        margin: 8px 0 0 26px;
+        padding-left: 14px;
+        border-left: 3px solid var(--indigo);
+      }
+      .rbox .box {
+        min-height: 52px;
+        font-size: 15px;
+      }
+      .toast {
+        position: fixed;
+        left: 50%;
+        bottom: 22px;
+        transform: translateX(-50%);
+        background: #0b3b2d;
+        color: #d6fff0;
+        border: 1px solid var(--ok);
+        border-radius: 10px;
+        padding: 10px 18px;
+        font-size: 15px;
+        font-weight: 700;
+        z-index: 40;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease;
+      }
+      .toast.on {
+        opacity: 1;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrapper">
+      <h1>PIPELINE MOCKUP: CHATTER @MENTIONS (v1)</h1>
+      <div class="about">
+        <b class="h">ABOUT THIS MOCKUP</b>
+        <p style="margin: 4px 0">
+          <b>Robert asked for mentions that behave like Chatter's own</b>: a
+          suggestion list as you type, and a picked person becomes a chip. This
+          is the Chatter box from the deal flyout, on its own. Everything here
+          is invented (people, deal, posts); nothing is sent or saved.
+        </p>
+        <b class="h">TRY IT</b>
+        <ul>
+          <li>
+            Click in the box and type <b>@re</b>: nothing yet except a hint,
+            because the list starts after <b>three letters</b>. Add one more
+            letter (<b>@ree</b>, <b>@reeves</b>) and the people who match
+            appear.
+          </li>
+          <li>
+            Matching is by <b>any part of the name</b>, either order, with the
+            matching letters in bold: <b>@reeves</b> and <b>@rob ree</b> both
+            find Robert Reeves; <b>@shaun</b> finds Shaun Whittal. A small slip
+            in spelling still finds the person, but
+            <b>only when nobody matches exactly</b>, and the first letter must
+            be right (try <b>@whital</b> for Shaun Whittal, or
+            <b>@vercow</b> for Ray Vercoe).
+          </li>
+          <li>
+            Move down the list with the <b>arrow keys</b> and press
+            <b>Enter</b> (or <b>Tab</b>), or <b>click</b> a name.
+            <b>Esc</b> closes the list.
+          </li>
+          <li>
+            The name becomes a <b>chip</b>: bold, coloured, with a small
+            <b>X</b>. Click the X to take it off.
+          </li>
+          <li>
+            Type some more after the chip, then <b>delete backwards</b> with
+            Backspace: the text goes, then the space, and the next Backspace
+            takes the <b>whole chip</b> in one go.
+          </li>
+          <li>
+            The line under the box says exactly <b>who will be notified</b>.
+            Press <b>Post</b> and the post appears with the mention in colour.
+            <b>Reply</b> on a post gives a reply box that works the same way.
+          </li>
+          <li>
+            The dark / light control and the full screen icon behave as in the
+            other mockups.
+          </li>
+        </ul>
+        <b class="h">CHOICES I MADE FOR YOU TO CHECK (not yet confirmed)</b>
+        <ul>
+          <li>
+            <b>"Clever" matching</b> means: any part of the name, either order,
+            and (only if nothing matches exactly) one small slip in spelling
+            after the first letter, so <b>@warr</b> gives Warren Ballinger and
+            never Darren Agius. It does <b>not</b> turn sounds or spelled-out
+            letters into names (so <b>@rdoublee</b> would find nobody). If you
+            want that kind of guessing, say so.
+          </li>
+          <li>
+            Only <b>active people</b> are offered. Each shows their title or
+            team beside the name so two similar names can be told apart.
+          </li>
+          <li>
+            The chip carries the person's <b>Id</b>, so the right person is
+            mentioned. Typing a name that is not picked from the list stays
+            plain text (no mention, no notification).
+          </li>
+          <li>
+            A space after a chip is added for you so you can carry on typing.
+          </li>
+        </ul>
+        <b class="h">NOT SHOWN YET</b>
+        <ul>
+          <li>
+            Chatter groups (@group) are not offered. The phone layout. How long
+            the list of people is (real lists are searched in Salesforce, up to
+            the first 8 matches).
+          </li>
+        </ul>
+      </div>
+      <div class="mockopts">
+        <span
+          >View
+          <span class="seg" id="segTheme"
+            ><button class="on" data-v="dark">Dark</button
+            ><button data-v="light">Light</button></span
+          ></span
+        >
+        <span
+          ><button class="btn sec small" id="resetDemo">
+            Reset the demo
+          </button></span
+        >
+        <span
+          ><button class="btn sec small" id="fsbtn">Full screen</button></span
+        >
+      </div>
+      <div class="sfbar">
+        <span class="appname">Pipeline</span
+        ><span class="tab">Pipeline Home</span
+        ><span style="opacity: 0.7">Opportunities &amp; Risks</span
+        ><span style="opacity: 0.7">Accounts</span>
+      </div>
+      <div class="app" id="app">
+        <section class="card">
+          <h3>Chatter</h3>
+          <div class="deal">Christopher Roberts · Knee Opportunity</div>
+          <div class="ed" id="postEd">
+            <div
+              class="box"
+              contenteditable="true"
+              role="textbox"
+              aria-multiline="true"
+              data-ph="Write a post. Type @ and a name to mention someone."
+            ></div>
+            <div class="sug"></div>
+          </div>
+          <div class="acts">
+            <span class="notify"></span
+            ><button class="btn" id="postBtn" disabled>Post</button>
+          </div>
+          <div class="feed" id="feed"></div>
+        </section>
+      </div>
+    </div>
+    <div class="toast" id="toast"></div>
+    <script>
+      const PEOPLE = [
+        ["u1", "Robert Reeves", "Salesforce Administrator"],
+        ["u2", "Ryan Reeve", "ASM (VIC)"],
+        ["u3", "Shaun Whittal", "ASM (NSW)"],
+        ["u4", "Shayne Engelbrecht", "SSM SET/CMFT AU"],
+        ["u5", "Ray Vercoe", "Sales Director AU"],
+        ["u6", "Rob Sharp", "Territory Manager (NSW)"],
+        ["u7", "Brenton Buller", "SSM (WA)"],
+        ["u8", "Darren Agius", "ASM (NSW/ACT)"],
+        ["u9", "Mark Mottram", "Comm Ops Director (ANZ)"],
+        ["u10", "Warren Ballinger", "President (ANZ)"],
+        ["u11", "Michelle Samaras", "Clinical Manager (SA)"],
+        ["u12", "Richard Hosking", "SSM (VIC)"],
+        ["u13", "Roberta Keeves", "Territory Manager (QLD)"]
+      ];
+      const $ = (id) => document.getElementById(id);
+      const esc = (s) =>
+        s.replace(
+          /[&<>"]/g,
+          (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]
+        );
+      function toast(t) {
+        const e = $("toast");
+        e.textContent = t;
+        e.classList.add("on");
+        clearTimeout(toast.t);
+        toast.t = setTimeout(() => e.classList.remove("on"), 2600);
+      }
+
+      /* ---- matching: every word typed must begin some word of the name (either order); one slip in spelling is forgiven ---- */
+      const norm = (s) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+      function within1(a, b) {
+        // is a within one edit of the start of b (same length prefix)?
+        const p = b.slice(0, a.length + 0);
+        if (a === p) return true;
+        for (const q of [b.slice(0, a.length - 1), b.slice(0, a.length + 1)]) {
+          if (q && lev(a, q) <= 1) return true;
+        }
+        return lev(a, p) <= 1;
+      }
+      function lev(a, b) {
+        const m = a.length,
+          n = b.length;
+        const d = Array.from({ length: m + 1 }, (_, i) => [
+          i,
+          ...Array(n).fill(0)
+        ]);
+        for (let j = 0; j <= n; j++) d[0][j] = j;
+        for (let i = 1; i <= m; i++)
+          for (let j = 1; j <= n; j++)
+            d[i][j] = Math.min(
+              d[i - 1][j] + 1,
+              d[i][j - 1] + 1,
+              d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)
+            );
+        return d[m][n];
+      }
+      /* Exact beginnings first. Only when nobody matches that way is a small slip in spelling forgiven, and then the first
+         letter must still be right (so "warr" finds Warren, and never Darren). */
+      function find(query) {
+        const qs = norm(query).split(/\s+/).filter(Boolean);
+        if (!qs.length) return [];
+        const rank = (p) => (norm(p[1]).startsWith(qs[0]) ? 0 : 1);
+        const sort = (list) =>
+          list
+            .sort((a, b) => rank(a) - rank(b) || a[1].localeCompare(b[1]))
+            .slice(0, 8);
+        const exact = PEOPLE.filter((p) => {
+          const w = norm(p[1]).split(/\s+/);
+          return qs.every((q) => w.some((x) => x.startsWith(q)));
+        });
+        if (exact.length) return sort(exact);
+        return sort(
+          PEOPLE.filter((p) => {
+            const w = norm(p[1]).split(/\s+/);
+            return qs.every(
+              (q) =>
+                w.some((x) => x.startsWith(q)) ||
+                (q.length >= 4 && w.some((x) => x[0] === q[0] && within1(q, x)))
+            );
+          })
+        );
+      }
+      function boldMatch(name, query) {
+        const qs = norm(query).split(/\s+/).filter(Boolean);
+        let html = "";
+        for (const w of name.split(/(\s+)/)) {
+          const q = qs.find((x) => norm(w).startsWith(x));
+          html += q
+            ? "<b>" +
+              esc(w.slice(0, q.length)) +
+              "</b>" +
+              esc(w.slice(q.length))
+            : esc(w);
+        }
+        return html;
+      }
+
+      /* ---- one editor (the post box, and each reply box) ---- */
+      function makeEditor(host, onChange) {
+        const box = host.querySelector(".box"),
+          list = host.querySelector(".sug");
+        let items = [],
+          sel = 0,
+          ctx = null;
+        function query() {
+          const s = getSelection();
+          if (!s.rangeCount || !s.isCollapsed) return null;
+          const r = s.getRangeAt(0),
+            n = r.startContainer;
+          if (n.nodeType !== 3 || !box.contains(n)) return null;
+          const text = n.textContent.slice(0, r.startOffset);
+          const m = /(^|[\s ])@([\p{L}'.\- ]{0,40})$/u.exec(text);
+          if (!m) return null;
+          return {
+            node: n,
+            start: r.startOffset - m[2].length - 1,
+            end: r.startOffset,
+            q: m[2]
+          };
+        }
+        function close() {
+          list.classList.remove("on");
+          items = [];
+          ctx = null;
+        }
+        function refresh() {
+          ctx = query();
+          if (!ctx) return close();
+          const q = ctx.q.trim();
+          list.classList.add("on");
+          if (q.length < 3) {
+            list.innerHTML =
+              '<div class="note">Keep typing the name: suggestions start after three letters.</div>';
+            items = [];
+            return;
+          }
+          items = find(q);
+          if (!items.length) {
+            list.innerHTML =
+              '<div class="note">Nobody found for “' +
+              esc(q) +
+              "”. Check the spelling.</div>";
+            return;
+          }
+          sel = Math.min(sel, items.length - 1);
+          list.innerHTML = items
+            .map(
+              (p, i) =>
+                '<div class="it' +
+                (i === sel ? " sel" : "") +
+                '" data-i="' +
+                i +
+                '"><span>' +
+                boldMatch(p[1], q) +
+                "</span><small>" +
+                esc(p[2]) +
+                "</small></div>"
+            )
+            .join("");
+        }
+        function chipOf(p) {
+          const c = document.createElement("span");
+          c.className = "chip";
+          c.contentEditable = "false";
+          c.dataset.id = p[0];
+          c.dataset.name = p[1];
+          c.innerHTML =
+            "<span>" +
+            esc(p[1]) +
+            '</span><button class="x" type="button" aria-label="Remove ' +
+            esc(p[1]) +
+            '" tabindex="-1"></button>';
+          return c;
+        }
+        function pick(i) {
+          if (!ctx || !items[i]) return;
+          const p = items[i];
+          const r = document.createRange();
+          r.setStart(ctx.node, ctx.start);
+          r.setEnd(ctx.node, ctx.end);
+          r.deleteContents();
+          const c = chipOf(p);
+          r.insertNode(c);
+          const sp = document.createTextNode(" ");
+          c.after(sp);
+          const s = getSelection();
+          s.removeAllRanges();
+          const nr = document.createRange();
+          nr.setStart(sp, 1);
+          nr.collapse(true);
+          s.addRange(nr);
+          close();
+          changed();
+        }
+        function before() {
+          // the node just before the caret
+          const s = getSelection();
+          if (!s.rangeCount || !s.isCollapsed) return null;
+          const r = s.getRangeAt(0),
+            n = r.startContainer,
+            o = r.startOffset;
+          if (n.nodeType === 3) return o === 0 ? n.previousSibling : null;
+          return o > 0 ? n.childNodes[o - 1] : null;
+        }
+        function tidy() {
+          if (
+            !box.textContent.replace(/ /g, "").trim() &&
+            !box.querySelector(".chip")
+          )
+            box.innerHTML = "";
+        }
+        function mentions() {
+          return [...box.querySelectorAll(".chip")].map((c) => ({
+            id: c.dataset.id,
+            name: c.dataset.name
+          }));
+        }
+        function text() {
+          let t = "";
+          box.childNodes.forEach(function w(n) {
+            if (n.nodeType === 3) t += n.textContent.replace(/ /g, " ");
+            else if (n.classList && n.classList.contains("chip"))
+              t += "@" + n.dataset.name;
+            else if (n.nodeName === "BR") t += "\n";
+            else {
+              if (t && !t.endsWith("\n")) t += "\n";
+              n.childNodes.forEach(w);
+            }
+          });
+          return t.trim();
+        }
+        function changed() {
+          tidy();
+          onChange && onChange(api);
+        }
+        box.addEventListener("input", () => {
+          sel = 0;
+          refresh();
+          changed();
+        });
+        box.addEventListener("click", (e) => {
+          const x = e.target.closest(".x");
+          if (x) {
+            x.closest(".chip").remove();
+            close();
+            changed();
+            box.focus();
+          } else refresh();
+        });
+        box.addEventListener("keyup", (e) => {
+          if (["ArrowLeft", "ArrowRight", "Home", "End"].includes(e.key))
+            refresh();
+        });
+        box.addEventListener("keydown", (e) => {
+          if (list.classList.contains("on") && items.length) {
+            if (e.key === "ArrowDown") {
+              e.preventDefault();
+              sel = (sel + 1) % items.length;
+              refresh();
+              return;
+            }
+            if (e.key === "ArrowUp") {
+              e.preventDefault();
+              sel = (sel - 1 + items.length) % items.length;
+              refresh();
+              return;
+            }
+            if (e.key === "Enter" || e.key === "Tab") {
+              e.preventDefault();
+              pick(sel);
+              return;
+            }
+          }
+          if (e.key === "Escape" && list.classList.contains("on")) {
+            e.preventDefault();
+            close();
+            return;
+          }
+          if (e.key === "Backspace") {
+            const b = before();
+            if (b && b.classList && b.classList.contains("chip")) {
+              e.preventDefault();
+              b.remove();
+              changed();
+            }
+          }
+        });
+        box.addEventListener("blur", () => setTimeout(close, 150));
+        list.addEventListener("mousedown", (e) => {
+          const it = e.target.closest(".it");
+          if (it) {
+            e.preventDefault();
+            pick(+it.dataset.i);
+          }
+        });
+        const api = {
+          box,
+          mentions,
+          text,
+          clear() {
+            box.innerHTML = "";
+            close();
+            changed();
+          }
+        };
+        return api;
+      }
+
+      /* ---- the page ---- */
+      const feed = $("feed");
+      let ed;
+      function note(a) {
+        const m = a.mentions();
+        return m.length
+          ? "Notifies: <b>" + m.map((x) => esc(x.name)).join(", ") + "</b>"
+          : "Nobody is mentioned yet.";
+      }
+      function bodyHtml(a) {
+        let h = "";
+        a.box.childNodes.forEach(function w(n) {
+          if (n.nodeType === 3) h += esc(n.textContent.replace(/ /g, " "));
+          else if (n.classList && n.classList.contains("chip"))
+            h += '<span class="mention">@' + esc(n.dataset.name) + "</span>";
+          else if (n.nodeName === "BR") h += "\n";
+          else {
+            if (h && !h.endsWith("\n")) h += "\n";
+            n.childNodes.forEach(w);
+          }
+        });
+        return h.trim();
+      }
+      function postHtml(who, when, body) {
+        return `<div class="post"><div><span class="who">${who}</span><span class="when">${when}</span></div><div class="body">${body}</div><button class="btn sec small" data-a="reply">Reply</button><div class="replies"></div></div>`;
+      }
+      function reset() {
+        feed.innerHTML =
+          postHtml(
+            "Ray Vercoe",
+            "3 days ago",
+            'Can we get the <span class="mention">@Shaun Whittal</span> team to look at the Persona pricing before Friday?'
+          ) +
+          postHtml(
+            "Rob Sharp",
+            "last week",
+            "Surgeon is keen, waiting on theatre list."
+          );
+        ed.clear();
+        $("postBtn").disabled = true;
+        ed.box.parentElement.parentElement.querySelector(".notify").innerHTML =
+          note(ed);
+      }
+      ed = makeEditor($("postEd"), (a) => {
+        $("postBtn").disabled = !a.text();
+        document.querySelector(".acts .notify").innerHTML = note(a);
+      });
+      $("postBtn").onclick = () => {
+        const m = ed.mentions();
+        feed.insertAdjacentHTML(
+          "afterbegin",
+          postHtml("Robert Reeves", "just now", bodyHtml(ed))
+        );
+        toast(
+          m.length
+            ? "Posted. Notified: " + m.map((x) => x.name).join(", ")
+            : "Posted. Nobody was mentioned."
+        );
+        ed.clear();
+      };
+      feed.addEventListener("click", (e) => {
+        const b = e.target.closest('[data-a="reply"]');
+        if (!b) return;
+        const post = b.closest(".post"),
+          slot = post.querySelector(".replies");
+        if (slot.firstChild) {
+          slot.innerHTML = "";
+          return;
+        }
+        slot.innerHTML =
+          '<div class="reply"><div class="ed rbox"><div class="box" contenteditable="true" role="textbox" data-ph="Write a reply. Type @ and a name to mention someone."></div><div class="sug"></div></div><div class="acts"><span class="notify">Nobody is mentioned yet.</span><button class="btn small" disabled>Reply</button></div></div>';
+        const host = slot.querySelector(".ed"),
+          btn = slot.querySelector(".btn"),
+          nt = slot.querySelector(".notify");
+        const r = makeEditor(host, (a) => {
+          btn.disabled = !a.text();
+          nt.innerHTML = note(a);
+        });
+        btn.onclick = () => {
+          const m = r.mentions();
+          const html = bodyHtml(r);
+          slot.innerHTML =
+            '<div class="reply"><div><span class="who">Robert Reeves</span><span class="when">just now</span></div><div class="body">' +
+            html +
+            "</div></div>";
+          toast(
+            m.length
+              ? "Replied. Notified: " + m.map((x) => x.name).join(", ")
+              : "Replied."
+          );
+        };
+        r.box.focus();
+      });
+      $("resetDemo").onclick = reset;
+      $("segTheme").onclick = (e) => {
+        const b = e.target.closest("button");
+        if (!b) return;
+        document.documentElement.dataset.theme =
+          b.dataset.v === "light" ? "light" : "";
+        [...$("segTheme").children].forEach((x) =>
+          x.classList.toggle("on", x === b)
+        );
+      };
+      $("fsbtn").onclick = () => document.body.classList.toggle("fullscreen");
+      reset();
+    </script>
+  </body>
+</html>

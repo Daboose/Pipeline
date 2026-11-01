@@ -1,13 +1,11 @@
 <template>
   <section class="card">
     <h3>Chatter</h3>
-    <textarea
-      class="compose"
-      placeholder="Write a post. Use @ to mention people (type their full name)."
-      value={draft}
-      onchange={handleDraft}
-      oninput={handleDraft}
-    ></textarea>
+    <c-pipeline-mention-box
+      class="postbox"
+      placeholder="Write a post. Type @ and a name to mention someone."
+      oncontentchange={handleDraft}
+    ></c-pipeline-mention-box>
     <div class="postrow">
       <span class="err" lwc:if={error}>{error}</span>
       <span class="sp"></span>
@@ -57,13 +55,11 @@
             Reply
           </button>
           <div class="replybox" lwc:if={p.replying}>
-            <textarea
-              class="compose small"
-              placeholder="Write a reply"
-              data-id={p.id}
-              onchange={handleReplyDraft}
-              oninput={handleReplyDraft}
-            ></textarea>
+            <c-pipeline-mention-box
+              class="replyfield"
+              placeholder="Write a reply. Type @ and a name to mention someone."
+              oncontentchange={handleReplyDraft}
+            ></c-pipeline-mention-box>
             <div class="postrow">
               <span class="sp"></span>
               <button

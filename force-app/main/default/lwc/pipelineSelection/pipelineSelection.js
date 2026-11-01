@@ -58,10 +58,11 @@ export default class PipelineSelection extends LightningElement {
   @api isManager = false;
   @api startTeam = "";
   @api recordTypes = {}; // record type name to Id, to read the brands that apply
-  @api cols = {};
 
   draft = {};
   opened = {};
+  treeSeeded = false; // the team tree has been opened down to the chosen team
+  scrollToTeam = false;
   teamQ = "";
   ownerQ = "";
   ownerResults = [];
@@ -77,6 +78,36 @@ export default class PipelineSelection extends LightningElement {
   connectedCallback() {
     this.draft = JSON.parse(JSON.stringify(this.filter));
     this.refreshBrands();
+  }
+  renderedCallback() {
+    if (!this.treeSeeded && (this.teams || []).length) {
+      this.treeSeeded = true;
+      this.openToTeam(this.draft.teamId);
+      this.scrollToTeam = true;
+    } else if (this.scrollToTeam) {
+      this.scrollToTeam = false;
+      const tree = this.template.querySelector(".tree");
+      const sel = this.template.querySelector(".tree .trow.sel");
+      if (tree && sel) {
+        const gap =
+          sel.getBoundingClientRect().top - tree.getBoundingClientRect().top;
+        tree.scrollTop += gap - tree.clientHeight / 3;
+      }
+    }
+  }
+  /** Opens every branch above the chosen team, so it is in view when the panel opens (no clicking down to it). */
+  openToTeam(teamId) {
+    if (!teamId || teamId === MINE) return;
+    const byId = new Map((this.teams || []).map((t) => [t.id, t]));
+    const opened = { ...this.opened };
+    const seen = new Set();
+    let parent = byId.get((byId.get(teamId) || {}).parentId);
+    while (parent && !seen.has(parent.id)) {
+      seen.add(parent.id);
+      opened[parent.id] = true;
+      parent = byId.get(parent.parentId);
+    }
+    this.opened = opened;
   }
 
   set(patch) {
