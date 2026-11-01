@@ -6,9 +6,13 @@ Status: Open / Partly answered / Answered. Raised 2026-10-24.
 
 ## Where we are (end of session, 2026-10-25)
 
-**76 questions: 70 answered, 1 partly answered, 4 deferred, 1 parked, 0 open.** Decisions are in `Pipeline_Requirements.md` (sections 5 to 5W). Updated 2026-10-25 after Robert's round of answers.
+**79 questions: 72 answered, 4 deferred, 1 parked, 0 open, 1 partly answered (Q74).** Decisions are in `Pipeline_Requirements.md` (sections 5 to 5W). Updated 2026-10-25 after Robert's round of answers.
 
 **Still to answer:**
+
+- **Q77 (answered, 2026-11-01):** not embedded; Pipeline is its own dedicated page like COVRA, NPI and ROSTRA.
+- **Q79 (answered, 2026-11-01):** manager versus member is worked out from the Teams and Team Members data; nobody needs a team view without managing a team.
+- **Q78 (answered, 2026-11-01):** hip cups are shown, together with stems, in a list grouped by hospital (mockup v37).
 
 - **Q70 (answered in substance):** the stages are stacked colour chips (medium text) in the Dash layout (v22); the funnel is dropped. Earlier text: which funnel design for the stages. Robert leans to a funnel shape with a colour per stage, and stage name, value and deal count inside; three designs are on `docs/mockups/pipeline_choose_stage_view.html` (numbered 1 to 3) and as "Stage view" in `docs/mockups/pipeline_manager_v13.html`.
 - **Q74 (partly answered):** extra ROSA fields: only the install quarter and platform count parts are settled.
@@ -305,6 +309,10 @@ Status: Open / Partly answered / Answered. Raised 2026-10-24.
 - **Q68 Answered (2026-10-25).** Which of the eight darker panel backgrounds (page `pipeline_panel_backgrounds.html`) for dark mode, and should the settings panel match?
   - **Robert: Charcoal slate (set 7) "for a bit of difference"**: panel #171b24, boxes #1e232e, input fields #11151c, lines #2c3444, in dark mode only (light mode unchanged). Applied to the Choose Your Data panel and, as the comparison page said it would be unless he objected, the settings panel too; he has not said otherwise.
 
+- **Q77 Answered (2026-11-01).** Robert: not embedded; Pipeline is its own dedicated page, like COVRA, NPI and ROSTRA. Full-window layout stands.
+- **Q78 Answered (2026-11-01).** The usages list shows hip stems only (company and cases per year). Hip cups are recorded separately (their own company and cases per year). Should hip cups appear as their own line under the hip stems, or is stems enough?
+  - **Robert (2026-11-01):** show the hip cups, but not as a separate portfolio: the portfolio is called "Hip" and the stems and the cups sit under it, each with its own company and cases per year (a stem and a cup usually match but can be different brands). Group the whole list by hospital so the stems and cups stay together. Built in mockup v37.
+
 ## I. Scope
 
 - **Q36 Answered (2026-10-25).** When does ROSA come into scope?
@@ -319,3 +327,6 @@ Status: Open / Partly answered / Answered. Raised 2026-10-24.
   - Open, closed or both is a choice in every view. Not answered: how far back closed records go.
 - **Q40 Answered (2026-10-24).** Values are in several currencies (default AUD). Show in the record's currency, converted to one, or both?
   - **Robert: roll-ups are separate per currency, never mixed.** Anyone looking across countries sees a total for each currency (AUD, NZD, INR, THB, SGD and so on). Converting to USD is not a requirement at this stage ("nobody in Australia ever looks at their opportunities from a USD standpoint"); it could be added later if needed.
+- **Q79 Answered (2026-11-01).** Some people who open Pipeline manage a team and some only enter their own opportunities. Teams in Salesforce name a manager, and every manager is also a member of their own team. Should anyone named as the manager of at least one team see the manager view (their team and everyone below it), and everyone else see only their own pipeline? What about a manager who also enters their own deals, and a person who manages no team but should still see a team?
+  - **Robert (2026-11-01):** Pipeline looks at the Teams and Team Members structure to decide whether the person is only a member of a team or a manager running the view. Read-only PROD facts: 222 people are active team members; 177 are only members; 46 people are named as manager of a team (one of them, Ray Vercoe, manages two); Gerry Mahony manages a sales agency team and is also a member of an area team, so manager wins. Still open: a manager who also enters their own deals, and someone who manages no team but should see a team.
+  - **Robert (2026-11-01):** no one needs a team view without managing a team; everyone in the field who enters and maintains opportunities is a member rolling up into a defined team. No extra setting. A "Just mine" choice for a manager is a mockup idea to show later, not a decision.
