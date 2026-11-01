@@ -212,3 +212,27 @@ Versions 0.14 to 0.16 broke the deal flyout: it opened but showed no deal (name,
 ### Version 0.18 (UAT only, 2026-11-01): even outlines on the stage bar
 
 Robert noticed the coloured outline on passed stages was thinner on the slanted edges. Cause: the inner arrow was the full arrow shrunk 2 px, which leaves less than 2 px on a slope. The inner arrow (`--inner` in `pipelineDeal.css`) now has its slanted corners moved by the calculated amounts for a 14 px point on a 44 px bar, so the ring is an even 2 px all round. Checked on live UAT in a magnified screenshot.
+
+### Version 0.19 (UAT only, 2026-11-01): Team table columns resize
+
+The Team (People) table now has the same draggable column edges as the lists: drag an edge to resize, double-click one to reset all. Widths are kept in the person's own settings under `widths.team`. `pipelineTeamTable` only, plus two lines in `pipelineApp`. Checked on live UAT (dragged the Rep column from 189 to 289 px, others unchanged); Jest tests added. Robert's UAT settings were backed up and restored exactly after the live test.
+Committed and pushed up to 889afac (v0.18); 0.19 is not yet committed.
+
+### Version 0.20 (UAT only, 2026-11-01): People table header band
+
+The People/Team table header now has the same tinted amber band and 18 px amber title as the three lists (`pipelineTeamTable.css` only). Checked on live UAT.
+Note: after the 0.19 live test Robert's UAT settings were restored exactly; later changes to them (People table open, resized columns in the People table and the opportunities list) were made by Robert himself and were left alone.
+
+### Version 0.21 (UAT only, 2026-11-01): closed cards shrink to their band
+
+Robert: when a list or the People table is closed it should show just its coloured band, with no white strip under it. A closed card (`pipelineTypeList`, `pipelineTeamTable`) now has no bottom padding and a fully rounded band. Checked on live UAT. The check collapsed the cards and may have saved that state in Robert's UAT settings (opportunities list shown as collapsed afterwards); reopening them with the chevron is all that is needed.
+Not yet committed: 0.19, 0.20, 0.21.
+
+### Version 0.22 (UAT only, 2026-11-01): lists and People table fold open and shut
+
+Robert: closing and opening the three lists and the People table should be animated like the settings and Change selection panels, folding out and back in. The body of each now unfolds from nothing to its full height (0.4 s, same easing as the other panels) with a fade, and folds back; the card's spacing eases with it. Mechanism: the body is a CSS grid row that goes 0fr to 1fr (`.fold` / `.bodyin`), kept on the page for 0.45 s after closing so it can fold away. Checked on live UAT by sampling the Risks list height mid-fold (1143, 451, 48 px closing; 382, 1115, 1143 px opening) and ending open, as it started. Not yet animated: the summary panels at the top (Opportunities, Risks, ROSA). Not yet committed: 0.19 to 0.22.
+
+### Versions 0.23 and 0.24 (UAT only, 2026-11-01): amber stars, summary panels fold
+
+- **0.23:** the rep priority star in the lists is amber (`.star`, brand amber), the same as the legend's; it was plain text colour. The star is now its own element in the cell (`c.star`), not part of the name text.
+- **0.24:** the summary panels at the top (Opportunities, Risks, ROSA) fold open and shut with the same 0.4 s motion as the lists. The first value saved in settings is shown as it is, with no animation on page load; only a click animates. Checked on live UAT (stage part 247, 401, 408 px unfolding; 123, 5, gone folding), ending closed as it started. Jest tests added. Not yet committed: 0.19 to 0.24.

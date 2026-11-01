@@ -180,3 +180,52 @@
 .more {
   padding: 12px 0 2px;
 }
+
+/* closed: the card shrinks to just its coloured band, with no white strip under it */
+.card.shut {
+  padding-bottom: 0;
+}
+.card.shut .lhead {
+  margin-bottom: 0;
+  border-radius: 13px;
+  border-bottom-color: transparent;
+}
+
+/* folding: the body unfolds from nothing to its full height and folds back, easing the card's spacing with it */
+.card {
+  transition: padding-bottom 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.lhead {
+  transition:
+    margin-bottom 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+    border-radius 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+    border-color 0.4s ease;
+}
+.fold {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition:
+    grid-template-rows 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+    opacity 0.3s ease;
+}
+.fold.on {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+.bodyin {
+  min-height: 0;
+  overflow: hidden;
+}
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .lhead,
+  .fold {
+    transition: none;
+  }
+}
+
+/* the rep priority star is the brand amber, the same as in the legend above the lists */
+.star {
+  color: var(--pipe);
+}

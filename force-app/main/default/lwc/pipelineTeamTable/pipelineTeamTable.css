@@ -12,17 +12,25 @@
   box-shadow: var(--shadow);
   padding: 12px 18px 16px;
 }
+/* the top of the table: a band across the whole card, tinted with the brand amber, the same as the three lists */
 .lhead {
   display: flex;
   align-items: center;
   gap: 12px;
+  margin: -12px -18px 0;
+  padding: 10px 18px;
+  border-radius: 13px 13px 0 0;
+  background: rgba(253, 184, 39, 0.14);
+  background: color-mix(in srgb, var(--pipe) 16%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--pipe) 38%, transparent);
 }
 .lhead h3 {
   margin: 0;
-  font-size: 15px;
+  font-size: 18px;
   font-weight: 800;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
+  color: var(--pipe);
 }
 .count {
   color: var(--muted);
@@ -41,6 +49,10 @@
   width: 100%;
 }
 .tbl th {
+  position: relative;
+  user-select: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
   text-align: left;
   font-size: 12px;
   font-weight: 800;
@@ -52,6 +64,8 @@
   white-space: nowrap;
 }
 .tbl td {
+  overflow: hidden;
+  text-overflow: ellipsis;
   padding: 8px 14px;
   border-bottom: 1px solid var(--line);
   white-space: nowrap;
@@ -68,5 +82,74 @@
 @media (hover: hover) {
   .tbl tbody tr:hover td {
     background: rgba(99, 102, 241, 0.1);
+  }
+}
+
+/* the drag handle on the right edge of each heading (the same as the lists) */
+.rz {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 10px;
+  cursor: col-resize;
+}
+.rz::after {
+  content: "";
+  position: absolute;
+  right: 3px;
+  top: 22%;
+  bottom: 22%;
+  width: 2px;
+  border-radius: 1px;
+  background: var(--edge);
+}
+.rz:hover::after {
+  background: var(--indigo2);
+  top: 0;
+  bottom: 0;
+}
+
+/* closed: the card shrinks to just its coloured band, with no white strip under it */
+.card.shut {
+  padding-bottom: 0;
+}
+.card.shut .lhead {
+  margin-bottom: 0;
+  border-radius: 13px;
+  border-bottom-color: transparent;
+}
+
+/* folding: the body unfolds from nothing to its full height and folds back, easing the card's spacing with it */
+.card {
+  transition: padding-bottom 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.lhead {
+  transition:
+    margin-bottom 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+    border-radius 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+    border-color 0.4s ease;
+}
+.fold {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition:
+    grid-template-rows 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+    opacity 0.3s ease;
+}
+.fold.on {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+.bodyin {
+  min-height: 0;
+  overflow: hidden;
+}
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .lhead,
+  .fold {
+    transition: none;
   }
 }

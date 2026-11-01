@@ -10,6 +10,9 @@ import {
   plural
 } from "c/pipelineFormat";
 
+const FOLD_IN_DELAY_MS = 30; // lets the closed state be drawn first, so the unfolding runs
+const FOLD_MS = 450; // a little longer than the fold itself (0.4 s in the style sheet)
+
 const NAMES = { opp: "Opportunities", risk: "Risks", rosa: "ROSA" };
 const VALUE_WORD = { opp: "Revenue", risk: "Risk value", rosa: "ROSA value" };
 
@@ -22,8 +25,54 @@ export default class PipelineTypeSummary extends LightningElement {
   @api kind = "opp";
   @api deals = [];
   @api stageOrder = [];
-  @api summaryOpen = false;
   @api status = "open";
+  _open = false;
+  seen = false;
+  bodyMounted = false; // the stage and quarter part is on the page (it stays a moment after closing, to fold away)
+  bodyOn = false; // and this says it is unfolded
+  foldTimer;
+
+  /** Whether the stage and quarter part is open. The first value is shown as it is; later changes fold open or shut. */
+  @api
+  get summaryOpen() {
+    return this._open;
+  }
+  set summaryOpen(value) {
+    const open = value === true;
+    if (!this.seen) {
+      this.seen = true;
+      this._open = open;
+      this.bodyMounted = open;
+      this.bodyOn = open;
+      return;
+    }
+    if (open === this._open) return;
+    this._open = open;
+    this.fold(open);
+  }
+  disconnectedCallback() {
+    clearTimeout(this.foldTimer);
+  }
+  get bodyCls() {
+    return this.bodyOn ? "fold on" : "fold";
+  }
+  /** Unfolds or folds the part: put on the page first and opened a moment later, closed first and taken off after it has folded. */
+  fold(open) {
+    clearTimeout(this.foldTimer);
+    if (open) {
+      this.bodyMounted = true;
+      // eslint-disable-next-line @lwc/lwc/no-async-operation
+      this.foldTimer = setTimeout(() => {
+        this.bodyOn = true;
+      }, FOLD_IN_DELAY_MS);
+    } else {
+      this.bodyOn = false;
+      // eslint-disable-next-line @lwc/lwc/no-async-operation
+      this.foldTimer = setTimeout(() => {
+        this.bodyMounted = false;
+      }, FOLD_MS);
+    }
+  }
 
   get title() {
     return NAMES[this.kind];

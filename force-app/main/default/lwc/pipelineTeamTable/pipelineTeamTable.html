@@ -1,5 +1,5 @@
 <template>
-  <section class="card">
+  <section class={cardCls}>
     <div class="lhead">
       <h3>{title}</h3>
       <span class="count">{countText}</span>
@@ -14,48 +14,68 @@
         <span class={chevClass}></span>
       </button>
     </div>
-    <div class="tablewrap" lwc:if={open}>
-      <table class="tbl">
-        <thead>
-          <tr>
-            <th>Rep</th>
-            <th>Team</th>
-            <th class="num">Open</th>
-            <template for:each={kindHeads} for:item="k">
-              <th key={k.kind} class="num">{k.label}</th>
-            </template>
-            <th class="num">Needs update<br />(30–90 d)</th>
-            <th class="num">Very old<br />(over 90 d)</th>
-            <th class="num">No stage move<br />(90 d)</th>
-            <th class="num">Longest quiet</th>
-          </tr>
-        </thead>
-        <tbody>
-          <template for:each={rows} for:item="r">
-            <tr key={r.id} class={r.cls} data-id={r.id} onclick={handlePick}>
-              <td>{r.name}{r.mark}</td>
-              <td>{r.team}</td>
-              <td class="num">{r.open}</td>
-              <template for:each={r.values} for:item="v">
-                <td key={v.kind} class="num">{v.text}</td>
+    <div class={bodyCls} lwc:if={bodyMounted}>
+      <div class="bodyin">
+        <div class="tablewrap">
+          <table class="tbl" style={tableStyle}>
+            <colgroup lwc:if={hasWidths}>
+              <template for:each={colWidths} for:item="c">
+                <col key={c.id} style={c.style} />
               </template>
-              <td class="num">
-                <span lwc:if={r.update} class="tag warn">{r.update}</span
-                ><template lwc:else>–</template>
-              </td>
-              <td class="num">
-                <span lwc:if={r.old} class="tag bad">{r.old}</span
-                ><template lwc:else>–</template>
-              </td>
-              <td class="num">
-                <span lwc:if={r.stuck} class="tag bad">{r.stuck}</span
-                ><template lwc:else>–</template>
-              </td>
-              <td class="num">{r.quiet}</td>
-            </tr>
-          </template>
-        </tbody>
-      </table>
+            </colgroup>
+            <thead>
+              <tr>
+                <template for:each={heads} for:item="h">
+                  <th key={h.id} class={h.cls} data-id={h.id}>
+                    <span class="lab"
+                      >{h.label}<template lwc:if={h.sub}
+                        ><br />{h.sub}</template
+                      ></span
+                    >
+                    <i
+                      class="rz"
+                      data-id={h.id}
+                      title="Drag to resize. Double-click to reset all widths."
+                      onmousedown={handleResizeStart}
+                      ondblclick={handleWidthsReset}
+                    ></i>
+                  </th>
+                </template>
+              </tr>
+            </thead>
+            <tbody>
+              <template for:each={rows} for:item="r">
+                <tr
+                  key={r.id}
+                  class={r.cls}
+                  data-id={r.id}
+                  onclick={handlePick}
+                >
+                  <td>{r.name}{r.mark}</td>
+                  <td>{r.team}</td>
+                  <td class="num">{r.open}</td>
+                  <template for:each={r.values} for:item="v">
+                    <td key={v.kind} class="num">{v.text}</td>
+                  </template>
+                  <td class="num">
+                    <span lwc:if={r.update} class="tag warn">{r.update}</span
+                    ><template lwc:else>–</template>
+                  </td>
+                  <td class="num">
+                    <span lwc:if={r.old} class="tag bad">{r.old}</span
+                    ><template lwc:else>–</template>
+                  </td>
+                  <td class="num">
+                    <span lwc:if={r.stuck} class="tag bad">{r.stuck}</span
+                    ><template lwc:else>–</template>
+                  </td>
+                  <td class="num">{r.quiet}</td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   </section>
 </template>

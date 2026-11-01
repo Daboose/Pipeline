@@ -381,3 +381,7 @@ So far the screen has summaries and a list; **what a deal looks like when a mana
 All open questions for Robert are in **`Pipeline_Questions_For_Robert.md`** (Q1 to Q79) with a "Where we are" summary at the top. Nothing is assumed: an unanswered question stays open and nothing depending on it is built. Questions for the business go in `Pipeline_Team_Questions.md`.
 
 Facts worth keeping beside them: UAT and PROD differ on `SalesRisks__c` (UAT has `Status__c`, PROD does not), so build against PROD's shape and check a field in both orgs before using it; PROD open records: 849 of 1,018 have a stage-change date, 630 have a Chatter date, and the longest wait since a stage change is 1,171 days.
+
+## Motion standard (Robert, 2026-11-01)
+
+Everything that opens or closes folds or slides over 0.4 s with the same easing and goes back the same way; none of it snaps. This is the standard for the whole solution, so anything new that opens or closes does the same. Detail and how it is built: `CLAUDE.md`, Design system, "Motion standard". Built so far: summary panels, the three lists and the People table (fold); settings, Change selection and the deal flyout (slide).

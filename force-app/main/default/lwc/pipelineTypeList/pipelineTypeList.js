@@ -66,6 +66,9 @@ const COLUMNS = {
   ]
 };
 
+const FOLD_IN_DELAY_MS = 30; // lets the closed state be drawn first, so the unfolding runs
+const FOLD_MS = 450; // a little longer than the fold itself (0.4 s in the style sheet)
+
 /**
  * Pipeline: the list of deals for one kind (opportunities, risks or ROSA). Grouped by sales rep with a heavier line
  * between reps (a list holding one rep is not grouped), a Columns picker, sorting by any heading, and column edges the
@@ -80,14 +83,28 @@ export default class PipelineTypeList extends LightningElement {
   @api altTint = false;
 
   listOpen = true;
+  bodyMounted = true; // the list is on the page (it stays a moment after closing, to fold away)
+  bodyOn = true; // and this says it is unfolded
+  foldTimer;
 
-  /** Whether the list starts open (remembered in the person's settings). */
+  /** Whether the list starts open (remembered in the person's settings). A repeat of what it already is changes nothing. */
   @api
   get initialOpen() {
     return this.listOpen;
   }
   set initialOpen(value) {
-    this.listOpen = value !== false;
+    const open = value !== false;
+    if (open === this.listOpen) return;
+    clearTimeout(this.foldTimer);
+    this.listOpen = open;
+    this.bodyMounted = open;
+    this.bodyOn = open;
+  }
+  disconnectedCallback() {
+    clearTimeout(this.foldTimer);
+  }
+  get bodyCls() {
+    return this.bodyOn ? "fold on" : "fold";
   }
   pickerOpen = false;
   sortId = "value";
@@ -100,6 +117,9 @@ export default class PipelineTypeList extends LightningElement {
     return (this.deals || []).length;
   }
 
+  get cardCls() {
+    return this.listOpen ? "card" : "card shut";
+  }
   /* ----- the list ----- */
   get listTitle() {
     const n = this.dealCount;
@@ -122,12 +142,31 @@ export default class PipelineTypeList extends LightningElement {
   }
   handleListToggle() {
     this.listOpen = !this.listOpen;
+    this.fold(this.listOpen);
     this.pickerOpen = false;
     this.dispatchEvent(
       new CustomEvent("listtoggle", {
         detail: { kind: this.kind, open: this.listOpen }
       })
     );
+  }
+
+  /** Unfolds or folds the list: put on the page first and opened a moment later, closed first and taken off after it has folded. */
+  fold(open) {
+    clearTimeout(this.foldTimer);
+    if (open) {
+      this.bodyMounted = true;
+      // eslint-disable-next-line @lwc/lwc/no-async-operation
+      this.foldTimer = setTimeout(() => {
+        this.bodyOn = true;
+      }, FOLD_IN_DELAY_MS);
+    } else {
+      this.bodyOn = false;
+      // eslint-disable-next-line @lwc/lwc/no-async-operation
+      this.foldTimer = setTimeout(() => {
+        this.bodyMounted = false;
+      }, FOLD_MS);
+    }
   }
 
   get defs() {
@@ -218,7 +257,15 @@ export default class PipelineTypeList extends LightningElement {
   }
   /** What a collapsed rep shows in each column: the total, the freshest post and stage move, the oldest age. */
   aggCell(id, group, now) {
-    const base = { id, cls: "", text: "", title: "", tag: false, tagCls: "" };
+    const base = {
+      id,
+      cls: "",
+      text: "",
+      title: "",
+      tag: false,
+      tagCls: "",
+      star: false
+    };
     const live = group.filter((d) => !d.isClosed && !d.onHold);
     const days = (fn) => live.map((d) => fn(d, now)).filter((n) => n !== null);
     if (id === "value")
@@ -340,18 +387,23 @@ export default class PipelineTypeList extends LightningElement {
     return out;
   }
   cell(id, d, now) {
-    const base = { id, cls: "", text: "", title: "", tag: false, tagCls: "" };
+    const base = {
+      id,
+      cls: "",
+      text: "",
+      title: "",
+      tag: false,
+      tagCls: "",
+      star: false
+    };
     switch (id) {
       case "hcp":
       case "facility": {
         const text = (id === "hcp" ? d.hcp : d.facility) || "–";
         return {
           ...base,
-          text:
-            text +
-            (d.repPriority && (id === "hcp") === (this.kind !== "rosa")
-              ? " ★"
-              : "")
+          text,
+          star: !!d.repPriority && (id === "hcp") === (this.kind !== "rosa")
         };
       }
       case "value":

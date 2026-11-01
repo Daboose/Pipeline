@@ -29,7 +29,7 @@ import { quarterRank } from "c/pipelineFormat";
  * Usages, Surgeries and Chatter, saved filters); 0.10 follows the final mockup: a filter bar with chips and a Change
  * selection panel with Apply, in place of the always-visible Choose Your Data panel.
  */
-const PIPELINE_VERSION = "0.18";
+const PIPELINE_VERSION = "0.24";
 const SLIDE_IN_DELAY_MS = 30; // lets the closed position be drawn first, so the slide runs
 const SLIDE_OUT_MS = 450; // a little longer than the slide itself (0.4 s in the style sheets)
 
@@ -439,6 +439,9 @@ export default class PipelineApp extends LightningElement {
     return owner
       ? this.dealsForPeople.filter((d) => d.ownerId === owner)
       : this.dealsForPeople;
+  }
+  get teamWidths() {
+    return this.settings.widths.team;
   }
   get sections() {
     const deals = this.visibleDeals;

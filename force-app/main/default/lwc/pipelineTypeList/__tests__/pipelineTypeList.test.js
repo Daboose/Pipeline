@@ -54,6 +54,20 @@ describe("c-pipeline-type-list", () => {
     expect(rows(el).length).toBe(2);
   });
 
+  it("marks a rep priority deal with a star, which the style sheet colours amber", async () => {
+    const el = make({
+      kind: "opp",
+      deals: [
+        deal("1", "Ann", { repPriority: true }),
+        deal("2", "Ann", { repPriority: false })
+      ]
+    });
+    await Promise.resolve();
+    const stars = el.shadowRoot.querySelectorAll("span.star");
+    expect(stars.length).toBe(1);
+    expect(stars[0].textContent).toContain("★");
+  });
+
   it("shows only 25 rows and offers more", async () => {
     const many = Array.from({ length: 30 }, (_, i) => deal("d" + i, "Ann"));
     const el = make({ kind: "opp", deals: many });
