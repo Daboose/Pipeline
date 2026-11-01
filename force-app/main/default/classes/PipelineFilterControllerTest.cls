@@ -70,6 +70,23 @@ private class PipelineFilterControllerTest {
         'Updating does not add one'
       );
 
+      PipelineFilterController.FilterRow renamed = PipelineFilterController.renameFilter(
+        a.id,
+        '  My hips v3  '
+      );
+      System.assertEquals('My hips v3', renamed.name, 'Trimmed');
+      System.assertEquals(
+        '{"kinds":["opp","risk"]}',
+        renamed.json,
+        'Renaming leaves the choices alone'
+      );
+      try {
+        PipelineFilterController.renameFilter(a.id, '   ');
+        System.assert(false, 'A blank name is refused');
+      } catch (AuraHandledException e) {
+        System.assert(true);
+      }
+
       PipelineFilterController.setDefault(a.id);
       System.assertEquals(
         1,

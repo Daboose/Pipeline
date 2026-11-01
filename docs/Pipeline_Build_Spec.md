@@ -236,3 +236,49 @@ Robert: closing and opening the three lists and the People table should be anima
 
 - **0.23:** the rep priority star in the lists is amber (`.star`, brand amber), the same as the legend's; it was plain text colour. The star is now its own element in the cell (`c.star`), not part of the name text.
 - **0.24:** the summary panels at the top (Opportunities, Risks, ROSA) fold open and shut with the same 0.4 s motion as the lists. The first value saved in settings is shown as it is, with no animation on page load; only a click animates. Checked on live UAT (stage part 247, 401, 408 px unfolding; 123, 5, gone folding), ending closed as it started. Jest tests added. Not yet committed: 0.19 to 0.24.
+
+### Version 0.25 (UAT only, 2026-11-01): Change selection has locked top and bottom rows
+
+Robert: the Change selection panel is tall, so its top row (Choose Your Data, Opportunities / Risks / ROSA, Open / Closed / Both / Custom, Reset) and its action row (Save as filter, Cancel, Apply) stay locked in view while the middle scrolls. `pipelineSelection`: the panel is now three bands (`.phead` locked, `.pbody` scrolls, `.actions` locked), with a thin line between them. **Choice made without asking:** the explanatory sentence under the top row ("Use a team, go manual...") scrolls with the middle, to keep the locked top short. Checked on live UAT in a 700 px high window (top row at 0 to 69, actions at 588 to 655, middle scrolled 356 px with both rows unmoved). Not yet pushed: this version and the motion standard commit (afc43d0).
+
+### Version 0.26 (UAT only, 2026-11-01): team tree alignment, picking a team clears country and state
+
+Robert's feedback on the team selector in Change selection:
+
+- **Alignment.** A team with no teams below it had no chevron box, so its name sat 24 px to the left of a sibling that had one, which made it look like a different level (TS Surgical looked level with Ray Vercoe while Brenton Buller, with a chevron, looked beneath it). Every team row now has the same chevron space (an empty one when there is nothing below), so siblings line up. Checked on live UAT (depth 1 rows, with and without chevron, start at the same position).
+- **Country and state.** Picking a team now clears the country and state choices (a team already says whose deals these are); they can be chosen again to narrow it. Before, an earlier country and state stayed on and showed beside the team in the top bar.
+- **Not done, offered:** reopening the panel does not yet open the tree down to the chosen team (the team shows as a chip at the top, but the tree starts collapsed).
+  Not yet pushed: afc43d0 (0.19 to 0.24), and 0.25 and 0.26 are not yet committed.
+
+### Versions 0.27 and 0.28 (UAT only, 2026-11-01): team search results, round clear buttons on every search box
+
+- **0.27.** Team search results show the team name in bold across the top with its path under it, in one column (they were two columns that wrapped badly). A team whose own name or manager matches comes first; teams that only sit under a matching team come after (searching "shaun" gives Shaun Whittal ASM first, then his team). `teamRows` in `pipelineFilterModel`; tests added.
+- **0.28.** Every search box has a round clear button on its right with the cross centred both ways (the cross is two drawn lines, not a character). Shared style in `pipelineStyles` (`.xcirc`, `.sbox`, `.sclear`); on the team search, the owner search, the person search when sharing a filter, and the Primary HCP / Healthcare facility / Link to ROSA deal pickers; the old text crosses on the chosen team, owner and record chips use it too. Checked on live UAT (circle 22 px, vertical centre equal to the input's, 7 px from the right edge). Recorded as a standing rule in `CLAUDE.md`.
+  Not yet pushed: afc43d0 is committed locally but the push was blocked; 0.25 to 0.28 are not yet committed.
+
+### Version 0.29 (UAT only, 2026-11-01): the options bar lines up
+
+Robert marked two horizontal lines across the bar: the Opportunities / Risks / ROSA pills (38 px) were taller than the Open / Closed / Both / Custom switch (36), the filter dropdown (36) and the filter chips such as Team (28). Every control in `pipelineBar` is now one height (`--barh: 38px`), checked on live UAT (every top at 73, every bottom at 111). The filter chips are larger (14 px text, 38 px tall). The Change selection chevron is lifted so its visible point is centred with the words, and the dropdown's arrow is centred up and down. Not yet committed: 0.25 to 0.29.
+
+### Versions 0.30 and 0.31 (UAT only, 2026-11-01): Change selection fixed top right, in the top row
+
+Robert: when many chips made the options bar wrap, Change selection moved; it must stay put. Then he asked for the filter box (My filters) and Change selection to move up to the top row, Change selection left of Full screen and the filter box left of Change selection. Done in 0.31 (0.30 was an intermediate fix that is replaced): `pipelineApp` header now holds, from the right, Full screen, Change selection, My filters; the options bar (`pipelineBar`) holds only the type buttons, Open / Closed / Both / Custom and the chips, and wraps freely. Header controls share the bar's 38 px height (the cog and Full screen icons are now 38 px high, were 36). Checked on live UAT: top 12, bottom 50 for the cog, filter box, Change selection and Full screen; Change selection's right edge unchanged (1417) after adding four long chips (the bar grew from 59 to 107 px tall instead). My filters moved out of `pipelineBar` (its own Jest test removed with it; the behaviour is unchanged in `pipelineApp`). Not yet committed: 0.25 to 0.31.
+
+### Version 0.32 (UAT only, 2026-11-01): My filters in one place
+
+Built from mockup `docs/mockups/pipeline_filters_v1.html` after Robert's sign-off ("you are free to build"). Filters are still kept in Pipeline's own object `Pipeline_Saved_Filter__c` (private, JSON), not COVRA's.
+
+- **Top row:** the filter dropdown became a button (`.fbtn` in `pipelineApp`) showing the filter you are on, a star if it is your default, and an amber CHANGED when the screen no longer matches it (`filterChanged`: the choices, and the list columns if the filter saved them, compared with the saved copy). It shows even with no saved filters, as "Filters".
+- **Panel:** `pipelineFilters` was rewritten as the fly-down My filters panel (slide motion standard, blurred page behind, locked heading and save row, list scrolls). Per filter: click the name to run it (and the panel puts itself away), star (default; click the default to have none), pencil (rename in place, Enter keeps, Esc cancels), share (a person, or a team manager's whole team), bin (asks in the row). Each filter shows a plain-words summary. Foot: "Save as new filter…" and "Save over <name>" (only while a filter is open and the screen has changed from it; no extra confirmation).
+- **Removed:** My filters from the cog (settings) panel; "Save as filter…" and its code from Change selection.
+- **Apex:** `PipelineFilterController.renameFilter` (name only; the choices stay), with test assertions added. Deployed with `PipelineFilterControllerTest` (4 of 4 pass). No new object, field or permission set; `Pipeline_User` already holds the class.
+- Jest: 80 tests pass (the panel has 11 of its own). Checked on live UAT, read only (button shows the star and ROBS1; the panel opened with both of Robert's filters, ROBS1 marked Showing now, summaries, the on-screen line and both save buttons; no select left in the header). Not tried live (to avoid changing Robert's two filters): rename, delete, share, save as new, save over; those are covered by Jest and, for rename, an Apex test.
+- Not yet committed: 0.25 to 0.32. `afc43d0` (0.19 to 0.24) is committed but its push was blocked, so GitHub still stops at 889afac (0.18).
+
+### Version 0.33 (UAT only, 2026-11-01): the My filters list is capped at about seven rows
+
+Robert: the panel must not run off the bottom of a laptop screen; about seven filters before the list scrolls, with the save buttons staying in view. The panel was already limited to the window height with a scrolling list; now the list is also capped at 560 px (about seven filters) on any screen, so a tall monitor shows the same. On a short window it is shorter still. Checked on live UAT with 12 extra rows added in the browser (not saved): at window heights 800, 560 and 1500 the list scrolled, its height was 560, 366 and 560 px, and the save buttons ended at 727, 533 and 727 (inside the window each time).
+
+### Version 0.34 (UAT only, 2026-11-01): the rename tick and cross
+
+Robert: the tick in the rename row was off-centre and ugly; make it centred and a little bigger, the cross too. The tick is now a white mark on a green circle, 32 px (was 22), drawn from a turned L and lifted 2.5 px so its visible middle is centred both ways; the cross beside it is 32 px with longer, thicker lines. `pipelineFilters.css` only. Checked on live UAT in a magnified crop (rename row opened, nothing saved).

@@ -77,7 +77,7 @@ describe("c-pipeline-bar", () => {
     );
   });
 
-  it("announces a type or a status that was pressed, and opens the panel from Custom and Change selection", () => {
+  it("announces a type or a status that was pressed, and opens the panel from Custom", () => {
     const el = make();
     const kind = jest.fn();
     const status = jest.fn();
@@ -92,17 +92,5 @@ describe("c-pipeline-bar", () => {
     btn(el, "Custom").click();
     expect(status).toHaveBeenCalledTimes(1);
     expect(panel).toHaveBeenCalledTimes(1);
-    btn(el, "Change selection").click();
-    expect(panel).toHaveBeenCalledTimes(2);
-  });
-
-  it("shows My filters only when there are some", () => {
-    expect(make().shadowRoot.querySelector("select")).toBeNull();
-    const el = make({
-      savedFilters: [{ id: "f1", name: "Hips", isDefault: true }]
-    });
-    expect(el.shadowRoot.querySelector("select").textContent).toContain(
-      "★ Hips"
-    );
   });
 });

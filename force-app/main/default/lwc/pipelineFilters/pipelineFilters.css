@@ -3,133 +3,286 @@
 :host {
   display: block;
 }
-.wrap {
-  margin-top: 6px;
+/* the My filters panel: it flies down from the top row (the same motion as Change selection), the page behind blurred */
+.scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  background: rgba(6, 11, 20, 0.55);
+  -webkit-backdrop-filter: blur(5px);
+  backdrop-filter: blur(5px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
 }
-.flbl {
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin-bottom: 6px;
+.scrim.on {
+  opacity: 1;
+  pointer-events: auto;
 }
-.flbl.top {
-  margin-top: 22px;
+.panel {
+  position: fixed;
+  z-index: 81;
+  top: 0;
+  right: 18px;
+  width: min(680px, calc(100vw - 36px));
+  max-height: calc(100vh - 24px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--ppanel);
+  color: var(--text);
+  border: 1px solid var(--edge);
+  border-top: 0;
+  border-bottom: 3px solid var(--indigo);
+  border-radius: 0 0 16px 16px;
+  box-shadow: var(--shadow);
+  transform: translateY(-105%);
+  visibility: hidden;
+  transition:
+    transform 0.4s cubic-bezier(0.2, 0.9, 0.3, 1.05),
+    visibility 0s linear 0.4s;
 }
-.saverow {
+.panel.on {
+  transform: none;
+  visibility: visible;
+  transition: transform 0.4s cubic-bezier(0.2, 0.9, 0.3, 1.05);
+}
+@media (prefers-reduced-motion: reduce) {
+  .scrim,
+  .panel,
+  .panel.on {
+    transition: none;
+  }
+}
+/* three bands: the heading (locked), the list (scrolls), the save buttons (locked) */
+.fhead {
+  flex: none;
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin: 6px 0;
+  gap: 14px;
+  padding: 14px 22px 12px;
+  border-bottom: 1px solid var(--pline);
 }
 .sp {
   flex: 1;
 }
-.name {
+.xbig {
+  width: 34px;
+  height: 34px;
+}
+.xbig::before,
+.xbig::after {
+  width: 14px;
+}
+.fbody {
+  flex: 1 1 auto;
+  min-height: 0;
+  /* about seven filters show before the list scrolls, on any screen; on a short screen it gets shorter still
+     (the panel never runs off the bottom) and the save buttons below stay in view */
+  max-height: 560px;
+  overflow-y: auto;
+  padding: 4px 22px 12px;
+}
+.fsub {
+  color: var(--muted);
+  font-size: 14px;
+  margin: 10px 0 8px;
+}
+.empty {
+  color: var(--muted);
+  padding: 18px 4px;
+  font-size: 15px;
+}
+.ffoot {
+  flex: none;
+  border-top: 1px solid var(--pline);
+  padding: 12px 22px 16px;
+  background: var(--ppanel);
+}
+.cur {
+  color: var(--muted);
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+.cur b {
+  color: var(--text);
+}
+.frow {
+  border: 1px solid var(--pline);
+  background: var(--pgroup);
+  border-radius: 12px;
+  margin: 8px 0;
+  padding: 10px 12px;
+}
+.frow.active {
+  border-color: var(--indigo);
+  box-shadow: inset 3px 0 0 var(--indigo);
+}
+.fline {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.fname {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+  background: none;
+  border: 0;
+  color: var(--text);
+  padding: 2px 0;
+  cursor: pointer;
+}
+.fname b {
+  display: block;
+  font-size: 16px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.fname small {
+  display: block;
+  color: var(--muted);
+  font-size: 13px;
+  margin-top: 2px;
+}
+.tag {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border: 1px solid;
+  border-radius: 999px;
+  padding: 1px 9px;
+  margin-left: 8px;
+  vertical-align: 2px;
+}
+.tag.now {
+  color: var(--ok);
+  border-color: var(--ok);
+}
+.tag.chg {
+  color: var(--warn);
+  border-color: var(--warn);
+}
+.ib {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1.5px solid var(--edge);
+  background: transparent;
+  color: var(--muted);
+  display: inline-grid;
+  place-items: center;
+  padding: 0;
+  flex: none;
+  cursor: pointer;
+}
+.ib svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+@media (hover: hover) {
+  .ib:hover {
+    color: var(--text);
+    border-color: var(--indigo2);
+  }
+  .ib.del:hover {
+    color: var(--bad);
+    border-color: var(--bad);
+  }
+}
+.ib.star.on {
+  color: var(--pipe);
+  border-color: var(--pipe);
+}
+.ib.star.on svg {
+  fill: var(--pipe);
+}
+.fedit {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+.fedit .in {
   flex: 1;
   min-width: 0;
 }
-.hint {
-  color: var(--muted);
-  font-size: 14px;
+/* the rename row's tick and cross: the same size circles, the marks drawn dead centre in them */
+.fedit .xcirc,
+.tick {
+  width: 32px;
+  height: 32px;
 }
-.msg {
-  margin: 8px 0;
-  font-size: 14px;
-  font-weight: 700;
+.fedit .xcirc::before,
+.fedit .xcirc::after {
+  width: 15px;
+  height: 2.5px;
 }
-.msg.ok {
-  color: var(--ok);
+.tick {
+  position: relative;
+  border: 0;
+  border-radius: 50%;
+  background: #16a34a;
+  flex: none;
+  padding: 0;
+  cursor: pointer;
 }
-.msg.bad {
-  color: var(--bad);
-}
-.btn[disabled] {
+.tick[disabled] {
   opacity: 0.45;
   cursor: default;
 }
-.frow {
-  border-top: 1px solid var(--pline);
-  padding: 8px 0;
-}
-.line {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.nm {
-  flex: 1;
-  min-width: 0;
-  font-size: 15px;
-  font-weight: 700;
-  overflow-wrap: anywhere;
-}
-.nm small {
-  display: block;
-  font-weight: 400;
-  color: var(--muted);
-  font-size: 12px;
-}
-.star {
-  border: 0;
-  background: transparent;
-  color: var(--muted);
-  font-size: 20px;
-  cursor: pointer;
-  padding: 0 4px;
-}
-.star.on {
-  color: var(--pipe);
-}
-.mini {
-  border: 1px solid var(--edge);
-  background: transparent;
-  color: var(--indigo2);
-  border-radius: 999px;
-  padding: 3px 10px;
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  cursor: pointer;
-}
-.mini.danger {
-  color: var(--bad);
-  border-color: var(--bad);
+/* a turned L; its visible middle sits about 2.5 px low in its box, so it is lifted that much to be centred both ways */
+.tick::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 7px;
+  height: 14px;
+  border-right: 3px solid #fff;
+  border-bottom: 3px solid #fff;
+  transform: translate(-50%, calc(-50% - 2.5px)) rotate(45deg);
 }
 .confirm {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-top: 8px;
+  gap: 10px;
+  flex-wrap: wrap;
+  flex: 1;
   color: var(--bad);
-  font-size: 14px;
+  font-weight: 700;
+  font-size: 15px;
 }
 .share {
-  margin-top: 8px;
-  padding: 10px 12px;
-  background: var(--pgroup);
-  border: 1px solid var(--pline);
-  border-radius: 10px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--pline);
 }
-.share .in {
-  width: 100%;
-  margin-top: 8px;
+.hint {
+  color: var(--muted);
+  font-size: 13px;
+  margin-bottom: 8px;
 }
 .people {
   display: flex;
-  flex-direction: column;
-  gap: 4px;
-  margin-top: 8px;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 8px 0;
 }
 .person {
-  text-align: left;
-  border: 1px solid var(--pline);
+  border: 1px solid var(--edge);
   background: var(--pfield);
   color: var(--text);
-  border-radius: 8px;
-  padding: 6px 10px;
+  border-radius: 999px;
+  padding: 6px 14px;
   font-size: 14px;
   cursor: pointer;
 }
@@ -138,10 +291,41 @@
   color: var(--muted);
 }
 .person.on {
-  border-color: var(--indigo);
   background: var(--indigo);
+  border-color: var(--indigo);
   color: #fff;
 }
 .person.on small {
   color: #fff;
+}
+.acts {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.acts .name {
+  width: 240px;
+}
+.btn.small {
+  padding: 7px 14px;
+}
+.btn.danger {
+  background: #dc2626;
+  border-color: #dc2626;
+  color: #fff;
+}
+.btn[disabled] {
+  opacity: 0.45;
+  cursor: default;
+}
+.msg {
+  font-size: 14px;
+  font-weight: 700;
+}
+.msg.ok {
+  color: var(--ok);
+}
+.msg.bad {
+  color: var(--bad);
 }

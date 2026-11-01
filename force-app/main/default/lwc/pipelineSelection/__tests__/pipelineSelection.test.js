@@ -9,11 +9,6 @@ jest.mock(
   () => ({ default: jest.fn() }),
   { virtual: true }
 );
-jest.mock(
-  "@salesforce/apex/PipelineFilterController.saveFilter",
-  () => ({ default: jest.fn() }),
-  { virtual: true }
-);
 
 const brandAdapter = registerLdsTestWireAdapter(getPicklistValuesByRecordType);
 
@@ -122,6 +117,54 @@ describe("c-pipeline-selection", () => {
     el.addEventListener("apply", apply);
     btn(el, "Apply").click();
     expect(apply.mock.calls[0][0].detail.filter.teamId).toBe("t1");
+  });
+
+  it("clears the country and state when a team is picked, since the team already says whose deals these are", async () => {
+    const el = make({
+      filter: {
+        ...defaultFilter(["opp"], CHOICES, ""),
+        countries: ["AU"],
+        states: ["Victoria"]
+      }
+    });
+    const row = [...el.shadowRoot.querySelectorAll(".trow")].find((r) =>
+      r.textContent.includes("Director")
+    );
+    row.click();
+    await Promise.resolve();
+    const apply = jest.fn();
+    el.addEventListener("apply", apply);
+    btn(el, "Apply").click();
+    const f = apply.mock.calls[0][0].detail.filter;
+    expect(f.teamId).toBe("t1");
+    expect(f.countries).toEqual([]);
+    expect(f.states).toEqual([]);
+  });
+
+  it("gives every team row the same chevron space, so a team with no teams below lines up with its siblings", async () => {
+    const el = make();
+    const rows = [...el.shadowRoot.querySelectorAll(".tree .trow")].filter(
+      (r) => !r.classList.contains("none")
+    );
+    expect(rows.length).toBeGreaterThan(0);
+    rows.forEach((r) => expect(r.querySelector(".car")).not.toBeNull());
+  });
+
+  it("puts a round clear button on the team and owner searches while they hold text", async () => {
+    const el = make();
+    expect(el.shadowRoot.querySelectorAll(".sclear").length).toBe(0);
+    const inputs = el.shadowRoot.querySelectorAll(".sbox input");
+    expect(inputs.length).toBe(2);
+    const team = inputs[0];
+    team.value = "dir";
+    team.dispatchEvent(new CustomEvent("input"));
+    await Promise.resolve();
+    const clear = el.shadowRoot.querySelector(".sbox .sclear");
+    expect(clear).not.toBeNull();
+    clear.click();
+    await Promise.resolve();
+    expect(el.shadowRoot.querySelector(".sbox input").value).toBe("");
+    expect(el.shadowRoot.querySelectorAll(".sclear").length).toBe(0);
   });
 
   it("lists the stages of each chosen type and follows Open / Closed / Both", async () => {

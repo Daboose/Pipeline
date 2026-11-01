@@ -264,13 +264,13 @@ export function teamRows(teams, opened, query) {
     return parts.join(" › ");
   };
   if (q) {
+    /* a team whose own name (or manager) matches comes first; teams that only sit under a matching team come after */
+    const own = (t) => (t.name + " " + (t.managerName || "")).toLowerCase();
     return (teams || [])
-      .filter((t) =>
-        (t.name + " " + (t.managerName || "") + " " + path(t))
-          .toLowerCase()
-          .includes(q)
-      )
-      .map((t) => ({
+      .map((t, i) => ({ t, i, rank: own(t).includes(q) ? 0 : 1 }))
+      .filter(({ t, rank }) => rank === 0 || path(t).toLowerCase().includes(q))
+      .sort((a, b) => a.rank - b.rank || a.i - b.i)
+      .map(({ t }) => ({
         id: t.id,
         name: t.name,
         sub: path(t),

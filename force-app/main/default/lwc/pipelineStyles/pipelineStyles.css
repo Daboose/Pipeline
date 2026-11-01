@@ -128,3 +128,53 @@ select.in {
 .tag.hold {
   color: var(--muted);
 }
+
+/* A round clear button: a circle with a cross drawn dead centre (two lines, so it is centred both ways whatever the font).
+   .xcirc is the circle itself; .sbox + .sclear put one on the right of a search box, vertically centred. Every search box has one. */
+.xcirc {
+  position: relative;
+  flex: none;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--indigo);
+  cursor: pointer;
+  font-size: 0;
+}
+.xcirc::before,
+.xcirc::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 10px;
+  height: 2px;
+  border-radius: 1px;
+  background: #fff;
+}
+.xcirc::before {
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+.xcirc::after {
+  transform: translate(-50%, -50%) rotate(-45deg);
+}
+.xcirc:focus-visible {
+  outline: 2px solid var(--indigo2);
+  outline-offset: 2px;
+}
+.sbox {
+  position: relative;
+  display: block;
+}
+.sbox > input {
+  width: 100%;
+  padding-right: 38px;
+}
+.sclear {
+  position: absolute;
+  right: 7px;
+  top: 50%;
+  margin-top: -11px;
+}

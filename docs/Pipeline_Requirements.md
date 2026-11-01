@@ -385,3 +385,12 @@ Facts worth keeping beside them: UAT and PROD differ on `SalesRisks__c` (UAT has
 ## Motion standard (Robert, 2026-11-01)
 
 Everything that opens or closes folds or slides over 0.4 s with the same easing and goes back the same way; none of it snaps. This is the standard for the whole solution, so anything new that opens or closes does the same. Detail and how it is built: `CLAUDE.md`, Design system, "Motion standard". Built so far: summary panels, the three lists and the People table (fold); settings, Change selection and the deal flyout (slide).
+
+## Search boxes (Robert, 2026-11-01)
+
+Every search box has a round clear button on its right: a circle with a cross exactly centred, horizontally and vertically, shown while the box holds text. Applied to the team search, the owner search, the person search when sharing a filter and the record pickers; also used for the crosses on a chosen team, owner or record. Detail: `CLAUDE.md`, Design system, "Search boxes".
+
+## Filters in one place (Robert, 2026-11-01; proposed in mockup, awaiting his sign-off and the word "build")
+
+Robert did not like filters being handled in three places (the dropdown in the top row, the "My filters" part of the settings panel, and "Save as filter" in Change selection, which could not update an existing filter). Proposal, shown in `docs/mockups/pipeline_filters_v1.html`: the top-row dropdown becomes a button showing the filter you are on (star if default, amber "Changed" if the screen differs); it opens one fly-down "My filters" panel (not a pop-up) like COVRA's: per filter a name (click to run), star (default, only one), pencil (rename), share, bin (confirm in the row), plus at the bottom "Save as new filter…" and "Save over <name>" (only when a filter is active and the screen has changed). "My filters" leaves the settings panel and "Save as filter" leaves Change selection.
+Where filters are kept: Pipeline's own object `Pipeline_Saved_Filter__c` (private to its owner, one record per filter: name, JSON of the choices and columns, default flag); not COVRA's `CoverFilter__c`. UAT holds 2 test filters; PROD none.

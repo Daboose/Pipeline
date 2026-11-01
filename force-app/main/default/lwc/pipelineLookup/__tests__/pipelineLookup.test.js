@@ -42,14 +42,14 @@ describe("c-pipeline-lookup", () => {
     expect(el.shadowRoot.querySelector(".chosen").textContent).toContain(
       "Dr Test"
     );
-    el.shadowRoot.querySelector(".x").click();
+    el.shadowRoot.querySelector(".xcirc").click();
     expect(handler.mock.calls[0][0].detail).toEqual({ id: "", name: "" });
   });
 
   it("is one box: the name with a cross when chosen, the search box when not", async () => {
     const el = make({ valueId: "001", valueName: "Dr Test" });
     expect(el.shadowRoot.querySelector("input")).toBeNull();
-    el.shadowRoot.querySelector(".x").click();
+    el.shadowRoot.querySelector(".xcirc").click();
     el.valueId = "";
     el.valueName = "";
     await flush(0);
@@ -93,6 +93,19 @@ describe("c-pipeline-lookup", () => {
     });
     await flush(0);
     expect(el.shadowRoot.querySelector(".list")).toBeNull();
+  });
+
+  it("shows a round clear button only while there is text, and it empties the search", async () => {
+    const el = make();
+    expect(el.shadowRoot.querySelector(".sclear")).toBeNull();
+    type(el, "Dr");
+    await Promise.resolve();
+    const clear = el.shadowRoot.querySelector(".sclear");
+    expect(clear).not.toBeNull();
+    clear.click();
+    await Promise.resolve();
+    expect(el.shadowRoot.querySelector("input").value).toBe("");
+    expect(el.shadowRoot.querySelector(".sclear")).toBeNull();
   });
 
   it("says so when nothing is found", async () => {

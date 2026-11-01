@@ -58,6 +58,8 @@
 }
 
 .top {
+  /* every control in this row is this tall, the same as the options bar under it */
+  --barh: 38px;
   position: sticky;
   top: 0;
   z-index: 5;
@@ -110,7 +112,7 @@
 /* the settings cog and full screen icons: the same shapes as COVRA, NPI and ACCRURA, as solid indigo buttons */
 .icb {
   width: 40px;
-  height: 36px;
+  height: var(--barh);
   border-radius: 10px;
   border: 1px solid var(--indigo);
   background: var(--indigo);
@@ -294,4 +296,73 @@
 }
 .flbl.top {
   margin-top: 22px;
+}
+
+/* the filter box and Change selection, in the top row beside Full screen */
+/* the filters button: the filter you are on (star if it is your default), CHANGED if the screen no longer matches it */
+.fbtn {
+  height: var(--barh);
+  min-width: 210px;
+  max-width: 300px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+  border-radius: 8px;
+  border: 1px solid var(--pline);
+  background: var(--pfield);
+  color: var(--text);
+  font-size: 15px;
+  text-align: left;
+  cursor: pointer;
+}
+.fbtn .nm {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.fbtn .star {
+  color: var(--pipe);
+}
+.fbtn .chg {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--warn);
+}
+.fbtn .car {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  margin-top: -3px;
+  border-right: 2px solid var(--muted);
+  border-bottom: 2px solid var(--muted);
+  transform: rotate(45deg);
+}
+@media (hover: hover) {
+  .fbtn:hover {
+    border-color: var(--indigo2);
+  }
+}
+.change {
+  height: var(--barh);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+/* the chevron is a turned square; its visible point sits low in the box, so it is lifted to be centred with the words */
+.change .chev {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin: 0;
+  position: relative;
+  top: -3px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg);
 }

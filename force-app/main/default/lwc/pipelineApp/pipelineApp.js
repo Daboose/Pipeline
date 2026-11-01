@@ -14,6 +14,8 @@ import {
   defaultFilter,
   fromSaved,
   derivedStatus,
+  chipList,
+  NAMES,
   toggleKind,
   withStatus,
   serverFilter,
@@ -23,13 +25,24 @@ import {
 } from "c/pipelineFilterModel";
 import { quarterRank } from "c/pipelineFormat";
 
+/** JSON with the keys in a fixed order, so two filters with the same choices compare as equal. */
+function stableJson(value) {
+  if (Array.isArray(value)) return `[${value.map(stableJson).join(",")}]`;
+  if (value && typeof value === "object")
+    return `{${Object.keys(value)
+      .sort()
+      .map((k) => `${JSON.stringify(k)}:${stableJson(value[k])}`)
+      .join(",")}}`;
+  return JSON.stringify(value);
+}
+
 /**
  * The Pipeline version shown beside the logo and at the foot of the settings panel. Kept in this one place; raise it
  * with each change that goes out. 0.1 to 0.9 were the first checkpoints (live deals, panels, lists, the deal flyout with
  * Usages, Surgeries and Chatter, saved filters); 0.10 follows the final mockup: a filter bar with chips and a Change
  * selection panel with Apply, in place of the always-visible Choose Your Data panel.
  */
-const PIPELINE_VERSION = "0.24";
+const PIPELINE_VERSION = "0.34";
 const SLIDE_IN_DELAY_MS = 30; // lets the closed position be drawn first, so the slide runs
 const SLIDE_OUT_MS = 450; // a little longer than the slide itself (0.4 s in the style sheets)
 
@@ -80,6 +93,8 @@ export default class PipelineApp extends LightningElement {
   settingsOpen = false;
   panelOpen = false; // the selection panel is on the page (it stays a moment after closing, to slide away)
   panelOn = false; // and this says it is slid into view
+  filtersMounted = false; // the My filters panel: on the page (it stays a moment after closing, to slide away)
+  filtersOn = false; // and slid into view
   flyOn = false; // the same for the deal flyout
   sumOpen = false;
   fsOn = false;
@@ -216,6 +231,7 @@ export default class PipelineApp extends LightningElement {
     document.removeEventListener("fullscreenchange", this.onFullScreenChange);
     clearTimeout(this.panelTimer);
     clearTimeout(this.flyTimer);
+    clearTimeout(this.filtersTimer);
   }
 
   /* ----- sliding panels: each is put on the page first, slid in a moment later, and taken off once it has slid away ----- */
@@ -532,12 +548,92 @@ export default class PipelineApp extends LightningElement {
     this.takeColumns(parsed.saved);
     this.applyFilter(parsed.filter);
   }
-  handleQuickOpen(event) {
-    this.openFilterById(event.detail.id);
+  /* ----- the My filters panel (opened from the button in the top row) ----- */
+  handleFiltersToggle() {
+    if (this.filtersOn) this.closeFilters();
+    else this.openFilters();
   }
+  openFilters() {
+    clearTimeout(this.filtersTimer);
+    this.filtersMounted = true;
+    this.filtersTimer = this.slideIn(() => {
+      this.filtersOn = true;
+    });
+  }
+  closeFilters() {
+    clearTimeout(this.filtersTimer);
+    this.filtersOn = false;
+    this.filtersTimer = this.slideOut(() => {
+      this.filtersMounted = false;
+    });
+  }
+  /** Running a filter makes it what the screen shows and puts the panel away. */
   handleOpenFilter(event) {
     this.openFilterById(event.detail.id);
-    this.settingsOpen = false;
+    this.closeFilters();
+  }
+  /** The filter's own words: the deal types, Open / Closed / Both / Custom, and what it narrows to. */
+  summaryOf(f) {
+    if (!f || !f.stages || !this.choices) return "";
+    const status = {
+      open: "Open",
+      closed: "Closed",
+      both: "Open and closed",
+      custom: "Chosen stages"
+    }[derivedStatus(f, this.choices)];
+    const chips = chipList(f, this.choices, this.teams, this.isRep)
+      .map((c) => (c.label ? `${c.label} ${c.text}` : c.text))
+      .join(", ");
+    return [f.kinds.map((k) => NAMES[k]).join(", "), status, chips]
+      .filter(Boolean)
+      .join(" · ");
+  }
+  get filterRows() {
+    return (this.savedFilters || []).map((row) => {
+      const parsed = this.parse(row);
+      return {
+        id: row.id,
+        name: row.name,
+        isDefault: row.isDefault,
+        summary: parsed ? this.summaryOf(parsed.filter) : ""
+      };
+    });
+  }
+  get screenSummary() {
+    return this.summaryOf(this.filter);
+  }
+  get activeFilterName() {
+    const row = (this.savedFilters || []).find(
+      (f) => f.id === this.activeFilterId
+    );
+    return row ? row.name : "";
+  }
+  get filterButtonLabel() {
+    return this.activeFilterName || "Filters";
+  }
+  get filterIsDefault() {
+    const row = (this.savedFilters || []).find(
+      (f) => f.id === this.activeFilterId
+    );
+    return !!(row && row.isDefault);
+  }
+  /** What is on the screen no longer matches the filter that was opened (its choices, or its list columns). */
+  get filterChanged() {
+    const row = (this.savedFilters || []).find(
+      (f) => f.id === this.activeFilterId
+    );
+    const parsed = row && this.parse(row);
+    if (!parsed || !this.filter || !this.filter.stages) return false;
+    if (stableJson(parsed.filter) !== stableJson(this.filter)) return true;
+    const cols = parsed.saved.cols;
+    return !!(
+      cols &&
+      typeof cols === "object" &&
+      stableJson(cols) !== stableJson(this.settings.cols)
+    );
+  }
+  get canShareWithTeam() {
+    return !!(this.ctx && this.ctx.hasOwnTeam);
   }
   handleFiltersChanged(event) {
     const active = event.detail.activeId;

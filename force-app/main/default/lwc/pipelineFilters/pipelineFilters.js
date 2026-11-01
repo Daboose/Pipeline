@@ -1,5 +1,6 @@
 import { LightningElement, api } from "lwc";
 import saveFilter from "@salesforce/apex/PipelineFilterController.saveFilter";
+import renameFilter from "@salesforce/apex/PipelineFilterController.renameFilter";
 import deleteFilter from "@salesforce/apex/PipelineFilterController.deleteFilter";
 import setDefault from "@salesforce/apex/PipelineFilterController.setDefault";
 import searchPeople from "@salesforce/apex/PipelineFilterController.searchPeople";
@@ -16,45 +17,86 @@ function errorText(e) {
 const plural = (n, one, many) => (n === 1 ? one : many);
 
 /**
- * Pipeline: the My filters part of the settings panel. Save what is on the screen as a named filter (or update the one
- * that is open), mark one as the filter Pipeline opens on (the star), open, delete, and share. Sharing gives the other
- * person their own copy: to a named person, or (a team manager only) to everyone on the team. Never to everybody.
- * The screen's current choices are handed in as "snapshot" (JSON); this component never reads or changes a deal.
+ * Pipeline: the My filters panel, the one place all filters are managed. It flies down from the top row. Each filter:
+ * click the name to run it, the star makes it the one Pipeline opens on (only one), the pencil renames it, share gives
+ * another person (or, for a team manager, the whole team) their own copy, the bin deletes it after asking. At the foot:
+ * "Save as new filter" and "Save over <the open one>" (only while what is on the screen differs from it).
+ * The screen hands in the filters (with a plain-words summary each), what is on the screen as "snapshot" (JSON) and
+ * whether it has changed; this component only changes the person's own saved filters and never reads or changes a deal.
  */
 export default class PipelineFilters extends LightningElement {
-  @api filters = [];
+  @api filters = []; // { id, name, isDefault, summary }
   @api snapshot = "{}";
   @api activeId = "";
+  @api changed = false; // what is on the screen no longer matches the open filter
+  @api screenSummary = "";
   @api isManager = false;
+  /** True once the panel is to be slid into view; false slides it back up (the screen keeps it on the page while it slides). */
+  @api open = false;
 
   name = "";
+  saving = false;
   busy = false;
   message = "";
   error = "";
+  renamingId = "";
+  renameValue = "";
   deletingId = "";
   sharingId = "";
   term = "";
   results = [];
   chosen = [];
   timer;
+  focusSelector = "";
 
+  connectedCallback() {
+    this.onKey = (event) => {
+      if (event.key !== "Escape" || !this.open) return;
+      if (this.renamingId) this.handleRenameCancel();
+      else this.handleClose();
+    };
+    document.addEventListener("keydown", this.onKey);
+  }
+  disconnectedCallback() {
+    document.removeEventListener("keydown", this.onKey);
+    clearTimeout(this.timer);
+  }
+  renderedCallback() {
+    if (this.focusSelector) {
+      const el = this.template.querySelector(this.focusSelector);
+      if (el) {
+        el.focus();
+        if (el.select) el.select();
+        this.focusSelector = "";
+      }
+    }
+  }
+
+  get scrimCls() {
+    return this.open ? "scrim on" : "scrim";
+  }
+  get panelCls() {
+    return this.open ? "panel on" : "panel";
+  }
   get rows() {
-    return (this.filters || []).map((f) => ({
-      id: f.id,
-      name: f.name,
-      star: f.isDefault ? "★" : "☆",
-      starCls: "star" + (f.isDefault ? " on" : ""),
-      starTitle: f.isDefault
-        ? "Pipeline opens on this filter. Click to stop."
-        : "Click to open Pipeline on this filter.",
-      sub: f.isDefault
-        ? "Opens by default"
-        : f.id === this.activeId
-          ? "Open now"
-          : "",
-      deleting: this.deletingId === f.id,
-      sharing: this.sharingId === f.id
-    }));
+    return (this.filters || []).map((f) => {
+      const active = f.id === this.activeId;
+      return {
+        id: f.id,
+        name: f.name,
+        summary: f.summary || "",
+        active,
+        showChanged: active && this.changed,
+        cls: "frow" + (active ? " active" : ""),
+        starCls: "ib star" + (f.isDefault ? " on" : ""),
+        starTitle: f.isDefault
+          ? "Your default: click to have no default"
+          : "Make this my default",
+        renaming: this.renamingId === f.id,
+        deleting: this.deletingId === f.id,
+        sharing: this.sharingId === f.id
+      };
+    });
   }
   get noFilters() {
     return !(this.filters && this.filters.length);
@@ -63,8 +105,22 @@ export default class PipelineFilters extends LightningElement {
     const f = (this.filters || []).find((x) => x.id === this.activeId);
     return f ? f.name : "";
   }
+  get overText() {
+    return `Save over “${this.activeName}”`;
+  }
+  get cantOver() {
+    return this.busy || !this.changed;
+  }
+  get overTitle() {
+    return this.changed
+      ? ""
+      : "Nothing on the screen has changed since you opened this filter";
+  }
   get cantSave() {
     return this.busy || !this.name.trim();
+  }
+  get cantRename() {
+    return this.busy || !this.renameValue.trim();
   }
   get cantShare() {
     return this.busy || this.chosen.length === 0;
@@ -87,44 +143,20 @@ export default class PipelineFilters extends LightningElement {
         this.busy = false;
       });
   }
-  changed(activeId) {
+  filtersChanged(activeId) {
     this.dispatchEvent(
       new CustomEvent("filterschanged", { detail: { activeId } })
     );
   }
-
-  handleName(event) {
-    this.name = event.target.value;
+  handleClose() {
+    this.dispatchEvent(new CustomEvent("close"));
   }
-  handleSaveNew() {
-    this.run(
-      () =>
-        saveFilter({
-          existingId: null,
-          name: this.name,
-          filterJson: this.snapshot
-        }),
-      (row) => {
-        this.message = `Saved “${row.name}”.`;
-        this.name = "";
-        this.changed(row.id);
-      }
-    );
-  }
-  handleUpdate() {
-    const f = (this.filters || []).find((x) => x.id === this.activeId);
-    if (!f) return;
-    this.run(
-      () =>
-        saveFilter({
-          existingId: f.id,
-          name: f.name,
-          filterJson: this.snapshot
-        }),
-      (row) => {
-        this.message = `Updated “${row.name}”.`;
-        this.changed(row.id);
-      }
+  /* ----- run, star ----- */
+  handleRun(event) {
+    this.dispatchEvent(
+      new CustomEvent("openfilter", {
+        detail: { id: event.currentTarget.dataset.id }
+      })
     );
   }
   handleStar(event) {
@@ -132,18 +164,48 @@ export default class PipelineFilters extends LightningElement {
     const f = (this.filters || []).find((x) => x.id === id);
     this.run(
       () => setDefault({ filterId: f.isDefault ? null : id }),
-      () => this.changed(this.activeId)
+      () => this.filtersChanged(this.activeId)
     );
   }
-  handleOpen(event) {
-    this.dispatchEvent(
-      new CustomEvent("openfilter", {
-        detail: { id: event.currentTarget.dataset.id }
-      })
+
+  /* ----- rename ----- */
+  handleRenameOpen(event) {
+    const id = event.currentTarget.dataset.id;
+    const f = (this.filters || []).find((x) => x.id === id);
+    this.renamingId = id;
+    this.renameValue = f ? f.name : "";
+    this.deletingId = "";
+    this.sharingId = "";
+    this.focusSelector = ".fedit .in";
+  }
+  handleRenameInput(event) {
+    this.renameValue = event.target.value;
+  }
+  handleRenameKey(event) {
+    if (event.key === "Enter" && !this.cantRename)
+      this.keepName(this.renamingId);
+  }
+  handleRenameKeep(event) {
+    this.keepName(event.currentTarget.dataset.id);
+  }
+  keepName(id) {
+    this.run(
+      () => renameFilter({ filterId: id, name: this.renameValue }),
+      (row) => {
+        this.renamingId = "";
+        this.message = `Renamed to “${row.name}”.`;
+        this.filtersChanged(this.activeId);
+      }
     );
   }
+  handleRenameCancel() {
+    this.renamingId = "";
+  }
+
+  /* ----- delete ----- */
   handleDeleteAsk(event) {
     this.deletingId = event.currentTarget.dataset.id;
+    this.renamingId = "";
     this.sharingId = "";
   }
   handleDeleteNo() {
@@ -156,7 +218,57 @@ export default class PipelineFilters extends LightningElement {
       () => {
         this.deletingId = "";
         this.message = "Deleted.";
-        this.changed(id === this.activeId ? "" : this.activeId);
+        this.filtersChanged(id === this.activeId ? "" : this.activeId);
+      }
+    );
+  }
+
+  /* ----- save ----- */
+  handleSaveOpen() {
+    this.saving = true;
+    this.message = "";
+    this.error = "";
+    this.focusSelector = ".ffoot .name";
+  }
+  handleSaveCancel() {
+    this.saving = false;
+    this.name = "";
+  }
+  handleName(event) {
+    this.name = event.target.value;
+  }
+  handleNameKey(event) {
+    if (event.key === "Enter" && !this.cantSave) this.handleSaveNew();
+  }
+  handleSaveNew() {
+    this.run(
+      () =>
+        saveFilter({
+          existingId: null,
+          name: this.name,
+          filterJson: this.snapshot
+        }),
+      (row) => {
+        this.message = `Saved “${row.name}” as a new filter.`;
+        this.saving = false;
+        this.name = "";
+        this.filtersChanged(row.id);
+      }
+    );
+  }
+  handleSaveOver() {
+    const f = (this.filters || []).find((x) => x.id === this.activeId);
+    if (!f) return;
+    this.run(
+      () =>
+        saveFilter({
+          existingId: f.id,
+          name: f.name,
+          filterJson: this.snapshot
+        }),
+      (row) => {
+        this.message = `“${row.name}” now holds what is on the screen.`;
+        this.filtersChanged(row.id);
       }
     );
   }
@@ -166,12 +278,18 @@ export default class PipelineFilters extends LightningElement {
     const id = event.currentTarget.dataset.id;
     this.sharingId = this.sharingId === id ? "" : id;
     this.deletingId = "";
+    this.renamingId = "";
     this.term = "";
     this.results = [];
     this.chosen = [];
   }
   handleShareClose() {
     this.sharingId = "";
+  }
+  handleTermClear() {
+    clearTimeout(this.timer);
+    this.term = "";
+    this.results = [];
   }
   handleTerm(event) {
     this.term = event.target.value;

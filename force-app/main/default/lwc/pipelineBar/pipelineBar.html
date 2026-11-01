@@ -36,22 +36,5 @@
         >
       </template>
     </div>
-
-    <span class="sp"></span>
-
-    <select
-      class="in quick"
-      lwc:if={hasFilters}
-      onchange={handleQuickOpen}
-      aria-label="My filters"
-    >
-      <option value="" selected={noFilterSelected}>My filters…</option>
-      <template for:each={filterOptions} for:item="o">
-        <option key={o.id} value={o.id} selected={o.selected}>{o.label}</option>
-      </template>
-    </select>
-    <button type="button" class="btn change" onclick={handleOpenPanel}>
-      Change selection <span class="chev"></span>
-    </button>
   </div>
 </template>

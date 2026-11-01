@@ -1,7 +1,7 @@
 /**
  * Pipeline: a person's saved filters (the "My filters" part of the Pipeline screen).
  *
- * Who calls it: the pipelineFilters component and the pipelineApp component, and PipelineFilterControllerTest.
+ * Who calls it: the pipelineFilters component (the My filters panel) and the pipelineApp component, and PipelineFilterControllerTest.
  * What it touches: reads, creates, changes and deletes Pipeline_Saved_Filter__c records that the signed-in person owns,
  * reads active users (to find a person to share with), and reads the Teams through PipelineScope (so a team manager can
  * share with their team). It never touches a deal.
@@ -99,6 +99,21 @@ public with sharing class PipelineFilterController {
       );
       insert as user f;
     }
+    return rowOf(f);
+  }
+
+  /** Changes only a filter's name (the choices it holds stay as they are). */
+  @AuraEnabled
+  public static FilterRow renameFilter(Id filterId, String name) {
+    String nm = name == null ? '' : name.trim();
+    if (nm.length() == 0 || nm.length() > 80) {
+      throw new AuraHandledException(
+        'Give the filter a name of up to 80 characters.'
+      );
+    }
+    Pipeline_Saved_Filter__c f = ownFilter(filterId);
+    f.Name = nm;
+    update as user f;
     return rowOf(f);
   }
 

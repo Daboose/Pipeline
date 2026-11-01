@@ -77,6 +77,12 @@ export default class PipelineLookup extends LightningElement {
     this.searched = false;
     this.dispatchEvent(new CustomEvent("change", { detail: { id, name } }));
   }
+  handleTermClear() {
+    clearTimeout(this.timer);
+    this.term = "";
+    this.results = [];
+    this.searched = false;
+  }
   handleClear() {
     this.focusSearch = true;
     this.dispatchEvent(

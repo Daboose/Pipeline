@@ -36,6 +36,27 @@
       <span class="sp"></span>
       <button
         type="button"
+        class="fbtn"
+        lwc:if={ready}
+        onclick={handleFiltersToggle}
+        aria-haspopup="dialog"
+        title="Your filters"
+      >
+        <span class="star" lwc:if={filterIsDefault}>★</span>
+        <span class="nm">{filterButtonLabel}</span>
+        <span class="chg" lwc:if={filterChanged}>Changed</span>
+        <span class="car"></span>
+      </button>
+      <button
+        type="button"
+        class="btn change"
+        lwc:if={ready}
+        onclick={handleOpenPanel}
+      >
+        Change selection <span class="chev"></span>
+      </button>
+      <button
+        type="button"
         class={fsCls}
         onclick={handleFullScreen}
         title={fsText}
@@ -78,12 +99,9 @@
       choices={choices}
       teams={teams}
       is-rep={isRep}
-      saved-filters={savedFilters}
-      active-filter-id={activeFilterId}
       onkindtoggle={handleKindToggle}
       onstatuspick={handleStatusPick}
       onopenpanel={handleOpenPanel}
-      onquickopen={handleQuickOpen}
     ></c-pipeline-bar>
 
     <div class="err" lwc:if={error}>{error}</div>
@@ -165,7 +183,6 @@
       onapply={handlePanelApply}
       onreset={handlePanelReset}
       oncancel={handlePanelCancel}
-      onfilterschanged={handleFiltersChanged}
     ></c-pipeline-selection>
 
     <c-pipeline-deal
@@ -228,17 +245,22 @@
         />
         <span>Tint every second rep</span>
       </label>
-      <div class="flbl top">My filters</div>
-      <c-pipeline-filters
-        filters={savedFilters}
-        snapshot={snapshot}
-        active-id={activeFilterId}
-        is-manager={isManager}
-        onopenfilter={handleOpenFilter}
-        onfilterschanged={handleFiltersChanged}
-      ></c-pipeline-filters>
       <div class="ver">Pipeline version {version}</div>
     </aside>
+
+    <c-pipeline-filters
+      lwc:if={filtersMounted}
+      open={filtersOn}
+      filters={filterRows}
+      snapshot={snapshot}
+      active-id={activeFilterId}
+      changed={filterChanged}
+      screen-summary={screenSummary}
+      is-manager={canShareWithTeam}
+      onopenfilter={handleOpenFilter}
+      onfilterschanged={handleFiltersChanged}
+      onclose={closeFilters}
+    ></c-pipeline-filters>
 
     <div class="busy" lwc:if={busy}>
       <div class="busybox">Please wait…</div>

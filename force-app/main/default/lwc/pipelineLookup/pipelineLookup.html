@@ -4,22 +4,29 @@
       <span class="nm">{valueName}</span>
       <button
         type="button"
-        class="x"
+        class="xcirc"
         onclick={handleClear}
         aria-label="Clear"
         title="Clear"
-      >
-        ✕
-      </button>
+      ></button>
     </div>
-    <input
-      lwc:else
-      class="in search"
-      type="text"
-      placeholder={placeholder}
-      value={term}
-      oninput={handleTerm}
-    />
+    <div class="sbox" lwc:else>
+      <input
+        class="in search"
+        type="text"
+        placeholder={placeholder}
+        value={term}
+        oninput={handleTerm}
+      />
+      <button
+        type="button"
+        class="xcirc sclear"
+        lwc:if={term}
+        onclick={handleTermClear}
+        aria-label="Clear the search"
+        title="Clear the search"
+      ></button>
+    </div>
     <div class="list" lwc:if={showList}>
       <template for:each={results} for:item="r">
         <button

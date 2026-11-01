@@ -2,7 +2,6 @@ import { LightningElement, api, wire } from "lwc";
 import { getPicklistValuesByRecordType } from "lightning/uiObjectInfoApi";
 import SALESRISKS from "@salesforce/schema/SalesRisks__c";
 import searchOwners from "@salesforce/apex/PipelineFilterController.searchOwners";
-import saveFilter from "@salesforce/apex/PipelineFilterController.saveFilter";
 import {
   KINDS,
   NAMES,
@@ -66,9 +65,6 @@ export default class PipelineSelection extends LightningElement {
   teamQ = "";
   ownerQ = "";
   ownerResults = [];
-  saving = false;
-  saveName = "";
-  message = "";
   error = "";
   timer;
   brandValues = null; // the brands that apply to the portfolios and countries chosen; null while unknown
@@ -167,10 +163,10 @@ export default class PipelineSelection extends LightningElement {
         name: r.name,
         sub: r.sub,
         star: false,
-        bold: false,
+        bold: !!r.sub, // a search result: the team name in bold, its path under it
         showCar: r.hasKids,
         caretCls: "chev" + (r.open ? " dn" : ""),
-        cls: "trow" + (pick(r.id) ? " sel" : ""),
+        cls: "trow" + (r.sub ? " stacked" : "") + (pick(r.id) ? " sel" : ""),
         style: `padding-left:${10 + r.depth * 18}px`
       });
     });
@@ -183,6 +179,14 @@ export default class PipelineSelection extends LightningElement {
   get noTeamMatch() {
     return this.treeRows.length === 0;
   }
+  handleTeamQClear() {
+    this.teamQ = "";
+  }
+  handleOwnerQClear() {
+    clearTimeout(this.timer);
+    this.ownerQ = "";
+    this.ownerResults = [];
+  }
   handleTeamQ(event) {
     this.teamQ = event.target.value;
   }
@@ -191,8 +195,13 @@ export default class PipelineSelection extends LightningElement {
     const id = event.currentTarget.dataset.car;
     this.opened = { ...this.opened, [id]: !this.opened[id] };
   }
+  /** Choosing a team clears the country and state: the team already says whose deals these are (they can be chosen again to narrow it). */
   handlePickTeam(event) {
-    this.set({ teamId: event.currentTarget.dataset.id });
+    this.set({
+      teamId: event.currentTarget.dataset.id,
+      countries: [],
+      states: []
+    });
     this.teamQ = "";
   }
   handleClearTeam() {
@@ -468,36 +477,6 @@ export default class PipelineSelection extends LightningElement {
   }
 
   /* ----- save, apply, cancel ----- */
-  get cantSave() {
-    return !this.saveName.trim();
-  }
-  handleSaveOpen() {
-    this.saving = !this.saving;
-    this.message = "";
-    this.error = "";
-  }
-  handleSaveName(event) {
-    this.saveName = event.target.value;
-  }
-  handleSaveGo() {
-    this.error = "";
-    saveFilter({
-      existingId: null,
-      name: this.saveName,
-      filterJson: JSON.stringify({ ...this.draft, cols: this.cols })
-    })
-      .then((row) => {
-        this.message = `Saved “${row.name}”. It is now in My filters.`;
-        this.saving = false;
-        this.saveName = "";
-        this.dispatchEvent(
-          new CustomEvent("filterschanged", { detail: { activeId: "" } })
-        );
-      })
-      .catch((e) => {
-        this.error = errorText(e);
-      });
-  }
   handleApply() {
     this.dispatchEvent(
       new CustomEvent("apply", { detail: { filter: this.draft } })

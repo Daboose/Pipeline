@@ -231,6 +231,16 @@ describe("c-pipeline-filter-model", () => {
     expect(teamRows(teams, {}, "area")[0].sub).toBe(
       "Director › State Manager › Area"
     );
+    const nested = [
+      { id: "a", name: "Greg Marshall", parentId: "s" },
+      { id: "s", name: "Shaun Whittal ASM", parentId: null },
+      { id: "b", name: "Jack Maher", parentId: "s" }
+    ];
+    expect(teamRows(nested, {}, "shaun").map((r) => r.name)).toEqual([
+      "Shaun Whittal ASM",
+      "Greg Marshall",
+      "Jack Maher"
+    ]);
     expect(stagesOf(["opp", "risk"], CHOICES, "closed")).toEqual([
       ...CHOICES.opp.closed,
       ...CHOICES.risk.closed

@@ -10,8 +10,8 @@ const STATUSES = [
 
 /**
  * Pipeline: the filter bar under the header. The three deal-type buttons, Open / Closed / Both / Custom (worked out
- * from the stages chosen), chips saying in words what is being looked at, My filters, and Change selection, which opens
- * the full selection panel. The type and status buttons act at once; everything else is chosen in the panel. It changes
+ * from the stages chosen) and chips saying in words what is being looked at. (My filters and Change selection are in the
+ * top row of the page.) The type and status buttons act at once; everything else is chosen in the panel. It changes
  * nothing itself: it announces what was pressed and the Pipeline screen does the rest.
  */
 export default class PipelineBar extends LightningElement {
@@ -19,8 +19,6 @@ export default class PipelineBar extends LightningElement {
   @api choices = {};
   @api teams = [];
   @api isRep = false;
-  @api savedFilters = [];
-  @api activeFilterId = "";
 
   get kindButtons() {
     const on = this.filter.kinds || [];
@@ -48,19 +46,6 @@ export default class PipelineBar extends LightningElement {
       ? chipList(this.filter, this.choices, this.teams, this.isRep)
       : [];
   }
-  get hasFilters() {
-    return (this.savedFilters || []).length > 0;
-  }
-  get filterOptions() {
-    return (this.savedFilters || []).map((f) => ({
-      id: f.id,
-      label: (f.isDefault ? "★ " : "") + f.name,
-      selected: f.id === this.activeFilterId
-    }));
-  }
-  get noFilterSelected() {
-    return !this.activeFilterId;
-  }
 
   handleKind(event) {
     this.dispatchEvent(
@@ -76,14 +61,5 @@ export default class PipelineBar extends LightningElement {
       return;
     }
     this.dispatchEvent(new CustomEvent("statuspick", { detail: { value } }));
-  }
-  handleQuickOpen(event) {
-    if (event.target.value)
-      this.dispatchEvent(
-        new CustomEvent("quickopen", { detail: { id: event.target.value } })
-      );
-  }
-  handleOpenPanel() {
-    this.dispatchEvent(new CustomEvent("openpanel"));
   }
 }

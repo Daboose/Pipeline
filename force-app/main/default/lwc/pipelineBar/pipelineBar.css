@@ -4,6 +4,8 @@
   display: block;
 }
 .bar {
+  /* every control in the bar is this tall, so their top and bottom edges line up across the page */
+  --barh: 38px;
   display: flex;
   align-items: center;
   flex-wrap: wrap;
@@ -60,12 +62,15 @@
   transform: rotate(45deg);
 }
 .seg {
+  height: var(--barh);
   display: inline-flex;
   border: 1px solid var(--edge);
   border-radius: 999px;
   overflow: hidden;
 }
 .seg button {
+  display: flex;
+  align-items: center;
   border: 0;
   background: transparent;
   color: var(--muted);
@@ -85,13 +90,15 @@
   flex-wrap: wrap;
   gap: 6px;
   min-width: 0;
-  max-width: 560px;
 }
 .chip {
+  display: inline-flex;
+  align-items: center;
+  height: var(--barh);
   border: 1px solid var(--edge);
   border-radius: 999px;
-  padding: 3px 12px;
-  font-size: 13px;
+  padding: 0 16px;
+  font-size: 14px;
   color: var(--text);
   white-space: nowrap;
   overflow: hidden;
@@ -103,20 +110,4 @@
   color: var(--muted);
   margin-right: 6px;
 }
-.sp {
-  flex: 1;
-}
-.quick {
-  min-width: 190px;
-  max-width: 280px;
-}
-.change .chev {
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  margin-left: 6px;
-  margin-top: -3px;
-  border-right: 2px solid currentColor;
-  border-bottom: 2px solid currentColor;
-  transform: rotate(45deg);
-}
+/* the chevron is a turned square; its visible point sits low in the box, so it is lifted to be centred with the words */
