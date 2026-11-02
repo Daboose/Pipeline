@@ -42,35 +42,31 @@
   <label>Pipeline User</label>
   <objectPermissions>
     <allowCreate>true</allowCreate>
-    <allowDelete>false</allowDelete>
-    <allowEdit>true</allowEdit>
-    <allowRead>true</allowRead>
-    <modifyAllRecords>false</modifyAllRecords>
-    <object>Pipeline_User_Setting__c</object>
-    <viewAllRecords>false</viewAllRecords>
-  </objectPermissions>
-  <objectPermissions>
-    <allowCreate>true</allowCreate>
     <allowDelete>true</allowDelete>
     <allowEdit>true</allowEdit>
     <allowRead>true</allowRead>
     <modifyAllRecords>false</modifyAllRecords>
-    <object>Pipeline_Saved_Filter__c</object>
+    <object>Pipeline_Filter__c</object>
     <viewAllRecords>false</viewAllRecords>
   </objectPermissions>
   <fieldPermissions>
     <editable>true</editable>
-    <field>Pipeline_Saved_Filter__c.Filter_Json__c</field>
+    <field>Pipeline_Filter__c.Filter_Json__c</field>
     <readable>true</readable>
   </fieldPermissions>
   <fieldPermissions>
     <editable>true</editable>
-    <field>Pipeline_Saved_Filter__c.Is_Default__c</field>
+    <field>Pipeline_Filter__c.Is_Default__c</field>
     <readable>true</readable>
   </fieldPermissions>
   <fieldPermissions>
     <editable>true</editable>
-    <field>Pipeline_User_Setting__c.Settings_Json__c</field>
+    <field>Pipeline_Filter__c.Is_User_Settings__c</field>
+    <readable>true</readable>
+  </fieldPermissions>
+  <fieldPermissions>
+    <editable>true</editable>
+    <field>Pipeline_Filter__c.Settings_Json__c</field>
     <readable>true</readable>
   </fieldPermissions>
   <fieldPermissions>

@@ -2,11 +2,11 @@
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
   <fullName>Filter_Json__c</fullName>
   <description
-  >Pipeline: the choices this filter holds (deal types, open or closed, team, country, state, portfolio, brand, rep and the list columns) written by the Pipeline screen as JSON. Not meant to be edited by hand.</description>
+  >Pipeline: the choices a saved filter holds (deal types, open or closed, team, country, state, portfolio, brand, rep and the list columns), written by the Pipeline screen as JSON. Not meant to be edited by hand.</description>
   <inlineHelpText
   >Written by the Pipeline screen. Not meant to be edited by hand.</inlineHelpText>
   <label>Filter JSON</label>
-  <length>32768</length>
+  <length>131072</length>
   <trackTrending>false</trackTrending>
   <type>LongTextArea</type>
   <visibleLines>6</visibleLines>

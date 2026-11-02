@@ -8,7 +8,7 @@
   <compactLayoutAssignment>SYSTEM</compactLayoutAssignment>
   <deploymentStatus>Deployed</deploymentStatus>
   <description
-  >Pipeline: one record per person holding their own Pipeline screen choices (dark or light, columns, tint and so on) as a block of JSON. Created and read only by the Pipeline screen. Private to the person who owns it.</description>
+  >Pipeline: everything a person saves from the Pipeline screen, in JSON text fields (no field per setting). Named filters are one record each; one flagged record per person holds their screen settings. Private to its owner.</description>
   <enableActivities>false</enableActivities>
   <enableBulkApi>true</enableBulkApi>
   <enableFeeds>false</enableFeeds>
@@ -17,14 +17,13 @@
   <enableSearch>false</enableSearch>
   <enableSharing>true</enableSharing>
   <enableStreamingApi>true</enableStreamingApi>
-  <label>Pipeline User Setting</label>
+  <label>Pipeline Filter</label>
   <nameField>
-    <displayFormat>PUS-{0000}</displayFormat>
-    <label>Pipeline User Setting Number</label>
+    <label>Filter Name</label>
     <trackHistory>false</trackHistory>
-    <type>AutoNumber</type>
+    <type>Text</type>
   </nameField>
-  <pluralLabel>Pipeline User Settings</pluralLabel>
+  <pluralLabel>Pipeline Filters</pluralLabel>
   <sharingModel>Private</sharingModel>
   <visibility>Public</visibility>
 </CustomObject>

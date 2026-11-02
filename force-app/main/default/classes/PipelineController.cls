@@ -4,7 +4,7 @@
  * Who calls it: the pipelineApp component and the components inside it.
  * What it touches: reads SalesRisks__c (Opportunities & Risks) in the signed-in person's own access (user mode, so
  * org-wide sharing and field access apply as normal), reads the Teams through PipelineScope, and reads and writes one
- * Pipeline_User_Setting__c record per person (their own screen choices). It never changes a deal.
+ * Pipeline_Filter__c settings record per person (flagged Is_User_Settings__c; their own screen choices as one JSON string). It never changes a deal.
  *
  * The three kinds of deal are kept apart and never added together (Robert, 2026-10-25): opportunities, risks and ROSA.
  * The kind comes from the record type's developer name: ends in RISK is a risk, contains ROSA is ROSA, the rest are
@@ -150,10 +150,11 @@ public with sharing class PipelineController {
     c.quarters = activeValues(
       SalesRisks__c.Expected_Closure_Quarter__c.getDescribe()
     );
-    List<Pipeline_User_Setting__c> mine = [
+    List<Pipeline_Filter__c> mine = [
       SELECT Settings_Json__c
-      FROM Pipeline_User_Setting__c
-      WHERE OwnerId = :c.userId
+      FROM Pipeline_Filter__c
+      WHERE OwnerId = :c.userId AND Is_User_Settings__c = TRUE
+      ORDER BY LastModifiedDate DESC
       LIMIT 1
     ];
     c.settingsJson = mine.isEmpty() ? null : mine[0].Settings_Json__c;
@@ -264,14 +265,17 @@ public with sharing class PipelineController {
       throw new AuraHandledException('The settings could not be read.');
     }
     Id me = UserInfo.getUserId();
-    List<Pipeline_User_Setting__c> mine = [
+    List<Pipeline_Filter__c> mine = [
       SELECT Id
-      FROM Pipeline_User_Setting__c
-      WHERE OwnerId = :me
+      FROM Pipeline_Filter__c
+      WHERE OwnerId = :me AND Is_User_Settings__c = TRUE
+      ORDER BY LastModifiedDate DESC
       LIMIT 1
     ];
     if (mine.isEmpty()) {
-      insert as user new Pipeline_User_Setting__c(
+      insert as user new Pipeline_Filter__c(
+        Name = 'Pipeline Settings (do not delete)',
+        Is_User_Settings__c = true,
         Settings_Json__c = settingsJson
       );
     } else {

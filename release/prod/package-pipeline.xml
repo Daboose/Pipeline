@@ -31,15 +31,15 @@
         <name>CustomApplication</name>
     </types>
     <types>
-        <members>Pipeline_Saved_Filter__c.Filter_Json__c</members>
-        <members>Pipeline_Saved_Filter__c.Is_Default__c</members>
-        <members>Pipeline_User_Setting__c.Settings_Json__c</members>
+        <members>Pipeline_Filter__c.Filter_Json__c</members>
+        <members>Pipeline_Filter__c.Is_Default__c</members>
+        <members>Pipeline_Filter__c.Is_User_Settings__c</members>
+        <members>Pipeline_Filter__c.Settings_Json__c</members>
         <members>SalesRisks__c.Expected_Closing_Year__c</members>
         <name>CustomField</name>
     </types>
     <types>
-        <members>Pipeline_Saved_Filter__c</members>
-        <members>Pipeline_User_Setting__c</members>
+        <members>Pipeline_Filter__c</members>
         <name>CustomObject</name>
     </types>
     <types>

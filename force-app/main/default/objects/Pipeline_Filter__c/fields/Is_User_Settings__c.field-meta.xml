@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+  <fullName>Is_User_Settings__c</fullName>
+  <defaultValue>false</defaultValue>
+  <description
+  >Pipeline: ticked on the one record per person that holds their screen settings (the Settings JSON), not a saved filter. Created by the Pipeline screen, as COVRA does with its User Global Settings record. Do not delete.</description>
+  <inlineHelpText
+  >Marks the person's settings record. Created by the Pipeline screen. Do not delete.</inlineHelpText>
+  <label>Is User Settings</label>
+  <trackTrending>false</trackTrending>
+  <type>Checkbox</type>
+</CustomField>

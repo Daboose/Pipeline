@@ -8,7 +8,7 @@ Prepared 2026-11-02, after version 0.52 reached UAT and DEV. **PROD has not been
 
 ## What goes to PROD
 
-New (nothing like it exists in PROD today; checked): 15 Apex classes (7 of them tests), 21 Lightning web components, the Aura app `PipelineOut`, the Visualforce page `PipelineApp`, the Pipeline Lightning app and its tab, 2 static resources (the pipe artwork), 3 permission sets (`Pipeline_User`, `Pipeline_Team_Viewer`, `Pipeline_Quarter_Rule_Bypass`), 2 custom permissions, and 2 custom objects (`Pipeline_Saved_Filter__c`, `Pipeline_User_Setting__c`).
+New (nothing like it exists in PROD today; checked): 15 Apex classes (7 of them tests), 21 Lightning web components, the Aura app `PipelineOut`, the Visualforce page `PipelineApp`, the Pipeline Lightning app and its tab, 2 static resources (the pipe artwork), 3 permission sets (`Pipeline_User`, `Pipeline_Team_Viewer`, `Pipeline_Quarter_Rule_Bypass`), 2 custom permissions, and 1 custom object (`Pipeline_Filter__c`: saved filters, and each person's settings as JSON text).
 
 **Changes to things that already exist (the only ones):** on `SalesRisks__c` a new picklist field `Expected_Closing_Year__c` (years 2023 to 2033, newest first), the validation rule `Pipeline_Quarter_Not_In_The_Past`, the year values added to its 60 record types, and the year field added to its 7 layouts. Nothing else existing is edited.
 
@@ -32,7 +32,7 @@ New (nothing like it exists in PROD today; checked): 15 Apex classes (7 of them 
 
 **Deploy day (changed 2026-11-03 at Robert's suggestion: the validation rule goes in last, so a delay at any point leaves people using the object as before):**
 
-4. **Stage 1 in Gearset (no Apex, no tests):** the objects and fields, the year field, the custom permissions, the `Pipeline_Quarter_Rule_Bypass` permission set, the static resources, and the year on the 60 record types and 7 layouts (the prepared files). **No validation rule yet.**
+4. **Stage 1 in Gearset (no Apex, no tests):** the one object (`Pipeline_Filter__c`) with its 4 fields, the year field, the custom permissions, the `Pipeline_Quarter_Rule_Bypass` permission set, the static resources, and the year on the 60 record types and 7 layouts (the prepared files). **No validation rule yet.**
 5. **By hand:** give System Administrator field access to the four new fields; then give every profile that edits deals (about 11) edit access to `Expected_Closing_Year__c`.
 6. **Load the years** (no validation rule in PROD yet, so no bypass is needed). Regenerate the file on the day with `scripts/pipeline_year_backfill.py`.
 7. **Stage 2 in Gearset (the code):** validate with the 7 Apex test classes (Run specific tests; the deploying user has field access by now), then deploy.

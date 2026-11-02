@@ -95,7 +95,7 @@ private class PipelineFilterControllerTest {
         1,
         [
           SELECT COUNT()
-          FROM Pipeline_Saved_Filter__c
+          FROM Pipeline_Filter__c
           WHERE Is_Default__c = TRUE AND OwnerId = :me.Id
         ]
       );
@@ -104,13 +104,55 @@ private class PipelineFilterControllerTest {
         0,
         [
           SELECT COUNT()
-          FROM Pipeline_Saved_Filter__c
+          FROM Pipeline_Filter__c
           WHERE Is_Default__c = TRUE AND OwnerId = :me.Id
         ]
       );
 
       PipelineFilterController.deleteFilter(a.id);
       System.assertEquals(1, PipelineFilterController.listFilters().size());
+    }
+  }
+
+  @IsTest
+  static void thePersonsSettingsRecordIsNeverAFilter() {
+    User me = pipelineUser('SettingsOwner');
+    System.runAs(me) {
+      PipelineController.saveSettings('{"theme":"light"}');
+      PipelineFilterController.saveFilter(null, 'A filter', JSON_A);
+      System.assertEquals(
+        1,
+        PipelineFilterController.listFilters().size(),
+        'The settings record is not listed as a filter'
+      );
+      Id settingsId = [
+        SELECT Id
+        FROM Pipeline_Filter__c
+        WHERE Is_User_Settings__c = TRUE AND OwnerId = :me.Id
+      ]
+      .Id;
+      try {
+        PipelineFilterController.deleteFilter(settingsId);
+        System.assert(false, 'The filter screen must not delete the settings');
+      } catch (AuraHandledException e) {
+        System.assert(true);
+      }
+      PipelineFilterController.setDefault(null);
+      System.assertEquals(
+        1,
+        [
+          SELECT COUNT()
+          FROM Pipeline_Filter__c
+          WHERE Is_User_Settings__c = TRUE AND OwnerId = :me.Id
+        ],
+        'The settings record is still there'
+      );
+      PipelineController.saveSettings('{"theme":"dark"}');
+      System.assertEquals(
+        2,
+        [SELECT COUNT() FROM Pipeline_Filter__c WHERE OwnerId = :me.Id],
+        'One settings record and one filter: saving settings again adds no record'
+      );
     }
   }
 
@@ -164,9 +206,9 @@ private class PipelineFilterControllerTest {
       );
       System.assertEquals(0, PipelineFilterController.searchOwners('S').size());
     }
-    List<Pipeline_Saved_Filter__c> copies = [
+    List<Pipeline_Filter__c> copies = [
       SELECT Name, OwnerId, Filter_Json__c, Is_Default__c
-      FROM Pipeline_Saved_Filter__c
+      FROM Pipeline_Filter__c
       WHERE OwnerId = :other.Id
     ];
     System.assertEquals(1, copies.size(), 'The receiver owns a copy');
@@ -189,7 +231,7 @@ private class PipelineFilterControllerTest {
     }
     System.assertEquals(
       1,
-      [SELECT COUNT() FROM Pipeline_Saved_Filter__c WHERE OwnerId = :me.Id],
+      [SELECT COUNT() FROM Pipeline_Filter__c WHERE OwnerId = :me.Id],
       'The original is untouched'
     );
   }
@@ -221,7 +263,7 @@ private class PipelineFilterControllerTest {
     }
     System.assertEquals(
       1,
-      [SELECT COUNT() FROM Pipeline_Saved_Filter__c WHERE OwnerId = :member.Id]
+      [SELECT COUNT() FROM Pipeline_Filter__c WHERE OwnerId = :member.Id]
     );
     System.runAs(member) {
       Id f = PipelineFilterController.saveFilter(null, 'Not a manager', JSON_A)

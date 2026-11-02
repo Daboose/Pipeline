@@ -293,7 +293,11 @@ private class PipelineControllerTest {
       );
       System.assertEquals(
         1,
-        [SELECT COUNT() FROM Pipeline_User_Setting__c WHERE OwnerId = :u.Id]
+        [
+          SELECT COUNT()
+          FROM Pipeline_Filter__c
+          WHERE OwnerId = :u.Id AND Is_User_Settings__c = TRUE
+        ]
       );
     }
   }
