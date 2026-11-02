@@ -30,15 +30,17 @@ New (nothing like it exists in PROD today; checked): 15 Apex classes (7 of them 
 2. The usage clean-up (decisions below). Pipeline works without it, but users would see the duplicate lines.
 3. Who is in the first group (a pilot), and who gets `Pipeline_Team_Viewer`.
 
-**Deploy day:**
+**Deploy day (changed 2026-11-03 at Robert's suggestion: the validation rule goes in last, so a delay at any point leaves people using the object as before):**
 
-4. **Validate in Gearset with the Apex tests.** The deploying user must hold `Pipeline_User` (or have field access to the new fields) or two tests fail on field access, not on code. Run all 7 test classes as a set.
-5. **Deploy** the new items plus the field, the validation rule, the record type values and the layouts.
-6. **Field access** for the year on the profiles above (by hand, Robert).
-7. **Load the years.** Give the person loading the `Pipeline_Quarter_Rule_Bypass` permission set (so the validation rule does not refuse the load), load the prepared file, then remove the permission set. `scripts/pipeline_year_backfill.py` makes the file from a read-only export; one is already prepared (see below) but must be made again on the day, because "current or next quarter" depends on the date.
-8. **Usage clean-up**, if chosen.
-9. **Pilot:** assign `Pipeline_User` to Robert and a few others; look at their own deals, the usages and case bookings, a refused save of a past quarter.
-10. **Roll out:** assign `Pipeline_User` to everyone who uses it (and `Pipeline_Team_Viewer` to the few who see every team).
+4. **Stage 1 in Gearset (no Apex, no tests):** the objects and fields, the year field, the custom permissions, the `Pipeline_Quarter_Rule_Bypass` permission set, the static resources, and the year on the 60 record types and 7 layouts (the prepared files). **No validation rule yet.**
+5. **By hand:** give System Administrator field access to the four new fields; then give every profile that edits deals (about 11) edit access to `Expected_Closing_Year__c`.
+6. **Load the years** (no validation rule in PROD yet, so no bypass is needed). Regenerate the file on the day with `scripts/pipeline_year_backfill.py`.
+7. **Stage 2 in Gearset (the code):** validate with the 7 Apex test classes (Run specific tests; the deploying user has field access by now), then deploy.
+8. **Pilot:** assign `Pipeline_User` to Robert and a few others; look at their own deals, the usages and case bookings.
+9. **Stage 3 (go-live): the validation rule**, as its own small deploy (no Apex, no tests). Just before it, refresh the years for deals whose quarter changed since the load, so none goes live with a stale pair.
+10. **Roll out:** assign `Pipeline_User` to everyone who uses it (and `Pipeline_Team_Viewer` to the few who see every team); warn the managers about the quarter rule and the ratings users about the ratings.
+
+Until step 9 nothing changes for anyone on the standard pages (the year is an optional field), so a delay at any point is harmless.
 
 **Taking it back, if needed:** unassign `Pipeline_User` (Pipeline disappears for people; it is additive and changes no deal). To undo the changes to existing things: deactivate the validation rule, take the year off the layouts. The year field and its values can stay; nothing reads them except Pipeline and the rule.
 
