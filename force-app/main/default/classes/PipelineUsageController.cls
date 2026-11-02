@@ -199,7 +199,7 @@ public with sharing class PipelineUsageController {
     }
   }
 
-  /** Deletes one usage record (one surgeon, hospital and portfolio). */
+  /** Deletes one usage record (one surgeon, hospital and portfolio), clearing its lines first so the surgeon's ratings recalculate. */
   @AuraEnabled
   public static void deleteUsage(Id usageId) {
     try {
@@ -209,6 +209,14 @@ public with sharing class PipelineUsageController {
         WHERE Id = :usageId
         WITH USER_MODE
       ];
+      // The roll-ups that keep the surgeon's ratings up to date recalculate when a usage is created or edited, not when one is
+      // deleted. So the lines are cleared first (an edit, which recalculates), and the now-empty record is then deleted.
+      // If the clearing is refused (no edit access), the record is still deleted.
+      for (List<String> f : FIELDS.values()) {
+        u.put(f[0], null);
+        u.put(f[1], 0);
+      }
+      Database.update(new List<Usage__c>{ u }, false, AccessLevel.USER_MODE);
       delete as user u;
     } catch (Exception e) {
       throw fail(e.getMessage());

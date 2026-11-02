@@ -1,8 +1,8 @@
 # Pipeline — Build Spec
 
-## Where we are (end of session, 2026-11-01; Robert is resuming in the morning)
+## Where we are (updated 2026-11-02, end of a long session)
 
-**State.** Pipeline **version 0.41 is in UAT only; DEV and PROD have nothing.** Robert releases to PROD by Gearset. The repo is `Daboose/Pipeline`. **Git:** commit `bcc75c6` (versions 0.35 to 0.40) is committed locally but **not pushed** (the safety check refuses `git push origin main` when Claude runs it; Robert pushes it himself, or adds an allow rule). GitHub stops at `de66aab` (0.34). **Not yet committed:** version 0.41 (header: name and version removed, the "As at" time kept; the version is in the settings panel), the quarter-and-year design note and these documentation updates. Tests: 95 Jest tests pass; Apex test classes `PipelineControllerTest`, `PipelineChatterControllerTest`, `PipelineFilterControllerTest`, `PipelineLookupControllerTest`, `PipelineSurgeonControllerTest` all pass in UAT.
+**State.** Pipeline **version 0.52 is in UAT and DEV; PROD has nothing.** Robert releases to PROD by Gearset. **The plan for PROD, with the checks already made, the order of work and the decisions Robert has to make, is in `docs/Pipeline_PROD_Release_Plan.md`: start there.** The repo is `Daboose/Pipeline` (everything pushed, commit `34242c2` and later). Built since the notes below were written: the quarter and year (field, rule, backfill, screen), a saved heading colour, the Surgeon Usages and My Case Bookings panels with edit/delete/add usages and create/adjust from bookings, badges, and list headings that name a filtered team member; each has a section below.
 
 **Built and working in UAT** (details in the per-version sections below): the manager and rep screen (summary panels, three lists with a Columns picker and grouping by rep, People table, the options bar and the top row); the deal flyout (editable fields with record pickers, stage path, Usages, Surgeries, Chatter with @mentions); saved filters in one **My filters** panel (run, star, rename, share, delete, Save as new, Save over; filters also hold the column layout); Change selection (locked top and action rows, team tree that opens to the chosen team); settings; light and dark; the motion standard (fold and slide); round clear buttons on every search box; every user lookup limited to active, non-portal users.
 
@@ -12,17 +12,14 @@
 
 **The Pipeline Lightning app was restored in UAT on 2026-11-02** (Robert's go-ahead), so `Pipeline_User` lines up with it and a permission set deploy will work.
 
-**To-do list (replaces the older lists below):**
+**To-do list (replaces the older lists below; updated 2026-11-02, end of session):**
 
-1. Quarter and year: step 1 (field, record types, layouts, `Pipeline_User`) is in UAT; next the backfill, the validation rule and the screen changes. (Original plan: field, access in `Pipeline_User`, the year added beside the quarter on every UAT layout that carries it, backfill, validation rule, Pipeline reads and edits the year). In PROD the 7 layouts get the field by hand (list in the design note).
-2. (Done 2026-11-02: the Pipeline app restored in UAT.)
-3. Robert to check: do the @mentions show as real mentions in Salesforce's own feed, did the notification arrive, does a reply with a mention work (a post with mentions and a Background Information edit already confirmed by him).
-4. A tidier way for a person outside a team to pick their starting team; a look at the PROD team structure (read-only).
-5. Filters: sort by recent use; a "from Robert" label on a shared filter.
-6. Test, as another user, the manager view (team tree, owner search, My team, no team); the stage bar at 5th Case (teal); saving a changed Primary HCP or Healthcare facility.
-7. Light-mode and phone checks of the newer parts (My filters panel, mention box, folds, top row).
-8. DEV only when Robert says UAT is fine; before PROD, run all five Apex test classes as a set (75% coverage), and check each field exists in PROD (UAT and PROD differ on `SalesRisks__c`).
-9. Later: rep mobile (Q4, Q5, Q7, Q12); events (Q31); the "something additional" for the usages warning; Chatter groups in mentions; "sounds-like" name matching if Robert wants it; his answers on the business questions Q44, Q19, Q20 and the sample-opportunity walkthrough (Q11).
+1. **PROD deployment by Robert with Gearset (morning of 2026-11-03):** two stages, see `release/prod/README.md`; open question whether Gearset is connected to GitHub (then Claude makes a branch `release-prod`).
+2. After the deploy: field access for the year on about 11 profiles; load the years (regenerate the file with `scripts/pipeline_year_backfill.py` on the day; bypass permission set while loading); pilot; roll out; warn the managers about the quarter rule and the ratings users about the ratings moving.
+3. DEV: sync the delete fix (`PipelineUsageController`), and ZB on DEV's ANZ KNEE usage record type (needs Robert's sign-off).
+4. UAT's account roll-ups are stale after its usage clean-up (not recalculated).
+5. Robert's checks still to do: the rep view and another manager's view; light mode and phone for the newer parts; the older items 3 to 7 of the earlier list (mentions as real mentions, saving a changed Primary HCP, the 5th Case colour and so on).
+6. Later: a warning on unsaved usage edits; remove the unused `pipelineSurgeries` and `getSurgeries`; rep mobile (Q4, Q5, Q7, Q12); events (Q31); Chatter groups in mentions; sounds-like name matching; the business questions Q44, Q19, Q20, Q11.
 
 **Choices made without asking** (to confirm or reverse; the earlier ones are listed in the sections below): a starred default filter wins over the last selection; running a filter replaces all the person's list layouts with the filter's; Save over has no extra confirmation; the explanatory sentence in Change selection scrolls with the middle; mention matching is "any part of the name, either order, exact beginnings first, one slip in spelling only when nothing matches exactly and only after the first letter".
 
