@@ -24,16 +24,19 @@ private class PipelineFilterControllerTest {
       LanguageLocaleKey = 'en_US'
     );
     insert u;
-    insert new PermissionSetAssignment(
-      AssigneeId = u.Id,
-      PermissionSetId = [
-        SELECT Id
-        FROM PermissionSet
-        WHERE Name = 'Pipeline_User'
-        LIMIT 1
-      ]
-      .Id
-    );
+    // a permission set assignment is a setup record: it goes in its own block so a later insert of Team__c is not a mixed update
+    System.runAs(new User(Id = UserInfo.getUserId())) {
+      insert new PermissionSetAssignment(
+        AssigneeId = u.Id,
+        PermissionSetId = [
+          SELECT Id
+          FROM PermissionSet
+          WHERE Name = 'Pipeline_User'
+          LIMIT 1
+        ]
+        .Id
+      );
+    }
     return u;
   }
 
