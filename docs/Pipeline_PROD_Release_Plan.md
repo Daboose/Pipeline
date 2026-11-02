@@ -32,7 +32,7 @@ New (nothing like it exists in PROD today; checked): 15 Apex classes (7 of them 
 
 **Deploy day (changed 2026-11-03 at Robert's suggestion: the validation rule goes in last, so a delay at any point leaves people using the object as before):**
 
-4. **Stage 1 in Gearset (no Apex, no tests):** the one object (`Pipeline_Filter__c`) with its 4 fields, the year field, the custom permissions, the `Pipeline_Quarter_Rule_Bypass` permission set, the static resources, and the year on the 60 record types and 7 layouts (the prepared files). **No validation rule yet.**
+4. **Stage 1 in Gearset (no Apex, no tests):** the one object (`Pipeline_Filter__c`) with its 4 fields, the year field, the custom permissions, the `Pipeline_Quarter_Rule_Bypass` permission set, the static resources, (the year values reach the 60 record types by themselves). **No validation rule yet.**
 5. **By hand:** give System Administrator field access to the four new fields; then give every profile that edits deals (about 11) edit access to `Expected_Closing_Year__c`.
 6. **Load the years** (no validation rule in PROD yet, so no bypass is needed). Regenerate the file on the day with `scripts/pipeline_year_backfill.py`.
 7. **Stage 2 in Gearset (the code):** validate with the 7 Apex test classes (Run specific tests; the deploying user has field access by now), then deploy.
@@ -62,11 +62,9 @@ Until step 9 nothing changes for anyone on the standard pages (the year is an op
 
 **To run it (Robert; I never change PROD):** (1) take a fresh backup and regenerate the list with the script; (2) look through the review file (a sample of each reason); (3) tell whoever uses the ratings or the usage totals (reports, Power BI, wallboards), with the rating-changes file; (4) in a quiet period, delete the ids with Data Loader (or Workbench), batches of 200, (the roll-ups do not recalculate on delete, so see step 6b); (5) check: usages should equal the backup count minus the ids deleted (5,814 today), and a query for usages with no record type should return none, and a few surgeons' ratings should match the changes file; (6) to undo: the Recycle Bin restores for about 15 days, otherwise re-insert from the backup file (new ids).
 
-## Prepared for the deploy (2026-11-02)
+## Prepared for the deploy (updated 2026-11-03)
 
-`release/prod/` in the repo: **(1)** `package-pipeline.xml`, the manifest of everything in `force-app/` (54 items of 12 types); **(2)** PROD's own 60 record types and 7 layouts with only the year added, made from a fresh read-only retrieve from PROD and checked line by line (67 files, nothing removed or changed, only year lines added); and a README with the order on the day. Whichever way Gearset is used (compare org to org and pick these items, or compare against this repo), the year files are PROD plus the year and nothing else.
-
-Also changed since the plan was written: deleting a usage with the red cross in the Usages panel now clears its lines first, so the surgeon's ratings recalculate (the roll-ups do not recalculate on a delete); proven in UAT with a rolled-back test.
+`release/prod/` in the repo: the manifest of everything in `force-app/` (`package-pipeline.xml`) and a README with the Gearset steps. **The year on record types and layouts (corrected 2026-11-03):** the record types need nothing (when the year field was deployed in stage 1 Salesforce added its 11 values to all 60 record types itself; verified in PROD). **The 7 layouts** are on the branch **`release-prod-layouts-year`**: PROD's own layouts read on 2026-11-03 plus the year, checked line by line (nothing removed, only year lines added); compare that branch to PROD in Gearset (Robert confirmed Gearset is connected to the repo). UAT's layouts and record types must not be used: they differ from PROD's (UAT-only fields and picklists, a field PROD places that UAT lacks, five brand values PROD has that UAT lacks, different buttons). The prepared record type files of 2026-11-02 were incomplete (only 2 of 19 picklists) and have been deleted.
 
 ## Decisions needed from Robert
 

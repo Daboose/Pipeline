@@ -6,11 +6,11 @@ Nothing here has been deployed to PROD. PROD is Robert's, by Gearset.
 
 `package-pipeline.xml` lists everything in `force-app/` as a manifest: 54 items of 12 types (Apex classes, the Visualforce page, the Aura app, the Pipeline app and tab, the new field, 1 custom object (`Pipeline_Filter__c`, which holds both the saved filters and each person's settings as JSON text), 2 custom permissions, the Lightning web components, 3 permission sets, 2 static resources and the validation rule). All of it is new to PROD except the field `SalesRisks__c.Expected_Closing_Year__c` and the validation rule `Pipeline_Quarter_Not_In_The_Past`, which are additions to an existing object. Every Pipeline Apex test passes in UAT and DEV (see the build spec for the one DEV record type caveat that PROD does not have).
 
-## 2. The year on PROD's own record types and layouts: `year-record-types-and-layouts/`
+## 2. The year on the layouts: the branch `release-prod-layouts-year`
 
-PROD's 60 `SalesRisks__c` record types and 7 layouts, **read from PROD on 2026-11-02**, with only the year added: the values 2033 down to 2023 for `Expected_Closing_Year__c` on each record type, and the year field placed after the quarter on each layout that carries the quarter. Checked line by line against PROD's own files: **no line is removed or changed, only year lines are added (67 files, 0 unexpected differences).** Because they are PROD's own files, they carry nothing from UAT or DEV.
+**Record types need nothing:** when the year field went into PROD (stage 1), Salesforce added its 11 values to all 60 `SalesRisks__c` record types itself (checked in PROD on 2026-11-03: every one carries the year with all 11 values). **Layouts do need it,** and UAT's layouts must NOT be used: they differ from PROD's (they lack fields PROD places, carry a field PROD does not, and have different buttons). So the 7 layouts are on a separate branch of this repo, **`release-prod-layouts-year`**: PROD's own 7 layouts, read from PROD on 2026-11-03, with only the year added (checked line by line: nothing removed, only year lines added). In Gearset compare that branch to PROD and tick the 7 layouts only; each should show as changed, with year lines the only difference.
 
-If PROD's record types or layouts change before the release, make these again (the script is `scripts/pipeline_add_year_to_deals.py`; it needs record types and layouts retrieved from PROD first).
+(An earlier set of prepared record type files was removed on 2026-11-03: they held only the quarter and year picklists, not PROD's full record type, and are not needed.)
 
 ## How to deploy with Gearset: three stages (the validation rule goes in last)
 
@@ -20,14 +20,14 @@ Use **Compare and deploy**: source = UAT (the tested org; DEV is level with it),
 
 ### Stage 1: the data model (no Apex, no tests)
 
-| Tick                                 | What                                                                                                                                                                                                                                                                                           |
-| ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Custom object                        | `Pipeline_Filter__c` (label "Pipeline Filter", plural "Pipeline Filters", private) with its 4 fields: `Filter_Json__c`, `Settings_Json__c`, `Is_Default__c`, `Is_User_Settings__c`                                                                                                             |
-| One field on an existing object      | `SalesRisks__c.Expected_Closing_Year__c` (tick the **field**, not the whole `SalesRisks__c` object)                                                                                                                                                                                            |
-| Custom permissions                   | `Pipeline_Bypass_Quarter_Rule`, `Pipeline_View_Any_Team`                                                                                                                                                                                                                                       |
-| Permission set                       | `Pipeline_Quarter_Rule_Bypass` (only this one now: it has no Apex)                                                                                                                                                                                                                             |
-| Static resources                     | `Pipeline_Pipe_Blank`, `Pipeline_Pipe_Blank_Wide`                                                                                                                                                                                                                                              |
-| The year on record types and layouts | the 60 `SalesRisks__c` record types and 7 layouts: **use the files in `year-record-types-and-layouts/`** (PROD's own plus the year). If you compare from UAT instead, open each one and confirm the only difference is the year lines; if anything else differs, leave it out and tell Claude. |
+| Tick                            | What                                                                                                                                                                               |
+| ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Custom object                   | `Pipeline_Filter__c` (label "Pipeline Filter", plural "Pipeline Filters", private) with its 4 fields: `Filter_Json__c`, `Settings_Json__c`, `Is_Default__c`, `Is_User_Settings__c` |
+| One field on an existing object | `SalesRisks__c.Expected_Closing_Year__c` (tick the **field**, not the whole `SalesRisks__c` object)                                                                                |
+| Custom permissions              | `Pipeline_Bypass_Quarter_Rule`, `Pipeline_View_Any_Team`                                                                                                                           |
+| Permission set                  | `Pipeline_Quarter_Rule_Bypass` (only this one now: it has no Apex)                                                                                                                 |
+| Static resources                | `Pipeline_Pipe_Blank`, `Pipeline_Pipe_Blank_Wide`                                                                                                                                  |
+| (not in this stage)             | The record types need nothing (Salesforce added the year values itself). The 7 layouts come after, from the branch `release-prod-layouts-year`: see section 2.                     |
 
 **Then, by hand, before stage 2:** give your own profile (System Administrator) field access to the four new fields (Setup, the field, Set Field-Level Security), so the stage 2 tests can run as you. The other profiles come later (see the release plan).
 
