@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<PermissionSet xmlns="http://soap.sforce.com/2006/04/metadata">
+  <customPermissions>
+    <enabled>true</enabled>
+    <name>Pipeline_Bypass_Quarter_Rule</name>
+  </customPermissions>
+  <description
+  >Pipeline: the data-load switch. Assign it to the admin only while loading or correcting old deals, so the rule that refuses a quarter and year in the past does not stop the load. Remove it afterwards. Gives no access to deals.</description>
+  <hasActivationRequired>false</hasActivationRequired>
+  <label>Pipeline Quarter Rule Bypass</label>
+</PermissionSet>

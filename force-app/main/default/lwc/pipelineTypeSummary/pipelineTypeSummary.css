@@ -22,7 +22,7 @@
   font-weight: 800;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--pipe);
+  color: var(--head);
 }
 .tshead small {
   margin-left: 12px;

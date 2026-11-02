@@ -34,6 +34,25 @@ describe("c-pipeline-type-list", () => {
       document.body.removeChild(document.body.firstChild);
   });
 
+  it("puts the team member's name after the heading when filtered down to one person", async () => {
+    const el = make({ kind: "opp", deals: [deal("1", "Ann")] });
+    await Promise.resolve();
+    expect(el.shadowRoot.querySelector(".lhead h3").textContent).toBe(
+      "1 opportunity"
+    );
+    el.ownerName = "Michael Hewitt";
+    await Promise.resolve();
+    expect(el.shadowRoot.querySelector(".lhead h3").textContent).toBe(
+      "1 opportunity for Michael Hewitt"
+    );
+    el.deals = [];
+    el.kind = "rosa";
+    await Promise.resolve();
+    expect(el.shadowRoot.querySelector(".lhead h3").textContent).toBe(
+      "0 ROSA deals for Michael Hewitt"
+    );
+  });
+
   it("groups by sales rep when there is more than one rep", async () => {
     const el = make({
       kind: "opp",

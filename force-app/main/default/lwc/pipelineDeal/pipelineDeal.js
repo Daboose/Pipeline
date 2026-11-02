@@ -17,8 +17,15 @@ import {
   ageDays,
   chatterBand,
   stageBand,
+  suggestYear,
+  quarterIsPast,
   STAGE_COLOURS
 } from "c/pipelineFormat";
+
+const SLIDE_IN_DELAY_MS = 30; // lets the closed position be drawn first, so the slide runs
+const SLIDE_OUT_MS = 450; // a little longer than the slide itself (0.4 s in the style sheet)
+const QUARTER_FIELD = "Expected_Closure_Quarter__c";
+const YEAR_FIELD = "Expected_Closing_Year__c";
 
 /**
  * The fields shown for each kind of deal: [API name, label, kind of control, required on the screen].
@@ -32,6 +39,7 @@ const FIELDS = {
     ["Healthcare_Facility__c", "Healthcare facility", "lookup"],
     ["Stage__c", "Stage", "picklist", true],
     ["Expected_Closure_Quarter__c", "Expected closing quarter", "picklist"],
+    ["Expected_Closing_Year__c", "Expected closing year", "picklist"],
     ["AmountPerYear__c", "Expected annual value", "number"],
     ["CurrencyIsoCode", "Currency", "picklist"],
     ["UnitsCasesPerYear__c", "Expected annual units / cases", "number"],
@@ -49,6 +57,7 @@ const FIELDS = {
     ["Healthcare_Facility__c", "Healthcare facility", "lookup"],
     ["Stage__c", "Stage", "picklist", true],
     ["Expected_Closure_Quarter__c", "Expected closing quarter", "picklist"],
+    ["Expected_Closing_Year__c", "Expected closing year", "picklist"],
     ["AmountPerYear__c", "Annual value at risk", "number"],
     ["CurrencyIsoCode", "Currency", "picklist"],
     ["Portfolio__c", "Portfolio", "multi", false, true],
@@ -66,6 +75,7 @@ const FIELDS = {
     ["CurrencyIsoCode", "Currency", "picklist"],
     ["Stage__c", "Stage", "picklist", true],
     ["Expected_Closure_Quarter__c", "Expected closing quarter", "picklist"],
+    ["Expected_Closing_Year__c", "Expected closing year", "picklist"],
     ["Install_Date__c", "Install date", "date"],
     ["Close_Date__c", "Close date", "date"],
     ["ROSA_Platform_Shoulder_Stage__c", "ROSA platform: shoulder", "picklist"],
@@ -121,8 +131,16 @@ function parseErrors(e) {
  * on the standard page. Nothing is saved until Save changes is pressed.
  */
 export default class PipelineDeal extends LightningElement {
+  _open = false;
   /** True once the flyout is to be slid in from the right; false slides it away (the screen keeps it on the page while it slides). */
-  @api open = false;
+  @api
+  get open() {
+    return this._open;
+  }
+  set open(value) {
+    this._open = value;
+    if (!value) this.resetPanel(); // the flyout is sliding away; it opens next time with no panel over it
+  }
   _deal;
   @api index = 0;
   @api total = 0;
@@ -131,7 +149,11 @@ export default class PipelineDeal extends LightningElement {
 
   draft = {};
   draftNames = {}; // the names of records picked in this edit, by field
-  savedTick = 0; // counts saves, so the Usages and Surgeries cards read again
+  savedTick = 0; // counts saves, so the Usages and Case Bookings panels read again
+  panel = ""; // which panel is over the deal: usages, cases or none
+  panelMounted = false; // the panel is on the page (it stays a moment after closing, to slide away)
+  panelOn = false; // and slid into view
+  panelTimer;
   errors = [];
   savedMsg = false;
   saving = false;
@@ -140,6 +162,76 @@ export default class PipelineDeal extends LightningElement {
 
   get scrimCls() {
     return this.open ? "scrim on" : "scrim";
+  }
+
+  /* ----- the Usages and Case Bookings panels (slide in over everything under the header; the header and bottom bar stay) ----- */
+  get usagesOpen() {
+    return this.panelMounted && this.panel === "usages";
+  }
+  get casesOpen() {
+    return this.panelMounted && this.panel === "cases";
+  }
+  /** The Open in Salesforce link is for the deal page; it would mislead beside the Usages or Case Bookings panel. */
+  get showOpenRecord() {
+    return !this.panelMounted;
+  }
+  get layerCls() {
+    return this.panelOn ? "layer on" : "layer";
+  }
+  get usagesBtnCls() {
+    return this.panelOn && this.panel === "usages" ? "btn nav on" : "btn nav";
+  }
+  get casesBtnCls() {
+    return this.panelOn && this.panel === "cases" ? "btn nav on" : "btn nav";
+  }
+  get panelTitle() {
+    return this.panel === "cases" ? "My case bookings" : "Surgeon usages";
+  }
+  get panelSubtitle() {
+    return (this._deal && this._deal.hcp) || "";
+  }
+  /** Opens a panel (put on the page first, switched on a moment later so the slide runs), or swaps to it if another is open. */
+  openPanel(kind) {
+    clearTimeout(this.panelTimer);
+    this.panel = kind;
+    if (this.panelMounted && this.panelOn) return;
+    this.panelMounted = true;
+    this.panelOn = false;
+    // eslint-disable-next-line @lwc/lwc/no-async-operation
+    this.panelTimer = setTimeout(() => {
+      this.panelOn = true;
+    }, SLIDE_IN_DELAY_MS);
+  }
+  /** Closes the panel: switched off first, taken off the page once it has slid away. */
+  closePanel() {
+    if (!this.panelMounted) return;
+    clearTimeout(this.panelTimer);
+    this.panelOn = false;
+    // eslint-disable-next-line @lwc/lwc/no-async-operation
+    this.panelTimer = setTimeout(() => {
+      this.panelMounted = false;
+      this.panel = "";
+    }, SLIDE_OUT_MS);
+  }
+  resetPanel() {
+    clearTimeout(this.panelTimer);
+    this.panelOn = false;
+    this.panelMounted = false;
+    this.panel = "";
+  }
+  handleUsagesButton() {
+    if (this.panelOn && this.panel === "usages") this.closePanel();
+    else this.openPanel("usages");
+  }
+  handleCasesButton() {
+    if (this.panelOn && this.panel === "cases") this.closePanel();
+    else this.openPanel("cases");
+  }
+  handlePanelClose() {
+    this.closePanel();
+  }
+  disconnectedCallback() {
+    clearTimeout(this.panelTimer);
   }
   get flyCls() {
     return this.open ? "fly on" : "fly";
@@ -358,7 +450,26 @@ export default class PipelineDeal extends LightningElement {
   }
 
   /* ----- fields ----- */
+  /**
+   * The rows of the form. The closing year sits in the same box as the closing quarter (two lists side by side) when
+   * the person can edit both, so a quarter is never picked without seeing its year; with no edit access to the year it
+   * stays a row of its own, read only.
+   */
   get fieldRows() {
+    const rows = this.rawFieldRows;
+    const quarter = rows.find((r) => r.api === QUARTER_FIELD);
+    const year = rows.find((r) => r.api === YEAR_FIELD);
+    if (!(quarter && year && quarter.isSelect && year.isSelect)) return rows;
+    quarter.pair = year;
+    quarter.label = "Expected closing quarter and year";
+    quarter.cls =
+      "field paired" +
+      (QUARTER_FIELD in this.draft || YEAR_FIELD in this.draft
+        ? " changed"
+        : "");
+    return rows.filter((r) => r !== year);
+  }
+  get rawFieldRows() {
     if (!this.fieldsLoaded) return [];
     return FIELDS[this.kind].map(([fieldName, label, type, req, wide]) => {
       const value = this.valueOf(fieldName);
@@ -457,7 +568,25 @@ export default class PipelineDeal extends LightningElement {
     this.errors = [];
   }
   handleSelect(event) {
-    this.setDraft(event.target.dataset.api, event.target.value);
+    const field = event.target.dataset.api;
+    this.setDraft(field, event.target.value);
+    if (field === QUARTER_FIELD) this.suggestYearFor(event.target.value);
+  }
+  /**
+   * Picking a quarter fills in its year when there is none yet, or when the year it has would put the quarter in the
+   * past (the next occurrence of the quarter; see suggestYear). A year the person has already chosen that is still
+   * current or ahead is left alone. The person can change the year afterwards.
+   */
+  suggestYearFor(quarter) {
+    const yearField = YEAR_FIELD;
+    if (!quarter || !this.updateable(yearField)) return;
+    const year = this.valueOf(yearField);
+    const want = String(suggestYear(quarter));
+    const offered = (this.choices(yearField) || []).some(
+      (c) => c.value === want
+    );
+    if ((!year || quarterIsPast(quarter, year)) && offered)
+      this.setDraft(yearField, want);
   }
   handleText(event) {
     this.setDraft(event.target.dataset.api, event.target.value);

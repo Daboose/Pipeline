@@ -147,7 +147,7 @@ describe("c-pipeline-filter-model", () => {
       ownerId: "u1",
       segment: "Knee",
       brands: "A;B",
-      quarter: "Q2",
+      quarter: "Q2 2027",
       repPriority: true,
       statePriority: false,
       onHold: false,
@@ -163,8 +163,20 @@ describe("c-pipeline-filter-model", () => {
     expect(clientMatch(d, { ...f, states: ["Victoria"] }, NOW)).toBe(true);
     expect(clientMatch(d, { ...f, states: ["NSW", "QLD"] }, NOW)).toBe(false);
     expect(clientMatch(d, { ...f, brands: ["B"] }, NOW)).toBe(true);
-    expect(clientMatch(d, { ...f, qFrom: "Q3" }, NOW)).toBe(false);
-    expect(clientMatch(d, { ...f, qFrom: "Q1", qTo: "Q2" }, NOW)).toBe(true);
+    expect(clientMatch(d, { ...f, qFrom: "Q3 2027" }, NOW)).toBe(false);
+    expect(
+      clientMatch(d, { ...f, qFrom: "Q1 2027", qTo: "Q2 2027" }, NOW)
+    ).toBe(true);
+    expect(clientMatch(d, { ...f, qTo: "Q1 2027" }, NOW)).toBe(false); // the year counts, not just the quarter
+    // a range saved before years existed ("Q1" to "Q4") still means the year in play (NOW is in Q4 2026)
+    expect(
+      clientMatch(
+        { ...d, quarter: "Q2 2026" },
+        { ...f, qFrom: "Q1", qTo: "Q4" },
+        NOW
+      )
+    ).toBe(true);
+    expect(clientMatch(d, { ...f, qFrom: "Q1", qTo: "Q4" }, NOW)).toBe(false);
     expect(
       clientMatch({ ...d, quarter: null }, { ...f, qFrom: "Q1" }, NOW)
     ).toBe(false);

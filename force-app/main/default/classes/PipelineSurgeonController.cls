@@ -32,6 +32,19 @@ public with sharing class PipelineSurgeonController {
     public String company;
     @AuraEnabled
     public Decimal cases;
+    /** For editing: the usage record this line belongs to, its product line (stems, cups, knee, anatomical, reverse, cmft), the hospital and the record type; empty is true for a line with no data yet. */
+    @AuraEnabled
+    public Id usageId;
+    @AuraEnabled
+    public String key;
+    @AuraEnabled
+    public Id hospitalId;
+    @AuraEnabled
+    public String recordType;
+    @AuraEnabled
+    public Id recordTypeId;
+    @AuraEnabled
+    public Boolean empty = false;
   }
 
   public class Usages {
@@ -48,6 +61,15 @@ public with sharing class PipelineSurgeonController {
     public Datetime oldest;
     @AuraEnabled
     public List<UsageLine> lines = new List<UsageLine>();
+    /** What the signed-in person may do with usages (object permissions), and the portfolios they may add (with the record type each would be saved as). */
+    @AuraEnabled
+    public Boolean canEdit = false;
+    @AuraEnabled
+    public Boolean canCreate = false;
+    @AuraEnabled
+    public Boolean canDelete = false;
+    @AuraEnabled
+    public List<PipelineUsageController.AddOption> addable = new List<PipelineUsageController.AddOption>();
   }
 
   public class SurgeryCount {
@@ -114,6 +136,9 @@ public with sharing class PipelineSurgeonController {
       SELECT
         Id,
         LastModifiedDate,
+        RecordTypeId,
+        RecordType.Name,
+        Healthcare_Facility__c,
         Healthcare_Facility__r.Name,
         CompanyHipStems__c,
         CasesPAHipStem__c,
@@ -139,8 +164,15 @@ public with sharing class PipelineSurgeonController {
       if (out.oldest == null || u.LastModifiedDate < out.oldest) {
         out.oldest = u.LastModifiedDate;
       }
-      out.lines.addAll(linesOf(u, u.Healthcare_Facility__r?.Name));
+      out.lines.addAll(recordLines(u));
     }
+    Schema.DescribeSObjectResult usageInfo = Usage__c.SObjectType.getDescribe();
+    out.canEdit = usageInfo.isUpdateable();
+    out.canCreate = usageInfo.isCreateable();
+    out.canDelete = usageInfo.isDeletable();
+    out.addable = out.canCreate
+      ? PipelineUsageController.addOptions()
+      : new List<PipelineUsageController.AddOption>();
     return out;
   }
 
@@ -208,6 +240,71 @@ public with sharing class PipelineSurgeonController {
   }
 
   /**
+   * All the lines of one usage record for the screen: the lines with data (see linesOf), each tagged with the record, and
+   * for a record whose record type names its portfolio, also an empty line for each product line of that portfolio that has
+   * no data yet (so a hip usage with only stems can be given cups). A record with no usable record type shows only its lines.
+   */
+  @TestVisible
+  private static List<UsageLine> recordLines(Usage__c u) {
+    String hospital = u.Healthcare_Facility__r?.Name;
+    String recordType = u.RecordType?.Name;
+    String portfolio = PipelineUsageController.portfolioOf(recordType);
+    List<UsageLine> lines = linesOf(u, hospital);
+    if (portfolio != null) {
+      Set<String> have = new Set<String>();
+      for (UsageLine l : lines) {
+        have.add(l.key);
+      }
+      for (String key : PipelineUsageController.keysFor(portfolio)) {
+        if (!have.contains(key)) {
+          UsageLine blank = new UsageLine();
+          blank.hospital = hospital;
+          blank.portfolio = portfolio;
+          blank.label = labelOf(key);
+          blank.key = key;
+          blank.empty = true;
+          lines.add(blank);
+        }
+      }
+      lines.sort(new LineOrder());
+    }
+    for (UsageLine l : lines) {
+      l.usageId = u.Id;
+      l.hospitalId = u.Healthcare_Facility__c;
+      l.recordType = recordType;
+      l.recordTypeId = u.RecordTypeId;
+    }
+    return lines;
+  }
+
+  private static String labelOf(String key) {
+    return new Map<String, String>{
+        'stems' => 'Stems',
+        'cups' => 'Cups',
+        'knee' => 'Knee',
+        'anatomical' => 'Anatomical',
+        'reverse' => 'Reverse',
+        'cmft' => 'CMFT'
+      }
+      .get(key);
+  }
+
+  /** Keeps a record's lines in the product order (stems before cups, anatomical before reverse). */
+  private class LineOrder implements System.Comparator<UsageLine> {
+    public Integer compare(UsageLine a, UsageLine b) {
+      List<String> order = new List<String>{
+        'stems',
+        'cups',
+        'knee',
+        'anatomical',
+        'reverse',
+        'cmft'
+      };
+      return order.indexOf(a.key) - order.indexOf(b.key);
+    }
+  }
+
+  /**
    * The lines one usage record gives: hip stems and hip cups (each with its own company and cases), knee, shoulder
    * anatomical and reverse, and CMFT. A product with no company and no cases (blank or 0) is left out.
    */
@@ -219,15 +316,25 @@ public with sharing class PipelineSurgeonController {
       hospital,
       'Hip',
       'Stems',
+      'stems',
       u.CompanyHipStems__c,
       u.CasesPAHipStem__c
     );
-    add(out, hospital, 'Hip', 'Cups', u.CompanyHipCups__c, u.CasesPAHipCup__c);
+    add(
+      out,
+      hospital,
+      'Hip',
+      'Cups',
+      'cups',
+      u.CompanyHipCups__c,
+      u.CasesPAHipCup__c
+    );
     add(
       out,
       hospital,
       'Knee',
       'Knee',
+      'knee',
       u.CompanyTotalKnee__c,
       u.CasesPATotalKnee__c
     );
@@ -236,6 +343,7 @@ public with sharing class PipelineSurgeonController {
       hospital,
       'Shoulder',
       'Anatomical',
+      'anatomical',
       u.CompanyAnatomical__c,
       u.CasesPAAnatomical__c
     );
@@ -244,10 +352,19 @@ public with sharing class PipelineSurgeonController {
       hospital,
       'Shoulder',
       'Reverse',
+      'reverse',
       u.CompanyReverse__c,
       u.CasesPAReverse__c
     );
-    add(out, hospital, 'CMF', 'CMFT', u.Company_CMFT__c, u.Cases_PA_CMFT__c);
+    add(
+      out,
+      hospital,
+      'CMF',
+      'CMFT',
+      'cmft',
+      u.Company_CMFT__c,
+      u.Cases_PA_CMFT__c
+    );
     return out;
   }
 
@@ -256,6 +373,7 @@ public with sharing class PipelineSurgeonController {
     String hospital,
     String portfolio,
     String label,
+    String key,
     String company,
     Decimal cases
   ) {
@@ -267,6 +385,7 @@ public with sharing class PipelineSurgeonController {
     l.hospital = hospital;
     l.portfolio = portfolio;
     l.label = label;
+    l.key = key;
     l.company = company;
     l.cases = cases;
     out.add(l);

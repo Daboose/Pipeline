@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+  <fullName>Pipeline_Quarter_Not_In_The_Past</fullName>
+  <active>true</active>
+  <description
+  >Pipeline: refuses an open deal (not on hold) whose quarter and year are before the current quarter. Fires only when the deal is new or its quarter, year, stage, on-hold flag or annual value changes. A blank quarter or year is allowed.</description>
+  <errorConditionFormula>AND(
+  NOT(IsClosed__c),
+  NOT(OnHold__c),
+  NOT($Permission.Pipeline_Bypass_Quarter_Rule),
+  NOT(ISBLANK(TEXT(Expected_Closure_Quarter__c))),
+  NOT(ISBLANK(TEXT(Expected_Closing_Year__c))),
+  OR(
+    ISNEW(),
+    ISCHANGED(Expected_Closure_Quarter__c),
+    ISCHANGED(Expected_Closing_Year__c),
+    ISCHANGED(Stage__c),
+    ISCHANGED(OnHold__c),
+    ISCHANGED(AmountPerYear__c)
+  ),
+  VALUE(TEXT(Expected_Closing_Year__c)) * 4
+    + CASE(TEXT(Expected_Closure_Quarter__c), "Q1", 1, "Q2", 2, "Q3", 3, "Q4", 4, 0)
+  &lt; YEAR(TODAY()) * 4 + CEILING(MONTH(TODAY()) / 3)
+)</errorConditionFormula>
+  <errorMessage
+  >You need to adjust the Expected Conversion Quarter and Expected Closing Year to represent when this deal is likely to close. They cannot be before the current quarter.</errorMessage>
+</ValidationRule>

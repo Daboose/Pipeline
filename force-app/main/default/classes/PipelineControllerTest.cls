@@ -318,6 +318,7 @@ private class PipelineControllerTest {
         RecordTypeId = recordTypeId('AUHIP'),
         Stage__c = 'Plan',
         Expected_Closure_Quarter__c = 'Q4',
+        Expected_Closing_Year__c = '2033',
         AmountPerYear__c = 1000
       ),
       new SalesRisks__c(
@@ -366,10 +367,31 @@ private class PipelineControllerTest {
     );
     System.assertEquals('Hip', byKind.get('opp').segment);
     System.assertEquals(
+      'Q4 2033',
+      byKind.get('opp').quarter,
+      'The quarter comes with its year'
+    );
+    System.assertEquals(
+      'Q4',
+      byKind.get('risk').quarter,
+      'A quarter with no year stays as it is'
+    );
+    System.assertEquals(
       0,
       PipelineController.getDeals('{"kinds":[],"status":"open","below":true}')
         .deals.size(),
       'No kinds, no deals'
     );
+  }
+
+  @IsTest
+  static void closeQuarterJoinsQuarterAndYear() {
+    System.assertEquals(
+      'Q1 2027',
+      PipelineController.closeQuarter('Q1', '2027')
+    );
+    System.assertEquals('Q2', PipelineController.closeQuarter('Q2', null));
+    System.assertEquals(null, PipelineController.closeQuarter(null, '2027'));
+    System.assertEquals(null, PipelineController.closeQuarter('', '2027'));
   }
 }

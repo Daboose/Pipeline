@@ -12,7 +12,7 @@
   box-shadow: var(--shadow);
   padding: 12px 18px 16px;
 }
-/* the top of the table: a band across the whole card, tinted with the brand amber, the same as the three lists */
+/* the top of the table: a band across the whole card, tinted with the heading colour (pink in dark mode), the same as the three lists */
 .lhead {
   display: flex;
   align-items: center;
@@ -21,8 +21,8 @@
   padding: 10px 18px;
   border-radius: 13px 13px 0 0;
   background: rgba(253, 184, 39, 0.14);
-  background: color-mix(in srgb, var(--pipe) 16%, transparent);
-  border-bottom: 1px solid color-mix(in srgb, var(--pipe) 38%, transparent);
+  background: color-mix(in srgb, var(--head) 16%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--head) 38%, transparent);
 }
 .lhead h3 {
   margin: 0;
@@ -30,7 +30,7 @@
   font-weight: 800;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--pipe);
+  color: var(--head);
 }
 .count {
   color: var(--muted);

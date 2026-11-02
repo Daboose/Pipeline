@@ -10,6 +10,7 @@ import {
   formatDate,
   totalsByCurrency,
   needsAttention,
+  quarterRank,
   plural
 } from "c/pipelineFormat";
 
@@ -27,7 +28,7 @@ function implantColumns(valueHeading) {
     ["brands", "Brand", (d) => d.brands || "", false, true],
     ["stage", "Stage", (d) => d.stage || "", false, true],
     ["value", valueHeading, (d) => Number(d.value) || 0, true, true],
-    ["quarter", "Close quarter", (d) => d.quarter || "", false, true],
+    ["quarter", "Close quarter", (d) => quarterRank(d.quarter), false, true],
     ["posted", "Last posted", (d) => chatterDays(d) ?? -1, true, true],
     ["moved", "Last stage move", (d) => stageDays(d) ?? -1, true, true],
     [
@@ -49,7 +50,7 @@ const COLUMNS = {
     ["dealtype", "Deal type", (d) => d.rosaDealType || "", false, true],
     ["stage", "Stage", (d) => d.stage || "", false, true],
     ["value", "ROSA value / year", (d) => Number(d.value) || 0, true, true],
-    ["quarter", "Close quarter", (d) => d.quarter || "", false, true],
+    ["quarter", "Close quarter", (d) => quarterRank(d.quarter), false, true],
     ["closedate", "Close date", (d) => d.closeDate || "", false, true],
     ["installdate", "Install date", (d) => d.installDate || "", false, true],
     ["posted", "Last posted", (d) => chatterDays(d) ?? -1, true, true],
@@ -81,6 +82,7 @@ export default class PipelineTypeList extends LightningElement {
   @api columns; // the column ids the person chose, or undefined for the defaults
   @api widths; // saved column widths in pixels, by column id, or undefined for automatic
   @api altTint = false;
+  @api ownerName = ""; // when the screen is filtered down to one team member, their name follows the heading
 
   listOpen = true;
   bodyMounted = true; // the list is on the page (it stays a moment after closing, to fold away)
@@ -129,7 +131,8 @@ export default class PipelineTypeList extends LightningElement {
     const many = { opp: "opportunities", risk: "risks", rosa: "ROSA deals" }[
       this.kind
     ];
-    return `${n} ${plural(n, word, many)}`;
+    const title = `${n} ${plural(n, word, many)}`;
+    return this.ownerName ? `${title} for ${this.ownerName}` : title;
   }
   get listChev() {
     return this.listOpen ? "chev up" : "chev";

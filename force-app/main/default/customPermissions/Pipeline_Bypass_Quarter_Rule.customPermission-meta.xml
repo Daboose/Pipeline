@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomPermission xmlns="http://soap.sforce.com/2006/04/metadata">
+  <description
+  >Pipeline: when a person has this, the validation rule Pipeline_Quarter_Not_In_The_Past does not refuse their saves. Meant for the admin loading or correcting old deals. Granted by the Pipeline Quarter Rule Bypass permission set.</description>
+  <isLicensed>false</isLicensed>
+  <label>Pipeline: Bypass Quarter Rule</label>
+</CustomPermission>

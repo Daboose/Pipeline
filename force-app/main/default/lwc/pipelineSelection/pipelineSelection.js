@@ -13,7 +13,7 @@ import {
   stagesOf,
   teamRows
 } from "c/pipelineFilterModel";
-import { quarterRank } from "c/pipelineFormat";
+import { quarterRank, boundRank, boundText } from "c/pipelineFormat";
 
 /** Brand lists already read, by record type, so a record type is asked for only once. */
 const BRAND_CACHE = new Map();
@@ -471,13 +471,13 @@ export default class PipelineSelection extends LightningElement {
   get fromOptions() {
     return this.quarters.map((value) => ({
       value,
-      selected: this.draft.qFrom === value
+      selected: boundText(this.draft.qFrom, "from") === value
     }));
   }
   get toOptions() {
     return this.quarters.map((value) => ({
       value,
-      selected: this.draft.qTo === value
+      selected: boundText(this.draft.qTo, "to") === value
     }));
   }
   get noFrom() {
@@ -492,7 +492,7 @@ export default class PipelineSelection extends LightningElement {
     const patch = { [key]: v };
     const from = key === "qFrom" ? v : this.draft.qFrom;
     const to = key === "qTo" ? v : this.draft.qTo;
-    if (from && to && quarterRank(to) < quarterRank(from)) {
+    if (from && to && boundRank(to, "to") < boundRank(from, "from")) {
       if (key === "qFrom") patch.qTo = from;
       else patch.qFrom = to;
     }

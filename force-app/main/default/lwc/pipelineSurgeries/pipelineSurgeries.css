@@ -3,6 +3,11 @@
 :host {
   display: block;
 }
+.card.bare {
+  background: transparent;
+  border: 0;
+  padding: 0;
+}
 .card {
   background: var(--panel);
   border: 1px solid var(--edge);

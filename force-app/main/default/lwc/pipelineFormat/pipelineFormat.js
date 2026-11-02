@@ -114,12 +114,54 @@ export function formatDate(iso) {
   });
 }
 
-/** The order quarters sort in: Q1 to Q4 (and later year-qualified values), then anything else, then none. */
-export function quarterRank(q) {
+/**
+ * The year a quarter is most likely meant for: this year if the quarter is the current one or still to come, otherwise
+ * next year (today's Q4 2026: Q4 is 2026, Q1 to Q3 are 2027). This is the same rule the year was filled in by, and the
+ * year the flyout suggests when a quarter is picked.
+ */
+export function suggestYear(quarter, now = new Date()) {
+  const m = /^Q([1-4])/.exec(quarter || "");
+  const year = now.getFullYear();
+  if (!m) return year;
+  const current = Math.floor(now.getMonth() / 3) + 1;
+  return Number(m[1]) >= current ? year : year + 1;
+}
+
+/** Whether a quarter of a year ("Q3", "2026") is before the current quarter (the same test the validation rule makes). */
+export function quarterIsPast(quarter, year, now = new Date()) {
+  const m = /^Q([1-4])/.exec(quarter || "");
+  if (!m || !year) return false;
+  const current = Math.floor(now.getMonth() / 3) + 1;
+  return Number(year) * 4 + Number(m[1]) < now.getFullYear() * 4 + current;
+}
+
+/** "Q4" becomes "Q4 2026" (by suggestYear); a quarter that already has its year, or anything else, is left alone. */
+export function qualifyQuarter(q, now = new Date()) {
+  return /^Q[1-4]$/.test(q || "") ? `${q} ${suggestYear(q, now)}` : q;
+}
+
+/**
+ * The order quarters sort in: by year, then Q1 to Q4, then anything else, then none. A quarter with no year is placed
+ * by suggestYear, so an old "Q4" sits among the current ones.
+ */
+export function quarterRank(q, now = new Date()) {
   if (!q) return 1e7;
   const m = /^Q([1-4])(?:\s+(\d{4}))?$/.exec(q);
   if (!m) return 9e6;
-  return (m[2] ? Number(m[2]) : 0) * 10 + Number(m[1]);
+  const year = m[2] ? Number(m[2]) : suggestYear(q, now);
+  return year * 10 + Number(m[1]);
+}
+
+/**
+ * The quarter-and-year a saved range bound means. A bound saved before years existed ("Q1" to "Q4") has no year: the
+ * start is read in this calendar year and the end by suggestYear, so an old Q1 to Q4 still means the year in play.
+ */
+export function boundText(q, edge, now = new Date()) {
+  if (!/^Q[1-4]$/.test(q || "")) return q;
+  return `${q} ${edge === "from" ? now.getFullYear() : suggestYear(q, now)}`;
+}
+export function boundRank(q, edge, now = new Date()) {
+  return quarterRank(boundText(q, edge, now), now);
 }
 
 export function plural(n, one, many) {

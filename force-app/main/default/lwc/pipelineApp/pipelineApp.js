@@ -42,7 +42,15 @@ function stableJson(value) {
  * Usages, Surgeries and Chatter, saved filters); 0.10 follows the final mockup: a filter bar with chips and a Change
  * selection panel with Apply, in place of the always-visible Choose Your Data panel.
  */
-const PIPELINE_VERSION = "0.40";
+const PIPELINE_VERSION = "0.49";
+
+/** The colours a person can choose for the headings (Robert, 2026-11-02); the look of each is in pipelineApp.css. */
+const HEAD_COLOURS = [
+  { key: "pink", label: "Pink" },
+  { key: "sky", label: "Sky blue" },
+  { key: "lime", label: "Lime green" },
+  { key: "cyan", label: "Cyan" }
+];
 const SLIDE_IN_DELAY_MS = 30; // lets the closed position be drawn first, so the slide runs
 const SLIDE_OUT_MS = 450; // a little longer than the slide itself (0.4 s in the style sheets)
 
@@ -100,6 +108,7 @@ export default class PipelineApp extends LightningElement {
   fsOn = false;
   settings = {
     theme: "dark",
+    headColour: "pink",
     altTint: false,
     cols: {},
     widths: {},
@@ -303,6 +312,9 @@ export default class PipelineApp extends LightningElement {
       const s = JSON.parse(json);
       this.settings = {
         theme: s.theme === "light" ? "light" : "dark",
+        headColour: HEAD_COLOURS.some((h) => h.key === s.headColour)
+          ? s.headColour
+          : "pink",
         altTint: !!s.altTint,
         cols: s.cols && typeof s.cols === "object" ? s.cols : {},
         widths: s.widths && typeof s.widths === "object" ? s.widths : {},
@@ -366,6 +378,17 @@ export default class PipelineApp extends LightningElement {
   get theme() {
     return this.settings.theme;
   }
+  get headColour() {
+    return this.settings.headColour;
+  }
+  /** The four heading colours for the settings panel; the chosen one is marked. */
+  get headOptions() {
+    return HEAD_COLOURS.map((h) => ({
+      ...h,
+      cls: h.key === this.settings.headColour ? "hc on" : "hc",
+      dotCls: "dot " + h.key
+    }));
+  }
   get ready() {
     return !!(this.ctx && this.filter);
   }
@@ -388,11 +411,9 @@ export default class PipelineApp extends LightningElement {
   get stageOrder() {
     return this.ctx ? this.ctx.stageOrder : [];
   }
-  get whoText() {
-    return this.ctx ? this.ctx.userName : "";
-  }
-  get versionText() {
-    return `v${PIPELINE_VERSION}` + (this.asAt ? ` · As at ${this.asAt}` : "");
+  /** When the deals on the screen were read, beside the logo. The version is in the settings panel, not here. */
+  get asAtText() {
+    return this.asAt ? `As at ${this.asAt}` : "";
   }
   get settingsScrimCls() {
     return this.settingsOpen ? "scrim on" : "scrim";
@@ -447,7 +468,7 @@ export default class PipelineApp extends LightningElement {
         nonRosa.flatMap((d) => (d.brands || "").split(";").map((b) => b.trim()))
       ),
       quarters: merge(
-        ctx.quarters,
+        [], // only the quarters (with their years) that deals actually have; the bare Q1 to Q4 are not offered
         deals.map((d) => d.quarter),
         (a, b) => quarterRank(a) - quarterRank(b)
       )
@@ -459,6 +480,14 @@ export default class PipelineApp extends LightningElement {
     const now = Date.now();
     const f = { ...this.filter, ownerId: "" };
     return this.allDeals.filter((d) => clientMatch(d, f, now));
+  }
+  /** The team member the screen is filtered down to (their name follows each list's heading), or blank. */
+  get focusRepName() {
+    const f = this.filter;
+    if (!f || !f.ownerId) return "";
+    if (f.ownerName) return f.ownerName;
+    const d = this.dealsForPeople.find((x) => x.ownerId === f.ownerId);
+    return d ? d.ownerName || "" : "";
   }
   /** The deals left after every choice, including a single owner. */
   get visibleDeals() {
@@ -752,6 +781,13 @@ export default class PipelineApp extends LightningElement {
     this.settings = {
       ...this.settings,
       theme: event.currentTarget.dataset.theme
+    };
+    this.persist();
+  }
+  handleHeadColour(event) {
+    this.settings = {
+      ...this.settings,
+      headColour: event.currentTarget.dataset.head
     };
     this.persist();
   }

@@ -224,7 +224,7 @@ public with sharing class PipelineController {
     }
     String soql =
       'SELECT Id, Name, RecordType.DeveloperName, Stage__c, IsClosed__c, OnHold__c, AmountPerYear__c, ' +
-      'ROSAGrowthDollar__c, CurrencyIsoCode, Expected_Closure_Quarter__c, OwnerId, Owner.Name, Owner_State__c, ' +
+      'ROSAGrowthDollar__c, CurrencyIsoCode, Expected_Closure_Quarter__c, Expected_Closing_Year__c, OwnerId, Owner.Name, Owner_State__c, ' +
       'Owner_Country__c, PrimaryHCPName__c, Healthcare_FacilityName__c, Brand__c, Portfolio__c, ' +
       'Priority__c, State_Priority__c, Latest_Chatter_Date__c, Last_Stage_Change_Date__c, CreatedDate, ' +
       'Close_Date__c, Install_Date__c, ROSA_Deal_Type__c FROM SalesRisks__c ' +
@@ -296,7 +296,10 @@ public with sharing class PipelineController {
     d.onHold = r.OnHold__c;
     d.value = d.kind == 'rosa' ? r.ROSAGrowthDollar__c : r.AmountPerYear__c;
     d.currencyCode = r.CurrencyIsoCode;
-    d.quarter = r.Expected_Closure_Quarter__c;
+    d.quarter = closeQuarter(
+      r.Expected_Closure_Quarter__c,
+      r.Expected_Closing_Year__c
+    );
     d.ownerId = r.OwnerId;
     d.ownerName = r.Owner.Name;
     d.ownerState = r.Owner_State__c;
@@ -316,6 +319,15 @@ public with sharing class PipelineController {
   }
 
   /** The implant segment named in the record type, such as AUHIP or TH_CMFT. Blank when none is named. */
+  /** "Q4 2026" from the quarter and the year; the quarter alone when no year is set; nothing when there is no quarter. */
+  @TestVisible
+  private static String closeQuarter(String quarter, String closeYear) {
+    if (String.isBlank(quarter)) {
+      return null;
+    }
+    return String.isBlank(closeYear) ? quarter : quarter + ' ' + closeYear;
+  }
+
   private static String segmentOf(String rt) {
     if (rt.contains('HIP')) {
       return 'Hip';

@@ -1,6 +1,6 @@
 <template>
-  <section class="card">
-    <h3>{heading}</h3>
+  <section class={cardCls}>
+    <h3 lwc:if={showHead}>{heading}</h3>
     <div class="none" lwc:if={loading}>Counting the surgeries…</div>
     <div class="none" lwc:if={error}>{error}</div>
     <div class="none" lwc:if={noSurgeon}>

@@ -19,6 +19,7 @@ export default class PipelineSurgeries extends LightningElement {
   _recordId;
   _refreshKey = 0;
   @api country = "";
+  @api bare = false; // inside the Case Bookings panel: no card, no heading
 
   data;
   loading = false;
@@ -64,6 +65,12 @@ export default class PipelineSurgeries extends LightningElement {
       });
   }
 
+  get cardCls() {
+    return this.bare ? "card bare" : "card";
+  }
+  get showHead() {
+    return !this.bare;
+  }
   get heading() {
     return "Surgeries, last 12 months, by type";
   }

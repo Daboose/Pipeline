@@ -16,6 +16,7 @@
   --text: #e8edf5;
   --muted: #8b9bb0;
   --pipe: #fdb827;
+  --head: #f472b6;
   --indigo: #6366f1;
   --indigo2: #a5b4fc;
   --ok: #4ee0b0;
@@ -57,6 +58,30 @@
   --pline: #d5dcea;
 }
 
+/* The heading colour (headings, the bar behind them, the rep priority star) is the person's choice, saved in their settings:
+   four colours, each with a brighter shade for dark mode and a deeper one for light mode. Pink is the default. */
+.root[data-head="sky"] {
+  --head: #5eb3ff;
+}
+.root[data-head="lime"] {
+  --head: #a3e635;
+}
+.root[data-head="cyan"] {
+  --head: #22d3ee;
+}
+.root[data-theme="light"][data-head="pink"] {
+  --head: #db2777;
+}
+.root[data-theme="light"][data-head="sky"] {
+  --head: #0284c7;
+}
+.root[data-theme="light"][data-head="lime"] {
+  --head: #4d7c0f;
+}
+.root[data-theme="light"][data-head="cyan"] {
+  --head: #0e7490;
+}
+
 .top {
   /* every control in this row is this tall, the same as the options bar under it */
   --barh: 38px;
@@ -95,9 +120,9 @@
 .star {
   color: var(--pipe);
 }
-.who {
-  color: var(--muted);
-  font-size: 15px;
+/* the rep priority star in the legend takes the heading colour, like the stars in the lists */
+.legend .star {
+  color: var(--head);
 }
 .sp {
   flex: 1;
@@ -296,6 +321,50 @@
 }
 .flbl.top {
   margin-top: 22px;
+}
+.flbl.gap {
+  margin-top: 18px;
+}
+/* the heading colour choices in the settings panel: a coloured dot and the name */
+.hcs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.hc {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--pline);
+  background: var(--pfield);
+  color: var(--text);
+  border-radius: 999px;
+  padding: 7px 16px 7px 12px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.hc.on {
+  background: var(--indigo);
+  border-color: var(--indigo);
+  color: #fff;
+}
+.hc .dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+}
+.dot.sky {
+  background: #5eb3ff;
+}
+.dot.lime {
+  background: #a3e635;
+}
+.dot.pink {
+  background: #f472b6;
+}
+.dot.cyan {
+  background: #22d3ee;
 }
 
 /* the filter box and Change selection, in the top row beside Full screen */

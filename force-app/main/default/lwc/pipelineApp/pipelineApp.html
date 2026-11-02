@@ -1,5 +1,5 @@
 <template>
-  <div class={rootClass} data-theme={theme}>
+  <div class={rootClass} data-theme={theme} data-head={headColour}>
     <header class="top">
       <button
         type="button"
@@ -31,8 +31,7 @@
         a="PIPE"
         b="LINE"
       ></c-pipeline-pipe>
-      <span class="who" lwc:if={ctx}>{whoText}</span>
-      <span class="ver2" lwc:if={ctx}>{versionText}</span>
+      <span class="ver2" lwc:if={asAtText}>{asAtText}</span>
       <span class="sp"></span>
       <button
         type="button"
@@ -161,6 +160,7 @@
           widths={s.widths}
           initial-open={s.listOpen}
           alt-tint={settings.altTint}
+          owner-name={focusRepName}
           oncolumnschange={handleColumnsChange}
           onwidthschange={handleWidthsChange}
           ondealopen={handleDealOpen}
@@ -235,6 +235,20 @@
         >
           Light
         </button>
+      </div>
+      <div class="flbl gap">Heading colour</div>
+      <div class="hcs" role="group" aria-label="Heading colour">
+        <template for:each={headOptions} for:item="h">
+          <button
+            key={h.key}
+            type="button"
+            class={h.cls}
+            data-head={h.key}
+            onclick={handleHeadColour}
+          >
+            <span class={h.dotCls}></span>{h.label}
+          </button>
+        </template>
       </div>
       <label class="check">
         <input

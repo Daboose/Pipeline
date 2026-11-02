@@ -1,6 +1,6 @@
 <template>
-  <section class="card">
-    <div class="lhead">
+  <section class={cardCls}>
+    <div class="lhead" lwc:if={showHead}>
       <h3>{heading}</h3>
       <span class="sp"></span>
       <button
@@ -42,7 +42,127 @@
         </span>
       </div>
 
-      <template lwc:if={open}>
+      <div class="okmsg" lwc:if={msg}>{msg}</div>
+      <div class="errs" lwc:if={hasErrors}>
+        <template for:each={errors} for:item="e">
+          <div key={e}>{e}</div>
+        </template>
+      </div>
+
+      <div class="tools" lwc:if={showTools}>
+        <template lwc:if={editing}>
+          <span class="hint">Change a company or a number, then save.</span>
+          <span class="sp"></span>
+          <button
+            type="button"
+            class="mini go"
+            onclick={handleSave}
+            disabled={cantSave}
+          >
+            Save changes
+          </button>
+          <button type="button" class="mini" onclick={handleCancelEdit}>
+            Cancel
+          </button>
+        </template>
+        <template lwc:else>
+          <span class="sp"></span>
+          <button
+            lwc:if={showEditButton}
+            type="button"
+            class="mini"
+            onclick={handleEdit}
+          >
+            Edit usages
+          </button>
+          <button
+            lwc:if={showAddButton}
+            type="button"
+            class="mini"
+            onclick={handleAdd}
+          >
+            Add usage
+          </button>
+        </template>
+      </div>
+
+      <div class="delbar" lwc:if={delTarget}>
+        <span>{deleteText}</span>
+        <span class="sp"></span>
+        <button
+          type="button"
+          class="mini danger"
+          onclick={handleDeleteYes}
+          disabled={saving}
+        >
+          Delete
+        </button>
+        <button type="button" class="mini" onclick={handleDeleteNo}>
+          Keep
+        </button>
+      </div>
+
+      <div class="addform" lwc:if={adding}>
+        <div class="arow"><b>New usage</b></div>
+        <div class="arow">
+          <span class="al">Hospital</span>
+          <div class="hosp">
+            <c-pipeline-lookup
+              field-name="Healthcare_Facility__c"
+              value-id={hospitalId}
+              value-name={hospitalName}
+              placeholder="Search all hospitals…"
+              onchange={handleHospital}
+            ></c-pipeline-lookup>
+          </div>
+          <span class="al">Portfolio</span>
+          <select class="in" onchange={handleAddPortfolio}>
+            <template for:each={portfolioChoices} for:item="p">
+              <option key={p.value} value={p.value} selected={p.selected}>
+                {p.label}
+              </option>
+            </template>
+          </select>
+        </div>
+        <template for:each={addLines} for:item="l">
+          <div class="aline" key={l.key}>
+            <span class="al">{l.label}</span>
+            <select class="in" data-key={l.key} onchange={handleAddCompany}>
+              <template for:each={l.options} for:item="o">
+                <option key={o.value} value={o.value} selected={o.selected}>
+                  {o.label}
+                </option>
+              </template>
+            </select>
+            <input
+              class="in num"
+              type="number"
+              min="0"
+              placeholder="Cases per year"
+              data-key={l.key}
+              value={l.cases}
+              onchange={handleAddCases}
+            />
+          </div>
+        </template>
+        <div class="arow">
+          <span class="note">{addRecordTypeText}</span>
+          <span class="sp"></span>
+          <button
+            type="button"
+            class="mini go"
+            onclick={handleAddSave}
+            disabled={cantAdd}
+          >
+            Add
+          </button>
+          <button type="button" class="mini" onclick={handleAddCancel}>
+            Cancel
+          </button>
+        </div>
+      </div>
+
+      <template lwc:if={showBody}>
         <div class="none" lwc:if={noLines}>
           No usages are recorded for this surgeon.
         </div>
@@ -52,18 +172,65 @@
               <th>Portfolio</th>
               <th>Company</th>
               <th class="num">Cases per year</th>
+              <th lwc:if={editing}></th>
             </tr>
           </thead>
           <template for:each={groups} for:item="g">
             <tbody key={g.hospital}>
               <tr class="uh">
-                <td colspan="3">{g.hospital}</td>
+                <td colspan={colspan}>{g.hospital}</td>
               </tr>
               <template for:each={g.rows} for:item="r">
                 <tr key={r.key} class={r.cls}>
                   <td class={r.labelCls}>{r.label}</td>
-                  <td class={r.companyCls}>{r.company}</td>
-                  <td class="num">{r.cases}</td>
+                  <td class={r.companyCls}>
+                    <template lwc:if={r.edit}>
+                      <select
+                        class="cell"
+                        data-usage={r.usageId}
+                        data-key={r.lineKey}
+                        onchange={handleCompany}
+                      >
+                        <template for:each={r.options} for:item="o">
+                          <option
+                            key={o.value}
+                            value={o.value}
+                            selected={o.selected}
+                          >
+                            {o.label}
+                          </option>
+                        </template>
+                      </select>
+                    </template>
+                    <template lwc:else>{r.company}</template>
+                  </td>
+                  <td class="num">
+                    <input
+                      lwc:if={r.edit}
+                      class="cell n"
+                      type="number"
+                      min="0"
+                      data-usage={r.usageId}
+                      data-key={r.lineKey}
+                      value={r.casesValue}
+                      onchange={handleCases}
+                    />
+                    <template lwc:else>{r.cases}</template>
+                  </td>
+                  <td class="num" lwc:if={editing}>
+                    <button
+                      lwc:if={r.showDelete}
+                      type="button"
+                      class="xbtn"
+                      data-usage={r.deleteUsageId}
+                      data-text={r.deleteText}
+                      title="Delete this usage"
+                      aria-label="Delete this usage"
+                      onclick={handleDelete}
+                    >
+                      &#10005;
+                    </button>
+                  </td>
                 </tr>
               </template>
             </tbody>
@@ -75,6 +242,13 @@
           brands.
         </div>
       </template>
+    </template>
+    <template for:each={neededRts} for:item="rt">
+      <c-pipeline-usage-choices
+        key={rt.id}
+        record-type-id={rt.id}
+        onchoices={handleChoices}
+      ></c-pipeline-usage-choices>
     </template>
   </section>
 </template>

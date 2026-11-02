@@ -8,7 +8,7 @@
  *
  * Open, Closed, Both and Custom are not stored: they are worked out from the stages chosen, exactly as in mockup v37.
  */
-import { quarterRank, needsAttention } from "c/pipelineFormat";
+import { quarterRank, boundRank, needsAttention } from "c/pipelineFormat";
 
 export const KINDS = ["opp", "risk", "rosa"];
 export const MINE = "MINE";
@@ -203,8 +203,14 @@ export function clientMatch(d, f, now = Date.now()) {
     }
   }
   if ((f.qFrom || f.qTo) && !d.quarter) return false; // a deal with no quarter is left out of any range
-  if (f.qFrom && quarterRank(d.quarter) < quarterRank(f.qFrom)) return false;
-  if (f.qTo && quarterRank(d.quarter) > quarterRank(f.qTo)) return false;
+  const today = new Date(now);
+  if (
+    f.qFrom &&
+    quarterRank(d.quarter, today) < boundRank(f.qFrom, "from", today)
+  )
+    return false;
+  if (f.qTo && quarterRank(d.quarter, today) > boundRank(f.qTo, "to", today))
+    return false;
   if (f.prio && !d.repPriority) return false;
   if (f.sprio && !d.statePriority) return false;
   if (f.onHold && !d.onHold) return false;

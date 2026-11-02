@@ -6,6 +6,10 @@ import {
   stageBand,
   needsAttention,
   quarterRank,
+  suggestYear,
+  qualifyQuarter,
+  quarterIsPast,
+  boundRank,
   chatterDays,
   agoText,
   mentionParts,
@@ -67,10 +71,46 @@ describe("c-pipeline-format", () => {
     );
   });
 
-  it("sorts quarters Q1 to Q4, then year-qualified ones, then none", () => {
-    expect(quarterRank("Q1")).toBeLessThan(quarterRank("Q4"));
-    expect(quarterRank("Q4 2026")).toBeLessThan(quarterRank("Q1 2027"));
-    expect(quarterRank(null)).toBeGreaterThan(quarterRank("Q4 2030"));
+  it("sorts quarters by year, then Q1 to Q4, then none", () => {
+    const now = new Date("2026-11-02T00:00:00");
+    expect(quarterRank("Q1 2027", now)).toBeLessThan(
+      quarterRank("Q2 2027", now)
+    );
+    expect(quarterRank("Q4 2026", now)).toBeLessThan(
+      quarterRank("Q1 2027", now)
+    );
+    expect(quarterRank(null, now)).toBeGreaterThan(quarterRank("Q4 2030", now));
+    // a quarter with no year is placed by the current-or-next rule
+    expect(quarterRank("Q4", now)).toBe(quarterRank("Q4 2026", now));
+    expect(quarterRank("Q1", now)).toBe(quarterRank("Q1 2027", now));
+  });
+
+  it("suggests the year a quarter most likely means (today is in Q4 2026)", () => {
+    const now = new Date("2026-11-02T00:00:00");
+    expect(suggestYear("Q4", now)).toBe(2026);
+    expect(suggestYear("Q3", now)).toBe(2027);
+    expect(suggestYear("Q1", now)).toBe(2027);
+    expect(qualifyQuarter("Q3", now)).toBe("Q3 2027");
+    expect(qualifyQuarter("Q3 2028", now)).toBe("Q3 2028");
+    const early = new Date("2027-02-10T00:00:00"); // Q1 2027
+    expect(suggestYear("Q1", early)).toBe(2027);
+    expect(suggestYear("Q4", early)).toBe(2027);
+  });
+
+  it("knows when a quarter of a year is before the current quarter", () => {
+    const now = new Date("2026-11-02T00:00:00");
+    expect(quarterIsPast("Q3", "2026", now)).toBe(true);
+    expect(quarterIsPast("Q4", "2026", now)).toBe(false);
+    expect(quarterIsPast("Q1", "2027", now)).toBe(false);
+    expect(quarterIsPast("Q4", "2025", now)).toBe(true);
+    expect(quarterIsPast("Q1", "", now)).toBe(false);
+  });
+
+  it("reads a range bound saved before years existed in the year in play", () => {
+    const now = new Date("2026-11-02T00:00:00");
+    expect(boundRank("Q1", "from", now)).toBe(quarterRank("Q1 2026", now));
+    expect(boundRank("Q4", "to", now)).toBe(quarterRank("Q4 2026", now));
+    expect(boundRank("Q2 2028", "to", now)).toBe(quarterRank("Q2 2028", now));
   });
 
   it("says how long ago a post was", () => {

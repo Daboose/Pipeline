@@ -1,0 +1,385 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Pipeline mockup: heading colours in dark mode</title>
+    <style>
+      :root {
+        --page: #0e1623;
+        --bg: #141e2e;
+        --panel: #1a2740;
+        --text: #e8edf5;
+        --muted: #8b9bb0;
+        --amber: #fdb827;
+        --indigo: #6366f1;
+        --indigo2: #a5b4fc;
+        --edge: #5b6f93;
+        --line: #2f4163;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--page);
+        color: var(--text);
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-size: 15px;
+      }
+      .wrapper {
+        padding: 16px 20px 40px;
+      }
+      .wm {
+        font-size: 22px;
+        font-weight: 800;
+        letter-spacing: 0.14em;
+        margin: 0 0 10px;
+      }
+      .wm b {
+        color: var(--amber);
+      }
+      .about {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 12px 18px;
+        max-width: 1180px;
+        line-height: 1.55;
+      }
+      .about b.h {
+        color: var(--amber);
+        letter-spacing: 0.08em;
+      }
+      .about ul {
+        margin: 4px 0 8px;
+        padding-left: 20px;
+      }
+      .tools {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        flex-wrap: wrap;
+        margin: 16px 0 0;
+      }
+      .btn {
+        border: 1px solid var(--indigo);
+        background: transparent;
+        color: var(--text);
+        border-radius: 999px;
+        padding: 8px 18px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+      }
+      .btn.on {
+        background: var(--indigo);
+        color: #fff;
+      }
+      .tools label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--muted);
+        font-weight: 700;
+      }
+      .tools input[type="color"] {
+        width: 44px;
+        height: 32px;
+        border: 1px solid var(--edge);
+        border-radius: 8px;
+        background: transparent;
+        padding: 2px;
+        cursor: pointer;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 26px 22px;
+        margin-top: 18px;
+      }
+      .grid.one {
+        grid-template-columns: minmax(0, 760px);
+      }
+      .opt {
+        cursor: pointer;
+      }
+      .cap {
+        display: flex;
+        gap: 12px;
+        align-items: baseline;
+        margin: 0 0 6px 4px;
+      }
+      .cap b {
+        font-size: 16px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--h);
+      }
+      .cap span {
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .sw {
+        display: inline-block;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: var(--h);
+        align-self: center;
+      }
+      .screen {
+        background: var(--bg);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+      /* the real treatment: heading in the colour, a band tinted with the colour and a line under it */
+      .tshead {
+        font-size: 18px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--h);
+      }
+      .tshead small {
+        margin-left: 12px;
+        font-size: 14px;
+        font-weight: 600;
+        letter-spacing: 0;
+        text-transform: none;
+        color: var(--muted);
+      }
+      .kpis {
+        display: flex;
+        gap: 10px;
+        margin-top: 8px;
+      }
+      .kpi {
+        flex: 1;
+        background: var(--panel);
+        border: 1px solid var(--edge);
+        border-radius: 12px;
+        padding: 8px 12px;
+      }
+      .kpi .l {
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .kpi .v {
+        font-size: 20px;
+        font-weight: 800;
+        margin-top: 2px;
+      }
+      .chips {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+        margin-top: 8px;
+      }
+      .chip {
+        border-radius: 8px;
+        padding: 5px 10px;
+        font-size: 13px;
+        font-weight: 700;
+        color: #fff;
+      }
+      .card {
+        background: var(--panel);
+        border: 1px solid var(--edge);
+        border-radius: 14px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.55);
+        padding: 12px 18px 12px;
+      }
+      .lhead {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: -12px -18px 8px;
+        padding: 10px 18px;
+        border-radius: 13px 13px 0 0;
+        background: color-mix(in srgb, var(--h) 16%, transparent);
+        border-bottom: 1px solid color-mix(in srgb, var(--h) 38%, transparent);
+      }
+      .lhead h3 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--h);
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      th {
+        text-align: left;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+        padding: 4px 8px;
+      }
+      td {
+        padding: 7px 8px;
+        border-top: 1px solid var(--line);
+        font-size: 15px;
+      }
+      td.r,
+      th.r {
+        text-align: right;
+      }
+      .note {
+        color: var(--muted);
+        font-size: 13px;
+        margin: 6px 4px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrapper">
+      <div class="wm"><b>PIPE</b>LINE</div>
+      <div class="about">
+        <b class="h">ABOUT THIS MOCKUP</b>
+        <p style="margin: 4px 0">
+          Dark mode only. Today the headings (Team, Opportunities, Risks, ROSA)
+          and the tinted bar behind them are amber. Each box below shows the
+          same screen pieces with the heading and bar in a different colour: the
+          summary heading with its three totals, the Team table and one list.
+          Nothing else changes, and the PIPELINE wordmark above stays amber
+          because it is the logo. Light mode keeps its own (darker) amber. All
+          names and numbers are invented.
+        </p>
+        <b>Try it:</b>
+        <ul>
+          <li>
+            Click any box to make it large; click it again (or Show all) to go
+            back.
+          </li>
+          <li>
+            Use the colour box to try any colour of your own in the last box.
+          </li>
+        </ul>
+        <b>Worth knowing:</b> blue sits close to the stage chips and the indigo
+        buttons, and green sits close to the green "ok" ticks on Chatter dates,
+        so those two could be mistaken for something else. Pink is not used
+        anywhere yet. <b>Not shown yet:</b> the priority stars (amber today) and
+        the settings headings.
+      </div>
+      <div class="tools">
+        <button type="button" class="btn" id="all">Show all</button>
+        <label
+          >Your own colour <input type="color" id="own" value="#22d3ee"
+        /></label>
+      </div>
+      <div class="grid" id="grid"></div>
+    </div>
+    <script>
+      const OPTS = [
+        {
+          key: "amber",
+          name: "Amber (today)",
+          hex: "#fdb827",
+          note: "The current brand amber."
+        },
+        {
+          key: "blue",
+          name: "Sky blue",
+          hex: "#5eb3ff",
+          note: "Cool and clear; closest to the stage chips and indigo buttons."
+        },
+        {
+          key: "green",
+          name: "Lime green",
+          hex: "#a3e635",
+          note: "A yellow-green, kept apart from the minty green used for ok ticks."
+        },
+        {
+          key: "pink",
+          name: "Pink",
+          hex: "#f472b6",
+          note: "Warm and bold; nothing else on the screen is pink."
+        },
+        {
+          key: "own",
+          name: "Your own colour",
+          hex: "#22d3ee",
+          note: "Pick it with the colour box above."
+        }
+      ];
+      const CHIPS = [
+        ["Plan (3) A$649k", "#2f80ed"],
+        ["Action (5) A$1.2m", "#0ea5e9"],
+        ["Commit/Contract (2) A$410k", "#7c3aed"],
+        ["1st Case (2) A$300k", "#a855f7"]
+      ];
+      const ROWS = [
+        ["Jordan Blake", "Action", "Q4 2026", "A$180k"],
+        ["Priya Nair", "Commit/Contract", "Q1 2027", "A$240k"],
+        ["Sam Whitfield", "Plan", "Q2 2027", "A$95k"]
+      ];
+      function card(o) {
+        const chips = CHIPS.map(
+          (c) => `<span class="chip" style="background:${c[1]}">${c[0]}</span>`
+        ).join("");
+        const rows = ROWS.map(
+          (r) =>
+            `<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td class="r">${r[3]}</td></tr>`
+        ).join("");
+        const tbl = (first) =>
+          `<table><thead><tr><th>${first}</th><th>Stage</th><th>Close quarter</th><th class="r">Value</th></tr></thead><tbody>${rows}</tbody></table>`;
+        return `<div class="opt" data-k="${o.key}" style="--h:${o.hex}">
+          <div class="cap"><i class="sw"></i><b>${o.name}</b><span class="hx">${o.hex}</span></div>
+          <div class="screen">
+            <div>
+              <div class="tshead">Opportunities<small>12 deals</small></div>
+              <div class="kpis">
+                <div class="kpi"><div class="l">Open deals</div><div class="v">12</div></div>
+                <div class="kpi"><div class="l">Revenue · AUD</div><div class="v">A$2.6m</div></div>
+                <div class="kpi"><div class="l">Need an update</div><div class="v">4</div></div>
+              </div>
+              <div class="chips">${chips}</div>
+            </div>
+            <div class="card"><div class="lhead"><h3>Team</h3></div>${tbl("Sales rep")}</div>
+            <div class="card"><div class="lhead"><h3>Opportunities (12)</h3></div>${tbl("Deal")}</div>
+          </div>
+          <div class="note">${o.note}</div>
+        </div>`;
+      }
+      const grid = document.getElementById("grid");
+      function draw(only) {
+        grid.className = only ? "grid one" : "grid";
+        grid.innerHTML = OPTS.filter((o) => !only || o.key === only)
+          .map(card)
+          .join("");
+      }
+      let only = null;
+      grid.addEventListener("click", (e) => {
+        const el = e.target.closest(".opt");
+        if (!el) return;
+        only = only ? null : el.dataset.k;
+        draw(only);
+      });
+      document.getElementById("all").addEventListener("click", () => {
+        only = null;
+        draw(null);
+      });
+      document.getElementById("own").addEventListener("input", (e) => {
+        OPTS[4].hex = e.target.value;
+        draw(only);
+      });
+      draw(null);
+    </script>
+  </body>
+</html>
