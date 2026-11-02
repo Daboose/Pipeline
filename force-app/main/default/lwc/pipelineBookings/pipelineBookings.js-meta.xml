@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+  <apiVersion>68.0</apiVersion>
+  <description
+  >Pipeline: the My Case Bookings panel in the deal flyout: a stacked bar graph per type of surgery (primary and revision by month), a check against the surgeon's ZB usages, and buttons that create or adjust usages from the bookings.</description>
+  <isExposed>false</isExposed>
+</LightningComponentBundle>

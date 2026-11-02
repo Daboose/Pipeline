@@ -1,0 +1,177 @@
+<template>
+  <section class="wrap">
+    <div class="none" lwc:if={loading}>Reading the bookings…</div>
+    <div class="none" lwc:if={error}>{error}</div>
+    <div class="none" lwc:if={noSurgeon}>
+      This deal has no Primary HCP, so there are no bookings to show.
+    </div>
+
+    <template lwc:if={hasData}>
+      <div class="topchip" lwc:if={missingAll}>
+        <span class="pill bad"
+          >Usages are missing for this surgeon. Please create them now.</span
+        >
+      </div>
+      <div class="flash" lwc:if={flash}>{flash}</div>
+      <div class="errs" lwc:if={hasErrors}>
+        <template for:each={errors} for:item="e">
+          <div key={e}>{e}</div>
+        </template>
+      </div>
+
+      <div class="none" lwc:if={noBookings}>
+        This surgeon has no surgeries with usage items in the last 12 months.
+      </div>
+
+      <template lwc:else>
+        <p class="window">{windowText}</p>
+        <div class="legend">
+          <span lwc:if={anySplit}><i class="sw primary"></i>Primary</span>
+          <span lwc:if={anySplit}><i class="sw revision"></i>Revision</span>
+          <span lwc:if={anyCmft}><i class="sw cmft"></i>CMFT</span>
+          <span lwc:if={anyUsageLine}
+            ><i class="sw dash"></i>What the usages say per month</span
+          >
+          <span>* this month so far (lighter, not in the total)</span>
+        </div>
+
+        <div class="cards">
+          <template for:each={cards} for:item="c">
+            <section class="card" key={c.key}>
+              <div class="ct">
+                <h3>{c.name}</h3>
+                <span class="big"
+                  >{c.booked}<small>cases in the last 12 months</small></span
+                >
+                <span class="split" lwc:if={c.split}
+                  >Primary&nbsp;<b>{c.primaryTotal}</b>&nbsp;&middot;
+                  Revision&nbsp;<b>{c.revisionTotal}</b></span
+                >
+                <span class="split" lwc:else
+                  >All one type: no primary or revision split</span
+                >
+              </div>
+
+              <svg
+                viewBox={c.chart.viewBox}
+                role="img"
+                aria-label={c.chartLabel}
+              >
+                <template for:each={c.chart.grid} for:item="g">
+                  <g key={g.key}>
+                    <line
+                      class="gl"
+                      x1={g.x1}
+                      x2={g.x2}
+                      y1={g.y}
+                      y2={g.y}
+                    ></line>
+                    <text x={g.tx} y={g.ty} text-anchor="end">{g.label}</text>
+                  </g>
+                </template>
+                <template for:each={c.chart.bars} for:item="b">
+                  <g key={b.key}>
+                    <template for:each={b.segments} for:item="s">
+                      <rect
+                        key={s.key}
+                        x={s.x}
+                        y={s.y}
+                        width={s.w}
+                        height={s.h}
+                        rx="3"
+                        fill={s.fill}
+                        opacity={b.opacity}
+                      >
+                        <title>{s.title}</title>
+                      </rect>
+                    </template>
+                    <text
+                      class="v"
+                      x={b.tx}
+                      y={b.ty}
+                      text-anchor="middle"
+                      opacity={b.opacity}
+                    >
+                      {b.total}
+                    </text>
+                    <text class="mon" x={b.lx} y={b.ly} text-anchor="middle">
+                      {b.label}
+                    </text>
+                  </g>
+                </template>
+                <template lwc:if={c.chart.line}>
+                  <line
+                    class="ul"
+                    x1={c.chart.line.x1}
+                    x2={c.chart.line.x2}
+                    y1={c.chart.line.y}
+                    y2={c.chart.line.y}
+                  ></line>
+                  <template for:each={c.chart.line.words} for:item="w">
+                    <text class="ulab" key={w.key} x={c.chart.line.lx} y={w.y}>
+                      {w.text}
+                    </text>
+                  </template>
+                </template>
+              </svg>
+
+              <template lwc:if={c.isMissing}>
+                <div class="cue missing joined">
+                  <span class="pill bad">{c.pill}</span>
+                </div>
+              </template>
+              <template lwc:else>
+                <div class={c.cueCls}>
+                  <span class="mark">{c.cueMark}</span>
+                  <span>{c.cueText}</span>
+                  <button
+                    lwc:if={c.cueOpen}
+                    type="button"
+                    class="mini"
+                    onclick={handleOpenUsages}
+                  >
+                    Open Surgeon Usages
+                  </button>
+                </div>
+              </template>
+              <div class="sugg" lwc:if={c.showSuggest}>
+                <b>Suggested:</b> {c.suggest}
+                <div class="hosp">{c.hospitals}</div>
+                <button
+                  lwc:if={c.showCreate}
+                  type="button"
+                  class="mini go"
+                  data-portfolio={c.portfolio}
+                  data-name={c.name}
+                  disabled={saving}
+                  onclick={handleCreate}
+                >
+                  Create usages from these bookings
+                </button>
+                <button
+                  lwc:if={c.showAdjust}
+                  type="button"
+                  class="mini go"
+                  data-portfolio={c.portfolio}
+                  data-name={c.name}
+                  disabled={saving}
+                  onclick={handleAdjust}
+                >
+                  Adjust usages to these bookings
+                </button>
+                <button
+                  lwc:if={c.showOpen}
+                  type="button"
+                  class="mini"
+                  onclick={handleOpenUsages}
+                >
+                  Open Surgeon Usages
+                </button>
+              </div>
+            </section>
+          </template>
+        </div>
+      </template>
+    </template>
+  </section>
+</template>

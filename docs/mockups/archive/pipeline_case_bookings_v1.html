@@ -1,0 +1,713 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Pipeline mockup: My Case Bookings graph</title>
+    <style>
+      :root,
+      [data-theme="dark"] {
+        --page: #0e1623;
+        --bg: #141e2e;
+        --panel: #1a2740;
+        --panel2: #20304f;
+        --line: #2f4163;
+        --edge: #5b6f93;
+        --text: #e8edf5;
+        --muted: #8b9bb0;
+        --pipe: #fdb827;
+        --head: #f472b6;
+        --indigo: #6366f1;
+        --indigo2: #a5b4fc;
+        --ok: #4ee0b0;
+        --warn: #fb923c;
+        --bad: #f87171;
+        --shadow: 0 8px 20px rgba(0, 0, 0, 0.55);
+        --pfield: #11151c;
+        --pline: #2c3444;
+        --primary: #2f80ed;
+        --revision: #fb923c;
+        --cmft: #14b8a6;
+        --grid: rgba(139, 155, 176, 0.25);
+      }
+      [data-theme="light"] {
+        --page: #e9edf4;
+        --bg: #f4f6fa;
+        --panel: #ffffff;
+        --panel2: #eef2fa;
+        --line: #d5dcea;
+        --edge: #b3bfd6;
+        --text: #1b2640;
+        --muted: #5d6b85;
+        --pipe: #b7791f;
+        --head: #db2777;
+        --indigo: #4f46e5;
+        --indigo2: #4338ca;
+        --ok: #0f9d74;
+        --warn: #c2570c;
+        --bad: #dc2626;
+        --shadow: 0 8px 20px rgba(30, 45, 80, 0.18);
+        --pfield: #ffffff;
+        --pline: #d5dcea;
+        --primary: #2563eb;
+        --revision: #ea580c;
+        --cmft: #0d9488;
+        --grid: rgba(93, 107, 133, 0.3);
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--page);
+        color: var(--text);
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-size: 15px;
+      }
+      button {
+        font-family: inherit;
+      }
+      .sfnav {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        height: 44px;
+        padding: 0 16px;
+        background: #0b1220;
+        border-bottom: 1px solid var(--line);
+        color: #cdd6e6;
+        font-size: 14px;
+      }
+      .sfnav .app {
+        font-weight: 800;
+        letter-spacing: 0.14em;
+      }
+      .sfnav .app b {
+        color: #fdb827;
+      }
+      .sfnav .tab {
+        color: #9fb0cc;
+      }
+      .sfnav .tab.on {
+        color: #fff;
+        border-bottom: 2px solid var(--indigo);
+        padding-bottom: 2px;
+      }
+      .sfnav .sp,
+      .sp {
+        flex: 1;
+      }
+      .fsbtn {
+        border: 1px solid var(--indigo);
+        background: transparent;
+        color: #e8edf5;
+        border-radius: 999px;
+        padding: 6px 16px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+      }
+      .wrap {
+        padding: 14px 18px 30px;
+      }
+      .about {
+        background: #1a2740;
+        border: 1px solid #2f4163;
+        border-radius: 12px;
+        padding: 10px 18px;
+        max-width: 1240px;
+        line-height: 1.55;
+        color: #e8edf5;
+      }
+      .about summary {
+        cursor: pointer;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        color: #fdb827;
+      }
+      .about ul {
+        margin: 4px 0 8px;
+        padding-left: 20px;
+      }
+      .ctl {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 12px 24px;
+        margin: 14px 0 12px;
+      }
+      .ctl .lab {
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-right: 8px;
+      }
+      .seg {
+        display: inline-flex;
+        flex-wrap: wrap;
+        border: 1px solid var(--pline);
+        border-radius: 999px;
+        overflow: hidden;
+        background: var(--pfield);
+      }
+      .seg button {
+        border: 0;
+        background: transparent;
+        color: var(--text);
+        padding: 7px 16px;
+        font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      .seg button.on {
+        background: var(--indigo);
+        color: #fff;
+      }
+
+      /* the panel, as it will sit over the deal */
+      .sheet {
+        max-width: 1320px;
+        background: var(--bg);
+        border: 1px solid var(--line);
+        border-left: 3px solid var(--indigo);
+        border-radius: 12px;
+        box-shadow: var(--shadow);
+        overflow: hidden;
+      }
+      .shead {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 20px;
+        background: color-mix(in srgb, var(--head) 16%, transparent);
+        border-bottom: 1px solid
+          color-mix(in srgb, var(--head) 38%, transparent);
+      }
+      .shead h2 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--head);
+      }
+      .shead small {
+        color: var(--muted);
+        font-size: 14px;
+      }
+      .rbtn {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        border: 1.5px solid var(--edge);
+        background: transparent;
+        color: var(--text);
+        cursor: pointer;
+      }
+      .sbody {
+        padding: 16px 20px 22px;
+      }
+      .window {
+        color: var(--muted);
+        margin: 0 0 14px;
+      }
+      .legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px 22px;
+        margin: 0 0 14px;
+        font-size: 14px;
+        color: var(--muted);
+      }
+      .legend i {
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        border-radius: 3px;
+        margin-right: 7px;
+        vertical-align: -1px;
+      }
+      .cards {
+        display: grid;
+        gap: 18px;
+      }
+      .cards.cols2 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .card {
+        background: var(--panel);
+        border: 1px solid var(--edge);
+        border-radius: 14px;
+        padding: 14px 18px 16px;
+      }
+      .ct {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        gap: 6px 18px;
+        margin-bottom: 6px;
+      }
+      .ct h3 {
+        margin: 0;
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--pipe);
+      }
+      .big {
+        font-size: 26px;
+        font-weight: 800;
+      }
+      .big small {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--muted);
+        margin-left: 6px;
+      }
+      .split {
+        color: var(--muted);
+        font-size: 14px;
+      }
+      .split b {
+        color: var(--text);
+      }
+      svg {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+      svg text {
+        fill: var(--muted);
+        font-size: 13px;
+        font-family: inherit;
+      }
+      svg text.v {
+        fill: var(--text);
+        font-weight: 700;
+      }
+      svg text.mon {
+        font-size: 13px;
+      }
+      svg .gl {
+        stroke: var(--grid);
+        stroke-width: 1;
+      }
+      svg .ul {
+        stroke: var(--indigo2);
+        stroke-width: 2;
+        stroke-dasharray: 6 5;
+      }
+      svg text.ulab {
+        fill: var(--indigo2);
+        font-weight: 700;
+      }
+      .cue {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px 14px;
+        margin-top: 10px;
+        padding: 9px 14px;
+        border: 1px solid var(--pline);
+        border-radius: 10px;
+        font-size: 15px;
+      }
+      .cue.low,
+      .cue.high {
+        border-color: var(--warn);
+        background: rgba(251, 146, 60, 0.1);
+      }
+      .cue.good {
+        border-color: var(--ok);
+        background: rgba(78, 224, 176, 0.08);
+      }
+      .cue .mark {
+        font-weight: 800;
+      }
+      .cue.low .mark,
+      .cue.high .mark {
+        color: var(--warn);
+      }
+      .cue.good .mark {
+        color: var(--ok);
+      }
+      .mini {
+        border: 1px solid var(--edge);
+        background: transparent;
+        color: var(--indigo2);
+        border-radius: 999px;
+        padding: 4px 14px;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+      }
+      .note {
+        color: var(--muted);
+        font-size: 13px;
+        margin-top: 12px;
+      }
+      @media (max-width: 1000px) {
+        .cards.cols2 {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body data-theme="dark">
+    <div class="sfnav">
+      <span class="app"><b>PIPE</b>LINE</span>
+      <span class="tab on">Pipeline</span>
+      <span class="tab">Opportunities &amp; Risks</span>
+      <span class="tab">Reports</span>
+      <span class="sp"></span>
+      <button type="button" class="fsbtn" id="full">Full screen</button>
+    </div>
+
+    <div class="wrap">
+      <details class="about" open>
+        <summary>ABOUT THIS MOCKUP</summary>
+        <p style="margin: 6px 0">
+          The <b>My Case Bookings</b> panel as a picture of how a surgeon is
+          tracking: for each type of surgery the surgeon does, the surgeries per
+          month over the last 12 months, split into primary and revision, with
+          the 12-month total. Only the types the surgeon actually has are shown
+          (most do one or two). A surgery counts when it has already happened
+          and has usage items against it, as today. Next to each graph, a check
+          against the Surgeon Usages: if the surgeon's ZB usages say fewer cases
+          a year than were actually booked, the usages are probably out of date.
+          Two ways of laying it out are shown. All names and numbers are
+          invented.
+        </p>
+        <b>Try it:</b>
+        <ul>
+          <li>
+            Pick a surgeon: knee only (usages too low), hip and knee (about
+            right), knee and shoulder (usages too high, and no ZB shoulder usage
+            to compare), or CMFT only (no primary or revision).
+          </li>
+          <li>
+            Switch the layout: <b>1</b> one wide graph per type, one under the
+            other; <b>2</b> smaller graphs side by side.
+          </li>
+          <li>
+            The dashed line across each graph is what the usages say per month
+            (ZB cases a year divided by 12). Bars above it mean more cases than
+            the usages say. Hover a bar for its numbers.
+          </li>
+          <li>Dark and Light at the top; both are built.</li>
+        </ul>
+        <b>Not shown yet:</b> the Surgeon Usages button highlighting from the
+        cue (the button here does nothing), and the phone layout. Demo and
+        non-billable surgeries are not counted. The last bar, lighter, is this
+        month so far and is not in the 12-month total.
+      </details>
+
+      <div class="ctl">
+        <span
+          ><span class="lab">Surgeon</span> <span class="seg" id="segWho"></span
+        ></span>
+        <span
+          ><span class="lab">Layout</span>
+          <span class="seg" id="segLay"
+            ><button type="button" data-v="1" class="on">
+              1 · One graph per type
+            </button>
+            <button type="button" data-v="2">2 · Side by side</button></span
+          ></span
+        >
+        <span
+          ><span class="lab">Look</span>
+          <span class="seg" id="segTheme"
+            ><button type="button" data-v="dark" class="on">Dark</button>
+            <button type="button" data-v="light">Light</button></span
+          ></span
+        >
+      </div>
+
+      <div class="sheet">
+        <div class="shead">
+          <h2>My case bookings</h2>
+          <small id="who"></small>
+          <span class="sp"></span>
+          <button type="button" class="rbtn" title="Close">✕</button>
+        </div>
+        <div class="sbody">
+          <p class="window">
+            Surgeries from 1 Nov 2025 to 31 Oct 2026 (12 whole months), and this
+            month so far.
+          </p>
+          <div class="legend" id="legend"></div>
+          <div class="cards" id="cards"></div>
+          <div class="note">
+            Counted from the surgeon's case bookings that have happened and have
+            usage items. Demo and non-billable surgeries are left out.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      /* all invented */
+      const MONTHS = [
+        "Nov",
+        "Dec",
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Oct"
+      ];
+      const PARTIAL = "Nov";
+      const SURGEONS = {
+        knee: {
+          label: "Knee only",
+          name: "Dr Imogen Hartley",
+          types: [
+            {
+              name: "Knee",
+              split: true,
+              primary: [6, 7, 5, 8, 7, 6, 8, 7, 6, 7, 8, 6],
+              revision: [0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0],
+              partial: [1, 0],
+              zb: 40,
+              zbNote: "Knee"
+            }
+          ]
+        },
+        hipknee: {
+          label: "Hip and knee",
+          name: "Dr Callum Fraser",
+          types: [
+            {
+              name: "Hip",
+              split: true,
+              primary: [3, 2, 3, 3, 4, 3, 3, 2, 3, 3, 3, 3],
+              revision: [0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0],
+              partial: [0, 0],
+              zb: 40,
+              zbNote: "Hip stems"
+            },
+            {
+              name: "Knee",
+              split: true,
+              primary: [2, 2, 1, 2, 2, 2, 1, 2, 2, 1, 2, 2],
+              revision: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+              partial: [1, 0],
+              zb: 20,
+              zbNote: "Knee"
+            }
+          ]
+        },
+        kneeshoulder: {
+          label: "Knee and shoulder",
+          name: "Dr Anika Rao",
+          types: [
+            {
+              name: "Knee",
+              split: true,
+              primary: [5, 4, 6, 5, 5, 6, 4, 5, 6, 5, 5, 4],
+              revision: [1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0],
+              partial: [0, 0],
+              zb: 100,
+              zbNote: "Knee"
+            },
+            {
+              name: "Shoulder",
+              split: true,
+              primary: [1, 1, 0, 2, 1, 1, 0, 1, 1, 1, 0, 1],
+              revision: [0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0],
+              partial: [0, 0],
+              zb: null,
+              zbNote: "Shoulder"
+            }
+          ]
+        },
+        cmft: {
+          label: "CMFT only",
+          name: "Dr Elena Voss",
+          types: [
+            {
+              name: "CMFT",
+              split: false,
+              primary: [4, 5, 3, 4, 6, 5, 4, 5, 5, 4, 5, 6],
+              revision: null,
+              partial: [1, 0],
+              zb: 60,
+              zbNote: "CMFT"
+            }
+          ]
+        }
+      };
+      const S = { who: "knee", lay: "1", theme: "dark" };
+      const $ = (id) => document.getElementById(id);
+      const sum = (a) => a.reduce((x, y) => x + y, 0);
+
+      /* the usage check: within 15% either way is "about right" */
+      function cue(t, booked) {
+        if (t.zb === null || t.zb === undefined)
+          return {
+            cls: "",
+            mark: "No ZB usage entered",
+            text: `The usages list no ZB ${t.name.toLowerCase()} cases, so there is nothing to compare these bookings with.`
+          };
+        const diff = (booked - t.zb) / t.zb;
+        if (Math.abs(diff) <= 0.15)
+          return {
+            cls: "good",
+            mark: "Usages look about right",
+            text: `The usages say ${t.zb} ZB ${t.name.toLowerCase()} cases a year; ${booked} were booked.`
+          };
+        if (diff > 0)
+          return {
+            cls: "low",
+            mark: "Usages look low",
+            text: `The usages say ${t.zb} ZB ${t.name.toLowerCase()} cases a year, but ${booked} were booked. Worth updating the usages.`,
+            btn: true
+          };
+        return {
+          cls: "high",
+          mark: "Usages look high",
+          text: `The usages say ${t.zb} ZB ${t.name.toLowerCase()} cases a year, but only ${booked} were booked. Worth checking the usages.`,
+          btn: true
+        };
+      }
+
+      function chart(t, big) {
+        const W = 900,
+          H = big ? 250 : 230,
+          L = 40,
+          R = t.zb ? 150 : 14,
+          T = 26,
+          B = 34;
+        const n = 13;
+        const prim = t.primary.concat([t.partial[0]]);
+        const rev = t.split ? t.revision.concat([t.partial[1]]) : null;
+        const tot = prim.map((p, i) => p + (rev ? rev[i] : 0));
+        const usageMonthly = t.zb ? t.zb / 12 : null;
+        const maxV = Math.max(...tot, usageMonthly || 0);
+        const stepFor = (m) =>
+          [1, 2, 5, 10, 20, 50].find((st) => m / st <= 5) || 100;
+        const step = stepFor(maxV);
+        const top = Math.max(4, (Math.floor(maxV / step) + 1) * step);
+        const x0 = L,
+          pw = W - L - R,
+          ph = H - T - B;
+        const bw = pw / n;
+        const y = (v) => T + ph - (v / top) * ph;
+        let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${t.name} bookings by month">`;
+        for (let g = 0; g <= top; g += step) {
+          s += `<line class="gl" x1="${x0}" x2="${W - R}" y1="${y(g)}" y2="${y(g)}"/><text x="${x0 - 8}" y="${y(g) + 4}" text-anchor="end">${g}</text>`;
+        }
+        for (let i = 0; i < n; i++) {
+          const cx = x0 + bw * i + bw / 2,
+            w = bw * 0.58;
+          const partial = i === 12;
+          const op = partial ? 0.45 : 1;
+          let yy = y(0);
+          const hp = (prim[i] / top) * ph;
+          if (prim[i] > 0) {
+            s += `<rect x="${cx - w / 2}" y="${yy - hp}" width="${w}" height="${hp}" rx="3" fill="var(--${t.split ? "primary" : "cmft"})" opacity="${op}"><title>${MONTHS[i % 12]}: ${prim[i]} ${t.split ? "primary" : ""}</title></rect>`;
+            yy -= hp;
+          }
+          if (rev && rev[i] > 0) {
+            const hr = (rev[i] / top) * ph;
+            s += `<rect x="${cx - w / 2}" y="${yy - hr}" width="${w}" height="${hr}" rx="3" fill="var(--revision)" opacity="${op}"><title>${MONTHS[i % 12]}: ${rev[i]} revision</title></rect>`;
+            yy -= hr;
+          }
+          if (tot[i] > 0)
+            s += `<text class="v" x="${cx}" y="${yy - 6}" text-anchor="middle" opacity="${op}">${tot[i]}</text>`;
+          s += `<text class="mon" x="${cx}" y="${H - 12}" text-anchor="middle">${i === 12 ? "Nov*" : MONTHS[i]}</text>`;
+        }
+        if (usageMonthly !== null) {
+          s += `<line class="ul" x1="${x0}" x2="${W - R}" y1="${y(usageMonthly)}" y2="${y(usageMonthly)}"/>`;
+          const um =
+            usageMonthly >= 10
+              ? Math.round(usageMonthly)
+              : usageMonthly.toFixed(1);
+          s += `<text class="ulab" x="${W - R + 8}" y="${y(usageMonthly) + 4}">usages say ${um}</text><text class="ulab" x="${W - R + 8}" y="${y(usageMonthly) + 20}">a month</text>`;
+        }
+        return s + "</svg>";
+      }
+
+      function card(t) {
+        const p = sum(t.primary),
+          r = t.split ? sum(t.revision) : 0;
+        const booked = p + r;
+        const c = cue(t, booked);
+        const split = t.split
+          ? `<span class="split">Primary <b>${p}</b> · Revision <b>${r}</b></span>`
+          : `<span class="split">All one type: no primary or revision split</span>`;
+        return `<section class="card"><div class="ct"><h3>${t.name}</h3><span class="big">${booked}<small>cases in the last 12 months</small></span>${split}</div>
+          ${chart(t, S.lay === "1")}
+          <div class="cue ${c.cls}"><span class="mark">${c.mark}</span><span>${c.text}</span>${c.btn ? '<button type="button" class="mini">Open Surgeon Usages</button>' : ""}</div></section>`;
+      }
+
+      function paint() {
+        document.body.dataset.theme = S.theme;
+        const sg = SURGEONS[S.who];
+        $("who").textContent = sg.name;
+        const hasSplit = sg.types.some((t) => t.split);
+        const hasCmft = sg.types.some((t) => !t.split);
+        $("legend").innerHTML =
+          (hasSplit
+            ? `<span><i style="background:var(--primary)"></i>Primary</span><span><i style="background:var(--revision)"></i>Revision</span>`
+            : "") +
+          (hasCmft
+            ? `<span><i style="background:var(--cmft)"></i>CMFT</span>`
+            : "") +
+          `<span><i style="background:transparent;border:2px dashed var(--indigo2)"></i>What the usages say per month</span><span>* this month so far (lighter, not in the total)</span>`;
+        $("cards").className =
+          "cards" + (S.lay === "2" && sg.types.length > 1 ? " cols2" : "");
+        $("cards").innerHTML = sg.types.map(card).join("");
+        document
+          .querySelectorAll("#segWho button")
+          .forEach((b) => b.classList.toggle("on", b.dataset.v === S.who));
+        document
+          .querySelectorAll("#segLay button")
+          .forEach((b) => b.classList.toggle("on", b.dataset.v === S.lay));
+        document
+          .querySelectorAll("#segTheme button")
+          .forEach((b) => b.classList.toggle("on", b.dataset.v === S.theme));
+      }
+      $("segWho").innerHTML = Object.entries(SURGEONS)
+        .map(
+          ([k, v]) => `<button type="button" data-v="${k}">${v.label}</button>`
+        )
+        .join("");
+      const wire = (id, key) =>
+        $(id).addEventListener("click", (e) => {
+          const b = e.target.closest("button");
+          if (!b) return;
+          S[key] = b.dataset.v;
+          paint();
+        });
+      wire("segWho", "who");
+      wire("segLay", "lay");
+      wire("segTheme", "theme");
+      $("full").addEventListener("click", () => {
+        if (document.fullscreenElement) document.exitFullscreen();
+        else
+          document.documentElement.requestFullscreen &&
+            document.documentElement.requestFullscreen();
+      });
+      const h = new URLSearchParams(location.hash.slice(1));
+      ["who", "lay", "theme"].forEach((k) => {
+        if (h.get(k)) S[k] = h.get(k);
+      });
+      paint();
+    </script>
+  </body>
+</html>

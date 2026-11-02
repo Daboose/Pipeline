@@ -1,0 +1,236 @@
+@import "c/pipelineStyles";
+
+:host {
+  display: block;
+}
+.none {
+  color: var(--muted);
+  padding: 6px 0;
+}
+.window {
+  color: var(--muted);
+  margin: 0 0 14px;
+}
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 22px;
+  margin: 0 0 14px;
+  font-size: 14px;
+  color: var(--muted);
+}
+.sw {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  margin-right: 7px;
+  vertical-align: -1px;
+}
+.sw.primary {
+  background: var(--bar-primary);
+}
+.sw.revision {
+  background: var(--bar-revision);
+}
+.sw.cmft {
+  background: var(--bar-cmft);
+}
+.sw.dash {
+  background: transparent;
+  border: 2px dashed var(--indigo2);
+}
+.cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+.card {
+  background: var(--panel);
+  border: 1px solid var(--edge);
+  border-radius: 14px;
+  padding: 14px 18px 16px;
+}
+.ct {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 18px;
+  margin-bottom: 6px;
+}
+h3 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--pipe);
+}
+.big {
+  font-size: 26px;
+  font-weight: 800;
+}
+.big small {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted);
+  margin-left: 6px;
+}
+.split {
+  color: var(--muted);
+  font-size: 14px;
+}
+.split b {
+  color: var(--text);
+}
+svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+svg text {
+  fill: var(--muted);
+  font-size: 13px;
+  font-family: inherit;
+}
+svg text.v {
+  fill: var(--text);
+  font-weight: 700;
+  paint-order: stroke;
+  stroke: var(--panel);
+  stroke-width: 4px;
+  stroke-linejoin: round;
+}
+svg .gl {
+  stroke: var(--grid-line);
+  stroke-width: 1;
+}
+svg .ul {
+  stroke: var(--indigo2);
+  stroke-width: 2;
+  stroke-dasharray: 6 5;
+}
+svg text.ulab {
+  fill: var(--indigo2);
+  font-weight: 700;
+}
+.cue {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+  margin-top: 10px;
+  padding: 9px 14px;
+  border: 1px solid var(--pline);
+  border-radius: 10px;
+  font-size: 15px;
+}
+.cue.low,
+.cue.high {
+  border-color: var(--warn);
+  background: rgba(251, 146, 60, 0.1);
+}
+.cue.good {
+  border-color: var(--ok);
+  background: rgba(78, 224, 176, 0.08);
+}
+.cue.missing {
+  border-color: var(--bad);
+  background: rgba(248, 113, 113, 0.08);
+}
+.cue .mark {
+  font-weight: 800;
+}
+.cue.low .mark,
+.cue.high .mark {
+  color: var(--warn);
+}
+.cue.good .mark {
+  color: var(--ok);
+}
+.cue.joined {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+.sugg {
+  padding: 10px 14px 12px;
+  border: 1px solid var(--warn);
+  border-top: 0;
+  border-radius: 0 0 10px 10px;
+  line-height: 1.5;
+}
+.cue.missing + .sugg {
+  border-color: var(--bad);
+}
+.hosp {
+  color: var(--muted);
+  font-size: 14px;
+  margin: 4px 0 8px;
+}
+.sugg .mini {
+  margin-right: 8px;
+}
+.pill {
+  display: inline-block;
+  border-radius: 999px;
+  padding: 4px 14px;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+.pill.bad {
+  background: rgba(248, 113, 113, 0.16);
+  border: 1px solid var(--bad);
+  color: var(--bad);
+}
+.topchip {
+  margin: 0 0 14px;
+}
+.topchip .pill {
+  font-size: 15px;
+  padding: 6px 18px;
+}
+.flash {
+  margin: 0 0 14px;
+  padding: 9px 14px;
+  border: 1px solid var(--ok);
+  border-radius: 10px;
+  color: var(--ok);
+  font-weight: 700;
+  background: rgba(78, 224, 176, 0.08);
+}
+.errs {
+  border: 1px solid var(--bad);
+  color: var(--bad);
+  border-radius: 10px;
+  padding: 8px 12px;
+  margin-bottom: 14px;
+  font-size: 14px;
+}
+.mini {
+  border: 1px solid var(--edge);
+  background: transparent;
+  color: var(--indigo2);
+  border-radius: 999px;
+  padding: 5px 14px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.mini.go {
+  background: var(--indigo);
+  border-color: var(--indigo);
+  color: #fff;
+  padding: 6px 16px;
+}
+.mini[disabled] {
+  opacity: 0.45;
+  cursor: default;
+}
+@media (max-width: 1000px) {
+  .cards {
+    grid-template-columns: 1fr;
+  }
+}

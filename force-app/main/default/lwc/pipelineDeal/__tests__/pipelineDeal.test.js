@@ -2,11 +2,17 @@ import { createElement } from "lwc";
 import PipelineDeal from "c/pipelineDeal";
 import { registerLdsTestWireAdapter } from "@salesforce/sfdx-lwc-jest";
 import { getRecord } from "lightning/uiRecordApi";
+import getBadges from "@salesforce/apex/PipelineBookingsController.getBadges";
 import {
   getObjectInfo,
   getPicklistValuesByRecordType
 } from "lightning/uiObjectInfoApi";
 
+jest.mock(
+  "@salesforce/apex/PipelineBookingsController.getBadges",
+  () => ({ default: jest.fn() }),
+  { virtual: true }
+);
 const recordAdapter = registerLdsTestWireAdapter(getRecord);
 const infoAdapter = registerLdsTestWireAdapter(getObjectInfo);
 const picklistAdapter = registerLdsTestWireAdapter(
@@ -31,7 +37,7 @@ jest.mock(
   { virtual: true }
 );
 jest.mock(
-  "c/pipelineSurgeries",
+  "c/pipelineBookings",
   () => {
     const { LightningElement } = require("lwc");
     return { __esModule: true, default: class extends LightningElement {} };
@@ -49,6 +55,10 @@ jest.mock(
 
 // Guards the screen-to-flyout hand-over: the screen gives the flyout its deal and says when to slide it in.
 describe("c-pipeline-deal", () => {
+  beforeEach(() => {
+    getBadges.mockReset();
+    getBadges.mockResolvedValue(undefined);
+  });
   afterEach(() => {
     while (document.body.firstChild)
       document.body.removeChild(document.body.firstChild);
@@ -124,8 +134,8 @@ describe("c-pipeline-deal", () => {
       return el;
     }
     const button = (el, text) =>
-      [...el.shadowRoot.querySelectorAll(".foot .btn.nav")].find(
-        (b) => b.textContent.trim() === text
+      [...el.shadowRoot.querySelectorAll(".foot .btn.nav")].find((b) =>
+        b.textContent.trim().startsWith(text)
       );
 
     afterEach(() => jest.useRealTimers());
@@ -179,9 +189,7 @@ describe("c-pipeline-deal", () => {
       button(el, "My Case Bookings").click();
       await Promise.resolve();
       expect(el.shadowRoot.querySelector("c-pipeline-usages")).toBeNull();
-      expect(
-        el.shadowRoot.querySelector("c-pipeline-surgeries")
-      ).not.toBeNull();
+      expect(el.shadowRoot.querySelector("c-pipeline-bookings")).not.toBeNull();
       expect(el.shadowRoot.querySelector(".layer.on")).not.toBeNull();
       el.shadowRoot.querySelector(".shade").click();
       await Promise.resolve();
@@ -189,6 +197,39 @@ describe("c-pipeline-deal", () => {
       jest.advanceTimersByTime(460);
       await Promise.resolve();
       expect(el.shadowRoot.querySelector(".layer")).toBeNull();
+    });
+
+    it("shows what the bottom-bar buttons stand for as badges, and reads them again when usages change", async () => {
+      getBadges.mockResolvedValue({
+        surgeonId: "001",
+        hasUsages: true,
+        usagesNewest: new Date(Date.now() - 114 * 86400000).toISOString(),
+        booked: 38
+      });
+      const el = await mount();
+      await Promise.resolve();
+      await Promise.resolve();
+      expect(button(el, "Surgeon Usages").textContent).toContain(
+        "4 months old"
+      );
+      expect(button(el, "My Case Bookings").textContent).toContain("38");
+      getBadges.mockResolvedValue({
+        surgeonId: "001",
+        hasUsages: false,
+        booked: 38
+      });
+      button(el, "My Case Bookings").click();
+      jest.useFakeTimers();
+      jest.advanceTimersByTime(40);
+      await Promise.resolve();
+      el.shadowRoot
+        .querySelector("c-pipeline-bookings")
+        .dispatchEvent(new CustomEvent("usageschanged"));
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+      expect(getBadges).toHaveBeenCalledTimes(2);
+      expect(button(el, "Surgeon Usages").textContent).toContain("none");
     });
 
     it("opens next time with no panel over the deal", async () => {

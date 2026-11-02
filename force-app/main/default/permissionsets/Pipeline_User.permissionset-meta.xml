@@ -9,6 +9,10 @@
     <enabled>true</enabled>
   </classAccesses>
   <classAccesses>
+    <apexClass>PipelineBookingsController</apexClass>
+    <enabled>true</enabled>
+  </classAccesses>
+  <classAccesses>
     <apexClass>PipelineUsageController</apexClass>
     <enabled>true</enabled>
   </classAccesses>

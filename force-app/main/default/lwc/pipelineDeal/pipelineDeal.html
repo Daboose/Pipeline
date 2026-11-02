@@ -220,20 +220,21 @@
               lwc:if={usagesOpen}
               bare
               record-id={recordId}
-              refresh-key={savedTick}
+              refresh-key={panelRefresh}
               area={area}
               owner-name={ownerName}
               can-ask={canAsk}
               is-rep={isRep}
               onaskcheck={handleAskCheck}
+              onusageschanged={handleUsagesChanged}
             ></c-pipeline-usages>
-            <c-pipeline-surgeries
+            <c-pipeline-bookings
               lwc:if={casesOpen}
-              bare
               record-id={recordId}
-              refresh-key={savedTick}
-              country={country}
-            ></c-pipeline-surgeries>
+              refresh-key={panelRefresh}
+              onusageschanged={handleUsagesChanged}
+              onopenusages={handleOpenUsagesPanel}
+            ></c-pipeline-bookings>
           </div>
         </div>
       </div>
@@ -258,9 +259,15 @@
             onclick={handleUsagesButton}
           >
             Surgeon Usages
+            <span lwc:if={usagesBadge} class={usagesBadge.cls}
+              >{usagesBadge.text}</span
+            >
           </button>
           <button type="button" class={casesBtnCls} onclick={handleCasesButton}>
             My Case Bookings
+            <span lwc:if={casesBadge} class={casesBadge.cls}
+              >{casesBadge.text}</span
+            >
           </button>
         </template>
       </div>

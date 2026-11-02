@@ -132,6 +132,11 @@ public with sharing class PipelineUsageController {
     return info != null && info.isActive() && info.isAvailable() ? info : null;
   }
 
+  /** The record type this person may use for a portfolio in their country, or null when there is none (for PipelineBookingsController). */
+  public static Schema.RecordTypeInfo recordTypeForPortfolio(String portfolio) {
+    return recordTypeFor(portfolio);
+  }
+
   /** The portfolios this person may add a usage for (their country's record types that their profile allows). */
   public static List<AddOption> addOptions() {
     List<AddOption> out = new List<AddOption>();

@@ -452,3 +452,28 @@ input.in {
   overflow: auto;
   padding: 16px 20px 24px;
 }
+
+/* the small badge on a bottom-bar button: how old the usages are, how many surgeries */
+.badge {
+  margin-left: 8px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--panel2);
+  color: var(--text);
+  text-transform: none;
+}
+.badge.w {
+  background: rgba(251, 146, 60, 0.2);
+  color: var(--warn);
+}
+.badge.bad {
+  background: rgba(248, 113, 113, 0.2);
+  color: var(--bad);
+}
+.btn.nav.on .badge {
+  background: rgba(255, 255, 255, 0.22);
+  color: #fff;
+}

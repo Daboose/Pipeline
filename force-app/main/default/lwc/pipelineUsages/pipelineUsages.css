@@ -105,7 +105,9 @@ h3 {
   cursor: pointer;
 }
 .ustbl {
+  /* as wide as the data needs, not stretched across the panel (Robert, 2026-11-02: the cases were far from their heading) */
   width: 100%;
+  max-width: 800px;
   margin-top: 12px;
   border-collapse: collapse;
   font-size: 15px;
@@ -124,7 +126,8 @@ h3 {
   padding: 7px 12px;
   border-bottom: 1px solid var(--line);
 }
-.num {
+.num,
+.ustbl th.num {
   text-align: right;
 }
 .uh td {

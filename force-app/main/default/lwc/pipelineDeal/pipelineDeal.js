@@ -8,6 +8,7 @@ import {
   getObjectInfo,
   getPicklistValuesByRecordType
 } from "lightning/uiObjectInfoApi";
+import getBadges from "@salesforce/apex/PipelineBookingsController.getBadges";
 import SALESRISKS from "@salesforce/schema/SalesRisks__c";
 import RECORD_TYPE from "@salesforce/schema/SalesRisks__c.RecordTypeId";
 import {
@@ -154,6 +155,8 @@ export default class PipelineDeal extends LightningElement {
   panelMounted = false; // the panel is on the page (it stays a moment after closing, to slide away)
   panelOn = false; // and slid into view
   panelTimer;
+  usageTick = 0; // counts changes to the surgeon's usages (from either panel), so both panels and the button badges read again
+  badges; // what the two bottom-bar buttons show: { hasUsages, usagesNewest, booked }
   errors = [];
   savedMsg = false;
   saving = false;
@@ -174,6 +177,54 @@ export default class PipelineDeal extends LightningElement {
   /** The Open in Salesforce link is for the deal page; it would mislead beside the Usages or Case Bookings panel. */
   get showOpenRecord() {
     return !this.panelMounted;
+  }
+  /** Goes up when the deal is saved or the usages change, so the panels read their data again. */
+  get panelRefresh() {
+    return this.savedTick + this.usageTick;
+  }
+  handleUsagesChanged() {
+    this.usageTick += 1;
+    this.loadBadges();
+  }
+  handleOpenUsagesPanel() {
+    this.openPanel("usages");
+  }
+  loadBadges() {
+    const id = this.recordId;
+    if (!id || !this.showSurgeon) {
+      this.badges = undefined;
+      return;
+    }
+    getBadges({ dealId: id })
+      .then((b) => {
+        if (id === this.recordId) this.badges = b || undefined;
+      })
+      .catch(() => {
+        // the badges are a convenience: without them the buttons just show no badge
+      });
+  }
+  /** How long since the surgeon's usages last changed, as a badge: red with none, orange when two years old or more. */
+  get usagesBadge() {
+    const b = this.badges;
+    if (!b || !b.surgeonId) return null;
+    if (!b.hasUsages) return { text: "none", cls: "badge bad" };
+    const days = Math.floor(
+      (Date.now() - Date.parse(b.usagesNewest)) / 86400000
+    );
+    const old = days >= 730;
+    const text =
+      days < 60
+        ? `${days} ${days === 1 ? "day" : "days"} old`
+        : days < 730
+          ? `${Math.round(days / 30.4)} months old`
+          : `${Math.floor(days / 365.25)} years old`;
+    return { text, cls: old ? "badge w" : "badge" };
+  }
+  /** The surgeries in the last 12 months, as a badge. */
+  get casesBadge() {
+    const b = this.badges;
+    if (!b || !b.surgeonId) return null;
+    return { text: String(b.booked), cls: "badge" };
   }
   get layerCls() {
     return this.panelOn ? "layer on" : "layer";
@@ -249,7 +300,12 @@ export default class PipelineDeal extends LightningElement {
       this.savedMsg = false;
       this.confirming = false;
     }
+    const changed = !this._deal || !value || this._deal.id !== value.id;
     this._deal = value;
+    if (changed) {
+      this.badges = undefined;
+      this.loadBadges();
+    }
   }
 
   get showSurgeon() {
@@ -636,6 +692,7 @@ export default class PipelineDeal extends LightningElement {
         this.draft = {};
         this.draftNames = {};
         this.savedTick += 1;
+        this.loadBadges();
         this.savedMsg = true;
         getRecordNotifyChange([{ recordId: this.recordId }]);
         this.dispatchEvent(new CustomEvent("dealsaved"));

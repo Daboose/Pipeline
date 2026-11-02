@@ -312,6 +312,7 @@ export default class PipelineUsages extends LightningElement {
         this.draft = {};
         this.msg = "Saved.";
         this.load(true);
+        this.dispatchEvent(new CustomEvent("usageschanged"));
       })
       .catch((e) => {
         this.errors = [errorText(e)];
@@ -339,6 +340,7 @@ export default class PipelineUsages extends LightningElement {
         this.draft = {};
         this.msg = "Deleted.";
         this.load(true);
+        this.dispatchEvent(new CustomEvent("usageschanged"));
       })
       .catch((e) => {
         this.errors = [errorText(e)];
@@ -450,6 +452,7 @@ export default class PipelineUsages extends LightningElement {
           this.msg = "Added.";
         }
         this.load(true);
+        this.dispatchEvent(new CustomEvent("usageschanged"));
       })
       .catch((e) => {
         this.errors = [errorText(e)];

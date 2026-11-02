@@ -17,6 +17,10 @@
   --muted: #8b9bb0;
   --pipe: #fdb827;
   --head: #f472b6;
+  --bar-primary: #2f80ed;
+  --bar-revision: #fb923c;
+  --bar-cmft: #14b8a6;
+  --grid-line: rgba(139, 155, 176, 0.25);
   --indigo: #6366f1;
   --indigo2: #a5b4fc;
   --ok: #4ee0b0;
@@ -46,6 +50,10 @@
   --text: #1b2640;
   --muted: #5d6b85;
   --pipe: #b7791f;
+  --bar-primary: #2563eb;
+  --bar-revision: #ea580c;
+  --bar-cmft: #0d9488;
+  --grid-line: rgba(93, 107, 133, 0.3);
   --indigo: #4f46e5;
   --indigo2: #4338ca;
   --ok: #0f9d74;
