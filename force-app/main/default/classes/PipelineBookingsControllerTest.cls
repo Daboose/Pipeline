@@ -1,6 +1,7 @@
 /**
  * Tests for PipelineBookingsController (the My Case Bookings panel: bookings by month, primary and revision, hospital, the
- * usages check, and creating or adjusting ZB usages from the bookings). Uses invented records only.
+ * usages at each hospital, and saving a hospital's changes: add the ZB usage, add, change or delete a competitor's usage,
+ * with one usage per surgeon, hospital, portfolio and company). Uses invented records only.
  */
 @IsTest
 private class PipelineBookingsControllerTest {
@@ -25,6 +26,8 @@ private class PipelineBookingsControllerTest {
       LastName = 'Surgeon',
       PersonMailingCountry = 'Australia',
       PersonMailingCountryCode = 'AU',
+      PersonMailingState = 'New South Wales',
+      PersonMailingStateCode = 'NSW',
       RecordTypeId = rt(Account.SObjectType, 'Physician')
     );
     insert s.surgeon;
@@ -105,9 +108,9 @@ private class PipelineBookingsControllerTest {
     );
     System.assertEquals(1, hip.revision[9], 'Three months back is column 9');
     System.assertEquals(3, hip.booked);
-    System.assertEquals(2, hip.hospitals.size());
-    System.assertEquals('Hospital A', hip.hospitals[0].name, 'Busiest first');
-    System.assertEquals(2, hip.hospitals[0].count);
+    System.assertEquals(2, hip.rows.size());
+    System.assertEquals('Hospital A', hip.rows[0].name, 'Busiest first');
+    System.assertEquals(2, hip.rows[0].booked);
     PipelineBookingsController.BookingType cmft = b.types[1];
     System.assertEquals('CMFT', cmft.name);
     System.assertEquals(false, cmft.split);
@@ -148,23 +151,264 @@ private class PipelineBookingsControllerTest {
     );
   }
 
+  private static Usage__c kneeUsage(
+    Setup s,
+    Id hospital,
+    String company,
+    Decimal cases
+  ) {
+    Usage__c u = new Usage__c(
+      RecordTypeId = rt(Usage__c.SObjectType, 'PrimaryTotalKnee'),
+      HCP2__c = s.surgeon.Id,
+      Healthcare_Facility__c = hospital,
+      CompanyTotalKnee__c = company,
+      CasesPATotalKnee__c = cases
+    );
+    insert u;
+    return u;
+  }
+
+  private static String ops(List<Map<String, Object>> changes) {
+    return JSON.serialize(changes);
+  }
+
   @IsTest
-  static void creatingUsagesFromBookingsMakesOneZbUsagePerHospital() {
+  static void eachHospitalListsItsUsagesIncludingOnesWithNoBookings() {
+    Setup s = make();
+    surgery(s, '202', 'A00', s.hospitalA.Id, true, 1);
+    kneeUsage(s, s.hospitalA.Id, 'Stryker', 60);
+    kneeUsage(s, s.hospitalB.Id, 'ZB', 10);
+    PipelineBookingsController.BookingType knee = PipelineBookingsController.getBookings(
+        s.deal.Id
+      )
+      .types[0];
+    System.assertEquals(2, knee.rows.size(), 'Booked hospital A, usage-only B');
+    System.assertEquals('Hospital A', knee.rows[0].name);
+    System.assertEquals(1, knee.rows[0].booked);
+    System.assertEquals('Stryker', knee.rows[0].lines[0].company);
+    System.assertEquals(60, knee.rows[0].lines[0].cases);
+    System.assertEquals(0, knee.rows[1].booked);
+    System.assertEquals('ZB', knee.rows[1].lines[0].company);
+  }
+
+  @IsTest
+  static void theZbUsageIsAddedNextToTheCompetitorsAndTheCompetitorStays() {
     Setup s = make();
     PipelineUsageController.testCountry = 'AU';
-    surgery(s, '201', 'A00', s.hospitalA.Id, true, 1);
-    surgery(s, '201', 'A00', s.hospitalA.Id, true, 2);
-    surgery(s, '201', 'A01', s.hospitalB.Id, true, 3);
-    PipelineBookingsController.Result r = PipelineBookingsController.createFromBookings(
+    surgery(s, '202', 'A00', s.hospitalA.Id, true, 1);
+    kneeUsage(s, s.hospitalA.Id, 'Stryker', 60);
+    PipelineBookingsController.SaveResult r = PipelineBookingsController.saveHospital(
       s.deal.Id,
-      'Hip'
+      'Knee',
+      s.hospitalA.Id,
+      ops(
+        new List<Map<String, Object>>{
+          new Map<String, Object>{ 'op' => 'zb', 'cases' => 22 }
+        }
+      )
     );
-    System.assertEquals(2, r.created);
-    System.assertEquals(3, r.total);
-    List<Usage__c> made = [
+    System.assertEquals(1, r.created);
+    PipelineBookingsController.BookingType knee = PipelineBookingsController.getBookings(
+        s.deal.Id
+      )
+      .types[0];
+    System.assertEquals(
+      2,
+      knee.rows[0].lines.size(),
+      'Competitor and ZB side by side'
+    );
+    System.assertEquals(22, knee.zb, 'The ZB cases now count');
+    System.assertEquals('zb', knee.usage);
+    Usage__c made = [
+      SELECT RecordType.DeveloperName, CompanyTotalKnee__c, CasesPATotalKnee__c
+      FROM Usage__c
+      WHERE HCP2__c = :s.surgeon.Id AND CompanyTotalKnee__c = 'ZB'
+    ];
+    System.assertEquals('PrimaryTotalKnee', made.RecordType.DeveloperName);
+    System.assertEquals(22, made.CasesPATotalKnee__c);
+    System.assertEquals(
+      60,
+      [
+        SELECT CasesPATotalKnee__c
+        FROM Usage__c
+        WHERE HCP2__c = :s.surgeon.Id AND CompanyTotalKnee__c = 'Stryker'
+      ]
+      .CasesPATotalKnee__c
+    );
+    // saving the ZB number again changes that usage, it does not add a second ZB usage
+    PipelineBookingsController.saveHospital(
+      s.deal.Id,
+      'Knee',
+      s.hospitalA.Id,
+      ops(
+        new List<Map<String, Object>>{
+          new Map<String, Object>{ 'op' => 'zb', 'cases' => 30 }
+        }
+      )
+    );
+    System.assertEquals(
+      1,
+      [
+        SELECT COUNT()
+        FROM Usage__c
+        WHERE HCP2__c = :s.surgeon.Id AND CompanyTotalKnee__c = 'ZB'
+      ]
+    );
+    System.assertEquals(
+      30,
+      [
+        SELECT CasesPATotalKnee__c
+        FROM Usage__c
+        WHERE HCP2__c = :s.surgeon.Id AND CompanyTotalKnee__c = 'ZB'
+      ]
+      .CasesPATotalKnee__c
+    );
+  }
+
+  @IsTest
+  static void oneSaveCanAddZbChangeACompetitorAndAddAnotherCompany() {
+    Setup s = make();
+    PipelineUsageController.testCountry = 'AU';
+    Usage__c stryker = kneeUsage(s, s.hospitalA.Id, 'Stryker', 60);
+    PipelineBookingsController.SaveResult r = PipelineBookingsController.saveHospital(
+      s.deal.Id,
+      'Knee',
+      s.hospitalA.Id,
+      ops(
+        new List<Map<String, Object>>{
+          new Map<String, Object>{ 'op' => 'zb', 'cases' => 22 },
+          new Map<String, Object>{
+            'op' => 'comp',
+            'usageId' => stryker.Id,
+            'cases' => 45
+          },
+          new Map<String, Object>{
+            'op' => 'add',
+            'company' => 'Depuy',
+            'cases' => 5
+          }
+        }
+      )
+    );
+    System.assertEquals(2, r.created, 'ZB and Depuy');
+    System.assertEquals(1, r.updated, 'Stryker changed');
+    System.assertEquals(
+      45,
+      [SELECT CasesPATotalKnee__c FROM Usage__c WHERE Id = :stryker.Id]
+      .CasesPATotalKnee__c
+    );
+    System.assertEquals(
+      3,
+      [
+        SELECT COUNT()
+        FROM Usage__c
+        WHERE
+          HCP2__c = :s.surgeon.Id
+          AND Healthcare_Facility__c = :s.hospitalA.Id
+      ]
+    );
+  }
+
+  @IsTest
+  static void aCompanyCanOnlyHaveOneUsageAtAHospital() {
+    Setup s = make();
+    PipelineUsageController.testCountry = 'AU';
+    kneeUsage(s, s.hospitalA.Id, 'Stryker', 60);
+    try {
+      PipelineBookingsController.saveHospital(
+        s.deal.Id,
+        'Knee',
+        s.hospitalA.Id,
+        ops(
+          new List<Map<String, Object>>{
+            new Map<String, Object>{
+              'op' => 'add',
+              'company' => 'Stryker',
+              'cases' => 5
+            }
+          }
+        )
+      );
+      System.assert(false, 'A second Stryker usage is refused');
+    } catch (AuraHandledException e) {
+      System.assert(
+        e.getMessage().contains('already has a usage for Stryker'),
+        e.getMessage()
+      );
+    }
+    System.assertEquals(
+      1,
+      [SELECT COUNT() FROM Usage__c WHERE HCP2__c = :s.surgeon.Id],
+      'Nothing was added'
+    );
+    // the same company at another hospital is allowed
+    PipelineBookingsController.saveHospital(
+      s.deal.Id,
+      'Knee',
+      s.hospitalB.Id,
+      ops(
+        new List<Map<String, Object>>{
+          new Map<String, Object>{
+            'op' => 'add',
+            'company' => 'Stryker',
+            'cases' => 5
+          }
+        }
+      )
+    );
+    System.assertEquals(
+      2,
+      [SELECT COUNT() FROM Usage__c WHERE HCP2__c = :s.surgeon.Id]
+    );
+  }
+
+  @IsTest
+  static void aCompetitorsUsageIsDeletedAndTheZbUsageAdjustedInOneSave() {
+    Setup s = make();
+    PipelineUsageController.testCountry = 'AU';
+    Usage__c stryker = kneeUsage(s, s.hospitalA.Id, 'Stryker', 60);
+    kneeUsage(s, s.hospitalA.Id, 'ZB', 40);
+    PipelineBookingsController.SaveResult r = PipelineBookingsController.saveHospital(
+      s.deal.Id,
+      'Knee',
+      s.hospitalA.Id,
+      ops(
+        new List<Map<String, Object>>{
+          new Map<String, Object>{ 'op' => 'del', 'usageId' => stryker.Id },
+          new Map<String, Object>{ 'op' => 'zb', 'cases' => 8 }
+        }
+      )
+    );
+    System.assertEquals(1, r.deleted);
+    System.assertEquals(1, r.updated);
+    System.assertEquals(
+      0,
+      [SELECT COUNT() FROM Usage__c WHERE Id = :stryker.Id]
+    );
+    System.assertEquals(
+      8,
+      [SELECT CasesPATotalKnee__c FROM Usage__c WHERE HCP2__c = :s.surgeon.Id]
+      .CasesPATotalKnee__c
+    );
+  }
+
+  @IsTest
+  static void aHipZbUsageGetsStemsAndCupsTheSameNumber() {
+    Setup s = make();
+    PipelineUsageController.testCountry = 'AU';
+    PipelineBookingsController.saveHospital(
+      s.deal.Id,
+      'Hip',
+      s.hospitalA.Id,
+      ops(
+        new List<Map<String, Object>>{
+          new Map<String, Object>{ 'op' => 'zb', 'cases' => 4 }
+        }
+      )
+    );
+    Usage__c u = [
       SELECT
         RecordType.DeveloperName,
-        Healthcare_Facility__c,
         CompanyHipStems__c,
         CasesPAHipStem__c,
         CompanyHipCups__c,
@@ -172,114 +416,72 @@ private class PipelineBookingsControllerTest {
       FROM Usage__c
       WHERE HCP2__c = :s.surgeon.Id
     ];
-    System.assertEquals(2, made.size());
-    for (Usage__c u : made) {
-      System.assertEquals('PrimaryTotalHip', u.RecordType.DeveloperName);
-      System.assertEquals('ZB', u.CompanyHipStems__c);
-      System.assertEquals('ZB', u.CompanyHipCups__c);
-      System.assertEquals(u.CasesPAHipStem__c, u.CasesPAHipCup__c);
-    }
-    PipelineBookingsController.Bookings b = PipelineBookingsController.getBookings(
-      s.deal.Id
-    );
-    System.assertEquals('zb', b.types[0].usage);
-    System.assertEquals(
-      3,
-      b.types[0].zb,
-      'The usages now say what the bookings say'
-    );
+    System.assertEquals('PrimaryTotalHip', u.RecordType.DeveloperName);
+    System.assertEquals('ZB', u.CompanyHipStems__c);
+    System.assertEquals('ZB', u.CompanyHipCups__c);
+    System.assertEquals(4, u.CasesPAHipStem__c);
+    System.assertEquals(4, u.CasesPAHipCup__c);
   }
 
   @IsTest
-  static void adjustingChangesZbUsagesAndLeavesCompetitorsAlone() {
+  static void savingIsRefusedWithoutAHospitalForShoulderAndForAnotherPersonsUsage() {
     Setup s = make();
     PipelineUsageController.testCountry = 'AU';
-    surgery(s, '201', 'A00', s.hospitalA.Id, true, 1);
-    surgery(s, '201', 'A00', s.hospitalA.Id, true, 2);
-    Id hipRt = rt(Usage__c.SObjectType, 'PrimaryTotalHip');
-    insert new Usage__c(
-      RecordTypeId = hipRt,
-      HCP2__c = s.surgeon.Id,
-      Healthcare_Facility__c = s.hospitalA.Id,
-      CompanyHipStems__c = 'ZB',
-      CasesPAHipStem__c = 50,
-      CompanyHipCups__c = 'Stryker',
-      CasesPAHipCup__c = 50
+    String one = ops(
+      new List<Map<String, Object>>{
+        new Map<String, Object>{ 'op' => 'zb', 'cases' => 4 }
+      }
     );
-    // a ZB usage at a hospital with no bookings is brought down to nothing
-    insert new Usage__c(
-      RecordTypeId = hipRt,
-      HCP2__c = s.surgeon.Id,
-      Healthcare_Facility__c = s.hospitalB.Id,
-      CompanyHipStems__c = 'ZB',
-      CasesPAHipStem__c = 10
-    );
-    PipelineBookingsController.Result r = PipelineBookingsController.adjustToBookings(
-      s.deal.Id,
-      'Hip'
-    );
-    System.assertEquals(
-      1,
-      r.skipped,
-      'The Stryker cups line is a competitor and is left alone'
-    );
-    Usage__c a = [
-      SELECT CasesPAHipStem__c, CompanyHipCups__c, CasesPAHipCup__c
-      FROM Usage__c
-      WHERE HCP2__c = :s.surgeon.Id AND Healthcare_Facility__c = :s.hospitalA.Id
-    ];
-    System.assertEquals(2, a.CasesPAHipStem__c);
-    System.assertEquals('Stryker', a.CompanyHipCups__c);
-    System.assertEquals(50, a.CasesPAHipCup__c);
-    Usage__c b = [
-      SELECT CasesPAHipStem__c
-      FROM Usage__c
-      WHERE HCP2__c = :s.surgeon.Id AND Healthcare_Facility__c = :s.hospitalB.Id
-    ];
-    System.assertEquals(0, b.CasesPAHipStem__c);
-  }
-
-  @IsTest
-  static void aKneeUsageIsMadeWithZbOnTheKneeRecordType() {
-    Setup s = make();
-    PipelineUsageController.testCountry = 'AU';
-    surgery(s, '202', 'A00', s.hospitalA.Id, true, 1);
-    surgery(s, '202', 'A01', s.hospitalA.Id, true, 2);
-    PipelineBookingsController.Result r = PipelineBookingsController.createFromBookings(
-      s.deal.Id,
-      'Knee'
-    );
-    System.assertEquals(1, r.created);
-    Usage__c u = [
-      SELECT RecordType.DeveloperName, CompanyTotalKnee__c, CasesPATotalKnee__c
-      FROM Usage__c
-      WHERE HCP2__c = :s.surgeon.Id
-    ];
-    System.assertEquals('PrimaryTotalKnee', u.RecordType.DeveloperName);
-    System.assertEquals('ZB', u.CompanyTotalKnee__c);
-    System.assertEquals(2, u.CasesPATotalKnee__c);
-  }
-
-  @IsTest
-  static void shoulderIsNeverMadeAutomaticallyAndNeedsBookings() {
-    Setup s = make();
-    PipelineUsageController.testCountry = 'AU';
-    surgery(s, '205', 'A00', s.hospitalA.Id, true, 1);
     try {
-      PipelineBookingsController.createFromBookings(s.deal.Id, 'Shoulder');
+      PipelineBookingsController.saveHospital(s.deal.Id, 'Knee', null, one);
+      System.assert(false, 'A hospital is needed');
+    } catch (AuraHandledException e) {
+      System.assert(e.getMessage().contains('needs a hospital'));
+    }
+    try {
+      PipelineBookingsController.saveHospital(
+        s.deal.Id,
+        'Shoulder',
+        s.hospitalA.Id,
+        one
+      );
       System.assert(false, 'Shoulder is refused');
     } catch (AuraHandledException e) {
       System.assert(e.getMessage().contains('anatomical and reverse'));
     }
-    PipelineBookingsController.Bookings b = PipelineBookingsController.getBookings(
-      s.deal.Id
-    );
-    System.assertEquals(false, b.types[0].canAuto);
+    Usage__c elsewhere = kneeUsage(s, s.hospitalB.Id, 'Stryker', 5);
     try {
-      PipelineBookingsController.createFromBookings(s.deal.Id, 'Knee');
-      System.assert(false, 'No knee bookings');
+      PipelineBookingsController.saveHospital(
+        s.deal.Id,
+        'Knee',
+        s.hospitalA.Id,
+        ops(
+          new List<Map<String, Object>>{
+            new Map<String, Object>{ 'op' => 'del', 'usageId' => elsewhere.Id }
+          }
+        )
+      );
+      System.assert(
+        false,
+        'A usage at another hospital is not this hospital\'s'
+      );
     } catch (AuraHandledException e) {
-      System.assert(e.getMessage().contains('no bookings'));
+      System.assert(e.getMessage().contains('not one of this surgeon'));
+    }
+    try {
+      PipelineBookingsController.saveHospital(
+        s.deal.Id,
+        'Knee',
+        s.hospitalA.Id,
+        ops(
+          new List<Map<String, Object>>{
+            new Map<String, Object>{ 'op' => 'zb', 'cases' => -1 }
+          }
+        )
+      );
+      System.assert(false, 'A negative number is refused');
+    } catch (AuraHandledException e) {
+      System.assert(e.getMessage().contains('zero or more'));
     }
   }
 

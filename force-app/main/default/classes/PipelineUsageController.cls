@@ -9,7 +9,8 @@
  * What a usage is (Robert, 2026-11-02): one Usage__c record is one surgeon at one hospital for one portfolio. The portfolio is
  * the record type, and a record type is the person's country plus the portfolio ("ANZ HIP", "ANZ KNEE", "ANZ SHOULDERS",
  * "ANZ CMFT"; "SG HIP", "IN KNEE" and so on; Australia and New Zealand share "ANZ"). A surgeon may have usages at the same
- * hospital for different portfolios but never two for the same portfolio: adding one that exists returns the existing one
+ * hospital for different portfolios, and (Robert, 2026-11-03) for different COMPANIES in the same portfolio (ZB and each
+ * competitor have their own usage), but never two for the same company: adding one that exists returns the existing one
  * so the person can edit it instead. The record type of a new usage is chosen here from the person's country (their
  * user's Country) and the portfolio, never typed in.
  */
@@ -223,9 +224,19 @@ public with sharing class PipelineUsageController {
     }
   }
 
+  /** True when any product line of the usage holds this company. */
+  private static Boolean holdsCompany(Usage__c u, String company) {
+    for (List<String> f : FIELDS.values()) {
+      if ((String) u.get(f[0]) == company) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   /**
    * Adds a usage for the deal's surgeon at a hospital for a portfolio, with the record type chosen from the person's
-   * country. If the surgeon already has one for that hospital and portfolio, nothing is added and the existing one is
+   * country. If the surgeon already has one for that hospital, portfolio and company, nothing is added and the existing one is
    * returned, so it can be edited instead.
    */
   @AuraEnabled
@@ -260,8 +271,22 @@ public with sharing class PipelineUsageController {
           'This deal has no Primary HCP, so there is no surgeon to add a usage for.'
         );
       }
+      // The company of the new usage is the first company the person chose; with none chosen, any usage there counts.
+      String company;
+      for (LineIn l : lines) {
+        if (company == null && !String.isBlank(l.company)) {
+          company = l.company;
+        }
+      }
       List<Usage__c> found = [
-        SELECT Id
+        SELECT
+          Id,
+          CompanyHipStems__c,
+          CompanyHipCups__c,
+          CompanyTotalKnee__c,
+          CompanyAnatomical__c,
+          CompanyReverse__c,
+          Company_CMFT__c
         FROM Usage__c
         WHERE
           HCP2__c = :surgeon
@@ -269,12 +294,14 @@ public with sharing class PipelineUsageController {
           AND RecordTypeId = :info.getRecordTypeId()
         WITH USER_MODE
         ORDER BY LastModifiedDate DESC
-        LIMIT 1
+        LIMIT 50
       ];
-      if (!found.isEmpty()) {
-        out.usageId = found[0].Id;
-        out.existing = true;
-        return out;
+      for (Usage__c f : found) {
+        if (company == null || holdsCompany(f, company)) {
+          out.usageId = f.Id;
+          out.existing = true;
+          return out;
+        }
       }
       Usage__c u = new Usage__c(
         HCP2__c = surgeon,

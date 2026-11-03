@@ -25,6 +25,8 @@ private class PipelineUsageControllerTest {
       LastName = 'Surgeon',
       PersonMailingCountry = 'Australia',
       PersonMailingCountryCode = 'AU',
+      PersonMailingState = 'New South Wales',
+      PersonMailingStateCode = 'NSW',
       RecordTypeId = rt(Account.SObjectType, 'Physician')
     );
     insert s.surgeon;
@@ -192,6 +194,46 @@ private class PipelineUsageControllerTest {
     );
     System.assertEquals(
       3,
+      [SELECT COUNT() FROM Usage__c WHERE HCP2__c = :s.surgeon.Id]
+    );
+  }
+
+  @IsTest
+  static void aDifferentCompanyAtTheSameHospitalIsItsOwnUsage() {
+    Setup s = make();
+    PipelineUsageController.testCountry = 'AU';
+    PipelineUsageController.Result zb = PipelineUsageController.addUsage(
+      s.deal.Id,
+      s.hospital.Id,
+      'Knee',
+      lines('knee', 'ZB', 30)
+    );
+    PipelineUsageController.Result stryker = PipelineUsageController.addUsage(
+      s.deal.Id,
+      s.hospital.Id,
+      'Knee',
+      lines('knee', 'Stryker', 20)
+    );
+    System.assertEquals(
+      false,
+      stryker.existing,
+      'Another company is its own usage'
+    );
+    System.assertNotEquals(zb.usageId, stryker.usageId);
+    PipelineUsageController.Result again = PipelineUsageController.addUsage(
+      s.deal.Id,
+      s.hospital.Id,
+      'Knee',
+      lines('knee', 'Stryker', 99)
+    );
+    System.assertEquals(
+      true,
+      again.existing,
+      'The same company opens the existing usage'
+    );
+    System.assertEquals(stryker.usageId, again.usageId);
+    System.assertEquals(
+      2,
       [SELECT COUNT() FROM Usage__c WHERE HCP2__c = :s.surgeon.Id]
     );
   }

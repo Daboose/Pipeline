@@ -72,6 +72,32 @@ private class PipelineChatterControllerTest {
     );
   }
 
+  /** The bug found in PROD (2026-11-03): reading FeedItem directly is refused for anyone without View All Data. */
+  @IsTest
+  static void aPersonWithoutViewAllDataCanReadTheFeedWithoutAnError() {
+    PipelineChatterController.viaConnectApi = false;
+    SalesRisks__c d = makeDeal();
+    PipelineChatterController.post(d.Id, plain('A post'));
+    User u = makeUser('Zelda', 'Zzfeedreader');
+    System.runAs(u) {
+      List<PipelineChatterController.Post> feed;
+      try {
+        feed = PipelineChatterController.getFeed(d.Id);
+      } catch (Exception e) {
+        System.assert(
+          !e.getMessage().contains('requires a filter by Id'),
+          'A person without View All Data must not get the FeedItem restriction: ' +
+          e.getMessage()
+        );
+      }
+    }
+    System.assertEquals(
+      1,
+      PipelineChatterController.getFeed(d.Id).size(),
+      'The administrator still sees the post'
+    );
+  }
+
   @IsTest
   static void anEmptyOrHugePostIsRefused() {
     PipelineChatterController.viaConnectApi = false;

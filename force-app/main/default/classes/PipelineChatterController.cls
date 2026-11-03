@@ -2,7 +2,7 @@
  * Pipeline: reads and writes Chatter on a deal, for the deal flyout (the pipelineChatter component).
  *
  * Who calls it: the pipelineChatter component, and PipelineChatterControllerTest.
- * What it touches: reads FeedItem and FeedComment on one deal (SalesRisks__c) in the signed-in person's own access, and
+ * What it touches: reads the deal's own feed (SalesRisks__Feed and its FeedComments) in the signed-in person's own access, and
  * posts a new feed post or a reply as that person. It changes nothing else. A post on a deal is what moves the deal's
  * Latest Chatter Date (an existing Salesforce process does that, not this class), so posting here is the same as posting
  * on the deal page.
@@ -51,7 +51,9 @@ public with sharing class PipelineChatterController {
   @AuraEnabled
   public static List<Post> getFeed(Id dealId) {
     List<Post> out = new List<Post>();
-    for (FeedItem f : [
+    // The deal's own feed table is read, not FeedItem: Salesforce refuses a direct FeedItem query from anyone without
+    // View All Data ("FeedItem requires a filter by Id"), even when it is filtered by the deal.
+    for (SalesRisks__Feed f : [
       SELECT
         Id,
         Body,
@@ -65,7 +67,7 @@ public with sharing class PipelineChatterController {
           ORDER BY CreatedDate ASC, Id ASC
           LIMIT 50
         )
-      FROM FeedItem
+      FROM SalesRisks__Feed
       WHERE
         ParentId = :dealId
         AND Type IN ('TextPost', 'LinkPost', 'ContentPost')

@@ -1,0 +1,927 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>
+      Pipeline mockup: My Case Bookings with a suggestion panel, version 2
+    </title>
+    <style>
+      :root,
+      [data-theme="dark"] {
+        --page: #0e1623;
+        --bg: #141e2e;
+        --panel: #1a2740;
+        --panel2: #20304f;
+        --line: #2f4163;
+        --edge: #5b6f93;
+        --text: #e8edf5;
+        --muted: #9fb0cc;
+        --pipe: #fdb827;
+        --head: #f472b6;
+        --headbg: rgba(244, 114, 182, 0.14);
+        --indigo: #6366f1;
+        --ok: #4ee0b0;
+        --warn: #fb923c;
+        --bad: #f87171;
+        --warnbg: rgba(251, 146, 60, 0.12);
+        --badbg: rgba(248, 113, 113, 0.12);
+        --okbg: rgba(78, 224, 176, 0.12);
+        --shadow: 0 8px 20px rgba(0, 0, 0, 0.55);
+        --field: #11151c;
+        --primary: #2f80ed;
+        --revision: #fb923c;
+        --grid: rgba(139, 155, 176, 0.25);
+      }
+      [data-theme="light"] {
+        --page: #e9edf4;
+        --bg: #f4f6fa;
+        --panel: #ffffff;
+        --panel2: #eef2fa;
+        --line: #d5dcea;
+        --edge: #b3bfd6;
+        --text: #1b2640;
+        --muted: #5d6b85;
+        --pipe: #b7791f;
+        --head: #db2777;
+        --headbg: rgba(219, 39, 119, 0.09);
+        --indigo: #4f46e5;
+        --ok: #0f9d74;
+        --warn: #c2570c;
+        --bad: #dc2626;
+        --warnbg: rgba(194, 87, 12, 0.09);
+        --badbg: rgba(220, 38, 38, 0.08);
+        --okbg: rgba(15, 157, 116, 0.09);
+        --shadow: 0 8px 20px rgba(30, 45, 80, 0.18);
+        --field: #ffffff;
+        --primary: #2563eb;
+        --revision: #ea580c;
+        --grid: rgba(93, 107, 133, 0.3);
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        height: 100%;
+      }
+      body {
+        margin: 0;
+        background: var(--page);
+        color: var(--text);
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-size: 16px;
+        display: flex;
+        flex-direction: column;
+      }
+      button,
+      input {
+        font-family: inherit;
+      }
+      .sfnav {
+        flex: none;
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        height: 44px;
+        padding: 0 16px;
+        background: #0b1220;
+        border-bottom: 1px solid #2f4163;
+        color: #cdd6e6;
+        font-size: 14px;
+      }
+      .sfnav .app {
+        font-weight: 800;
+        letter-spacing: 0.14em;
+      }
+      .sfnav .app b {
+        color: #fdb827;
+      }
+      .sfnav .tab {
+        color: #9fb0cc;
+      }
+      .sfnav .tab.on {
+        color: #fff;
+        border-bottom: 2px solid #6366f1;
+        padding-bottom: 2px;
+      }
+      .sp {
+        flex: 1;
+      }
+      .pill {
+        border: 1px solid var(--indigo);
+        background: transparent;
+        color: var(--text);
+        border-radius: 999px;
+        padding: 7px 18px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+      }
+      .sfnav .pill {
+        color: #e8edf5;
+      }
+      .pill.go {
+        background: var(--indigo);
+        color: #fff;
+      }
+      .pill.on {
+        background: var(--indigo);
+        color: #fff;
+      }
+      .pill:disabled {
+        opacity: 0.45;
+        cursor: default;
+      }
+
+      /* the tools strip above the simulated flyout */
+      .tools {
+        flex: none;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        padding: 8px 16px;
+        background: var(--bg);
+        border-bottom: 1px solid var(--line);
+      }
+      .tools .lbl {
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 700;
+      }
+      .about {
+        flex: none;
+        margin: 8px 16px 0;
+        background: #1a2740;
+        border: 1px solid #2f4163;
+        border-radius: 12px;
+        padding: 8px 18px;
+        line-height: 1.5;
+        color: #e8edf5;
+        font-size: 15px;
+        max-height: 40vh;
+        overflow: auto;
+      }
+      .about summary {
+        cursor: pointer;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        color: #fdb827;
+      }
+      .about ul {
+        margin: 4px 0 8px;
+        padding-left: 20px;
+      }
+
+      /* the flyout: header fixed, body scrolls */
+      .fly {
+        flex: 1;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        margin: 8px 16px 12px;
+        border: 1px solid var(--edge);
+        border-left: 3px solid var(--indigo);
+        border-radius: 12px;
+        background: var(--bg);
+        overflow: hidden;
+      }
+      .fhead {
+        flex: none;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 12px 20px;
+        background: var(--headbg);
+        border-bottom: 1px solid var(--line);
+      }
+      .fhead h2 {
+        margin: 0;
+        font-size: 20px;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--head);
+      }
+      .fhead .who {
+        color: var(--muted);
+      }
+      .x {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        border: 1px solid var(--edge);
+        position: relative;
+      }
+      .x::before,
+      .x::after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 14px;
+        height: 2px;
+        background: var(--text);
+        transform: translate(-50%, -50%) rotate(45deg);
+      }
+      .x::after {
+        transform: translate(-50%, -50%) rotate(-45deg);
+      }
+      .fbody {
+        flex: 1;
+        overflow: auto;
+        padding: 14px 20px 40px;
+      }
+      .range {
+        font-size: 16px;
+      }
+      .legend {
+        display: flex;
+        gap: 18px;
+        margin: 8px 0 14px;
+        color: var(--muted);
+        font-size: 15px;
+      }
+      .sw {
+        display: inline-block;
+        width: 14px;
+        height: 14px;
+        border-radius: 4px;
+        margin-right: 6px;
+        vertical-align: -2px;
+      }
+
+      /* one section per portfolio: totals, chart, suggestion panel */
+      .sects {
+        display: grid;
+        gap: 18px;
+      }
+      .sects.under {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        align-items: start;
+      }
+      .sects.right {
+        grid-template-columns: minmax(0, 1fr);
+      }
+      .sect {
+        background: var(--panel);
+        border: 1px solid var(--edge);
+        border-radius: 14px;
+        box-shadow: var(--shadow);
+        overflow: hidden;
+      }
+      .chead {
+        padding: 12px 18px;
+        display: flex;
+        align-items: baseline;
+        gap: 14px;
+        flex-wrap: wrap;
+        border-bottom: 1px solid var(--line);
+      }
+      .chead .pf {
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        color: var(--pipe);
+      }
+      .chead .big {
+        font-size: 28px;
+        font-weight: 800;
+      }
+      .chead .sm {
+        color: var(--muted);
+      }
+      .row {
+        display: grid;
+      }
+      .under .row {
+        grid-template-columns: minmax(0, 1fr);
+      }
+      .right .row {
+        grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+      }
+      .chartbox {
+        padding: 10px 14px 6px;
+        min-width: 0;
+      }
+      .chartbox svg {
+        display: block;
+      }
+      .sugg {
+        min-width: 0;
+        border-top: 1px solid var(--line);
+      }
+      .right .chartbox {
+        position: sticky;
+        top: 0;
+        align-self: start;
+      }
+      .right .sugg {
+        border-top: 0;
+        border-left: 1px solid var(--line);
+      }
+
+      /* the suggestion panel */
+      .found {
+        padding: 12px 18px 14px;
+        background: var(--warnbg);
+        border-bottom: 1px solid var(--line);
+      }
+      .found.allgood {
+        background: var(--okbg);
+      }
+      .sugg h3 {
+        margin: 0 0 6px;
+        font-size: 13px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        font-weight: 800;
+      }
+      .found h3 {
+        color: var(--warn);
+      }
+      .fix h3 {
+        color: var(--head);
+      }
+      .find {
+        display: flex;
+        gap: 12px;
+        padding: 5px 0;
+        font-size: 16px;
+        line-height: 1.45;
+      }
+      .dot {
+        flex: none;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        margin-top: 6px;
+      }
+      .dot.w {
+        background: var(--warn);
+      }
+      .dot.b {
+        background: var(--bad);
+      }
+      .tagc {
+        display: inline-block;
+        border-radius: 999px;
+        padding: 0 10px;
+        font-size: 14px;
+        font-weight: 800;
+        background: var(--warnbg);
+        border: 1px solid var(--warn);
+        color: var(--warn);
+      }
+      .fix {
+        padding: 12px 18px 16px;
+      }
+      .rule {
+        margin: 0 0 10px;
+        font-size: 14px;
+        color: var(--muted);
+        line-height: 1.5;
+      }
+      .rule b {
+        color: var(--text);
+      }
+      .hosp {
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: var(--panel2);
+        padding: 10px 14px 12px;
+        margin-bottom: 10px;
+      }
+      .hosp .hn {
+        font-weight: 800;
+        font-size: 16px;
+      }
+      .hosp .hs {
+        color: var(--muted);
+        font-size: 14px;
+        margin: 1px 0 8px;
+      }
+      .opts {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .opt {
+        border: 1px solid var(--edge);
+        background: transparent;
+        color: var(--text);
+        border-radius: 12px;
+        padding: 8px 12px;
+        font-size: 15px;
+        font-weight: 700;
+        cursor: pointer;
+        text-align: left;
+      }
+      .opt small {
+        display: block;
+        font-weight: 500;
+        color: var(--muted);
+        font-size: 13px;
+        margin-top: 1px;
+      }
+      .opt.on {
+        border-color: var(--indigo);
+        background: var(--indigo);
+        color: #fff;
+      }
+      .opt.on small {
+        color: #e0e4ff;
+      }
+      .opt.danger.on {
+        background: var(--bad);
+        border-color: var(--bad);
+      }
+      .ba {
+        display: flex;
+        align-items: center;
+        gap: 8px 10px;
+        flex-wrap: wrap;
+        margin-top: 10px;
+        font-size: 15px;
+      }
+      .ba .l {
+        font-size: 12px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        font-weight: 800;
+        color: var(--muted);
+      }
+      .ba .arrow {
+        color: var(--muted);
+        font-size: 18px;
+      }
+      .line {
+        border-radius: 10px;
+        padding: 4px 10px;
+        border: 1px solid var(--line);
+        background: var(--bg);
+      }
+      .line.zb {
+        border-color: var(--ok);
+        background: var(--okbg);
+      }
+      .line.comp {
+        border-color: var(--warn);
+        background: var(--warnbg);
+      }
+      .line.none {
+        border-style: dashed;
+        color: var(--muted);
+      }
+      .num {
+        width: 76px;
+        font-size: 15px;
+        padding: 3px 8px;
+        border-radius: 8px;
+        border: 1px solid var(--edge);
+        background: var(--field);
+        color: var(--text);
+      }
+      .apply {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        padding-top: 2px;
+      }
+      .t {
+        font-size: 14px;
+        color: var(--muted);
+      }
+      .confirm {
+        border: 1px solid var(--indigo);
+        border-radius: 12px;
+        padding: 10px 14px;
+        background: var(--panel2);
+      }
+      .confirm ul {
+        margin: 6px 0 10px;
+        padding-left: 20px;
+        line-height: 1.55;
+      }
+      .done {
+        padding: 16px 18px;
+        background: var(--okbg);
+        font-size: 16px;
+      }
+      .done b {
+        color: var(--ok);
+      }
+      [hidden] {
+        display: none !important;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="sfnav">
+      <span class="app"><b>PIPE</b>LINE</span>
+      <span class="tab on">Pipeline</span>
+      <span class="tab">Opportunities</span>
+      <span class="tab">Accounts</span>
+      <span class="sp"></span>
+      <button class="pill" type="button" id="fs">Full screen</button>
+    </div>
+
+    <details class="about" open>
+      <summary>ABOUT THIS MOCKUP</summary>
+      <p style="margin: 6px 0">
+        The My Case Bookings screen with <b>live charts</b> and the
+        <b>suggestion panel</b>: it first says what we found (the problem), then
+        what you can do. The page below is the size of your window; the screen
+        inside it scrolls, so you can judge scrolling. Invented data only (Dr
+        Example Surgeon).
+      </p>
+      <b>Try it:</b>
+      <ul>
+        <li>
+          Switch the layout with the two buttons under this box:
+          <b>suggestions underneath</b> (charts side by side) or
+          <b>suggestions on the right</b> (charts one above the other).
+        </li>
+        <li>
+          In either layout, click the choices in a panel, press
+          <b>Review changes</b>, then <b>Confirm</b>. Nothing is written until
+          Confirm. <b>Start again</b> resets.
+        </li>
+        <li>
+          With suggestions on the right, scroll the knee section: the chart
+          stays in view while you work in the panel.
+        </li>
+        <li>
+          Resize the window to see the charts redraw. Light / Dark switches the
+          theme.
+        </li>
+      </ul>
+      <b>Worth knowing:</b> a knee (or hip) usage holds one company per line, so
+      ZB and a competitor cannot both sit on the same line.
+      <b>Not shown yet:</b> CMFT and shoulder, the rest of the deal flyout
+      behind it.
+    </details>
+
+    <div class="tools">
+      <span class="lbl">Layout:</span>
+      <button class="pill on" type="button" data-lay="right">
+        Suggestions on the right
+      </button>
+      <button class="pill" type="button" data-lay="under">
+        Suggestions underneath
+      </button>
+      <span class="sp"></span>
+      <button class="pill" type="button" id="theme">Light mode</button>
+      <button class="pill" type="button" id="reset">Start again</button>
+    </div>
+
+    <div class="fly">
+      <div class="fhead">
+        <h2>My Case Bookings</h2>
+        <span class="who">Dr Example Surgeon</span>
+        <span class="sp"></span>
+        <i class="x"></i>
+      </div>
+      <div class="fbody">
+        <div class="range">
+          Surgeries from 1 Nov 2025 to 31 Oct 2026 (12 whole months), and this
+          month so far.
+        </div>
+        <div class="legend">
+          <span
+            ><i class="sw" style="background: var(--primary)"></i>Primary</span
+          >
+          <span
+            ><i class="sw" style="background: var(--revision)"></i
+            >Revision</span
+          >
+          <span>* this month so far (lighter, not in the total)</span>
+        </div>
+        <div class="sects right" id="sects"></div>
+      </div>
+    </div>
+
+    <script>
+      const root = document.documentElement;
+      const MONTHS = [
+        "Nov",
+        "Dec",
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Oct",
+        "Nov*"
+      ];
+      const DATA = {
+        hip: {
+          label: "HIP",
+          total: 4,
+          primary: 4,
+          revision: 0,
+          pm: [0, 1, 0, 0, 2, 1, 0, 0, 0, 0, 0, 0, 0],
+          rv: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          perMonth: "0.3",
+          hospitals: [
+            {
+              id: "hip1",
+              name: "Example Private Hospital",
+              booked: 4,
+              comp: null,
+              choice: "create",
+              choices: [
+                ["create", "Create ZB usage", "Stems 4 and cups 4 a year"],
+                ["keep", "Leave as it is", "No change"]
+              ]
+            }
+          ]
+        },
+        knee: {
+          label: "KNEE",
+          total: 40,
+          primary: 35,
+          revision: 5,
+          pm: [4, 1, 1, 7, 5, 2, 2, 4, 2, 4, 1, 2, 1],
+          rv: [1, 0, 0, 0, 0, 0, 2, 0, 0, 1, 1, 0, 0],
+          perMonth: "3.3",
+          hospitals: [
+            {
+              id: "knee1",
+              name: "Example Private Hospital",
+              booked: 30,
+              comp: { name: "Competitor A", cases: 60 },
+              choice: "replace",
+              cases: 60,
+              choices: [
+                [
+                  "replace",
+                  "Replace with ZB",
+                  "Competitor A out, ZB in at the booked 30"
+                ],
+                [
+                  "change",
+                  "Change the competitor's cases",
+                  "Keep Competitor A, new number"
+                ],
+                ["remove", "Remove the competitor", "Clear the line, no ZB"],
+                ["keep", "Leave as it is", "No change"]
+              ]
+            },
+            {
+              id: "knee2",
+              name: "Sample Day Surgery",
+              booked: 10,
+              comp: null,
+              choice: "create",
+              choices: [
+                ["create", "Create ZB usage", "ZB at the booked 10"],
+                ["keep", "Leave as it is", "No change"]
+              ]
+            }
+          ]
+        }
+      };
+      const FRESH = JSON.stringify(DATA);
+      let S = JSON.parse(FRESH);
+      const mode = { hip: "edit", knee: "edit" };
+
+      const box = (cls, text) => `<span class="line ${cls}">${text}</span>`;
+      const nowOf = (h) =>
+        h.comp
+          ? box("comp", `${h.comp.name}, ${h.comp.cases} a year`)
+          : box("none", "No usage");
+      function afterOf(h) {
+        switch (h.choice) {
+          case "replace":
+          case "create":
+            return box("zb", `ZB, ${h.booked} a year`);
+          case "change":
+            return box(
+              "comp",
+              `${h.comp.name}, ${h.cases === "" ? "?" : h.cases} a year`
+            );
+          case "remove":
+            return box("none", "No usage (line cleared)");
+          default:
+            return nowOf(h);
+        }
+      }
+      function changeText(h) {
+        switch (h.choice) {
+          case "replace":
+            return `${h.name}: replace ${h.comp.name} (${h.comp.cases}) with <b>ZB (${h.booked} a year)</b>`;
+          case "create":
+            return `${h.name}: create a <b>ZB usage, ${h.booked} a year</b>`;
+          case "change":
+            return `${h.name}: change ${h.comp.name} to <b>${h.cases} a year</b>`;
+          case "remove":
+            return `${h.name}: <b>remove</b> ${h.comp.name}'s usage`;
+          default:
+            return null;
+        }
+      }
+
+      function panelHtml(k) {
+        const d = S[k];
+        const low = d.label.toLowerCase();
+        if (mode[k] === "done") {
+          const n = d.hospitals.filter(changeText).length;
+          return `<div class="done"><b>Done.</b> ${n} change${n > 1 ? "s" : ""} saved to the surgeon's ${low} usages. The ratings recalculate.</div>`;
+        }
+        const finds = d.hospitals
+          .map((h) =>
+            h.comp
+              ? `<div class="find"><i class="dot w"></i><div><b>${h.name}:</b> a usage is already entered for this surgeon, but for a <b>competitor</b> (<span class="tagc">${h.comp.name}, ${h.comp.cases} a year</span>). No ZB cases are recorded, although <b>${h.booked}</b> were booked.</div></div>`
+              : `<div class="find"><i class="dot b"></i><div><b>${h.name}:</b> <b>no ${low} usage</b> is entered, although <b>${h.booked}</b> ZB ${low} cases were booked.</div></div>`
+          )
+          .join("");
+        const blocks = d.hospitals
+          .map(
+            (h) => `
+          <div class="hosp">
+            <div class="hn">${h.name}</div>
+            <div class="hs">${h.booked} ZB ${low} cases booked in the last 12 months</div>
+            <div class="opts">${h.choices
+              .map(
+                (c) =>
+                  `<button type="button" class="opt ${c[0] === h.choice ? "on" : ""} ${c[0] === "remove" ? "danger" : ""}" data-k="${k}" data-h="${h.id}" data-c="${c[0]}">${c[1]}<small>${c[2]}</small></button>`
+              )
+              .join("")}</div>
+            <div class="ba">
+              <span class="l">Now</span>${nowOf(h)}
+              <span class="arrow">→</span>
+              <span class="l">After</span>${afterOf(h)}
+              ${
+                h.choice === "change"
+                  ? `<label class="t">New cases a year <input class="num" type="number" min="0" value="${h.cases}" data-k="${k}" data-n="${h.id}" /></label>`
+                  : ""
+              }
+            </div>
+          </div>`
+          )
+          .join("");
+        const n = d.hospitals.filter(changeText).length;
+        const bad = d.hospitals.some(
+          (h) => h.choice === "change" && h.cases === ""
+        );
+        const hasComp = d.hospitals.some((h) => h.comp);
+        const confirm =
+          mode[k] === "confirm"
+            ? `<div class="confirm"><b>These changes will be saved:</b><ul>${d.hospitals
+                .map(changeText)
+                .filter(Boolean)
+                .map((t) => `<li>${t}</li>`)
+                .join(
+                  ""
+                )}</ul><button class="pill go" type="button" data-k="${k}" data-act="yes">Confirm</button> <button class="pill" type="button" data-k="${k}" data-act="back">Go back</button></div>`
+            : `<div class="apply"><button class="pill go" type="button" data-k="${k}" data-act="review" ${n === 0 || bad ? "disabled" : ""}>Review changes</button><span class="t">${n === 0 ? "Nothing to change yet." : `${n} change${n > 1 ? "s" : ""} ready to review.`}</span></div>`;
+        return `
+          <div class="found"><h3>What we found</h3>${finds}</div>
+          <div class="fix"><h3>What you can do</h3>
+            ${hasComp ? `<p class="rule">A ${low} usage has <b>one company</b> per surgeon and hospital, so a competitor and ZB take turns on the same line.</p>` : ""}
+            ${blocks}${confirm}
+          </div>`;
+      }
+
+      function build() {
+        const wrap = document.getElementById("sects");
+        wrap.innerHTML = ["hip", "knee"]
+          .map((k) => {
+            const d = S[k];
+            return `<section class="sect">
+              <div class="chead"><span class="pf">${d.label}</span><span class="big">${d.total}</span>
+                <span class="sm">cases in the last 12 months · Primary <b>${d.primary}</b> · Revision <b>${d.revision}</b> · about ${d.perMonth} a month</span></div>
+              <div class="row">
+                <div class="chartbox" id="chart-${k}"></div>
+                <div class="sugg" id="panel-${k}">${panelHtml(k)}</div>
+              </div>
+            </section>`;
+          })
+          .join("");
+        drawCharts();
+      }
+      function drawPanel(k) {
+        document.getElementById("panel-" + k).innerHTML = panelHtml(k);
+      }
+
+      function niceMax(m) {
+        const steps = [2, 4, 5, 8, 10, 12, 16, 20, 25, 30, 40, 50];
+        return steps.find((s) => s >= m) || m;
+      }
+      function drawChart(k) {
+        const el = document.getElementById("chart-" + k);
+        if (!el) return;
+        const d = S[k];
+        const W = Math.max(280, el.clientWidth - 28);
+        const H = 270;
+        const p = { l: 34, r: 8, t: 24, b: 30 };
+        const tot = d.pm.map((v, i) => v + d.rv[i]);
+        const max = niceMax(Math.max(...tot, 1));
+        const iw = W - p.l - p.r;
+        const ih = H - p.t - p.b;
+        const slot = iw / 13;
+        const bw = Math.min(34, slot * 0.62);
+        const y = (v) => p.t + ih - (v / max) * ih;
+        const tick = max <= 5 ? 1 : max <= 12 ? 2 : max <= 25 ? 5 : 10;
+        let s = `<svg width="${W}" height="${H}" role="img" aria-label="${d.label} bookings by month">`;
+        for (let t = 0; t <= max; t += tick) {
+          s += `<line x1="${p.l}" x2="${W - p.r}" y1="${y(t)}" y2="${y(t)}" stroke="var(--grid)" stroke-width="1"/>`;
+          s += `<text x="${p.l - 8}" y="${y(t) + 5}" text-anchor="end" font-size="14" fill="var(--muted)">${t}</text>`;
+        }
+        for (let i = 0; i < 13; i++) {
+          const cx = p.l + slot * i + slot / 2;
+          const now = i === 12;
+          const op = now ? 0.45 : 1;
+          const pm = d.pm[i];
+          const rv = d.rv[i];
+          if (pm > 0)
+            s += `<rect x="${cx - bw / 2}" y="${y(pm)}" width="${bw}" height="${y(0) - y(pm)}" rx="3" fill="var(--primary)" opacity="${op}"><title>${MONTHS[i]}: ${pm} primary</title></rect>`;
+          if (rv > 0)
+            s += `<rect x="${cx - bw / 2}" y="${y(pm + rv)}" width="${bw}" height="${y(pm) - y(pm + rv)}" rx="3" fill="var(--revision)" opacity="${op}"><title>${MONTHS[i]}: ${rv} revision</title></rect>`;
+          if (pm + rv > 0)
+            s += `<text x="${cx}" y="${y(pm + rv) - 6}" text-anchor="middle" font-size="15" font-weight="800" fill="var(--text)" opacity="${op}">${pm + rv}</text>`;
+          s += `<text x="${cx}" y="${H - 8}" text-anchor="middle" font-size="14" fill="var(--muted)">${MONTHS[i]}</text>`;
+        }
+        el.innerHTML = s + "</svg>";
+      }
+      function drawCharts() {
+        drawChart("hip");
+        drawChart("knee");
+      }
+      let rt;
+      window.addEventListener("resize", () => {
+        clearTimeout(rt);
+        rt = setTimeout(drawCharts, 80);
+      });
+
+      const sects = document.getElementById("sects");
+      sects.addEventListener("click", (e) => {
+        const o = e.target.closest(".opt");
+        if (o) {
+          S[o.dataset.k].hospitals.find((h) => h.id === o.dataset.h).choice =
+            o.dataset.c;
+          drawPanel(o.dataset.k);
+          return;
+        }
+        const b = e.target.closest("[data-act]");
+        if (!b) return;
+        mode[b.dataset.k] = { review: "confirm", back: "edit", yes: "done" }[
+          b.dataset.act
+        ];
+        drawPanel(b.dataset.k);
+      });
+      sects.addEventListener("input", (e) => {
+        const id = e.target.dataset.n;
+        if (!id) return;
+        const k = e.target.dataset.k;
+        const v = e.target.value;
+        S[k].hospitals.find((h) => h.id === id).cases =
+          v === "" ? "" : Math.max(0, Number(v));
+        const pos = e.target.selectionStart;
+        drawPanel(k);
+        const again = document.querySelector(`[data-n="${id}"]`);
+        if (again) {
+          again.focus();
+          try {
+            again.setSelectionRange(pos, pos);
+          } catch (x) {}
+        }
+      });
+      document.querySelectorAll("[data-lay]").forEach((b) =>
+        b.addEventListener("click", () => {
+          document
+            .querySelectorAll("[data-lay]")
+            .forEach((x) => x.classList.toggle("on", x === b));
+          sects.className = "sects " + b.dataset.lay;
+          drawCharts();
+        })
+      );
+      document.getElementById("reset").addEventListener("click", () => {
+        S = JSON.parse(FRESH);
+        mode.hip = mode.knee = "edit";
+        build();
+      });
+      document.getElementById("theme").addEventListener("click", (e) => {
+        const light = root.getAttribute("data-theme") !== "light";
+        root.setAttribute("data-theme", light ? "light" : "dark");
+        e.target.textContent = light ? "Dark mode" : "Light mode";
+      });
+      document.getElementById("fs").addEventListener("click", () => {
+        if (document.fullscreenElement) document.exitFullscreen();
+        else document.documentElement.requestFullscreen();
+        setTimeout(drawCharts, 300);
+      });
+      root.setAttribute("data-theme", "dark");
+      build();
+    </script>
+  </body>
+</html>

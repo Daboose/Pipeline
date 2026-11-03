@@ -1,0 +1,673 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>
+      Pipeline mockup: knee card when a competitor usage exists, version 1
+    </title>
+    <style>
+      :root,
+      [data-theme="dark"] {
+        --page: #0e1623;
+        --bg: #141e2e;
+        --panel: #1a2740;
+        --panel2: #20304f;
+        --line: #2f4163;
+        --edge: #5b6f93;
+        --text: #e8edf5;
+        --muted: #9fb0cc;
+        --pipe: #fdb827;
+        --head: #f472b6;
+        --indigo: #6366f1;
+        --indigo2: #a5b4fc;
+        --ok: #4ee0b0;
+        --warn: #fb923c;
+        --bad: #f87171;
+        --warnbg: rgba(251, 146, 60, 0.12);
+        --badbg: rgba(248, 113, 113, 0.12);
+        --okbg: rgba(78, 224, 176, 0.12);
+        --shadow: 0 8px 20px rgba(0, 0, 0, 0.55);
+        --field: #11151c;
+      }
+      [data-theme="light"] {
+        --page: #e9edf4;
+        --bg: #f4f6fa;
+        --panel: #ffffff;
+        --panel2: #eef2fa;
+        --line: #d5dcea;
+        --edge: #b3bfd6;
+        --text: #1b2640;
+        --muted: #5d6b85;
+        --pipe: #b7791f;
+        --head: #db2777;
+        --indigo: #4f46e5;
+        --indigo2: #4338ca;
+        --ok: #0f9d74;
+        --warn: #c2570c;
+        --bad: #dc2626;
+        --warnbg: rgba(194, 87, 12, 0.09);
+        --badbg: rgba(220, 38, 38, 0.08);
+        --okbg: rgba(15, 157, 116, 0.09);
+        --shadow: 0 8px 20px rgba(30, 45, 80, 0.18);
+        --field: #ffffff;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--page);
+        color: var(--text);
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-size: 16px;
+      }
+      button,
+      input {
+        font-family: inherit;
+      }
+      .sfnav {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        height: 44px;
+        padding: 0 16px;
+        background: #0b1220;
+        border-bottom: 1px solid #2f4163;
+        color: #cdd6e6;
+        font-size: 14px;
+      }
+      .sfnav .app {
+        font-weight: 800;
+        letter-spacing: 0.14em;
+      }
+      .sfnav .app b {
+        color: #fdb827;
+      }
+      .sfnav .tab {
+        color: #9fb0cc;
+      }
+      .sfnav .tab.on {
+        color: #fff;
+        border-bottom: 2px solid #6366f1;
+        padding-bottom: 2px;
+      }
+      .sp {
+        flex: 1;
+      }
+      .pill {
+        border: 1px solid var(--indigo);
+        background: transparent;
+        color: var(--text);
+        border-radius: 999px;
+        padding: 7px 18px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+      }
+      .sfnav .pill {
+        color: #e8edf5;
+      }
+      .pill.go {
+        background: var(--indigo);
+        color: #fff;
+      }
+      .pill:disabled {
+        opacity: 0.45;
+        cursor: default;
+      }
+      .wrap {
+        padding: 14px 18px 40px;
+        max-width: 1100px;
+      }
+      .about {
+        background: #1a2740;
+        border: 1px solid #2f4163;
+        border-radius: 12px;
+        padding: 10px 18px;
+        line-height: 1.55;
+        color: #e8edf5;
+        margin-bottom: 16px;
+      }
+      .about summary {
+        cursor: pointer;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        color: #fdb827;
+      }
+      .about ul {
+        margin: 4px 0 8px;
+        padding-left: 20px;
+      }
+      .bar {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 12px;
+      }
+      .bar .t {
+        font-size: 13px;
+        color: var(--muted);
+      }
+
+      /* the card, as it sits in the My Case Bookings panel */
+      .card {
+        background: var(--panel);
+        border: 1px solid var(--edge);
+        border-radius: 14px;
+        box-shadow: var(--shadow);
+        overflow: hidden;
+      }
+      .chead {
+        padding: 14px 20px;
+        display: flex;
+        align-items: baseline;
+        gap: 14px;
+        border-bottom: 1px solid var(--line);
+      }
+      .chead .pf {
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        color: var(--pipe);
+      }
+      .chead .big {
+        font-size: 26px;
+        font-weight: 800;
+      }
+      .chead .sm {
+        color: var(--muted);
+      }
+
+      /* part 1: what we found */
+      .found {
+        padding: 14px 20px 16px;
+        background: var(--warnbg);
+        border-bottom: 1px solid var(--line);
+      }
+      .found h3,
+      .fix h3 {
+        margin: 0 0 8px;
+        font-size: 13px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        font-weight: 800;
+      }
+      .found h3 {
+        color: var(--warn);
+      }
+      .fix h3 {
+        color: var(--head);
+      }
+      .find {
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+        padding: 6px 0;
+        font-size: 17px;
+        line-height: 1.45;
+      }
+      .dot {
+        flex: none;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        margin-top: 7px;
+      }
+      .dot.w {
+        background: var(--warn);
+      }
+      .dot.b {
+        background: var(--bad);
+      }
+      .find b {
+        font-weight: 800;
+      }
+      .tagc {
+        display: inline-block;
+        border-radius: 999px;
+        padding: 1px 10px;
+        font-size: 14px;
+        font-weight: 800;
+        background: var(--warnbg);
+        border: 1px solid var(--warn);
+        color: var(--warn);
+      }
+
+      /* part 2: the fix, one block per hospital */
+      .fix {
+        padding: 14px 20px 18px;
+      }
+      .hosp {
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: var(--panel2);
+        padding: 12px 16px 14px;
+        margin-bottom: 12px;
+      }
+      .hosp .hn {
+        font-weight: 800;
+        font-size: 17px;
+      }
+      .hosp .hs {
+        color: var(--muted);
+        font-size: 15px;
+        margin: 2px 0 10px;
+      }
+      .opts {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .opt {
+        border: 1px solid var(--edge);
+        background: transparent;
+        color: var(--text);
+        border-radius: 12px;
+        padding: 9px 14px;
+        font-size: 15px;
+        font-weight: 700;
+        cursor: pointer;
+        text-align: left;
+      }
+      .opt small {
+        display: block;
+        font-weight: 500;
+        color: var(--muted);
+        font-size: 13px;
+        margin-top: 1px;
+      }
+      .opt.on {
+        border-color: var(--indigo);
+        background: var(--indigo);
+        color: #fff;
+      }
+      .opt.on small {
+        color: #e0e4ff;
+      }
+      .opt.danger.on {
+        background: var(--bad);
+        border-color: var(--bad);
+      }
+      .ba {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        flex-wrap: wrap;
+        margin-top: 12px;
+        font-size: 16px;
+      }
+      .ba .lbl {
+        font-size: 12px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        font-weight: 800;
+        color: var(--muted);
+      }
+      .ba .arrow {
+        color: var(--muted);
+        font-size: 20px;
+      }
+      .line {
+        border-radius: 10px;
+        padding: 6px 12px;
+        border: 1px solid var(--line);
+        background: var(--bg);
+      }
+      .line.zb {
+        border-color: var(--ok);
+        background: var(--okbg);
+      }
+      .line.comp {
+        border-color: var(--warn);
+        background: var(--warnbg);
+      }
+      .line.none {
+        border-style: dashed;
+        color: var(--muted);
+      }
+      .num {
+        width: 80px;
+        font-size: 16px;
+        padding: 4px 8px;
+        border-radius: 8px;
+        border: 1px solid var(--edge);
+        background: var(--field);
+        color: var(--text);
+      }
+      .rule {
+        margin: 0 0 12px;
+        font-size: 14px;
+        color: var(--muted);
+        line-height: 1.5;
+      }
+      .rule b {
+        color: var(--text);
+      }
+      .apply {
+        border-top: 1px solid var(--line);
+        padding-top: 12px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        flex-wrap: wrap;
+      }
+      .confirm {
+        border: 1px solid var(--indigo);
+        border-radius: 12px;
+        padding: 12px 16px;
+        margin-top: 4px;
+        background: var(--panel2);
+      }
+      .confirm ul {
+        margin: 6px 0 10px;
+        padding-left: 20px;
+        line-height: 1.6;
+      }
+      .done {
+        padding: 18px 20px;
+        background: var(--okbg);
+        border-top: 1px solid var(--ok);
+        font-size: 17px;
+      }
+      .done b {
+        color: var(--ok);
+      }
+      [hidden] {
+        display: none !important;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="sfnav">
+      <span class="app"><b>PIPE</b>LINE</span>
+      <span class="tab on">Pipeline</span>
+      <span class="tab">Opportunities</span>
+      <span class="tab">Accounts</span>
+      <span class="sp"></span>
+      <button class="pill" type="button" id="fs">Full screen</button>
+    </div>
+    <div class="wrap">
+      <details class="about" open>
+        <summary>ABOUT THIS MOCKUP</summary>
+        <p style="margin: 6px 0">
+          Shows the knee card in <b>My Case Bookings</b> when the surgeon
+          <b>already has a knee usage at a hospital, but for a competitor</b>.
+          Today that card only says "Usages list no ZB knee" and offers "Open
+          Surgeon Usages". Here the card first says what the problem is, then
+          offers the fix hospital by hospital. All names and numbers are
+          invented.
+        </p>
+        <b>Try it:</b>
+        <ul>
+          <li>
+            In each hospital block, click the choices. The "Now" and "After"
+            boxes show what the usage line would become.
+          </li>
+          <li>
+            Choose <b>Change the competitor's cases</b> and type a number.
+          </li>
+          <li>
+            Press <b>Review changes</b>, then <b>Confirm</b>. Nothing is written
+            until Confirm. <b>Start again</b> resets.
+          </li>
+          <li>The Light / Dark button switches the theme.</li>
+        </ul>
+        <b>Worth knowing:</b> a knee usage holds
+        <b>one company and one case number</b> per surgeon and hospital, so ZB
+        and a competitor cannot both sit on the same hospital's usage. That is
+        why "Replace" is the main choice and "Keep the competitor" records no ZB
+        cases. <br /><b>Not shown yet:</b> the same card for hip (stems and
+        cups), CMFT and shoulder, the chart above the card, and the real wording
+        for a surgeon with several competitors.
+      </details>
+
+      <div class="bar">
+        <button class="pill" type="button" id="theme">Light mode</button>
+        <button class="pill" type="button" id="reset">Start again</button>
+        <span class="t"
+          >Invented data: Dr Example Surgeon, knee, 12 months</span
+        >
+      </div>
+
+      <div class="card">
+        <div class="chead">
+          <span class="pf">KNEE</span>
+          <span class="big">40</span>
+          <span class="sm">
+            cases in the last 12 months &nbsp;·&nbsp; booked with ZB items
+            &nbsp;·&nbsp; about 3.3 a month
+          </span>
+        </div>
+
+        <div class="found">
+          <h3>What we found</h3>
+          <div class="find">
+            <i class="dot w"></i>
+            <div>
+              <b>Example Private Hospital:</b> a usage is already entered for
+              this surgeon, but it is for a <b>competitor</b> (<span
+                class="tagc"
+                >Competitor A, 60 a year</span
+              >). No ZB cases are recorded, although <b>30</b> were booked.
+            </div>
+          </div>
+          <div class="find">
+            <i class="dot b"></i>
+            <div>
+              <b>Sample Day Surgery:</b> <b>no usage</b> is entered, although
+              <b>10</b> ZB knee cases were booked.
+            </div>
+          </div>
+        </div>
+
+        <div class="fix" id="fix">
+          <h3>What you can do</h3>
+          <p class="rule">
+            A knee usage has <b>one company</b> per surgeon and hospital, so at
+            Example Private Hospital the competitor and ZB take turns on the
+            same line.
+          </p>
+          <div id="blocks"></div>
+          <div class="apply" id="applybar">
+            <button class="pill go" type="button" id="review">
+              Review changes
+            </button>
+            <span class="t" id="count"></span>
+          </div>
+          <div class="confirm" id="confirm" hidden>
+            <b>These changes will be saved:</b>
+            <ul id="clist"></ul>
+            <button class="pill go" type="button" id="yes">Confirm</button>
+            <button class="pill" type="button" id="back">Go back</button>
+          </div>
+        </div>
+
+        <div class="done" id="done" hidden>
+          <b>Done.</b> <span id="donetext"></span>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const root = document.documentElement;
+      const H = [
+        {
+          id: "h1",
+          name: "Example Private Hospital",
+          booked: 30,
+          comp: { name: "Competitor A", cases: 60 },
+          choice: "replace",
+          cases: 60,
+          choices: [
+            [
+              "replace",
+              "Replace with ZB",
+              "Competitor A out, ZB in at the booked 30"
+            ],
+            [
+              "change",
+              "Change the competitor's cases",
+              "Keep Competitor A, new number"
+            ],
+            ["remove", "Remove the competitor", "Clear the line, no ZB"],
+            ["keep", "Leave as it is", "No change"]
+          ]
+        },
+        {
+          id: "h2",
+          name: "Sample Day Surgery",
+          booked: 10,
+          comp: null,
+          choice: "create",
+          choices: [
+            ["create", "Create ZB usage", "ZB at the booked 10"],
+            ["keep", "Leave as it is", "No change"]
+          ]
+        }
+      ];
+      const fresh = JSON.stringify(H);
+      let state = H;
+
+      const lineBox = (cls, text) => `<span class="line ${cls}">${text}</span>`;
+      function nowOf(h) {
+        return h.comp
+          ? lineBox("comp", `${h.comp.name}, ${h.comp.cases} a year`)
+          : lineBox("none", "No usage");
+      }
+      function afterOf(h) {
+        switch (h.choice) {
+          case "replace":
+          case "create":
+            return lineBox("zb", `ZB, ${h.booked} a year`);
+          case "change":
+            return lineBox(
+              "comp",
+              `${h.comp.name}, ${h.cases === "" ? "?" : h.cases} a year`
+            );
+          case "remove":
+            return lineBox("none", "No usage (line cleared)");
+          default:
+            return nowOf(h);
+        }
+      }
+      function changesOf(h) {
+        switch (h.choice) {
+          case "replace":
+            return `${h.name}: replace ${h.comp.name} (${h.comp.cases}) with <b>ZB (${h.booked} a year)</b>`;
+          case "create":
+            return `${h.name}: create a <b>ZB usage, ${h.booked} a year</b>`;
+          case "change":
+            return `${h.name}: change ${h.comp.name} to <b>${h.cases} a year</b>`;
+          case "remove":
+            return `${h.name}: <b>remove</b> ${h.comp.name}'s usage`;
+          default:
+            return null;
+        }
+      }
+      function draw() {
+        document.getElementById("blocks").innerHTML = state
+          .map(
+            (h) => `
+          <div class="hosp">
+            <div class="hn">${h.name}</div>
+            <div class="hs">${h.booked} ZB knee cases booked in the last 12 months${
+              h.comp ? "" : "; no usage entered"
+            }</div>
+            <div class="opts">${h.choices
+              .map(
+                (c) =>
+                  `<button type="button" class="opt ${c[0] === h.choice ? "on" : ""} ${
+                    c[0] === "remove" ? "danger" : ""
+                  }" data-h="${h.id}" data-c="${c[0]}">${c[1]}<small>${c[2]}</small></button>`
+              )
+              .join("")}</div>
+            <div class="ba">
+              <span class="lbl">Now</span>${nowOf(h)}
+              <span class="arrow">→</span>
+              <span class="lbl">After</span>${afterOf(h)}
+              ${
+                h.choice === "change"
+                  ? `<label>New cases a year <input class="num" type="number" min="0" value="${h.cases}" data-n="${h.id}" /></label>`
+                  : ""
+              }
+            </div>
+          </div>`
+          )
+          .join("");
+        const n = state.filter((h) => changesOf(h)).length;
+        document.getElementById("count").textContent =
+          n === 0
+            ? "Nothing to change yet."
+            : `${n} change${n > 1 ? "s" : ""} ready to review.`;
+        document.getElementById("review").disabled =
+          n === 0 || state.some((h) => h.choice === "change" && h.cases === "");
+      }
+      document.getElementById("blocks").addEventListener("click", (e) => {
+        const b = e.target.closest(".opt");
+        if (!b) return;
+        state.find((h) => h.id === b.dataset.h).choice = b.dataset.c;
+        draw();
+      });
+      document.getElementById("blocks").addEventListener("input", (e) => {
+        if (!e.target.dataset.n) return;
+        const v = e.target.value;
+        state.find((h) => h.id === e.target.dataset.n).cases =
+          v === "" ? "" : Math.max(0, Number(v));
+        const pos = e.target.selectionStart;
+        draw();
+        const again = document.querySelector(
+          `[data-n="${e.target.dataset.n}"]`
+        );
+        if (again) {
+          again.focus();
+          try {
+            again.setSelectionRange(pos, pos);
+          } catch (x) {}
+        }
+      });
+      document.getElementById("review").addEventListener("click", () => {
+        document.getElementById("clist").innerHTML = state
+          .map(changesOf)
+          .filter(Boolean)
+          .map((t) => `<li>${t}</li>`)
+          .join("");
+        document.getElementById("confirm").hidden = false;
+        document.getElementById("applybar").hidden = true;
+      });
+      document.getElementById("back").addEventListener("click", () => {
+        document.getElementById("confirm").hidden = true;
+        document.getElementById("applybar").hidden = false;
+      });
+      document.getElementById("yes").addEventListener("click", () => {
+        document.getElementById("donetext").textContent =
+          state.filter(changesOf).length +
+          " change(s) saved to the surgeon's usages. The ratings recalculate.";
+        document.getElementById("fix").hidden = true;
+        document.getElementById("done").hidden = false;
+      });
+      function reset() {
+        state = JSON.parse(fresh);
+        document.getElementById("fix").hidden = false;
+        document.getElementById("done").hidden = true;
+        document.getElementById("confirm").hidden = true;
+        document.getElementById("applybar").hidden = false;
+        draw();
+      }
+      document.getElementById("reset").addEventListener("click", reset);
+      document.getElementById("theme").addEventListener("click", (e) => {
+        const light = root.getAttribute("data-theme") !== "light";
+        root.setAttribute("data-theme", light ? "light" : "dark");
+        e.target.textContent = light ? "Dark mode" : "Light mode";
+      });
+      document.getElementById("fs").addEventListener("click", () => {
+        if (document.fullscreenElement) document.exitFullscreen();
+        else document.documentElement.requestFullscreen();
+      });
+      root.setAttribute("data-theme", "dark");
+      draw();
+    </script>
+  </body>
+</html>

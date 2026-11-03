@@ -154,6 +154,8 @@ private class PipelineSurgeonControllerTest {
       LastName = 'Surgeon',
       PersonMailingCountry = 'Australia',
       PersonMailingCountryCode = 'AU',
+      PersonMailingState = 'New South Wales',
+      PersonMailingStateCode = 'NSW',
       RecordTypeId = rt(Account.SObjectType, 'Physician')
     );
     insert surgeon;

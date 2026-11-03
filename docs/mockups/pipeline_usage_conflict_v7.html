@@ -1,0 +1,1285 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>
+      Pipeline mockup: My Case Bookings with a suggestion panel, version 7
+    </title>
+    <style>
+      :root,
+      [data-theme="dark"] {
+        --page: #0e1623;
+        --bg: #141e2e;
+        --panel: #1a2740;
+        --panel2: #20304f;
+        --line: #2f4163;
+        --edge: #5b6f93;
+        --text: #e8edf5;
+        --muted: #9fb0cc;
+        --pipe: #fdb827;
+        --head: #f472b6;
+        --headbg: rgba(244, 114, 182, 0.14);
+        --indigo: #6366f1;
+        --ok: #4ee0b0;
+        --warn: #fb923c;
+        --bad: #f87171;
+        --warnbg: rgba(251, 146, 60, 0.12);
+        --badbg: rgba(248, 113, 113, 0.12);
+        --okbg: rgba(78, 224, 176, 0.12);
+        --shadow: 0 8px 20px rgba(0, 0, 0, 0.55);
+        --field: #11151c;
+        --primary: #2f80ed;
+        --revision: #fb923c;
+        --grid: rgba(139, 155, 176, 0.25);
+      }
+      [data-theme="light"] {
+        --page: #e9edf4;
+        --bg: #f4f6fa;
+        --panel: #ffffff;
+        --panel2: #eef2fa;
+        --line: #d5dcea;
+        --edge: #b3bfd6;
+        --text: #1b2640;
+        --muted: #5d6b85;
+        --pipe: #b7791f;
+        --head: #db2777;
+        --headbg: rgba(219, 39, 119, 0.09);
+        --indigo: #4f46e5;
+        --ok: #0f9d74;
+        --warn: #c2570c;
+        --bad: #dc2626;
+        --warnbg: rgba(194, 87, 12, 0.09);
+        --badbg: rgba(220, 38, 38, 0.08);
+        --okbg: rgba(15, 157, 116, 0.09);
+        --shadow: 0 8px 20px rgba(30, 45, 80, 0.18);
+        --field: #ffffff;
+        --primary: #2563eb;
+        --revision: #ea580c;
+        --grid: rgba(93, 107, 133, 0.3);
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        height: 100%;
+      }
+      body {
+        margin: 0;
+        background: var(--page);
+        color: var(--text);
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-size: 16px;
+        display: flex;
+        flex-direction: column;
+      }
+      button,
+      input {
+        font-family: inherit;
+      }
+      .sfnav {
+        flex: none;
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        height: 44px;
+        padding: 0 16px;
+        background: #0b1220;
+        border-bottom: 1px solid #2f4163;
+        color: #cdd6e6;
+        font-size: 14px;
+      }
+      .sfnav .app {
+        font-weight: 800;
+        letter-spacing: 0.14em;
+      }
+      .sfnav .app b {
+        color: #fdb827;
+      }
+      .sfnav .tab {
+        color: #9fb0cc;
+      }
+      .sfnav .tab.on {
+        color: #fff;
+        border-bottom: 2px solid #6366f1;
+        padding-bottom: 2px;
+      }
+      .sp {
+        flex: 1;
+      }
+      .pill {
+        border: 1px solid var(--indigo);
+        background: transparent;
+        color: var(--text);
+        border-radius: 999px;
+        padding: 7px 18px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+      }
+      .sfnav .pill {
+        color: #e8edf5;
+      }
+      .pill.go {
+        background: var(--indigo);
+        color: #fff;
+      }
+      .pill.on {
+        background: var(--indigo);
+        color: #fff;
+      }
+      .pill:disabled {
+        opacity: 0.45;
+        cursor: default;
+      }
+
+      /* the tools strip above the simulated flyout */
+      .tools {
+        flex: none;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        padding: 8px 16px;
+        background: var(--bg);
+        border-bottom: 1px solid var(--line);
+      }
+      .tools .lbl {
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 700;
+      }
+      .about {
+        flex: none;
+        margin: 8px 16px 0;
+        background: #1a2740;
+        border: 1px solid #2f4163;
+        border-radius: 12px;
+        padding: 8px 18px;
+        line-height: 1.5;
+        color: #e8edf5;
+        font-size: 15px;
+        max-height: 40vh;
+        overflow: auto;
+      }
+      .about summary {
+        cursor: pointer;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        color: #fdb827;
+      }
+      .about ul {
+        margin: 4px 0 8px;
+        padding-left: 20px;
+      }
+
+      /* the flyout: header fixed, body scrolls */
+      .fly {
+        flex: 1;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        margin: 8px 16px 12px;
+        border: 1px solid var(--edge);
+        border-left: 3px solid var(--indigo);
+        border-radius: 12px;
+        background: var(--bg);
+        overflow: hidden;
+      }
+      .fhead {
+        flex: none;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 12px 20px;
+        background: var(--headbg);
+        border-bottom: 1px solid var(--line);
+      }
+      .fhead h2 {
+        margin: 0;
+        font-size: 20px;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--head);
+      }
+      .fhead .who {
+        color: var(--muted);
+      }
+      .x {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        border: 1px solid var(--edge);
+        position: relative;
+      }
+      .x::before,
+      .x::after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 14px;
+        height: 2px;
+        background: var(--text);
+        transform: translate(-50%, -50%) rotate(45deg);
+      }
+      .x::after {
+        transform: translate(-50%, -50%) rotate(-45deg);
+      }
+      .fbody {
+        flex: 1;
+        overflow: auto;
+        padding: 14px 20px 40px;
+      }
+      .range {
+        font-size: 16px;
+      }
+      .legend {
+        display: flex;
+        gap: 18px;
+        margin: 8px 0 14px;
+        color: var(--muted);
+        font-size: 15px;
+      }
+      .sw {
+        display: inline-block;
+        width: 14px;
+        height: 14px;
+        border-radius: 4px;
+        margin-right: 6px;
+        vertical-align: -2px;
+      }
+
+      /* one section per portfolio: chart (a third), hospital list (a fifth, only when there are several), hospital panel (the rest) */
+      .sects {
+        display: grid;
+        gap: 16px;
+      }
+      .sect {
+        background: var(--panel);
+        border: 1px solid var(--edge);
+        border-radius: 14px;
+        box-shadow: var(--shadow);
+        overflow: hidden;
+      }
+      .chead {
+        height: 52px;
+        padding: 0 18px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        border-bottom: 1px solid var(--line);
+      }
+      .chead .pf {
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        color: var(--pipe);
+      }
+      .chead .big {
+        font-size: 26px;
+        font-weight: 800;
+      }
+      .chead .sm {
+        color: var(--muted);
+        font-size: 15px;
+      }
+      .chead .att {
+        margin-left: auto;
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--muted);
+      }
+      .chead .att b {
+        color: var(--text);
+      }
+      /* every section body is the same height, so hip and knee look alike */
+      .body {
+        display: grid;
+        height: 540px;
+      }
+      .body.one {
+        grid-template-columns: 33fr 67fr;
+      }
+      .body.many {
+        grid-template-columns: 33fr 20fr 47fr;
+      }
+      .chartbox {
+        position: relative;
+        min-width: 0;
+      }
+      .chartbox .cb {
+        position: absolute;
+        inset: 8px 10px 4px;
+      }
+      .chartbox svg {
+        display: block;
+      }
+
+      /* the hospital list */
+      .list {
+        border-left: 1px solid var(--line);
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+      }
+      .lh,
+      .lab {
+        font-size: 12px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        font-weight: 800;
+        color: var(--muted);
+      }
+      .lh {
+        padding: 12px 14px 8px;
+      }
+      .hrow {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+        height: 64px;
+        padding: 0 12px 0 11px;
+        background: transparent;
+        border: 0;
+        border-top: 1px solid var(--line);
+        border-left: 3px solid transparent;
+        color: var(--text);
+        text-align: left;
+        cursor: pointer;
+      }
+      .hrow.on {
+        background: var(--panel2);
+        border-left-color: var(--indigo);
+      }
+      .hrow .tx {
+        flex: 1;
+        min-width: 0;
+      }
+      .hrow .nm {
+        display: block;
+        font-size: 15px;
+        font-weight: 700;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .hrow .st {
+        display: block;
+        font-size: 13px;
+        color: var(--muted);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin-top: 2px;
+      }
+      .mark {
+        flex: none;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+      }
+      .mark.todo {
+        background: var(--warn);
+      }
+      .mark.done {
+        background: var(--ok);
+      }
+      .mark.left {
+        background: var(--edge);
+      }
+
+      /* the hospital panel: the same four zones for every hospital */
+      .detail {
+        border-left: 1px solid var(--line);
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        padding: 12px 18px 0;
+      }
+      .dh {
+        display: flex;
+        align-items: baseline;
+        gap: 12px;
+        height: 30px;
+      }
+      .dh .hn {
+        font-size: 18px;
+        font-weight: 800;
+      }
+      .dh .bk {
+        margin-left: auto;
+        font-size: 14px;
+        color: var(--muted);
+      }
+      .found {
+        display: flex;
+        gap: 10px;
+        height: 70px;
+        padding-top: 8px;
+        font-size: 15.5px;
+        line-height: 1.45;
+      }
+      .found .mark {
+        margin-top: 6px;
+      }
+      .found b {
+        font-weight: 800;
+      }
+      .lab {
+        margin: 4px 0 6px;
+        color: var(--head);
+      }
+      .rads {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .rad {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        min-height: 56px;
+        padding: 0 14px;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: transparent;
+        color: var(--text);
+        text-align: left;
+        cursor: pointer;
+      }
+      .rad.on {
+        border-color: var(--indigo);
+        background: var(--panel2);
+        padding-bottom: 10px;
+      }
+      .rtop {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-height: 54px;
+      }
+      .subs {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: nowrap;
+        min-height: 50px;
+        padding: 0 0 0 30px;
+      }
+      .subs .who {
+        font-size: 14px;
+        font-weight: 700;
+        min-width: 100px;
+      }
+      .seg {
+        border: 1px solid var(--edge);
+        background: transparent;
+        color: var(--text);
+        border-radius: 999px;
+        padding: 4px 11px;
+        font-size: 14px;
+        font-weight: 700;
+        white-space: nowrap;
+        cursor: pointer;
+      }
+      .seg.on {
+        background: var(--indigo);
+        border-color: var(--indigo);
+        color: #fff;
+      }
+      .sel {
+        background: var(--field);
+        color: var(--text);
+        border: 1px solid var(--edge);
+        border-radius: 8px;
+        padding: 3px 8px;
+        font-size: 15px;
+      }
+      .sg {
+        font-size: 13px;
+        color: var(--muted);
+        white-space: nowrap;
+      }
+      .ring {
+        flex: none;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        border: 2px solid var(--edge);
+        position: relative;
+      }
+      .rad.on .ring {
+        border-color: var(--indigo);
+      }
+      .rad.on .ring::after {
+        content: "";
+        position: absolute;
+        inset: 3px;
+        border-radius: 50%;
+        background: var(--indigo);
+      }
+      .rt {
+        flex: 1;
+        min-width: 0;
+      }
+      .rt b {
+        display: block;
+        font-size: 15px;
+      }
+      .rt span {
+        display: block;
+        line-height: 1.4;
+        font-size: 13px;
+        color: var(--muted);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .num {
+        width: 66px;
+        font-size: 15px;
+        padding: 3px 8px;
+        border-radius: 8px;
+        border: 1px solid var(--edge);
+        background: var(--field);
+        color: var(--text);
+      }
+      .ntl {
+        font-size: 13px;
+        color: var(--muted);
+        margin-right: 8px;
+        white-space: nowrap;
+      }
+      .rt b {
+        white-space: nowrap;
+      }
+      .res {
+        height: 40px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 15.5px;
+      }
+      .res .l {
+        font-size: 12px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        font-weight: 800;
+        color: var(--muted);
+      }
+      .res .arrow {
+        color: var(--muted);
+      }
+      .res b {
+        font-weight: 800;
+      }
+      .dfoot {
+        height: 56px;
+        margin: 0 -18px;
+        padding: 0 18px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        border-top: 1px solid var(--line);
+        background: var(--panel2);
+      }
+      .dfoot .t {
+        font-size: 14px;
+        color: var(--muted);
+        flex: 1;
+        min-width: 0;
+      }
+      .dfoot .t b {
+        color: var(--text);
+      }
+      .donebox {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: center;
+        gap: 12px;
+        font-size: 17px;
+        padding-bottom: 12px;
+      }
+      .donebox .ok {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .donebox .tick {
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        background: var(--ok);
+        position: relative;
+      }
+      .donebox .tick::after {
+        content: "";
+        position: absolute;
+        left: 7px;
+        top: 3px;
+        width: 5px;
+        height: 11px;
+        border: solid #0e1623;
+        border-width: 0 2.5px 2.5px 0;
+        transform: rotate(45deg);
+      }
+      .t {
+        font-size: 14px;
+        color: var(--muted);
+      }
+      [hidden] {
+        display: none !important;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="sfnav">
+      <span class="app"><b>PIPE</b>LINE</span>
+      <span class="tab on">Pipeline</span>
+      <span class="tab">Opportunities</span>
+      <span class="tab">Accounts</span>
+      <span class="sp"></span>
+      <button class="pill" type="button" id="fs">Full screen</button>
+    </div>
+
+    <details class="about" open>
+      <summary>ABOUT THIS MOCKUP</summary>
+      <p style="margin: 6px 0">
+        The My Case Bookings screen with <b>live charts</b> and a
+        <b>suggestion panel</b>, in <b>three columns</b> that are the same for
+        every portfolio: the chart (a third), the list of hospitals (a fifth)
+        and the panel for the hospital you click (the rest). Hip has one
+        hospital and knee has three, each in a different situation. The page
+        below is the size of your window; the screen inside it scrolls. Invented
+        data only (Dr Example Surgeon).
+      </p>
+      <b>Try it:</b>
+      <ul>
+        <li>
+          Click a hospital in the list. The panel on the right shows what we
+          found and what you can do: three choices at most, the same four places
+          every time (the problem, the choices, the result, the button).
+        </li>
+        <li>
+          At Sample Day Surgery and Harbour View Hospital you can also
+          <b>add a competitor usage</b> in the same save (pick the company, type
+          the cases a year). At Example Private Hospital, the first choice
+          <b
+            >adds the ZB usage and lets you keep, change or delete the
+            competitor</b
+          >
+          in one save. The ZB cases a year start at the suggestion from the
+          bookings and can be changed.
+        </li>
+        <li>
+          Press <b>Review change</b>, then <b>Confirm</b>. Nothing is saved
+          until Confirm. <b>Next hospital</b> moves on. <b>Start again</b>
+          resets.
+        </li>
+      </ul>
+      <b>Worth knowing (the rule this shows):</b> one usage per surgeon,
+      hospital, portfolio <b>and company</b>, so ZB and a competitor each have
+      their own usage at the same hospital. <b>Not shown yet:</b> CMFT and
+      shoulder, hip stems and cups with different companies, the rest of the
+      deal flyout behind it.
+    </details>
+
+    <div class="tools">
+      <span class="sp"></span>
+      <button class="pill" type="button" id="theme">Light mode</button>
+      <button class="pill" type="button" id="reset">Start again</button>
+    </div>
+
+    <div class="fly">
+      <div class="fhead">
+        <h2>My Case Bookings</h2>
+        <span class="who">Dr Example Surgeon</span>
+        <span class="sp"></span>
+        <i class="x"></i>
+      </div>
+      <div class="fbody">
+        <div class="range">
+          Surgeries from 1 Nov 2025 to 31 Oct 2026 (12 whole months), and this
+          month so far.
+        </div>
+        <div class="legend">
+          <span
+            ><i class="sw" style="background: var(--primary)"></i>Primary</span
+          >
+          <span
+            ><i class="sw" style="background: var(--revision)"></i
+            >Revision</span
+          >
+          <span>* this month so far (lighter, not in the total)</span>
+        </div>
+        <div class="sects" id="sects"></div>
+      </div>
+    </div>
+
+    <script>
+      const root = document.documentElement;
+      const MONTHS = [
+        "Nov",
+        "Dec",
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Oct",
+        "Nov*"
+      ];
+      const DATA = {
+        hip: {
+          label: "HIP",
+          total: 4,
+          primary: 4,
+          revision: 0,
+          perMonth: "0.3",
+          pm: [0, 1, 0, 0, 2, 1, 0, 0, 0, 0, 0, 0, 0],
+          rv: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          hospitals: [
+            {
+              id: "hip1",
+              name: "Example Private Hospital",
+              booked: 4,
+              type: "none",
+              lines: [],
+              choice: "create",
+              zb: 4,
+              addZb: true,
+              addComp: false,
+              compName: "Competitor B",
+              compCases: 5,
+              status: "todo",
+              mode: "edit"
+            }
+          ]
+        },
+        knee: {
+          label: "KNEE",
+          total: 40,
+          primary: 35,
+          revision: 5,
+          perMonth: "3.3",
+          pm: [4, 1, 1, 7, 5, 2, 2, 4, 2, 4, 1, 2, 1],
+          rv: [1, 0, 0, 0, 0, 0, 2, 0, 0, 1, 1, 0, 0],
+          hospitals: [
+            {
+              id: "knee1",
+              name: "Example Private Hospital",
+              booked: 22,
+              type: "comp",
+              lines: [{ company: "Competitor A", cases: 60 }],
+              choice: "zbplus",
+              sub: "keep",
+              zb: 22,
+              cases: 60,
+              status: "todo",
+              mode: "edit"
+            },
+            {
+              id: "knee2",
+              name: "Sample Day Surgery",
+              booked: 10,
+              type: "none",
+              lines: [],
+              choice: "create",
+              zb: 10,
+              addZb: true,
+              addComp: false,
+              compName: "Competitor B",
+              compCases: 5,
+              status: "todo",
+              mode: "edit"
+            },
+            {
+              id: "knee3",
+              name: "Harbour View Hospital",
+              booked: 8,
+              type: "zbdiff",
+              lines: [{ company: "ZB", cases: 40 }],
+              choice: "adjust",
+              zb: 8,
+              addZb: true,
+              addComp: false,
+              compName: "Competitor B",
+              compCases: 5,
+              status: "todo",
+              mode: "edit"
+            }
+          ]
+        }
+      };
+      const FRESH = JSON.stringify(DATA);
+      let S, sel;
+      function reset() {
+        S = JSON.parse(FRESH);
+        sel = { hip: "hip1", knee: "knee1" };
+      }
+      reset();
+
+      // each choice: key, title, description, and which boxes it shows (zb = ZB cases a year; comp = what to do with the competitor)
+      const CHOICES = {
+        comp: [
+          [
+            "zbplus",
+            "Add the ZB usage, and change or delete the competitor",
+            "ZB at your number; the competitor stays unless you change it",
+            {
+              zb: true,
+              comp: [
+                ["keep", "Keep"],
+                ["change", "Change cases"],
+                ["delete", "Delete"]
+              ]
+            }
+          ],
+          [
+            "componly",
+            "Change or delete the competitor only",
+            "No ZB usage is added",
+            {
+              zb: false,
+              comp: [
+                ["change", "Change cases"],
+                ["delete", "Delete"]
+              ]
+            }
+          ],
+          ["leave", "Leave as it is", "Make no change at this hospital", {}]
+        ],
+        none: [
+          [
+            "create",
+            "Add a ZB usage and / or a competitor usage",
+            "Record what this surgeon does at this hospital",
+            { zb: true, zbToggle: true, addComp: true }
+          ],
+          ["leave", "Leave as it is", "Make no change at this hospital", {}]
+        ],
+        zbdiff: [
+          [
+            "adjust",
+            "Adjust the ZB usage, and / or add a competitor usage",
+            "Change the ZB cases a year; record a competitor too",
+            { zb: true, addComp: true }
+          ],
+          [
+            "remove",
+            "Delete the ZB usage",
+            "Remove the ZB usage from this hospital",
+            {}
+          ],
+          ["leave", "Leave as it is", "Make no change at this hospital", {}]
+        ]
+      };
+      const DEFSUB = { "comp:zbplus": "keep", "comp:componly": "change" };
+      function setChoice(h, c) {
+        h.choice = c;
+        const s = DEFSUB[h.type + ":" + c];
+        if (s) h.sub = s;
+        if (h.type !== "none" && c === "adjust")
+          h.zb = h.zb === "" ? h.booked : h.zb;
+      }
+      const one = (l) => `${l.company}, ${l.cases} a year`;
+      const linesText = (ls) =>
+        ls.length ? ls.map(one).join("  +  ") : "No usage";
+      const zbVal = (h) => (h.zb === "" ? "?" : h.zb);
+      function compPart(h) {
+        const ls = h.lines.map((l) => ({ ...l }));
+        if (h.sub === "delete") return [];
+        if (h.sub === "change")
+          return ls.map((l, i) =>
+            i === 0 ? { ...l, cases: h.cases === "" ? "?" : h.cases } : l
+          );
+        return ls;
+      }
+      const COMPANIES = [
+        "Competitor A",
+        "Competitor B",
+        "Competitor C",
+        "Competitor D",
+        "Other"
+      ];
+      // companies still free to add: one usage per company at a hospital, so those already there are left out
+      const freeCompanies = (h) =>
+        COMPANIES.filter((c) => !h.lines.some((l) => l.company === c));
+      const addedComp = (h) => ({
+        company: h.compName,
+        cases: h.compCases === "" ? "?" : h.compCases
+      });
+      function afterLines(h) {
+        const zb = { company: "ZB", cases: zbVal(h) };
+        switch (h.choice) {
+          case "zbplus":
+            return [...compPart(h), zb];
+          case "componly":
+            return compPart(h);
+          case "create":
+            return [
+              ...(h.addZb ? [zb] : []),
+              ...(h.addComp ? [addedComp(h)] : [])
+            ];
+          case "adjust":
+            return [zb, ...(h.addComp ? [addedComp(h)] : [])];
+          case "remove":
+            return [];
+          default:
+            return h.lines.map((l) => ({ ...l }));
+        }
+      }
+      function changeText(h) {
+        const l = h.lines[0];
+        const plusComp = h.addComp
+          ? `add a ${h.compName} usage, ${h.compCases} a year`
+          : "";
+        switch (h.choice) {
+          case "zbplus":
+            return (
+              `Add a ZB usage, ${zbVal(h)} a year` +
+              (h.sub === "keep"
+                ? ` (${one(l)} stays)`
+                : h.sub === "change"
+                  ? `, and change ${l.company} from ${l.cases} to ${h.cases} a year`
+                  : `, and delete the ${l.company} usage`)
+            );
+          case "componly":
+            return h.sub === "change"
+              ? `Change ${l.company} from ${l.cases} to ${h.cases} a year`
+              : `Delete the ${l.company} usage`;
+          case "create": {
+            const parts = [];
+            if (h.addZb) parts.push(`create a ZB usage, ${zbVal(h)} a year`);
+            if (h.addComp) parts.push(plusComp);
+            const s = parts.join(", and ");
+            return s.charAt(0).toUpperCase() + s.slice(1);
+          }
+          case "adjust":
+            return (
+              `Change the ZB usage from ${l.cases} to ${zbVal(h)} a year` +
+              (h.addComp ? `, and ${plusComp}` : "")
+            );
+          case "remove":
+            return "Delete the ZB usage";
+          default:
+            return null;
+        }
+      }
+      // returns the reason the choice cannot be reviewed yet, or an empty string
+      function blocker(h) {
+        const cfg =
+          (CHOICES[h.type].find((c) => c[0] === h.choice) || [])[3] || {};
+        if (h.choice === "create" && !h.addZb && !h.addComp)
+          return "Choose a ZB or a competitor usage to add.";
+        if (cfg.zb && (!cfg.zbToggle || h.addZb) && h.zb === "")
+          return "Enter the ZB cases a year.";
+        if (cfg.addComp && h.addComp && h.compCases === "")
+          return "Enter the competitor's cases a year.";
+        if (cfg.comp && h.sub === "change" && h.cases === "")
+          return "Enter the competitor's cases a year.";
+        if (
+          h.choice === "componly" &&
+          h.sub === "change" &&
+          h.cases === h.lines[0].cases
+        )
+          return "Change the number to continue.";
+        if (h.choice === "adjust" && h.zb === h.lines[0].cases && !h.addComp)
+          return "Change the number or add a competitor to continue.";
+        return "";
+      }
+
+      function foundHtml(h, low) {
+        const l = h.lines[0];
+        if (h.status === "done")
+          return `<span class="mark done"></span><div>Saved. This hospital now has: <b>${linesText(h.lines)}</b>.</div>`;
+        if (h.type === "comp")
+          return `<span class="mark todo"></span><div>A usage is already entered, but for a <b>competitor</b>: <b>${one(l)}</b>. There is no ZB usage, although <b>${h.booked}</b> ZB cases were booked.</div>`;
+        if (h.type === "none")
+          return `<span class="mark todo"></span><div><b>No ${low} usage</b> is entered, although <b>${h.booked}</b> ZB ${low} cases were booked.</div>`;
+        const pct = Math.round((Math.abs(l.cases - h.booked) / l.cases) * 100);
+        return `<span class="mark todo"></span><div>The ZB usage says <b>${l.cases} a year</b>, but <b>${h.booked}</b> were booked: <b>${pct}% ${h.booked < l.cases ? "fewer" : "more"}</b>. More than 10% out should be adjusted.</div>`;
+      }
+
+      function listHtml(k) {
+        const d = S[k];
+        return (
+          `<div class="lh">Hospitals (${d.hospitals.length})</div>` +
+          d.hospitals
+            .map(
+              (h) =>
+                `<button type="button" class="hrow ${h.id === sel[k] ? "on" : ""}" data-k="${k}" data-h="${h.id}">
+              <span class="tx"><span class="nm">${h.name}</span><span class="st">${h.status === "left" ? "Left as it is · " : ""}${h.lines.length ? h.lines.map((l) => l.company + " " + l.cases).join(" · ") : "No usage"}</span></span>
+              <i class="mark ${h.status}"></i></button>`
+            )
+            .join("")
+        );
+      }
+      function nextTodo(k) {
+        return S[k].hospitals.find(
+          (h) => h.status === "todo" && h.id !== sel[k]
+        );
+      }
+      function detailHtml(k) {
+        const d = S[k];
+        const h = d.hospitals.find((x) => x.id === sel[k]);
+        const low = d.label.toLowerCase();
+        const head = `<div class="dh"><span class="hn">${h.name}</span><span class="bk">${h.booked} ZB ${low} cases booked in the last 12 months</span></div>`;
+        if (h.status !== "todo") {
+          const nx = nextTodo(k);
+          return (
+            head +
+            `<div class="donebox"><div class="ok"><i class="tick"></i><span>${h.status === "done" ? `Saved. This hospital now has <b>${linesText(h.lines)}</b>.` : "Left as it is."}</span></div>
+            ${nx ? `<button class="pill go" type="button" data-k="${k}" data-act="next">Next hospital</button>` : `<span class="t">No more hospitals need attention.</span>`}</div>`
+          );
+        }
+        const rads = CHOICES[h.type]
+          .map((c) => {
+            const on = c[0] === h.choice;
+            const cfg = c[3];
+            let subs = "";
+            if (on && (cfg.zb || cfg.comp)) {
+              const zbShown = !cfg.zbToggle || h.addZb;
+              const zbBox = cfg.zb
+                ? `<div class="subs"><span class="who">ZB</span>${cfg.zbToggle ? `<button type="button" class="seg ${h.addZb ? "on" : ""}" data-k="${k}" data-g="zbon" data-s="yes">Add</button><button type="button" class="seg ${!h.addZb ? "on" : ""}" data-k="${k}" data-g="zbon" data-s="no">No</button>` : ""}${zbShown ? `<span class="sg">Cases a year</span><input class="num" type="number" min="0" value="${h.zb}" data-k="${k}" data-f="zb" /><span class="sg">suggested: ${h.booked}</span>` : ""}</div>`
+                : "";
+              const addBox = cfg.addComp
+                ? `<div class="subs"><span class="who">Competitor</span><button type="button" class="seg ${!h.addComp ? "on" : ""}" data-k="${k}" data-g="compon" data-s="no">No</button><button type="button" class="seg ${h.addComp ? "on" : ""}" data-k="${k}" data-g="compon" data-s="yes">Add</button>${
+                    h.addComp
+                      ? `<select class="sel" data-k="${k}" data-f="compName">${freeCompanies(
+                          h
+                        )
+                          .map(
+                            (c) =>
+                              `<option ${c === h.compName ? "selected" : ""}>${c}</option>`
+                          )
+                          .join(
+                            ""
+                          )}</select><input class="num" type="number" min="0" value="${h.compCases}" data-k="${k}" data-f="compCases" /><span class="sg">a year</span>`
+                      : ""
+                  }</div>`
+                : "";
+              const compBox = cfg.comp
+                ? `<div class="subs"><span class="who">${h.lines[0].company}</span>${cfg.comp.map((s) => `<button type="button" class="seg ${h.sub === s[0] ? "on" : ""}" data-k="${k}" data-s="${s[0]}">${s[1]}</button>`).join("")}${h.sub === "change" ? `<span class="sg">Cases a year</span><input class="num" type="number" min="0" value="${h.cases}" data-k="${k}" data-f="cases" />` : ""}</div>`
+                : "";
+              subs = zbBox + compBox + addBox;
+            }
+            return `<div role="radio" aria-checked="${on}" tabindex="0" class="rad ${on ? "on" : ""}" data-k="${k}" data-c="${c[0]}"><div class="rtop"><i class="ring"></i><span class="rt"><b>${c[1]}</b><span>${c[2]}</span></span></div>${subs}</div>`;
+          })
+          .join("");
+        const a = afterLines(h);
+        const res = `<div class="res"><span class="l">Now</span><span>${linesText(h.lines)}</span><span class="arrow">→</span><span class="l">After</span><b>${linesText(a)}</b></div>`;
+        const leave = h.choice === "leave";
+        const why = leave ? "" : blocker(h);
+        const bad = !!why;
+        const foot =
+          h.mode === "confirm"
+            ? `<div class="dfoot"><span class="t"><b>${changeText(h)}?</b></span><button class="pill go" type="button" data-k="${k}" data-act="yes">Confirm</button><button class="pill" type="button" data-k="${k}" data-act="back">Go back</button></div>`
+            : `<div class="dfoot"><button class="pill go" type="button" data-k="${k}" data-act="${leave ? "skip" : "review"}" ${bad ? "disabled" : ""}>${leave ? "Leave and move on" : "Review change"}</button><span class="t">${leave ? "No change will be made at this hospital." : why || "Nothing is saved until you confirm."}</span></div>`;
+        return (
+          head +
+          `<div class="found">${foundHtml(h, low)}</div><div class="lab">What you can do</div><div class="rads">${rads}</div>${res}${foot}`
+        );
+      }
+
+      function attText(k) {
+        const n = S[k].hospitals.filter((h) => h.status === "todo").length;
+        return n === 0
+          ? "All hospitals dealt with"
+          : `<b>${n}</b> hospital${n > 1 ? "s" : ""} need${n > 1 ? "" : "s"} attention`;
+      }
+      function build() {
+        document.getElementById("sects").innerHTML = ["hip", "knee"]
+          .map((k) => {
+            const d = S[k];
+            const many = true; // the same three columns for every portfolio, even with one hospital
+            return `<section class="sect">
+            <div class="chead"><span class="pf">${d.label}</span><span class="big">${d.total}</span>
+              <span class="sm">cases in the last 12 months · Primary <b>${d.primary}</b> · Revision <b>${d.revision}</b> · about ${d.perMonth} a month</span>
+              <span class="att" id="att-${k}">${attText(k)}</span></div>
+            <div class="body ${many ? "many" : "one"}">
+              <div class="chartbox"><div class="cb" id="chart-${k}"></div></div>
+              ${many ? `<div class="list" id="list-${k}">${listHtml(k)}</div>` : ""}
+              <div class="detail" id="detail-${k}">${detailHtml(k)}</div>
+            </div></section>`;
+          })
+          .join("");
+        drawCharts();
+      }
+      function update(k) {
+        const l = document.getElementById("list-" + k);
+        if (l) l.innerHTML = listHtml(k);
+        document.getElementById("detail-" + k).innerHTML = detailHtml(k);
+        document.getElementById("att-" + k).innerHTML = attText(k);
+      }
+
+      function niceMax(m) {
+        const steps = [2, 4, 5, 8, 10, 12, 16, 20, 25, 30, 40, 50];
+        return steps.find((s) => s >= m) || m;
+      }
+      function drawChart(k) {
+        const el = document.getElementById("chart-" + k);
+        if (!el) return;
+        const d = S[k];
+        const W = Math.max(240, el.clientWidth);
+        const H = Math.max(240, el.clientHeight);
+        const p = { l: 28, r: 4, t: 20, b: 26 };
+        const tot = d.pm.map((v, i) => v + d.rv[i]);
+        const max = niceMax(Math.max(...tot, 1));
+        const iw = W - p.l - p.r;
+        const ih = H - p.t - p.b;
+        const slot = iw / 13;
+        const bw = Math.min(30, slot * 0.66);
+        const y = (v) => p.t + ih - (v / max) * ih;
+        const tick = max <= 5 ? 1 : max <= 12 ? 2 : max <= 25 ? 5 : 10;
+        let s = `<svg width="${W}" height="${H}" role="img" aria-label="${d.label} bookings by month">`;
+        for (let t = 0; t <= max; t += tick) {
+          s += `<line x1="${p.l}" x2="${W - p.r}" y1="${y(t)}" y2="${y(t)}" stroke="var(--grid)" stroke-width="1"/>`;
+          s += `<text x="${p.l - 8}" y="${y(t) + 5}" text-anchor="end" font-size="13" fill="var(--muted)">${t}</text>`;
+        }
+        for (let i = 0; i < 13; i++) {
+          const cx = p.l + slot * i + slot / 2;
+          const op = i === 12 ? 0.45 : 1;
+          const pm = d.pm[i];
+          const rv = d.rv[i];
+          if (pm > 0)
+            s += `<rect x="${cx - bw / 2}" y="${y(pm)}" width="${bw}" height="${y(0) - y(pm)}" rx="3" fill="var(--primary)" opacity="${op}"><title>${MONTHS[i]}: ${pm} primary</title></rect>`;
+          if (rv > 0)
+            s += `<rect x="${cx - bw / 2}" y="${y(pm + rv)}" width="${bw}" height="${y(pm) - y(pm + rv)}" rx="3" fill="var(--revision)" opacity="${op}"><title>${MONTHS[i]}: ${rv} revision</title></rect>`;
+          if (pm + rv > 0)
+            s += `<text x="${cx}" y="${y(pm + rv) - 6}" text-anchor="middle" font-size="14" font-weight="800" fill="var(--text)" opacity="${op}">${pm + rv}</text>`;
+          s += `<text x="${cx}" y="${H - 6}" text-anchor="middle" font-size="12" fill="var(--muted)">${MONTHS[i]}</text>`;
+        }
+        el.innerHTML = s + "</svg>";
+      }
+      function drawCharts() {
+        drawChart("hip");
+        drawChart("knee");
+      }
+      let rt;
+      window.addEventListener("resize", () => {
+        clearTimeout(rt);
+        rt = setTimeout(drawCharts, 80);
+      });
+
+      const sects = document.getElementById("sects");
+      const cur = (k) => S[k].hospitals.find((h) => h.id === sel[k]);
+      sects.addEventListener("click", (e) => {
+        const r = e.target.closest(".hrow");
+        if (r) {
+          sel[r.dataset.k] = r.dataset.h;
+          update(r.dataset.k);
+          return;
+        }
+        const sg = e.target.closest(".seg");
+        if (sg) {
+          const hh = cur(sg.dataset.k);
+          const g = sg.dataset.g || "sub";
+          if (g === "zbon") hh.addZb = sg.dataset.s === "yes";
+          else if (g === "compon") {
+            hh.addComp = sg.dataset.s === "yes";
+            if (hh.addComp && !freeCompanies(hh).includes(hh.compName))
+              hh.compName = freeCompanies(hh)[0];
+          } else hh.sub = sg.dataset.s;
+          update(sg.dataset.k);
+          const ff =
+            g === "zbon" ? "zb" : g === "compon" ? "compCases" : "cases";
+          const ci = document.querySelector(
+            `#detail-${sg.dataset.k} [data-f="${ff}"]`
+          );
+          if (ci) {
+            ci.focus();
+            ci.select();
+          }
+          return;
+        }
+        const o = e.target.closest(".rad");
+        if (o) {
+          if (e.target.closest(".num, .sel")) return; // the boxes and the dropdown manage themselves
+          if (cur(o.dataset.k).choice === o.dataset.c) return; // already chosen: do not redraw or reset it
+          setChoice(cur(o.dataset.k), o.dataset.c);
+          update(o.dataset.k);
+          const inp = document.querySelector(
+            `#detail-${o.dataset.k} [data-f="zb"]`
+          );
+          if (inp) {
+            inp.focus();
+            inp.select();
+          }
+          return;
+        }
+        const b = e.target.closest("[data-act]");
+        if (!b) return;
+        const k = b.dataset.k;
+        const h = cur(k);
+        const act = b.dataset.act;
+        if (act === "review") h.mode = "confirm";
+        else if (act === "back") h.mode = "edit";
+        else if (act === "yes") {
+          h.lines = afterLines(h);
+          h.status = "done";
+          h.mode = "edit";
+        } else if (act === "skip") {
+          h.status = "left";
+        } else if (act === "next") {
+          const nx = nextTodo(k);
+          if (nx) sel[k] = nx.id;
+        }
+        if ((act === "yes" || act === "skip") && nextTodo(k)) {
+          /* stay so the result is seen; Next hospital moves on */
+        }
+        update(k);
+      });
+      sects.addEventListener("input", (e) => {
+        const f = e.target.dataset.f;
+        if (!f) return;
+        const k = e.target.dataset.k;
+        const v = e.target.value;
+        cur(k)[f] = v === "" ? "" : Math.max(0, Number(v));
+        const pos = e.target.selectionStart;
+        update(k);
+        const again = document.querySelector(`#detail-${k} [data-f="${f}"]`);
+        if (again) {
+          again.focus();
+          try {
+            again.setSelectionRange(pos, pos);
+          } catch (x) {}
+        }
+      });
+      sects.addEventListener("change", (e) => {
+        if (e.target.dataset.f !== "compName") return;
+        cur(e.target.dataset.k).compName = e.target.value;
+        update(e.target.dataset.k);
+      });
+      document.getElementById("reset").addEventListener("click", () => {
+        reset();
+        build();
+      });
+      document.getElementById("theme").addEventListener("click", (e) => {
+        const light = root.getAttribute("data-theme") !== "light";
+        root.setAttribute("data-theme", light ? "light" : "dark");
+        e.target.textContent = light ? "Dark mode" : "Light mode";
+      });
+      document.getElementById("fs").addEventListener("click", () => {
+        if (document.fullscreenElement) document.exitFullscreen();
+        else document.documentElement.requestFullscreen();
+        setTimeout(drawCharts, 300);
+      });
+      root.setAttribute("data-theme", "dark");
+      build();
+    </script>
+  </body>
+</html>

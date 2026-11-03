@@ -1,0 +1,1041 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>
+      Pipeline mockup: My Case Bookings with a suggestion panel, version 4
+    </title>
+    <style>
+      :root,
+      [data-theme="dark"] {
+        --page: #0e1623;
+        --bg: #141e2e;
+        --panel: #1a2740;
+        --panel2: #20304f;
+        --line: #2f4163;
+        --edge: #5b6f93;
+        --text: #e8edf5;
+        --muted: #9fb0cc;
+        --pipe: #fdb827;
+        --head: #f472b6;
+        --headbg: rgba(244, 114, 182, 0.14);
+        --indigo: #6366f1;
+        --ok: #4ee0b0;
+        --warn: #fb923c;
+        --bad: #f87171;
+        --warnbg: rgba(251, 146, 60, 0.12);
+        --badbg: rgba(248, 113, 113, 0.12);
+        --okbg: rgba(78, 224, 176, 0.12);
+        --shadow: 0 8px 20px rgba(0, 0, 0, 0.55);
+        --field: #11151c;
+        --primary: #2f80ed;
+        --revision: #fb923c;
+        --grid: rgba(139, 155, 176, 0.25);
+      }
+      [data-theme="light"] {
+        --page: #e9edf4;
+        --bg: #f4f6fa;
+        --panel: #ffffff;
+        --panel2: #eef2fa;
+        --line: #d5dcea;
+        --edge: #b3bfd6;
+        --text: #1b2640;
+        --muted: #5d6b85;
+        --pipe: #b7791f;
+        --head: #db2777;
+        --headbg: rgba(219, 39, 119, 0.09);
+        --indigo: #4f46e5;
+        --ok: #0f9d74;
+        --warn: #c2570c;
+        --bad: #dc2626;
+        --warnbg: rgba(194, 87, 12, 0.09);
+        --badbg: rgba(220, 38, 38, 0.08);
+        --okbg: rgba(15, 157, 116, 0.09);
+        --shadow: 0 8px 20px rgba(30, 45, 80, 0.18);
+        --field: #ffffff;
+        --primary: #2563eb;
+        --revision: #ea580c;
+        --grid: rgba(93, 107, 133, 0.3);
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        height: 100%;
+      }
+      body {
+        margin: 0;
+        background: var(--page);
+        color: var(--text);
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-size: 16px;
+        display: flex;
+        flex-direction: column;
+      }
+      button,
+      input {
+        font-family: inherit;
+      }
+      .sfnav {
+        flex: none;
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        height: 44px;
+        padding: 0 16px;
+        background: #0b1220;
+        border-bottom: 1px solid #2f4163;
+        color: #cdd6e6;
+        font-size: 14px;
+      }
+      .sfnav .app {
+        font-weight: 800;
+        letter-spacing: 0.14em;
+      }
+      .sfnav .app b {
+        color: #fdb827;
+      }
+      .sfnav .tab {
+        color: #9fb0cc;
+      }
+      .sfnav .tab.on {
+        color: #fff;
+        border-bottom: 2px solid #6366f1;
+        padding-bottom: 2px;
+      }
+      .sp {
+        flex: 1;
+      }
+      .pill {
+        border: 1px solid var(--indigo);
+        background: transparent;
+        color: var(--text);
+        border-radius: 999px;
+        padding: 7px 18px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+      }
+      .sfnav .pill {
+        color: #e8edf5;
+      }
+      .pill.go {
+        background: var(--indigo);
+        color: #fff;
+      }
+      .pill.on {
+        background: var(--indigo);
+        color: #fff;
+      }
+      .pill:disabled {
+        opacity: 0.45;
+        cursor: default;
+      }
+
+      /* the tools strip above the simulated flyout */
+      .tools {
+        flex: none;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        padding: 8px 16px;
+        background: var(--bg);
+        border-bottom: 1px solid var(--line);
+      }
+      .tools .lbl {
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 700;
+      }
+      .about {
+        flex: none;
+        margin: 8px 16px 0;
+        background: #1a2740;
+        border: 1px solid #2f4163;
+        border-radius: 12px;
+        padding: 8px 18px;
+        line-height: 1.5;
+        color: #e8edf5;
+        font-size: 15px;
+        max-height: 40vh;
+        overflow: auto;
+      }
+      .about summary {
+        cursor: pointer;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        color: #fdb827;
+      }
+      .about ul {
+        margin: 4px 0 8px;
+        padding-left: 20px;
+      }
+
+      /* the flyout: header fixed, body scrolls */
+      .fly {
+        flex: 1;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        margin: 8px 16px 12px;
+        border: 1px solid var(--edge);
+        border-left: 3px solid var(--indigo);
+        border-radius: 12px;
+        background: var(--bg);
+        overflow: hidden;
+      }
+      .fhead {
+        flex: none;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 12px 20px;
+        background: var(--headbg);
+        border-bottom: 1px solid var(--line);
+      }
+      .fhead h2 {
+        margin: 0;
+        font-size: 20px;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--head);
+      }
+      .fhead .who {
+        color: var(--muted);
+      }
+      .x {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        border: 1px solid var(--edge);
+        position: relative;
+      }
+      .x::before,
+      .x::after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 14px;
+        height: 2px;
+        background: var(--text);
+        transform: translate(-50%, -50%) rotate(45deg);
+      }
+      .x::after {
+        transform: translate(-50%, -50%) rotate(-45deg);
+      }
+      .fbody {
+        flex: 1;
+        overflow: auto;
+        padding: 14px 20px 40px;
+      }
+      .range {
+        font-size: 16px;
+      }
+      .legend {
+        display: flex;
+        gap: 18px;
+        margin: 8px 0 14px;
+        color: var(--muted);
+        font-size: 15px;
+      }
+      .sw {
+        display: inline-block;
+        width: 14px;
+        height: 14px;
+        border-radius: 4px;
+        margin-right: 6px;
+        vertical-align: -2px;
+      }
+
+      /* one section per portfolio: chart (a third), hospital list (a fifth, only when there are several), hospital panel (the rest) */
+      .sects {
+        display: grid;
+        gap: 16px;
+      }
+      .sect {
+        background: var(--panel);
+        border: 1px solid var(--edge);
+        border-radius: 14px;
+        box-shadow: var(--shadow);
+        overflow: hidden;
+      }
+      .chead {
+        height: 52px;
+        padding: 0 18px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        border-bottom: 1px solid var(--line);
+      }
+      .chead .pf {
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        color: var(--pipe);
+      }
+      .chead .big {
+        font-size: 26px;
+        font-weight: 800;
+      }
+      .chead .sm {
+        color: var(--muted);
+        font-size: 15px;
+      }
+      .chead .att {
+        margin-left: auto;
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--muted);
+      }
+      .chead .att b {
+        color: var(--text);
+      }
+      /* every section body is the same height, so hip and knee look alike */
+      .body {
+        display: grid;
+        height: 470px;
+      }
+      .body.one {
+        grid-template-columns: 33fr 67fr;
+      }
+      .body.many {
+        grid-template-columns: 33fr 20fr 47fr;
+      }
+      .chartbox {
+        position: relative;
+        min-width: 0;
+      }
+      .chartbox .cb {
+        position: absolute;
+        inset: 8px 10px 4px;
+      }
+      .chartbox svg {
+        display: block;
+      }
+
+      /* the hospital list */
+      .list {
+        border-left: 1px solid var(--line);
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+      }
+      .lh,
+      .lab {
+        font-size: 12px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        font-weight: 800;
+        color: var(--muted);
+      }
+      .lh {
+        padding: 12px 14px 8px;
+      }
+      .hrow {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+        height: 64px;
+        padding: 0 12px 0 11px;
+        background: transparent;
+        border: 0;
+        border-top: 1px solid var(--line);
+        border-left: 3px solid transparent;
+        color: var(--text);
+        text-align: left;
+        cursor: pointer;
+      }
+      .hrow.on {
+        background: var(--panel2);
+        border-left-color: var(--indigo);
+      }
+      .hrow .tx {
+        flex: 1;
+        min-width: 0;
+      }
+      .hrow .nm {
+        display: block;
+        font-size: 15px;
+        font-weight: 700;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .hrow .st {
+        display: block;
+        font-size: 13px;
+        color: var(--muted);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin-top: 2px;
+      }
+      .mark {
+        flex: none;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+      }
+      .mark.todo {
+        background: var(--warn);
+      }
+      .mark.done {
+        background: var(--ok);
+      }
+      .mark.left {
+        background: var(--edge);
+      }
+
+      /* the hospital panel: the same four zones for every hospital */
+      .detail {
+        border-left: 1px solid var(--line);
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        padding: 12px 18px 0;
+      }
+      .dh {
+        display: flex;
+        align-items: baseline;
+        gap: 12px;
+        height: 30px;
+      }
+      .dh .hn {
+        font-size: 18px;
+        font-weight: 800;
+      }
+      .dh .bk {
+        margin-left: auto;
+        font-size: 14px;
+        color: var(--muted);
+      }
+      .found {
+        display: flex;
+        gap: 10px;
+        height: 70px;
+        padding-top: 8px;
+        font-size: 15.5px;
+        line-height: 1.45;
+      }
+      .found .mark {
+        margin-top: 6px;
+      }
+      .found b {
+        font-weight: 800;
+      }
+      .lab {
+        margin: 4px 0 6px;
+        color: var(--head);
+      }
+      .rads {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .rad {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        height: 46px;
+        padding: 0 12px;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: transparent;
+        color: var(--text);
+        text-align: left;
+        cursor: pointer;
+      }
+      .rad.on {
+        border-color: var(--indigo);
+        background: var(--panel2);
+      }
+      .ring {
+        flex: none;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        border: 2px solid var(--edge);
+        position: relative;
+      }
+      .rad.on .ring {
+        border-color: var(--indigo);
+      }
+      .rad.on .ring::after {
+        content: "";
+        position: absolute;
+        inset: 3px;
+        border-radius: 50%;
+        background: var(--indigo);
+      }
+      .rt {
+        flex: 1;
+        min-width: 0;
+      }
+      .rt b {
+        display: block;
+        font-size: 15px;
+      }
+      .rt span {
+        display: block;
+        font-size: 13px;
+        color: var(--muted);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .num {
+        width: 72px;
+        font-size: 15px;
+        padding: 3px 8px;
+        border-radius: 8px;
+        border: 1px solid var(--edge);
+        background: var(--field);
+        color: var(--text);
+      }
+      .ntl {
+        font-size: 13px;
+        color: var(--muted);
+        margin-right: 8px;
+      }
+      .res {
+        height: 40px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 15.5px;
+      }
+      .res .l {
+        font-size: 12px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        font-weight: 800;
+        color: var(--muted);
+      }
+      .res .arrow {
+        color: var(--muted);
+      }
+      .res b {
+        font-weight: 800;
+      }
+      .dfoot {
+        height: 56px;
+        margin: 0 -18px;
+        padding: 0 18px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        border-top: 1px solid var(--line);
+        background: var(--panel2);
+      }
+      .dfoot .t {
+        font-size: 14px;
+        color: var(--muted);
+        flex: 1;
+        min-width: 0;
+      }
+      .dfoot .t b {
+        color: var(--text);
+      }
+      .donebox {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: center;
+        gap: 12px;
+        font-size: 17px;
+        padding-bottom: 12px;
+      }
+      .donebox .ok {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .donebox .tick {
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        background: var(--ok);
+        position: relative;
+      }
+      .donebox .tick::after {
+        content: "";
+        position: absolute;
+        left: 7px;
+        top: 3px;
+        width: 5px;
+        height: 11px;
+        border: solid #0e1623;
+        border-width: 0 2.5px 2.5px 0;
+        transform: rotate(45deg);
+      }
+      .t {
+        font-size: 14px;
+        color: var(--muted);
+      }
+      [hidden] {
+        display: none !important;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="sfnav">
+      <span class="app"><b>PIPE</b>LINE</span>
+      <span class="tab on">Pipeline</span>
+      <span class="tab">Opportunities</span>
+      <span class="tab">Accounts</span>
+      <span class="sp"></span>
+      <button class="pill" type="button" id="fs">Full screen</button>
+    </div>
+
+    <details class="about" open>
+      <summary>ABOUT THIS MOCKUP</summary>
+      <p style="margin: 6px 0">
+        The My Case Bookings screen with <b>live charts</b> and a
+        <b>suggestion panel</b>, in <b>three columns</b> that are the same for
+        every portfolio: the chart (a third), the list of hospitals (a fifth)
+        and the panel for the hospital you click (the rest). Hip has one
+        hospital and knee has three, each in a different situation. The page
+        below is the size of your window; the screen inside it scrolls. Invented
+        data only (Dr Example Surgeon).
+      </p>
+      <b>Try it:</b>
+      <ul>
+        <li>
+          Click a hospital in the list. The panel on the right shows what we
+          found there and what you can do, always in the same four places: the
+          problem, the choices, the result and the button.
+        </li>
+        <li>
+          Pick a choice, press <b>Review change</b>, then <b>Confirm</b>.
+          Nothing is saved until Confirm. After a save,
+          <b>Next hospital</b> moves on. <b>Start again</b> resets.
+        </li>
+        <li>
+          The three knee hospitals show the three situations: a competitor's
+          usage, no usage, and a ZB usage that is out from the bookings.
+        </li>
+        <li>Light / Dark switches the theme; resizing redraws the charts.</li>
+      </ul>
+      <b>Worth knowing:</b> a usage holds one company per line, so ZB and a
+      competitor cannot both sit on the same line. <b>Not shown yet:</b> CMFT
+      and shoulder, the rest of the deal flyout behind it.
+    </details>
+
+    <div class="tools">
+      <span class="sp"></span>
+      <button class="pill" type="button" id="theme">Light mode</button>
+      <button class="pill" type="button" id="reset">Start again</button>
+    </div>
+
+    <div class="fly">
+      <div class="fhead">
+        <h2>My Case Bookings</h2>
+        <span class="who">Dr Example Surgeon</span>
+        <span class="sp"></span>
+        <i class="x"></i>
+      </div>
+      <div class="fbody">
+        <div class="range">
+          Surgeries from 1 Nov 2025 to 31 Oct 2026 (12 whole months), and this
+          month so far.
+        </div>
+        <div class="legend">
+          <span
+            ><i class="sw" style="background: var(--primary)"></i>Primary</span
+          >
+          <span
+            ><i class="sw" style="background: var(--revision)"></i
+            >Revision</span
+          >
+          <span>* this month so far (lighter, not in the total)</span>
+        </div>
+        <div class="sects" id="sects"></div>
+      </div>
+    </div>
+
+    <script>
+      const root = document.documentElement;
+      const MONTHS = [
+        "Nov",
+        "Dec",
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Oct",
+        "Nov*"
+      ];
+      const DATA = {
+        hip: {
+          label: "HIP",
+          total: 4,
+          primary: 4,
+          revision: 0,
+          perMonth: "0.3",
+          pm: [0, 1, 0, 0, 2, 1, 0, 0, 0, 0, 0, 0, 0],
+          rv: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          hospitals: [
+            {
+              id: "hip1",
+              name: "Example Private Hospital",
+              booked: 4,
+              type: "none",
+              line: { kind: "none" },
+              choice: "create",
+              status: "todo",
+              mode: "edit"
+            }
+          ]
+        },
+        knee: {
+          label: "KNEE",
+          total: 40,
+          primary: 35,
+          revision: 5,
+          perMonth: "3.3",
+          pm: [4, 1, 1, 7, 5, 2, 2, 4, 2, 4, 1, 2, 1],
+          rv: [1, 0, 0, 0, 0, 0, 2, 0, 0, 1, 1, 0, 0],
+          hospitals: [
+            {
+              id: "knee1",
+              name: "Example Private Hospital",
+              booked: 22,
+              type: "comp",
+              line: { kind: "comp", company: "Competitor A", cases: 60 },
+              choice: "replace",
+              cases: 60,
+              status: "todo",
+              mode: "edit"
+            },
+            {
+              id: "knee2",
+              name: "Sample Day Surgery",
+              booked: 10,
+              type: "none",
+              line: { kind: "none" },
+              choice: "create",
+              status: "todo",
+              mode: "edit"
+            },
+            {
+              id: "knee3",
+              name: "Harbour View Hospital",
+              booked: 8,
+              type: "zbdiff",
+              line: { kind: "zb", company: "ZB", cases: 40 },
+              choice: "adjust",
+              cases: 40,
+              status: "todo",
+              mode: "edit"
+            }
+          ]
+        }
+      };
+      const FRESH = JSON.stringify(DATA);
+      let S, sel;
+      function reset() {
+        S = JSON.parse(FRESH);
+        sel = { hip: "hip1", knee: "knee1" };
+      }
+      reset();
+
+      const CHOICES = {
+        comp: [
+          [
+            "replace",
+            "Replace with ZB",
+            "Competitor out, ZB in at the booked number"
+          ],
+          [
+            "change",
+            "Change the competitor's cases",
+            "Keep the competitor, enter a new number"
+          ],
+          ["remove", "Remove the competitor", "Clear the usage, record no ZB"],
+          ["leave", "Leave as it is", "Make no change at this hospital"]
+        ],
+        none: [
+          ["create", "Create a ZB usage", "ZB at the booked number"],
+          ["leave", "Leave as it is", "Make no change at this hospital"]
+        ],
+        zbdiff: [
+          [
+            "adjust",
+            "Adjust to the bookings",
+            "Set the ZB usage to the booked number"
+          ],
+          ["change", "Enter my own number", "Choose the cases a year yourself"],
+          ["remove", "Remove the usage", "Clear the ZB usage"],
+          ["leave", "Leave as it is", "Make no change at this hospital"]
+        ]
+      };
+      const lineText = (l) =>
+        l.kind === "none" ? "No usage" : `${l.company}, ${l.cases} a year`;
+      function afterLine(h) {
+        const c = h.choice;
+        if (c === "replace" || c === "create" || c === "adjust")
+          return { kind: "zb", company: "ZB", cases: h.booked };
+        if (c === "change")
+          return {
+            kind: h.line.kind,
+            company: h.line.company || "ZB",
+            cases: h.cases === "" ? "?" : h.cases
+          };
+        if (c === "remove") return { kind: "none" };
+        return h.line;
+      }
+      function changeText(h) {
+        const l = h.line;
+        switch (h.choice) {
+          case "replace":
+            return `Replace ${l.company} (${l.cases} a year) with ZB (${h.booked} a year)`;
+          case "create":
+            return `Create a ZB usage, ${h.booked} a year`;
+          case "adjust":
+            return `Change the ZB usage from ${l.cases} to ${h.booked} a year`;
+          case "change":
+            return `Change ${l.company || "ZB"} to ${h.cases} a year`;
+          case "remove":
+            return `Remove the ${l.company} usage`;
+          default:
+            return null;
+        }
+      }
+      function foundHtml(h, low) {
+        const l = h.line;
+        if (h.status === "done")
+          return `<span class="mark done"></span><div>Saved. This hospital now has: <b>${lineText(l)}</b>.</div>`;
+        if (h.type === "comp")
+          return `<span class="mark todo"></span><div>A usage is already entered, but for a <b>competitor</b>: <b>${l.company}, ${l.cases} a year</b>. No ZB cases are recorded, although <b>${h.booked}</b> were booked.</div>`;
+        if (h.type === "none")
+          return `<span class="mark todo"></span><div><b>No ${low} usage</b> is entered, although <b>${h.booked}</b> ZB ${low} cases were booked.</div>`;
+        const pct = Math.round((Math.abs(l.cases - h.booked) / l.cases) * 100);
+        return `<span class="mark todo"></span><div>The ZB usage says <b>${l.cases} a year</b>, but <b>${h.booked}</b> were booked: <b>${pct}% ${h.booked < l.cases ? "fewer" : "more"}</b>. More than 10% out should be adjusted.</div>`;
+      }
+
+      function listHtml(k) {
+        const d = S[k];
+        return (
+          `<div class="lh">Hospitals (${d.hospitals.length})</div>` +
+          d.hospitals
+            .map(
+              (h) =>
+                `<button type="button" class="hrow ${h.id === sel[k] ? "on" : ""}" data-k="${k}" data-h="${h.id}">
+              <span class="tx"><span class="nm">${h.name}</span><span class="st">${h.status === "left" ? "Left as it is · " : ""}${lineText(h.line)}</span></span>
+              <i class="mark ${h.status}"></i></button>`
+            )
+            .join("")
+        );
+      }
+      function nextTodo(k) {
+        return S[k].hospitals.find(
+          (h) => h.status === "todo" && h.id !== sel[k]
+        );
+      }
+      function detailHtml(k) {
+        const d = S[k];
+        const h = d.hospitals.find((x) => x.id === sel[k]);
+        const low = d.label.toLowerCase();
+        const head = `<div class="dh"><span class="hn">${h.name}</span><span class="bk">${h.booked} ZB ${low} cases booked in the last 12 months</span></div>`;
+        if (h.status !== "todo") {
+          const nx = nextTodo(k);
+          return (
+            head +
+            `<div class="donebox"><div class="ok"><i class="tick"></i><span>${h.status === "done" ? `Saved. This hospital now has <b>${lineText(h.line)}</b>.` : "Left as it is."}</span></div>
+            ${nx ? `<button class="pill go" type="button" data-k="${k}" data-act="next">Next hospital</button>` : `<span class="t">No more hospitals need attention.</span>`}</div>`
+          );
+        }
+        const rads = CHOICES[h.type]
+          .map((c) => {
+            const on = c[0] === h.choice;
+            const inp =
+              on && c[0] === "change"
+                ? `<span class="ntl">Cases a year</span><input class="num" type="number" min="0" value="${h.cases}" data-k="${k}" data-n="${h.id}" />`
+                : "";
+            return `<button type="button" class="rad ${on ? "on" : ""}" data-k="${k}" data-c="${c[0]}"><i class="ring"></i><span class="rt"><b>${c[1]}</b><span>${c[2]}</span></span>${inp}</button>`;
+          })
+          .join("");
+        const a = afterLine(h);
+        const res = `<div class="res"><span class="l">Now</span><span>${lineText(h.line)}</span><span class="arrow">→</span><span class="l">After</span><b>${lineText(a)}</b></div>`;
+        const leave = h.choice === "leave";
+        const bad = h.choice === "change" && h.cases === "";
+        const foot =
+          h.mode === "confirm"
+            ? `<div class="dfoot"><span class="t"><b>${changeText(h)}?</b></span><button class="pill go" type="button" data-k="${k}" data-act="yes">Confirm</button><button class="pill" type="button" data-k="${k}" data-act="back">Go back</button></div>`
+            : `<div class="dfoot"><button class="pill go" type="button" data-k="${k}" data-act="${leave ? "skip" : "review"}" ${bad ? "disabled" : ""}>${leave ? "Leave and move on" : "Review change"}</button><span class="t">${leave ? "No change will be made at this hospital." : "Nothing is saved until you confirm."}</span></div>`;
+        return (
+          head +
+          `<div class="found">${foundHtml(h, low)}</div><div class="lab">What you can do</div><div class="rads">${rads}</div>${res}${foot}`
+        );
+      }
+
+      function attText(k) {
+        const n = S[k].hospitals.filter((h) => h.status === "todo").length;
+        return n === 0
+          ? "All hospitals dealt with"
+          : `<b>${n}</b> hospital${n > 1 ? "s" : ""} need${n > 1 ? "" : "s"} attention`;
+      }
+      function build() {
+        document.getElementById("sects").innerHTML = ["hip", "knee"]
+          .map((k) => {
+            const d = S[k];
+            const many = true; // the same three columns for every portfolio, even with one hospital
+            return `<section class="sect">
+            <div class="chead"><span class="pf">${d.label}</span><span class="big">${d.total}</span>
+              <span class="sm">cases in the last 12 months · Primary <b>${d.primary}</b> · Revision <b>${d.revision}</b> · about ${d.perMonth} a month</span>
+              <span class="att" id="att-${k}">${attText(k)}</span></div>
+            <div class="body ${many ? "many" : "one"}">
+              <div class="chartbox"><div class="cb" id="chart-${k}"></div></div>
+              ${many ? `<div class="list" id="list-${k}">${listHtml(k)}</div>` : ""}
+              <div class="detail" id="detail-${k}">${detailHtml(k)}</div>
+            </div></section>`;
+          })
+          .join("");
+        drawCharts();
+      }
+      function update(k) {
+        const l = document.getElementById("list-" + k);
+        if (l) l.innerHTML = listHtml(k);
+        document.getElementById("detail-" + k).innerHTML = detailHtml(k);
+        document.getElementById("att-" + k).innerHTML = attText(k);
+      }
+
+      function niceMax(m) {
+        const steps = [2, 4, 5, 8, 10, 12, 16, 20, 25, 30, 40, 50];
+        return steps.find((s) => s >= m) || m;
+      }
+      function drawChart(k) {
+        const el = document.getElementById("chart-" + k);
+        if (!el) return;
+        const d = S[k];
+        const W = Math.max(240, el.clientWidth);
+        const H = Math.max(240, el.clientHeight);
+        const p = { l: 28, r: 4, t: 20, b: 26 };
+        const tot = d.pm.map((v, i) => v + d.rv[i]);
+        const max = niceMax(Math.max(...tot, 1));
+        const iw = W - p.l - p.r;
+        const ih = H - p.t - p.b;
+        const slot = iw / 13;
+        const bw = Math.min(30, slot * 0.66);
+        const y = (v) => p.t + ih - (v / max) * ih;
+        const tick = max <= 5 ? 1 : max <= 12 ? 2 : max <= 25 ? 5 : 10;
+        let s = `<svg width="${W}" height="${H}" role="img" aria-label="${d.label} bookings by month">`;
+        for (let t = 0; t <= max; t += tick) {
+          s += `<line x1="${p.l}" x2="${W - p.r}" y1="${y(t)}" y2="${y(t)}" stroke="var(--grid)" stroke-width="1"/>`;
+          s += `<text x="${p.l - 8}" y="${y(t) + 5}" text-anchor="end" font-size="13" fill="var(--muted)">${t}</text>`;
+        }
+        for (let i = 0; i < 13; i++) {
+          const cx = p.l + slot * i + slot / 2;
+          const op = i === 12 ? 0.45 : 1;
+          const pm = d.pm[i];
+          const rv = d.rv[i];
+          if (pm > 0)
+            s += `<rect x="${cx - bw / 2}" y="${y(pm)}" width="${bw}" height="${y(0) - y(pm)}" rx="3" fill="var(--primary)" opacity="${op}"><title>${MONTHS[i]}: ${pm} primary</title></rect>`;
+          if (rv > 0)
+            s += `<rect x="${cx - bw / 2}" y="${y(pm + rv)}" width="${bw}" height="${y(pm) - y(pm + rv)}" rx="3" fill="var(--revision)" opacity="${op}"><title>${MONTHS[i]}: ${rv} revision</title></rect>`;
+          if (pm + rv > 0)
+            s += `<text x="${cx}" y="${y(pm + rv) - 6}" text-anchor="middle" font-size="14" font-weight="800" fill="var(--text)" opacity="${op}">${pm + rv}</text>`;
+          s += `<text x="${cx}" y="${H - 6}" text-anchor="middle" font-size="12" fill="var(--muted)">${MONTHS[i]}</text>`;
+        }
+        el.innerHTML = s + "</svg>";
+      }
+      function drawCharts() {
+        drawChart("hip");
+        drawChart("knee");
+      }
+      let rt;
+      window.addEventListener("resize", () => {
+        clearTimeout(rt);
+        rt = setTimeout(drawCharts, 80);
+      });
+
+      const sects = document.getElementById("sects");
+      const cur = (k) => S[k].hospitals.find((h) => h.id === sel[k]);
+      sects.addEventListener("click", (e) => {
+        const r = e.target.closest(".hrow");
+        if (r) {
+          sel[r.dataset.k] = r.dataset.h;
+          update(r.dataset.k);
+          return;
+        }
+        const o = e.target.closest(".rad");
+        if (o) {
+          if (e.target.closest(".num")) return;
+          cur(o.dataset.k).choice = o.dataset.c;
+          update(o.dataset.k);
+          const inp = document.querySelector(`#detail-${o.dataset.k} .num`);
+          if (inp) inp.focus();
+          return;
+        }
+        const b = e.target.closest("[data-act]");
+        if (!b) return;
+        const k = b.dataset.k;
+        const h = cur(k);
+        const act = b.dataset.act;
+        if (act === "review") h.mode = "confirm";
+        else if (act === "back") h.mode = "edit";
+        else if (act === "yes") {
+          h.line = afterLine(h);
+          h.status = "done";
+          h.mode = "edit";
+        } else if (act === "skip") {
+          h.status = "left";
+        } else if (act === "next") {
+          const nx = nextTodo(k);
+          if (nx) sel[k] = nx.id;
+        }
+        if ((act === "yes" || act === "skip") && nextTodo(k)) {
+          /* stay so the result is seen; Next hospital moves on */
+        }
+        update(k);
+      });
+      sects.addEventListener("input", (e) => {
+        const id = e.target.dataset.n;
+        if (!id) return;
+        const k = e.target.dataset.k;
+        const v = e.target.value;
+        cur(k).cases = v === "" ? "" : Math.max(0, Number(v));
+        const pos = e.target.selectionStart;
+        update(k);
+        const again = document.querySelector(`#detail-${k} .num`);
+        if (again) {
+          again.focus();
+          try {
+            again.setSelectionRange(pos, pos);
+          } catch (x) {}
+        }
+      });
+      document.getElementById("reset").addEventListener("click", () => {
+        reset();
+        build();
+      });
+      document.getElementById("theme").addEventListener("click", (e) => {
+        const light = root.getAttribute("data-theme") !== "light";
+        root.setAttribute("data-theme", light ? "light" : "dark");
+        e.target.textContent = light ? "Dark mode" : "Light mode";
+      });
+      document.getElementById("fs").addEventListener("click", () => {
+        if (document.fullscreenElement) document.exitFullscreen();
+        else document.documentElement.requestFullscreen();
+        setTimeout(drawCharts, 300);
+      });
+      root.setAttribute("data-theme", "dark");
+      build();
+    </script>
+  </body>
+</html>

@@ -1,30 +1,47 @@
 /**
  * Pipeline: the My Case Bookings panel in the deal flyout. How a surgeon is tracking: surgeries per month for the last 12
  * whole months (plus this month so far), by type of surgery (Hip, Knee, Shoulder, CMFT), split into primary and revision
- * (CMFT is never split), and by hospital; whether the surgeon's usages say what the bookings say; and, for people who may
- * change usages, creating or adjusting the ZB usages from the bookings.
+ * (CMFT is never split), and by hospital; what the surgeon's usages say at each hospital against what the bookings say; and,
+ * for people who may change usages, saving the changes the panel offers for one hospital at a time (add the ZB usage, add,
+ * change or delete a competitor's usage, adjust the ZB usage).
  *
  * Who calls it: the pipelineBookings component and the deal flyout's bottom-bar badges, and PipelineBookingsControllerTest.
  * What it touches: reads SalesRisks__c (to find the surgeon), Account, Case__c (surgeries), myCase_Usage_Item__c (to count only
- * surgeries that have usage items, as Pipeline's surgeries count always did) and Usage__c; createFromBookings and
- * adjustToBookings insert and update Usage__c. All in the signed-in person's own access (user mode).
+ * surgeries that have usage items, as Pipeline's surgeries count always did) and Usage__c; saveHospital inserts, updates and
+ * deletes Usage__c. All in the signed-in person's own access (user mode).
  *
- * Rules (Robert, 2026-11-02): a surgery counts when it has already happened and has at least one usage item; demo and
- * non-billable surgeries (Procedure Z02) are left out; Type A01 is a revision, anything else primary; the anatomy comes from
- * Case__c.Surgery_Type__c (201 Hip, 202 Knee, 205 Shoulder / Elbow, 209 CMFT). Only ZB usages are compared with the
- * bookings, because the competitors' numbers are unknown. The record type of a usage made here is chosen by
- * PipelineUsageController from the person's country and the portfolio. Shoulder is never created or adjusted here: its
- * usages are split into anatomical and reverse, which the bookings do not show.
+ * Rules (Robert, 2026-11-02 and 2026-11-03): a surgery counts when it has already happened and has at least one usage item;
+ * demo and non-billable surgeries (Procedure Z02) are left out; Type A01 is a revision, anything else primary; the anatomy
+ * comes from Case__c.Surgery_Type__c (201 Hip, 202 Knee, 205 Shoulder / Elbow, 209 CMFT). Only ZB usages are compared with
+ * the bookings, because the competitors' numbers are unknown. A surgeon has one usage per hospital, portfolio AND COMPANY: a
+ * ZB usage and a competitor's usage can sit side by side at the same hospital, but never two for the same company. The
+ * surgeon's rating roll-ups already add up by company across every usage record, so they stay right. The record type of a
+ * usage made here is chosen by PipelineUsageController from the person's country and the portfolio. Shoulder is never
+ * changed here: its usages are split into anatomical and reverse, which the bookings do not show.
  */
 public with sharing class PipelineBookingsController {
-  public class Hospital {
+  /** One usage record of the surgeon at a hospital, as one company and its cases a year (a hip shows its stems, else its cups). */
+  public class UsageLine {
+    @AuraEnabled
+    public Id usageId;
+    /** ZB, a competitor's name, or blank when the record holds cases but no company. */
+    @AuraEnabled
+    public String company;
+    @AuraEnabled
+    public Decimal cases = 0;
+  }
+
+  /** One hospital for a type of surgery: the surgeries booked there and the surgeon's usages there. */
+  public class HospitalRow {
     @AuraEnabled
     public Id id;
     @AuraEnabled
     public String name;
     /** Surgeries booked there in the last 12 whole months. */
     @AuraEnabled
-    public Integer count = 0;
+    public Integer booked = 0;
+    @AuraEnabled
+    public List<UsageLine> lines = new List<UsageLine>();
   }
 
   public class BookingType {
@@ -51,9 +68,13 @@ public with sharing class PipelineBookingsController {
     /** The ZB cases a year the usages say, when usage is zb. */
     @AuraEnabled
     public Decimal zb = 0;
+    /** Every hospital with bookings or usages for this type, busiest first. A row with no id holds surgeries with no hospital recorded. */
     @AuraEnabled
-    public List<Hospital> hospitals = new List<Hospital>();
-    /** True when Pipeline can create or adjust this type's usages from the bookings (not shoulder). */
+    public List<HospitalRow> rows = new List<HospitalRow>();
+    /** The usage record type this person would use for this type in their country, so the screen can read its company choices. */
+    @AuraEnabled
+    public Id recordTypeId;
+    /** True when Pipeline can change this type's usages from the bookings panel (not shoulder). */
     @AuraEnabled
     public Boolean canAuto = true;
   }
@@ -75,6 +96,8 @@ public with sharing class PipelineBookingsController {
     @AuraEnabled
     public Boolean canEdit = false;
     @AuraEnabled
+    public Boolean canDelete = false;
+    @AuraEnabled
     public List<BookingType> types = new List<BookingType>();
   }
 
@@ -90,16 +113,21 @@ public with sharing class PipelineBookingsController {
     public Integer booked = 0;
   }
 
-  public class Result {
+  public class SaveResult {
     @AuraEnabled
     public Integer created = 0;
     @AuraEnabled
     public Integer updated = 0;
-    /** Lines left alone because they hold a competitor, not ZB. */
     @AuraEnabled
-    public Integer skipped = 0;
-    @AuraEnabled
-    public Integer total = 0;
+    public Integer deleted = 0;
+  }
+
+  /** One change to a hospital's usages: zb (set the ZB cases, creating the ZB usage if there is none), comp (set a usage's cases), add (a competitor's usage) or del (delete a usage). */
+  public class Op {
+    public String op;
+    public Id usageId;
+    public String company;
+    public Decimal cases;
   }
 
   /** Case__c.Surgery_Type__c to [name, portfolio]. */
@@ -210,6 +238,7 @@ public with sharing class PipelineBookingsController {
         Id,
         LastModifiedDate,
         Healthcare_Facility__c,
+        Healthcare_Facility__r.Name,
         RecordTypeId,
         CompanyHipStems__c,
         CasesPAHipStem__c,
@@ -297,12 +326,13 @@ public with sharing class PipelineBookingsController {
     Schema.DescribeSObjectResult usageInfo = Usage__c.SObjectType.getDescribe();
     out.canCreate = usageInfo.isCreateable();
     out.canEdit = usageInfo.isUpdateable();
+    out.canDelete = usageInfo.isDeletable();
 
     List<Usage__c> usages = usagesOf(surgeon);
     out.noUsagesAtAll = usages.isEmpty();
 
     Map<String, BookingType> byAnatomy = new Map<String, BookingType>();
-    Map<String, Map<String, Hospital>> hospitals = new Map<String, Map<String, Hospital>>();
+    Map<String, Map<String, HospitalRow>> hospitals = new Map<String, Map<String, HospitalRow>>();
     for (Counted k : countedSurgeries(surgeon, out.windowStart, today)) {
       BookingType t = byAnatomy.get(k.anatomy);
       if (t == null) {
@@ -316,7 +346,7 @@ public with sharing class PipelineBookingsController {
         }
         t.canAuto = t.portfolio != 'Shoulder';
         byAnatomy.put(k.anatomy, t);
-        hospitals.put(k.anatomy, new Map<String, Hospital>());
+        hospitals.put(k.anatomy, new Map<String, HospitalRow>());
       }
       if (k.month < 0) {
         Integer which = k.revision ? 1 : 0;
@@ -330,29 +360,46 @@ public with sharing class PipelineBookingsController {
       }
       t.booked++;
       String key = String.valueOf(k.hospitalId);
-      Hospital h = hospitals.get(k.anatomy).get(key);
+      HospitalRow h = hospitals.get(k.anatomy).get(key);
       if (h == null) {
-        h = new Hospital();
+        h = new HospitalRow();
         h.id = k.hospitalId;
         h.name = String.isBlank(k.hospitalName) ? NO_HOSPITAL : k.hospitalName;
         hospitals.get(k.anatomy).put(key, h);
       }
-      h.count++;
+      h.booked++;
     }
     for (String a : ORDER) {
       BookingType t = byAnatomy.get(a);
       if (t == null) {
         continue;
       }
-      List<Hospital> byCount = hospitals.get(a).values();
-      byCount.sort(new HospitalOrder());
-      t.hospitals = byCount;
+      Map<String, HospitalRow> rowsByKey = hospitals.get(a);
       Decimal zb = 0;
       Boolean hasLine = false;
       for (Usage__c u : usages) {
         zb += zbOf(u, t.portfolio);
-        hasLine = hasLine || hasData(u, t.portfolio);
+        Boolean has = hasData(u, t.portfolio);
+        hasLine = hasLine || has;
+        if (has && u.Healthcare_Facility__c != null) {
+          String key = String.valueOf(u.Healthcare_Facility__c);
+          HospitalRow h = rowsByKey.get(key);
+          if (h == null) {
+            h = new HospitalRow();
+            h.id = u.Healthcare_Facility__c;
+            h.name = u.Healthcare_Facility__r?.Name;
+            rowsByKey.put(key, h);
+          }
+          h.lines.add(lineOf(u, t.portfolio));
+        }
       }
+      List<HospitalRow> byCount = rowsByKey.values();
+      byCount.sort(new HospitalOrder());
+      t.rows = byCount;
+      Schema.RecordTypeInfo info = PipelineUsageController.recordTypeForPortfolio(
+        t.portfolio
+      );
+      t.recordTypeId = info == null ? null : info.getRecordTypeId();
       t.zb = zb;
       t.usage = zb > 0 ? 'zb' : (hasLine ? 'competitor' : 'none');
       out.types.add(t);
@@ -360,11 +407,31 @@ public with sharing class PipelineBookingsController {
     return out;
   }
 
-  /** Busiest hospital first. */
-  private class HospitalOrder implements System.Comparator<Hospital> {
-    public Integer compare(Hospital a, Hospital b) {
-      return b.count - a.count;
+  /** Busiest hospital first; hospitals with usages only (no bookings) after them, by name. */
+  private class HospitalOrder implements System.Comparator<HospitalRow> {
+    public Integer compare(HospitalRow a, HospitalRow b) {
+      if (a.booked != b.booked) {
+        return b.booked - a.booked;
+      }
+      return (a.name == null ? '' : a.name)
+        .compareTo(b.name == null ? '' : b.name);
     }
+  }
+
+  /** A usage record as one company and its cases a year, for the portfolio's first line that holds anything. */
+  private static UsageLine lineOf(Usage__c u, String portfolio) {
+    UsageLine l = new UsageLine();
+    l.usageId = u.Id;
+    for (List<String> f : lineFields(portfolio)) {
+      String company = (String) u.get(f[0]);
+      Decimal cases = (Decimal) u.get(f[1]);
+      if (!String.isBlank(company) || n(cases) > 0) {
+        l.company = company;
+        l.cases = n(cases);
+        break;
+      }
+    }
+    return l;
   }
 
   @AuraEnabled
@@ -408,11 +475,83 @@ public with sharing class PipelineBookingsController {
     };
   }
 
-  /** Makes the ZB usages of one portfolio match the last 12 months of bookings, hospital by hospital. */
-  private static Result applyBookings(Id dealId, String portfolio) {
+  private static List<Op> parseOps(String opsJson) {
+    try {
+      return (List<Op>) JSON.deserialize(opsJson, List<Op>.class);
+    } catch (Exception e) {
+      throw fail('The changes could not be read.');
+    }
+  }
+
+  /** Sets the cases on every line of a usage that holds this company (a hip's stems and cups both). */
+  private static void setCases(
+    Usage__c u,
+    String portfolio,
+    String company,
+    Decimal cases
+  ) {
+    for (List<String> f : lineFields(portfolio)) {
+      if ((String) u.get(f[0]) == company) {
+        u.put(f[1], cases);
+      }
+    }
+  }
+
+  private static Boolean holdsCompany(
+    Usage__c u,
+    String portfolio,
+    String company
+  ) {
+    for (List<String> f : lineFields(portfolio)) {
+      if ((String) u.get(f[0]) == company) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /** A new usage for one company: every line of the portfolio carries that company and number (a hip's stems and cups each). */
+  private static Usage__c newUsage(
+    Id surgeon,
+    Id hospitalId,
+    Id rtId,
+    String portfolio,
+    String company,
+    Decimal cases
+  ) {
+    Usage__c u = new Usage__c(
+      HCP2__c = surgeon,
+      Healthcare_Facility__c = hospitalId,
+      RecordTypeId = rtId
+    );
+    for (List<String> f : lineFields(portfolio)) {
+      u.put(f[0], company);
+      u.put(f[1], cases);
+    }
+    return u;
+  }
+
+  /**
+   * Saves the changes the person chose for one hospital and one type of surgery, all or nothing. Each change is one of:
+   * zb (set the ZB cases a year, creating the ZB usage when the surgeon has none there), comp (set the cases of a
+   * competitor's usage), add (a new usage for a competitor) or del (delete a usage). A surgeon never gets two usages for
+   * the same company at a hospital.
+   */
+  @AuraEnabled
+  public static SaveResult saveHospital(
+    Id dealId,
+    String portfolio,
+    Id hospitalId,
+    String opsJson
+  ) {
     if (portfolio != 'Hip' && portfolio != 'Knee' && portfolio != 'CMF') {
       throw fail(
         'Shoulder usages are split into anatomical and reverse, which the bookings do not show, so enter them in the usages.'
+      );
+    }
+    if (hospitalId == null) {
+      throw fail(
+        'A usage needs a hospital, and these surgeries have none recorded.'
       );
     }
     Schema.RecordTypeInfo info = PipelineUsageController.recordTypeForPortfolio(
@@ -427,110 +566,115 @@ public with sharing class PipelineBookingsController {
     if (surgeon == null) {
       throw fail('This deal has no Primary HCP.');
     }
-    Date today = Date.today();
-    Date start = today.toStartOfMonth().addMonths(-12);
-    String anatomy = portfolio == 'CMF'
-      ? '209'
-      : (portfolio == 'Hip' ? '201' : '202');
-    Map<String, Integer> counts = new Map<String, Integer>();
-    for (Counted k : countedSurgeries(surgeon, start, today)) {
-      if (k.anatomy == anatomy && k.month >= 0) {
-        String key = String.valueOf(k.hospitalId);
-        counts.put(key, (counts.containsKey(key) ? counts.get(key) : 0) + 1);
-      }
+    List<Op> ops = parseOps(opsJson);
+    if (ops.isEmpty()) {
+      throw fail('There is nothing to save.');
     }
-    if (counts.isEmpty()) {
-      throw fail('There are no bookings in the last 12 months to work from.');
-    }
-    Id rtId = info.getRecordTypeId();
-    List<Usage__c> existing = new List<Usage__c>();
+    Map<Id, Usage__c> here = new Map<Id, Usage__c>();
     for (Usage__c u : usagesOf(surgeon)) {
-      if (u.RecordTypeId == rtId) {
-        existing.add(u);
+      if (u.Healthcare_Facility__c == hospitalId && hasData(u, portfolio)) {
+        here.put(u.Id, u);
       }
     }
-    Map<String, Usage__c> byHospital = new Map<String, Usage__c>();
-    for (Usage__c u : existing) {
-      String key = String.valueOf(u.Healthcare_Facility__c);
-      if (!byHospital.containsKey(key)) {
-        byHospital.put(key, u);
-      }
-    }
-    Result r = new Result();
+    Map<Id, Usage__c> toUpdate = new Map<Id, Usage__c>();
     List<Usage__c> toInsert = new List<Usage__c>();
-    List<Usage__c> toUpdate = new List<Usage__c>();
-    List<List<String>> fields = lineFields(portfolio);
-    for (String key : counts.keySet()) {
-      Integer count = counts.get(key);
-      r.total += count;
-      Usage__c u = byHospital.get(key);
-      Boolean isNew = u == null;
-      if (isNew) {
-        u = new Usage__c(
-          HCP2__c = surgeon,
-          RecordTypeId = rtId,
-          Healthcare_Facility__c = key == 'null' ? null : (Id) key
+    List<Id> toDelete = new List<Id>();
+    for (Op o : ops) {
+      if (o.op == 'zb' || o.op == 'comp' || o.op == 'add') {
+        if (o.cases == null || o.cases < 0) {
+          throw fail('Enter the cases a year as a number, zero or more.');
+        }
+      }
+      if (o.op == 'zb') {
+        Usage__c zbUsage;
+        for (Usage__c u : here.values()) {
+          if (holdsCompany(u, portfolio, 'ZB')) {
+            zbUsage = u;
+            break;
+          }
+        }
+        if (zbUsage != null) {
+          setCases(zbUsage, portfolio, 'ZB', o.cases);
+          toUpdate.put(zbUsage.Id, zbUsage);
+        } else {
+          toInsert.add(
+            newUsage(
+              surgeon,
+              hospitalId,
+              info.getRecordTypeId(),
+              portfolio,
+              'ZB',
+              o.cases
+            )
+          );
+        }
+      } else if (o.op == 'comp' || o.op == 'del') {
+        Usage__c u = here.get(o.usageId);
+        if (u == null) {
+          throw fail(
+            'That usage is not one of this surgeon\'s usages at this hospital.'
+          );
+        }
+        if (o.op == 'del') {
+          toDelete.add(u.Id);
+        } else {
+          String company = lineOf(u, portfolio).company;
+          setCases(u, portfolio, company, o.cases);
+          toUpdate.put(u.Id, u);
+        }
+      } else if (o.op == 'add') {
+        if (String.isBlank(o.company) || o.company == 'ZB') {
+          throw fail('Choose the competitor\'s company.');
+        }
+        for (Usage__c u : here.values()) {
+          if (
+            holdsCompany(u, portfolio, o.company) && !toDelete.contains(u.Id)
+          ) {
+            throw fail(
+              'This surgeon already has a usage for ' +
+                o.company +
+                ' at this hospital. Change that one instead.'
+            );
+          }
+        }
+        for (Usage__c u : toInsert) {
+          if (holdsCompany(u, portfolio, o.company)) {
+            throw fail('Each company can only be added once at a hospital.');
+          }
+        }
+        toInsert.add(
+          newUsage(
+            surgeon,
+            hospitalId,
+            info.getRecordTypeId(),
+            portfolio,
+            o.company,
+            o.cases
+          )
         );
-      }
-      Boolean changed = false;
-      for (List<String> f : fields) {
-        String company = (String) u.get(f[0]);
-        if (String.isBlank(company) || company == 'ZB') {
-          u.put(f[0], 'ZB');
-          u.put(f[1], count);
-          changed = true;
-        } else {
-          r.skipped++;
-        }
-      }
-      if (changed) {
-        if (isNew) {
-          toInsert.add(u);
-        } else {
-          toUpdate.add(u);
-        }
+      } else {
+        throw fail('That change is not known.');
       }
     }
-    // ZB usages at hospitals with no bookings in the last 12 months are brought down to nothing
-    for (Usage__c u : existing) {
-      if (counts.containsKey(String.valueOf(u.Healthcare_Facility__c))) {
-        continue;
-      }
-      Boolean changed = false;
-      for (List<String> f : fields) {
-        if ((String) u.get(f[0]) == 'ZB' && n((Decimal) u.get(f[1])) > 0) {
-          u.put(f[1], 0);
-          changed = true;
-        }
-      }
-      if (changed) {
-        toUpdate.add(u);
-      }
-    }
+    SaveResult r = new SaveResult();
     try {
+      if (!toUpdate.isEmpty()) {
+        List<Usage__c> changed = toUpdate.values();
+        update as user changed;
+        r.updated = changed.size();
+      }
       if (!toInsert.isEmpty()) {
         insert as user toInsert;
-      }
-      if (!toUpdate.isEmpty()) {
-        update as user toUpdate;
+        r.created = toInsert.size();
       }
     } catch (Exception e) {
       throw fail(e.getMessage());
     }
-    r.created = toInsert.size();
-    r.updated = toUpdate.size();
+    for (Id usageId : toDelete) {
+      // clears the lines first so the surgeon's ratings recalculate, then deletes (the same as the Usages panel)
+      PipelineUsageController.deleteUsage(usageId);
+      r.deleted++;
+    }
     return r;
-  }
-
-  /** Makes usages for a portfolio from the last 12 months of bookings: one usage per hospital, ZB, the year's cases. */
-  @AuraEnabled
-  public static Result createFromBookings(Id dealId, String portfolio) {
-    return applyBookings(dealId, portfolio);
-  }
-
-  /** Changes the ZB usages of a portfolio to match the last 12 months of bookings. */
-  @AuraEnabled
-  public static Result adjustToBookings(Id dealId, String portfolio) {
-    return applyBookings(dealId, portfolio);
   }
 }
