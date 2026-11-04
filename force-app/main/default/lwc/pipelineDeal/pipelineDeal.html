@@ -23,6 +23,17 @@
         </template>
       </div>
       <span class="sp"></span>
+      <div class="fm" lwc:if={showSurgeon}>
+        <button type="button" class={usagesBtnCls} onclick={handleUsagesButton}>
+          Surgeon Usages
+        </button>
+        <button type="button" class={casesBtnCls} onclick={handleCasesButton}>
+          MyCase Bookings
+          <span lwc:if={casesBadge} class={casesBadge.cls}
+            >{casesBadge.text}</span
+          >
+        </button>
+      </div>
       <button
         type="button"
         class="rbtn"
@@ -227,13 +238,12 @@
               is-rep={isRep}
               onaskcheck={handleAskCheck}
               onusageschanged={handleUsagesChanged}
+              onactionstate={handleActionState}
             ></c-pipeline-usages>
             <c-pipeline-bookings
               lwc:if={casesOpen}
               record-id={recordId}
               refresh-key={panelRefresh}
-              onusageschanged={handleUsagesChanged}
-              onopenusages={handleOpenUsagesPanel}
             ></c-pipeline-bookings>
           </div>
         </div>
@@ -243,7 +253,7 @@
     <div class="foot">
       <div class="fl2">
         <button
-          lwc:if={showOpenRecord}
+          lwc:if={showDealActions}
           type="button"
           class="btn ghost"
           onclick={handleOpenRecord}
@@ -251,43 +261,38 @@
           Open in Salesforce
         </button>
       </div>
-      <div class="fm">
-        <template lwc:if={showSurgeon}>
+      <div class="fr">
+        <template lwc:if={showDealActions}>
           <button
             type="button"
-            class={usagesBtnCls}
-            onclick={handleUsagesButton}
+            class="btn sec"
+            onclick={handleCancel}
+            disabled={clean}
           >
-            Surgeon Usages
-            <span lwc:if={usagesBadge} class={usagesBadge.cls}
-              >{usagesBadge.text}</span
-            >
+            Cancel
           </button>
-          <button type="button" class={casesBtnCls} onclick={handleCasesButton}>
-            My Case Bookings
-            <span lwc:if={casesBadge} class={casesBadge.cls}
-              >{casesBadge.text}</span
-            >
+          <button
+            type="button"
+            class="btn"
+            onclick={handleSave}
+            disabled={cantSave}
+          >
+            Save changes
           </button>
         </template>
-      </div>
-      <div class="fr">
-        <button
-          type="button"
-          class="btn sec"
-          onclick={handleCancel}
-          disabled={clean}
-        >
-          Cancel
-        </button>
-        <button
-          type="button"
-          class="btn"
-          onclick={handleSave}
-          disabled={cantSave}
-        >
-          Save changes
-        </button>
+        <template lwc:if={showPanelActions}>
+          <button type="button" class="btn sec" onclick={handlePanelCancel}>
+            Cancel
+          </button>
+          <button
+            type="button"
+            class="btn"
+            onclick={handlePanelSubmit}
+            disabled={panelSubmitDisabled}
+          >
+            {panelSubmitLabel}
+          </button>
+        </template>
       </div>
     </div>
   </aside>

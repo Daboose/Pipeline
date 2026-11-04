@@ -134,18 +134,79 @@ describe("c-pipeline-deal", () => {
       return el;
     }
     const button = (el, text) =>
-      [...el.shadowRoot.querySelectorAll(".foot .btn.nav")].find((b) =>
+      [...el.shadowRoot.querySelectorAll(".fhead .btn.nav")].find((b) =>
         b.textContent.trim().startsWith(text)
       );
 
     afterEach(() => jest.useRealTimers());
 
-    it("has the two buttons in the bottom bar for an opportunity, none for a ROSA deal", async () => {
+    it("has the two panel buttons in the top row for an opportunity, none for a ROSA deal, and none in the bottom row", async () => {
       const opp = await mount("opp");
       expect(button(opp, "Surgeon Usages")).toBeTruthy();
-      expect(button(opp, "My Case Bookings")).toBeTruthy();
+      expect(button(opp, "MyCase Bookings")).toBeTruthy();
+      expect(opp.shadowRoot.querySelectorAll(".foot .btn.nav").length).toBe(0);
       const rosa = await mount("rosa");
-      expect(rosa.shadowRoot.querySelectorAll(".foot .btn.nav").length).toBe(0);
+      expect(rosa.shadowRoot.querySelectorAll(".fhead .btn.nav").length).toBe(
+        0
+      );
+    });
+
+    it("keeps the bottom row for actions only: the deal's three buttons, nothing over a panel, the panel's own while editing", async () => {
+      jest.useFakeTimers();
+      const el = await mount();
+      const foot = () =>
+        [...el.shadowRoot.querySelectorAll(".foot .btn")].map((b) =>
+          b.textContent.trim()
+        );
+      expect(foot()).toEqual(["Open in Salesforce", "Cancel", "Save changes"]);
+      button(el, "MyCase Bookings").click();
+      jest.advanceTimersByTime(40);
+      await Promise.resolve();
+      expect(foot()).toEqual([]);
+      button(el, "Surgeon Usages").click();
+      jest.advanceTimersByTime(40);
+      await Promise.resolve();
+      expect(foot()).toEqual([]);
+      const usages = el.shadowRoot.querySelector("c-pipeline-usages");
+      usages.submit = jest.fn();
+      usages.cancel = jest.fn();
+      usages.dispatchEvent(
+        new CustomEvent("actionstate", {
+          detail: { kind: "edit", canSubmit: false, saving: false }
+        })
+      );
+      await Promise.resolve();
+      expect(foot()).toEqual(["Cancel", "Save changes"]);
+      const save = () =>
+        [...el.shadowRoot.querySelectorAll(".foot .btn")].find(
+          (b) => b.textContent.trim() !== "Cancel"
+        );
+      expect(save().disabled).toBe(true);
+      usages.dispatchEvent(
+        new CustomEvent("actionstate", {
+          detail: { kind: "edit", canSubmit: true, saving: false }
+        })
+      );
+      await Promise.resolve();
+      expect(save().disabled).toBe(false);
+      save().click();
+      expect(usages.submit).toHaveBeenCalledTimes(1);
+      usages.dispatchEvent(
+        new CustomEvent("actionstate", {
+          detail: { kind: "add", canSubmit: true, saving: false }
+        })
+      );
+      await Promise.resolve();
+      expect(foot()).toEqual(["Cancel", "Add usage"]);
+      el.shadowRoot.querySelector(".foot .btn.sec").click();
+      expect(usages.cancel).toHaveBeenCalledTimes(1);
+      usages.dispatchEvent(
+        new CustomEvent("actionstate", {
+          detail: { kind: "", canSubmit: false, saving: false }
+        })
+      );
+      await Promise.resolve();
+      expect(foot()).toEqual([]);
     });
 
     it("slides the usages panel in and out, and keeps the header and bottom bar", async () => {
@@ -186,7 +247,7 @@ describe("c-pipeline-deal", () => {
       button(el, "Surgeon Usages").click();
       jest.advanceTimersByTime(40);
       await Promise.resolve();
-      button(el, "My Case Bookings").click();
+      button(el, "MyCase Bookings").click();
       await Promise.resolve();
       expect(el.shadowRoot.querySelector("c-pipeline-usages")).toBeNull();
       expect(el.shadowRoot.querySelector("c-pipeline-bookings")).not.toBeNull();
@@ -199,7 +260,7 @@ describe("c-pipeline-deal", () => {
       expect(el.shadowRoot.querySelector(".layer")).toBeNull();
     });
 
-    it("shows what the bottom-bar buttons stand for as badges, and reads them again when usages change", async () => {
+    it("shows the surgery count on the MyCase Bookings button only, and reads it again when usages change", async () => {
       getBadges.mockResolvedValue({
         surgeonId: "001",
         hasUsages: true,
@@ -209,27 +270,27 @@ describe("c-pipeline-deal", () => {
       const el = await mount();
       await Promise.resolve();
       await Promise.resolve();
-      expect(button(el, "Surgeon Usages").textContent).toContain(
-        "4 months old"
+      expect(button(el, "Surgeon Usages").textContent.trim()).toBe(
+        "Surgeon Usages"
       );
-      expect(button(el, "My Case Bookings").textContent).toContain("38");
+      expect(button(el, "MyCase Bookings").textContent).toContain("38");
       getBadges.mockResolvedValue({
         surgeonId: "001",
         hasUsages: false,
-        booked: 38
+        booked: 39
       });
-      button(el, "My Case Bookings").click();
+      button(el, "Surgeon Usages").click();
       jest.useFakeTimers();
       jest.advanceTimersByTime(40);
       await Promise.resolve();
       el.shadowRoot
-        .querySelector("c-pipeline-bookings")
+        .querySelector("c-pipeline-usages")
         .dispatchEvent(new CustomEvent("usageschanged"));
       await Promise.resolve();
       await Promise.resolve();
       await Promise.resolve();
       expect(getBadges).toHaveBeenCalledTimes(2);
-      expect(button(el, "Surgeon Usages").textContent).toContain("none");
+      expect(button(el, "MyCase Bookings").textContent).toContain("39");
     });
 
     it("opens next time with no panel over the deal", async () => {

@@ -43,6 +43,7 @@ function errorText(e) {
 export default class PipelineUsages extends LightningElement {
   _recordId;
   _refreshKey = 0;
+  _actionSig;
   @api area = ""; // Hip, Knee, Shoulder or CMF: the deal's own area
   @api ownerName = "";
   @api canAsk = false; // a manager looking at someone else's deal may ask them to check
@@ -227,6 +228,49 @@ export default class PipelineUsages extends LightningElement {
   }
   get cantSave() {
     return !this.dirty || this.saving;
+  }
+
+  /**
+   * Inside the deal flyout (bare) the Save, Cancel and Add buttons are not here: the flyout's bottom row shows them (Robert,
+   * 2026-11-04). This tells it what to show, whenever that changes, and its Cancel and Save call cancel() and submit().
+   */
+  get showInlineActions() {
+    return !this.bare;
+  }
+  get actionState() {
+    const kind = this.adding ? "add" : this.editing ? "edit" : "";
+    return {
+      kind,
+      canSubmit:
+        kind === "add"
+          ? !this.cantAdd
+          : kind === "edit"
+            ? !this.cantSave
+            : false,
+      saving: this.saving
+    };
+  }
+  renderedCallback() {
+    const a = this.actionState;
+    const sig = `${a.kind}|${a.canSubmit}|${a.saving}`;
+    if (sig !== this._actionSig) {
+      this._actionSig = sig;
+      this.dispatchEvent(new CustomEvent("actionstate", { detail: a }));
+    }
+  }
+  /** Saves the lines being edited, or adds the usage being filled in (the flyout's Save changes / Add usage button). */
+  @api
+  submit() {
+    if (this.adding) {
+      if (!this.cantAdd) this.handleAddSave();
+    } else if (this.editing && !this.cantSave) {
+      this.handleSave();
+    }
+  }
+  /** Drops the edit or the new usage (the flyout's Cancel button). */
+  @api
+  cancel() {
+    this.resetEditing();
   }
 
   resetEditing() {

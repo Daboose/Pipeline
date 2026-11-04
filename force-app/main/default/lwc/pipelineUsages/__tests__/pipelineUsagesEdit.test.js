@@ -251,3 +251,91 @@ describe("c-pipeline-usages: edit, delete and add", () => {
     expect(el.shadowRoot.querySelectorAll("select.cell").length).toBe(2);
   });
 });
+
+describe("c-pipeline-usages: inside the deal flyout (bare)", () => {
+  afterEach(() => {
+    while (document.body.firstChild)
+      document.body.removeChild(document.body.firstChild);
+    jest.clearAllMocks();
+  });
+
+  function makeBare() {
+    const el = createElement("c-pipeline-usages", { is: PipelineUsages });
+    el.bare = true;
+    el.recordId = "a1";
+    const states = [];
+    el.addEventListener("actionstate", (e) => states.push(e.detail));
+    document.body.appendChild(el);
+    return { el, states };
+  }
+  const change = (el, key, value) => {
+    const n = el.shadowRoot.querySelector(`input.cell[data-key=${key}]`);
+    n.value = value;
+    n.dispatchEvent(new CustomEvent("change"));
+  };
+
+  it("has no Save, Cancel or Add buttons of its own while editing or adding", async () => {
+    getUsages.mockResolvedValue(data());
+    const { el } = makeBare();
+    await flush();
+    buttonText(el, "Edit usages").click();
+    await flush();
+    expect(buttonText(el, "Save changes")).toBeUndefined();
+    expect(buttonText(el, "Cancel")).toBeUndefined();
+    el.cancel();
+    await flush();
+    buttonText(el, "Add usage").click();
+    await flush();
+    expect(buttonText(el, "Add")).toBeUndefined();
+    expect(buttonText(el, "Cancel")).toBeUndefined();
+  });
+
+  it("tells the flyout what its bottom row should show, and saves and cancels when asked", async () => {
+    getUsages.mockResolvedValue(data());
+    saveUsage.mockResolvedValue();
+    const { el, states } = makeBare();
+    await flush();
+    expect(states[states.length - 1].kind).toBe("");
+    buttonText(el, "Edit usages").click();
+    await flush();
+    expect(states[states.length - 1]).toEqual({
+      kind: "edit",
+      canSubmit: false,
+      saving: false
+    });
+    el.submit(); // nothing changed yet: nothing is saved
+    await flush();
+    expect(saveUsage).not.toHaveBeenCalled();
+    change(el, "stems", "30");
+    await flush();
+    expect(states[states.length - 1].canSubmit).toBe(true);
+    el.submit();
+    await flush();
+    expect(saveUsage).toHaveBeenCalledTimes(1);
+    expect(states[states.length - 1].kind).toBe("");
+    buttonText(el, "Edit usages").click();
+    await flush();
+    change(el, "stems", "31");
+    await flush();
+    el.cancel();
+    await flush();
+    expect(states[states.length - 1].kind).toBe("");
+    expect(saveUsage).toHaveBeenCalledTimes(1);
+  });
+
+  it("reports adding, and cannot add until a hospital is chosen", async () => {
+    getUsages.mockResolvedValue(data());
+    const { el, states } = makeBare();
+    await flush();
+    buttonText(el, "Add usage").click();
+    await flush();
+    expect(states[states.length - 1]).toEqual({
+      kind: "add",
+      canSubmit: false,
+      saving: false
+    });
+    el.submit();
+    await flush();
+    expect(addUsage).not.toHaveBeenCalled();
+  });
+});

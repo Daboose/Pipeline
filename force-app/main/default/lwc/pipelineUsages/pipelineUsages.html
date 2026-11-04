@@ -53,17 +53,19 @@
         <template lwc:if={editing}>
           <span class="hint">Change a company or a number, then save.</span>
           <span class="sp"></span>
-          <button
-            type="button"
-            class="mini go"
-            onclick={handleSave}
-            disabled={cantSave}
-          >
-            Save changes
-          </button>
-          <button type="button" class="mini" onclick={handleCancelEdit}>
-            Cancel
-          </button>
+          <template lwc:if={showInlineActions}>
+            <button
+              type="button"
+              class="mini go"
+              onclick={handleSave}
+              disabled={cantSave}
+            >
+              Save changes
+            </button>
+            <button type="button" class="mini" onclick={handleCancelEdit}>
+              Cancel
+            </button>
+          </template>
         </template>
         <template lwc:else>
           <span class="sp"></span>
@@ -148,17 +150,19 @@
         <div class="arow">
           <span class="note">{addRecordTypeText}</span>
           <span class="sp"></span>
-          <button
-            type="button"
-            class="mini go"
-            onclick={handleAddSave}
-            disabled={cantAdd}
-          >
-            Add
-          </button>
-          <button type="button" class="mini" onclick={handleAddCancel}>
-            Cancel
-          </button>
+          <template lwc:if={showInlineActions}>
+            <button
+              type="button"
+              class="mini go"
+              onclick={handleAddSave}
+              disabled={cantAdd}
+            >
+              Add
+            </button>
+            <button type="button" class="mini" onclick={handleAddCancel}>
+              Cancel
+            </button>
+          </template>
         </div>
       </div>
 

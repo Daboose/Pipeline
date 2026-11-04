@@ -156,7 +156,8 @@ export default class PipelineDeal extends LightningElement {
   panelOn = false; // and slid into view
   panelTimer;
   usageTick = 0; // counts changes to the surgeon's usages (from either panel), so both panels and the button badges read again
-  badges; // what the two bottom-bar buttons show: { hasUsages, usagesNewest, booked }
+  badges; // what the MyCase Bookings button shows: { booked } (the usages' age is no longer shown)
+  usageAction = null; // what the Surgeon Usages panel wants in the bottom row: { kind: "" | "edit" | "add", canSubmit, saving }
   errors = [];
   savedMsg = false;
   saving = false;
@@ -174,9 +175,43 @@ export default class PipelineDeal extends LightningElement {
   get casesOpen() {
     return this.panelMounted && this.panel === "cases";
   }
-  /** The Open in Salesforce link is for the deal page; it would mislead beside the Usages or Case Bookings panel. */
-  get showOpenRecord() {
+  /**
+   * The bottom row holds only action buttons (Robert, 2026-11-04): over the deal itself, Open in Salesforce, Cancel and Save
+   * changes; while the Surgeon Usages panel is editing or adding, its Cancel and Save changes / Add usage; otherwise nothing.
+   */
+  get showDealActions() {
     return !this.panelMounted;
+  }
+  get showPanelActions() {
+    return (
+      this.panelMounted &&
+      this.panel === "usages" &&
+      !!this.usageAction &&
+      !!this.usageAction.kind
+    );
+  }
+  get panelSubmitLabel() {
+    return this.usageAction && this.usageAction.kind === "add"
+      ? "Add usage"
+      : "Save changes";
+  }
+  get panelSubmitDisabled() {
+    return (
+      !this.usageAction ||
+      !this.usageAction.canSubmit ||
+      this.usageAction.saving
+    );
+  }
+  handleActionState(event) {
+    this.usageAction = event.detail;
+  }
+  handlePanelCancel() {
+    const u = this.template.querySelector("c-pipeline-usages");
+    if (u) u.cancel();
+  }
+  handlePanelSubmit() {
+    const u = this.template.querySelector("c-pipeline-usages");
+    if (u) u.submit();
   }
   /** Goes up when the deal is saved or the usages change, so the panels read their data again. */
   get panelRefresh() {
@@ -185,9 +220,6 @@ export default class PipelineDeal extends LightningElement {
   handleUsagesChanged() {
     this.usageTick += 1;
     this.loadBadges();
-  }
-  handleOpenUsagesPanel() {
-    this.openPanel("usages");
   }
   loadBadges() {
     const id = this.recordId;
@@ -202,23 +234,6 @@ export default class PipelineDeal extends LightningElement {
       .catch(() => {
         // the badges are a convenience: without them the buttons just show no badge
       });
-  }
-  /** How long since the surgeon's usages last changed, as a badge: red with none, orange when two years old or more. */
-  get usagesBadge() {
-    const b = this.badges;
-    if (!b || !b.surgeonId) return null;
-    if (!b.hasUsages) return { text: "none", cls: "badge bad" };
-    const days = Math.floor(
-      (Date.now() - Date.parse(b.usagesNewest)) / 86400000
-    );
-    const old = days >= 730;
-    const text =
-      days < 60
-        ? `${days} ${days === 1 ? "day" : "days"} old`
-        : days < 730
-          ? `${Math.round(days / 30.4)} months old`
-          : `${Math.floor(days / 365.25)} years old`;
-    return { text, cls: old ? "badge w" : "badge" };
   }
   /** The surgeries in the last 12 months, as a badge. */
   get casesBadge() {
@@ -236,7 +251,7 @@ export default class PipelineDeal extends LightningElement {
     return this.panelOn && this.panel === "cases" ? "btn nav on" : "btn nav";
   }
   get panelTitle() {
-    return this.panel === "cases" ? "My case bookings" : "Surgeon usages";
+    return this.panel === "cases" ? "MyCase bookings" : "Surgeon usages";
   }
   get panelSubtitle() {
     return (this._deal && this._deal.hcp) || "";
@@ -244,6 +259,7 @@ export default class PipelineDeal extends LightningElement {
   /** Opens a panel (put on the page first, switched on a moment later so the slide runs), or swaps to it if another is open. */
   openPanel(kind) {
     clearTimeout(this.panelTimer);
+    this.usageAction = null;
     this.panel = kind;
     if (this.panelMounted && this.panelOn) return;
     this.panelMounted = true;
@@ -256,6 +272,7 @@ export default class PipelineDeal extends LightningElement {
   /** Closes the panel: switched off first, taken off the page once it has slid away. */
   closePanel() {
     if (!this.panelMounted) return;
+    this.usageAction = null;
     clearTimeout(this.panelTimer);
     this.panelOn = false;
     // eslint-disable-next-line @lwc/lwc/no-async-operation
@@ -266,6 +283,7 @@ export default class PipelineDeal extends LightningElement {
   }
   resetPanel() {
     clearTimeout(this.panelTimer);
+    this.usageAction = null;
     this.panelOn = false;
     this.panelMounted = false;
     this.panel = "";

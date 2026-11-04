@@ -344,11 +344,13 @@ input.in {
   border-color: var(--indigo);
   color: #fff;
 }
+/* the bottom row: action buttons only, and an empty row when a screen has none */
 .foot {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 10px;
+  min-height: 62px;
   padding: 12px 20px;
   border-top: 1px solid var(--line);
   background: var(--bg);
@@ -356,14 +358,16 @@ input.in {
   z-index: 3;
 }
 .fl2 {
-  justify-self: start;
+  display: flex;
 }
+/* the two panel buttons sit in the top row, beside the stage path */
 .fm {
+  flex: none;
   display: flex;
   gap: 10px;
+  margin-right: 8px;
 }
 .fr {
-  justify-self: end;
   display: flex;
   gap: 10px;
 }
@@ -453,7 +457,7 @@ input.in {
   padding: 16px 20px 24px;
 }
 
-/* the small badge on a bottom-bar button: how old the usages are, how many surgeries */
+/* the small badge on the MyCase Bookings button: how many surgeries */
 .badge {
   margin-left: 8px;
   font-size: 11px;

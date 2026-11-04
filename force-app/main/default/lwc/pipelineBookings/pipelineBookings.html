@@ -7,17 +7,6 @@
     </div>
 
     <template lwc:if={hasData}>
-      <div class="topchip" lwc:if={missingAll}>
-        <span class="pill bad"
-          >Usages are missing for this surgeon. Please create them now.</span
-        >
-      </div>
-      <div class="errs" lwc:if={hasErrors}>
-        <template for:each={errors} for:item="e">
-          <div key={e}>{e}</div>
-        </template>
-      </div>
-
       <div class="none" lwc:if={noBookings}>
         This surgeon has no surgeries with usage items in the last 12 months.
       </div>
@@ -28,20 +17,12 @@
           <span lwc:if={anySplit}><i class="sw primary"></i>Primary</span>
           <span lwc:if={anySplit}><i class="sw revision"></i>Revision</span>
           <span lwc:if={anyCmft}><i class="sw cmft"></i>CMFT</span>
-          <span lwc:if={anyUsageLine}
-            ><i class="sw dash"></i>What the usages say per month</span
-          >
           <span>* this month so far (lighter, not in the total)</span>
         </div>
 
         <div class="sects">
           <template for:each={sections} for:item="s">
             <section class="sect" key={s.key}>
-              <c-pipeline-usage-choices
-                lwc:if={s.recordTypeId}
-                record-type-id={s.recordTypeId}
-                onchoices={handleChoices}
-              ></c-pipeline-usage-choices>
               <div class="chead">
                 <h3>{s.name}</h3>
                 <span class="big">{s.booked}</span>
@@ -54,13 +35,29 @@
                   >cases in the last 12 months &middot; all one type: no primary
                   or revision split</span
                 >
-                <span class="att" lwc:if={s.hasPanel}
-                  ><b lwc:if={s.showAttentionNumber}>{s.attentionBold}</b
-                  >{s.attentionText}</span
+                <span class="sm" lwc:if={s.where}
+                  >&middot; <b>{s.where}</b></span
                 >
               </div>
 
               <div class={s.bodyCls}>
+                <div class="list" lwc:if={s.many}>
+                  <div class="lh">Hospitals ({s.hospitalCount})</div>
+                  <template for:each={s.list} for:item="h">
+                    <button
+                      key={h.key}
+                      type="button"
+                      class={h.cls}
+                      data-sec={s.key}
+                      data-key={h.key}
+                      onclick={handleHospital}
+                    >
+                      <span class="nm">{h.name}</span
+                      ><span class="st">{h.text}</span>
+                    </button>
+                  </template>
+                </div>
+
                 <div class="chartbox">
                   <div class="cb" data-sec={s.key}>
                     <svg
@@ -117,366 +114,9 @@
                           </text>
                         </g>
                       </template>
-                      <template lwc:if={s.chart.line}>
-                        <line
-                          class="ul"
-                          x1={s.chart.line.x1}
-                          x2={s.chart.line.x2}
-                          y1={s.chart.line.y}
-                          y2={s.chart.line.y}
-                        ></line>
-                        <template for:each={s.chart.line.words} for:item="w">
-                          <text
-                            class="ulab"
-                            key={w.key}
-                            x={s.chart.line.lx}
-                            y={w.y}
-                          >
-                            {w.text}
-                          </text>
-                        </template>
-                      </template>
                     </svg>
                   </div>
                 </div>
-
-                <template lwc:if={s.hasPanel}>
-                  <div class="list">
-                    <div class="lh">Hospitals ({s.list.length})</div>
-                    <template for:each={s.list} for:item="h">
-                      <button
-                        key={h.key}
-                        type="button"
-                        class={h.cls}
-                        data-sec={h.sec}
-                        data-row={h.row}
-                        onclick={handleHospital}
-                      >
-                        <span class="tx"
-                          ><span class="nm">{h.name}</span
-                          ><span class="st">{h.text}</span></span
-                        >
-                        <i class={h.markCls}></i>
-                      </button>
-                    </template>
-                  </div>
-
-                  <div class="detail">
-                    <div class="dh">
-                      <span class="hn">{s.panel.name}</span>
-                      <span class="bk">{s.panel.bookedText}</span>
-                    </div>
-
-                    <template lwc:if={s.panel.done}>
-                      <div class="donebox">
-                        <div class="ok">
-                          <i class="tick"></i><span>{s.panel.doneText}</span>
-                        </div>
-                        <div class="row">
-                          <button
-                            lwc:if={s.panel.hasNext}
-                            type="button"
-                            class="mini go"
-                            data-sec={s.panel.sec}
-                            data-row={s.panel.row}
-                            data-act="next"
-                            onclick={handleAct}
-                          >
-                            Next hospital
-                          </button>
-                          <span class="t" lwc:else
-                            >No more hospitals need attention.</span
-                          >
-                          <button
-                            type="button"
-                            class="mini"
-                            data-sec={s.panel.sec}
-                            data-row={s.panel.row}
-                            data-act="again"
-                            onclick={handleAct}
-                          >
-                            Look at this hospital again
-                          </button>
-                        </div>
-                      </div>
-                    </template>
-                    <template lwc:elseif={s.panel.noHospital}>
-                      <p class="msg">{s.panel.noHospitalText}</p>
-                    </template>
-                    <template lwc:else>
-                      <div class="found">
-                        <i class={s.panel.markCls}></i>
-                        <div>
-                          <template for:each={s.panel.found} for:item="f">
-                            <span key={f.k} class={f.cls}>{f.t}</span>
-                          </template>
-                        </div>
-                      </div>
-
-                      <template lwc:if={s.panel.readOnly}>
-                        <p class="msg">
-                          Your access does not allow changing usages here. The
-                          Surgeon Usages panel shows them.
-                        </p>
-                        <div class="row">
-                          <button
-                            type="button"
-                            class="mini"
-                            onclick={handleOpenUsages}
-                          >
-                            Open Surgeon Usages
-                          </button>
-                        </div>
-                      </template>
-                      <template lwc:else>
-                        <div class="lab">What you can do</div>
-                        <div class="rads">
-                          <template for:each={s.panel.choices} for:item="c">
-                            <div
-                              key={c.key}
-                              role="radio"
-                              aria-checked={c.on}
-                              tabindex="0"
-                              class={c.cls}
-                              data-sec={s.panel.sec}
-                              data-row={s.panel.row}
-                              data-c={c.key}
-                              onclick={handleChoice}
-                            >
-                              <div class="rtop">
-                                <i class="ring"></i>
-                                <span class="rt"
-                                  ><b>{c.title}</b><span>{c.desc}</span></span
-                                >
-                              </div>
-
-                              <div class="subs" lwc:if={c.showZb}>
-                                <span class="who">ZB</span>
-                                <template lwc:if={c.zbToggle}>
-                                  <button
-                                    type="button"
-                                    class={c.zbYesCls}
-                                    data-sec={s.panel.sec}
-                                    data-row={s.panel.row}
-                                    data-g="zbon"
-                                    data-s="yes"
-                                    onclick={handleSeg}
-                                  >
-                                    Add
-                                  </button>
-                                  <button
-                                    type="button"
-                                    class={c.zbNoCls}
-                                    data-sec={s.panel.sec}
-                                    data-row={s.panel.row}
-                                    data-g="zbon"
-                                    data-s="no"
-                                    onclick={handleSeg}
-                                  >
-                                    No
-                                  </button>
-                                </template>
-                                <template lwc:if={c.showZbBox}>
-                                  <span class="sg">Cases a year</span>
-                                  <input
-                                    class="num"
-                                    type="number"
-                                    min="0"
-                                    value={c.zbValue}
-                                    data-sec={s.panel.sec}
-                                    data-row={s.panel.row}
-                                    data-f="zb"
-                                    oninput={handleInput}
-                                  />
-                                  <span class="sg">{c.zbSuggest}</span>
-                                </template>
-                              </div>
-
-                              <div class="subs" lwc:if={c.showComp}>
-                                <template lwc:if={c.compMany}>
-                                  <select
-                                    class="sel"
-                                    data-sec={s.panel.sec}
-                                    data-row={s.panel.row}
-                                    data-f="compIndex"
-                                    onchange={handleSelect}
-                                  >
-                                    <template
-                                      for:each={c.compOptions}
-                                      for:item="o"
-                                    >
-                                      <option
-                                        key={o.value}
-                                        value={o.value}
-                                        selected={o.selected}
-                                      >
-                                        {o.label}
-                                      </option>
-                                    </template>
-                                  </select>
-                                </template>
-                                <span class="who" lwc:else>{c.compName}</span>
-                                <template for:each={c.compSegs} for:item="g">
-                                  <button
-                                    key={g.s}
-                                    type="button"
-                                    class={g.cls}
-                                    data-sec={s.panel.sec}
-                                    data-row={s.panel.row}
-                                    data-g="sub"
-                                    data-s={g.s}
-                                    onclick={handleSeg}
-                                  >
-                                    {g.label}
-                                  </button>
-                                </template>
-                                <template lwc:if={c.showCompNum}>
-                                  <span class="sg">Cases a year</span>
-                                  <input
-                                    class="num"
-                                    type="number"
-                                    min="0"
-                                    value={c.compValue}
-                                    data-sec={s.panel.sec}
-                                    data-row={s.panel.row}
-                                    data-f="cases"
-                                    oninput={handleInput}
-                                  />
-                                </template>
-                              </div>
-
-                              <div class="subs" lwc:if={c.showAdd}>
-                                <span class="who">Competitor</span>
-                                <button
-                                  type="button"
-                                  class={c.addNoCls}
-                                  data-sec={s.panel.sec}
-                                  data-row={s.panel.row}
-                                  data-g="compon"
-                                  data-s="no"
-                                  onclick={handleSeg}
-                                >
-                                  No
-                                </button>
-                                <button
-                                  type="button"
-                                  class={c.addYesCls}
-                                  data-sec={s.panel.sec}
-                                  data-row={s.panel.row}
-                                  data-g="compon"
-                                  data-s="yes"
-                                  disabled={c.noCompanies}
-                                  onclick={handleSeg}
-                                >
-                                  Add
-                                </button>
-                                <span class="sg" lwc:if={c.loadingCompanies}
-                                  >Reading the companies…</span
-                                >
-                                <template lwc:if={c.showAddFields}>
-                                  <select
-                                    class="sel"
-                                    data-sec={s.panel.sec}
-                                    data-row={s.panel.row}
-                                    data-f="compName"
-                                    onchange={handleSelect}
-                                  >
-                                    <template
-                                      for:each={c.addOptions}
-                                      for:item="o"
-                                    >
-                                      <option
-                                        key={o.value}
-                                        value={o.value}
-                                        selected={o.selected}
-                                      >
-                                        {o.value}
-                                      </option>
-                                    </template>
-                                  </select>
-                                  <input
-                                    class="num"
-                                    type="number"
-                                    min="0"
-                                    value={c.addValue}
-                                    data-sec={s.panel.sec}
-                                    data-row={s.panel.row}
-                                    data-f="compCases"
-                                    oninput={handleInput}
-                                  />
-                                  <span class="sg">a year</span>
-                                </template>
-                              </div>
-                            </div>
-                          </template>
-                        </div>
-
-                        <div class="res">
-                          <span class="l">Now</span><span>{s.panel.now}</span>
-                          <span class="arrow">&rarr;</span>
-                          <span class="l">After</span><b>{s.panel.after}</b>
-                        </div>
-
-                        <div class="dfoot" lwc:if={s.panel.confirm}>
-                          <span class="t"><b>{s.panel.confirmText}</b></span>
-                          <button
-                            type="button"
-                            class="mini go"
-                            data-sec={s.panel.sec}
-                            data-row={s.panel.row}
-                            data-act="yes"
-                            disabled={s.panel.saving}
-                            onclick={handleAct}
-                          >
-                            Confirm
-                          </button>
-                          <button
-                            type="button"
-                            class="mini"
-                            data-sec={s.panel.sec}
-                            data-row={s.panel.row}
-                            data-act="back"
-                            disabled={s.panel.saving}
-                            onclick={handleAct}
-                          >
-                            Go back
-                          </button>
-                        </div>
-                        <div class="dfoot" lwc:else>
-                          <button
-                            type="button"
-                            class="mini go"
-                            data-sec={s.panel.sec}
-                            data-row={s.panel.row}
-                            data-act={s.panel.reviewAct}
-                            disabled={s.panel.disabled}
-                            onclick={handleAct}
-                          >
-                            {s.panel.reviewLabel}
-                          </button>
-                          <span class="t">{s.panel.note}</span>
-                        </div>
-                      </template>
-                    </template>
-                  </div>
-                </template>
-                <template lwc:else>
-                  <div class="detail wide">
-                    <p class="msg" lwc:if={s.isShoulder}>{s.shoulderNote}</p>
-                    <p class="msg" lwc:else>
-                      No hospitals to show for this type.
-                    </p>
-                    <div class="row">
-                      <button
-                        type="button"
-                        class="mini"
-                        onclick={handleOpenUsages}
-                      >
-                        Open Surgeon Usages
-                      </button>
-                    </div>
-                  </div>
-                </template>
               </div>
             </section>
           </template>

@@ -1,0 +1,583 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Pipeline mockup: My Case Bookings, graphs only, version 2</title>
+    <style>
+      :root,
+      [data-theme="dark"] {
+        --page: #0e1623;
+        --panel: #1a2740;
+        --panel2: #20304f;
+        --line: #2f4163;
+        --edge: #5b6f93;
+        --text: #e8edf5;
+        --muted: #9fb0cc;
+        --pipe: #fdb827;
+        --head: #f472b6;
+        --headbg: rgba(244, 114, 182, 0.14);
+        --indigo: #6366f1;
+        --primary: #2f80ed;
+        --revision: #fb923c;
+        --grid: rgba(139, 155, 176, 0.25);
+      }
+      [data-theme="light"] {
+        --page: #e9edf4;
+        --panel: #ffffff;
+        --panel2: #eef2fa;
+        --line: #d5dcea;
+        --edge: #b3bfd6;
+        --text: #1b2640;
+        --muted: #5d6b85;
+        --pipe: #b7791f;
+        --head: #db2777;
+        --headbg: rgba(219, 39, 119, 0.09);
+        --indigo: #4f46e5;
+        --primary: #2563eb;
+        --revision: #ea580c;
+        --grid: rgba(93, 107, 133, 0.3);
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--page);
+        color: var(--text);
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-size: 16px;
+      }
+      button {
+        font-family: inherit;
+      }
+      .sfnav {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        height: 44px;
+        padding: 0 16px;
+        background: #0b1220;
+        border-bottom: 1px solid #2f4163;
+        color: #cdd6e6;
+        font-size: 14px;
+      }
+      .sfnav .app {
+        font-weight: 800;
+        letter-spacing: 0.14em;
+      }
+      .sfnav .app b {
+        color: #fdb827;
+      }
+      .sfnav .tab {
+        color: #9fb0cc;
+      }
+      .sfnav .tab.on {
+        color: #fff;
+        border-bottom: 2px solid #6366f1;
+        padding-bottom: 2px;
+      }
+      .sp {
+        flex: 1;
+      }
+      .pill {
+        border: 1px solid var(--indigo);
+        background: transparent;
+        color: var(--text);
+        border-radius: 999px;
+        padding: 7px 18px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+      }
+      .sfnav .pill {
+        color: #e8edf5;
+      }
+      .about {
+        margin: 14px 16px;
+        padding: 12px 18px;
+        background: var(--panel);
+        border: 1px solid var(--edge);
+        border-radius: 12px;
+        font-size: 15px;
+        line-height: 1.5;
+      }
+      .about summary {
+        cursor: pointer;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        color: var(--pipe);
+      }
+      .about ul {
+        margin: 4px 0 8px;
+        padding-left: 22px;
+      }
+      .tools {
+        display: flex;
+        gap: 10px;
+        padding: 0 16px 8px;
+      }
+
+      /* the flyout frame, one per picture */
+      .pic {
+        margin: 0 16px 28px;
+      }
+      .pic > h2 {
+        margin: 0 0 4px;
+        font-size: 14px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--head);
+      }
+      .pic > p {
+        margin: 0 0 10px;
+        color: var(--muted);
+        font-size: 15px;
+      }
+      .fly {
+        background: var(--panel);
+        border: 1px solid var(--edge);
+        border-radius: 14px;
+        overflow: hidden;
+      }
+      .fhead {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 12px 20px;
+        background: var(--headbg);
+        border-bottom: 1px solid var(--line);
+      }
+      .fhead h3 {
+        margin: 0;
+        font-size: 15px;
+        font-weight: 800;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--head);
+      }
+      .fhead .who {
+        color: var(--muted);
+      }
+      .fbody {
+        padding: 14px 20px 20px;
+      }
+      .range {
+        color: var(--muted);
+        margin: 0 0 10px;
+      }
+      .legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px 22px;
+        margin: 0 0 14px;
+        font-size: 14px;
+        color: var(--muted);
+      }
+      .sw {
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        border-radius: 3px;
+        margin-right: 7px;
+        vertical-align: -1px;
+      }
+      .sect {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        overflow: hidden;
+        margin-bottom: 16px;
+      }
+      .chead {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        gap: 4px 14px;
+        padding: 10px 18px;
+        border-bottom: 1px solid var(--line);
+      }
+      .chead h4 {
+        margin: 0;
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--pipe);
+      }
+      .big {
+        font-size: 26px;
+        font-weight: 800;
+      }
+      .sm {
+        color: var(--muted);
+        font-size: 15px;
+      }
+      .sm b {
+        color: var(--text);
+      }
+      .body {
+        display: grid;
+        height: 400px;
+      }
+      .body.one {
+        grid-template-columns: 1fr;
+      }
+      .body.two {
+        grid-template-columns: 28% 1fr;
+      }
+      .cbox {
+        position: relative;
+        min-width: 0;
+      }
+      .cb {
+        position: absolute;
+        inset: 8px 12px 4px;
+      }
+      svg {
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
+      svg text {
+        fill: var(--muted);
+        font-size: 13px;
+        font-family: inherit;
+      }
+      svg text.v {
+        fill: var(--text);
+        font-weight: 700;
+        paint-order: stroke;
+        stroke: var(--panel);
+        stroke-width: 4px;
+        stroke-linejoin: round;
+      }
+      svg .gl {
+        stroke: var(--grid);
+        stroke-width: 1;
+      }
+      .list {
+        border-right: 1px solid var(--line);
+        overflow: auto;
+      }
+      .lh {
+        padding: 12px 14px 8px;
+        font-size: 12px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        font-weight: 800;
+        color: var(--muted);
+      }
+      .hrow {
+        display: block;
+        width: 100%;
+        min-height: 60px;
+        padding: 8px 14px 8px 11px;
+        background: transparent;
+        border: 0;
+        border-top: 1px solid var(--line);
+        border-left: 3px solid transparent;
+        color: var(--text);
+        text-align: left;
+        cursor: pointer;
+      }
+      .hrow.on {
+        background: var(--panel2);
+        border-left-color: var(--indigo);
+      }
+      .hrow .nm {
+        display: block;
+        font-size: 15px;
+        font-weight: 700;
+      }
+      .hrow .st {
+        display: block;
+        font-size: 13px;
+        color: var(--muted);
+        margin-top: 2px;
+      }
+      table {
+        border-collapse: collapse;
+        margin: 4px 0 6px;
+        font-size: 15px;
+      }
+      th {
+        text-align: left;
+        font-size: 12px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--muted);
+        padding: 8px 22px 8px 18px;
+        border-bottom: 1px solid var(--line);
+      }
+      td {
+        padding: 9px 22px 9px 18px;
+        border-top: 1px solid var(--line);
+      }
+      td.n,
+      th.n {
+        text-align: right;
+      }
+      .tablewrap {
+        border-top: 1px solid var(--line);
+        padding: 0 0 0 0;
+      }
+
+      .chead .at {
+        color: var(--text);
+        font-weight: 700;
+      }
+      .hint {
+        color: var(--muted);
+        font-size: 14px;
+        margin: 0 0 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="sfnav">
+      <span class="app"><b>PIPE</b>LINE</span>
+      <span class="tab on">Pipeline</span>
+      <span class="tab">Opportunities</span>
+      <span class="tab">Accounts</span>
+      <span class="sp"></span>
+      <button class="pill" type="button">Full screen</button>
+    </div>
+
+    <details class="about" open>
+      <summary>ABOUT THIS MOCKUP</summary>
+      <p style="margin: 6px 0">
+        <b>My Case Bookings, graphs only</b>, with the choice you made: the
+        screen decides for each portfolio how many hospitals the surgeon
+        operates at. <b>One hospital:</b> no list, the graph takes the whole
+        width and the hospital is named in the heading line.
+        <b>More than one:</b> a hospital list on the left with
+        <b>All hospitals</b> on top (the default); click a hospital and the
+        graph shows only its cases. Invented data only (Dr Example Surgeon).
+      </p>
+      <b>Try it:</b>
+      <ul>
+        <li>
+          <b>Hip</b> starts with one hospital (Hollywood Private Hospital): no
+          list, the hospital is named in the line under the heading.
+        </li>
+        <li>
+          Press <b>Hip: add a second hospital</b> to see Hip change to the list
+          with All hospitals on top. Press it again to go back.
+        </li>
+        <li>
+          <b>Knee</b> has three hospitals: click through them, then click All
+          hospitals to go back.
+        </li>
+        <li>The Light mode button switches the colours.</li>
+      </ul>
+      <b>Not shown yet:</b> Shoulder and CMFT sections (the same, one per
+      portfolio the surgeon operates in), surgeries with no hospital recorded
+      (they would appear as a "No hospital recorded" entry, which with one real
+      hospital makes two entries and so brings the list), the rest of the deal
+      flyout.
+    </details>
+
+    <div class="tools">
+      <span class="sp"></span>
+      <button class="pill" type="button" id="hip2">
+        Hip: add a second hospital
+      </button>
+      <button class="pill" type="button" id="theme">Light mode</button>
+    </div>
+
+    <div class="pic">
+      <div class="fly">
+        <div class="fhead">
+          <h3>My Case Bookings</h3>
+          <span class="who">Dr Example Surgeon</span>
+        </div>
+        <div class="fbody">
+          <div class="range">
+            Surgeries from 1 Nov 2025 to 31 Oct 2026 (12 whole months), and this
+            month so far.
+          </div>
+          <div class="legend">
+            <span
+              ><i class="sw" style="background: var(--primary)"></i
+              >Primary</span
+            >
+            <span
+              ><i class="sw" style="background: var(--revision)"></i
+              >Revision</span
+            >
+            <span>* this month so far (lighter, not in the total)</span>
+          </div>
+          <div id="sects"></div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const MONTHS = [
+        "Nov",
+        "Dec",
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Oct",
+        "Nov*"
+      ];
+      const Z = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+      // 13 values: 12 whole months, then this month so far
+      const HIP_ONE = [
+        {
+          name: "Hollywood Private Hospital",
+          pm: [0, 1, 0, 0, 2, 1, 0, 0, 0, 0, 0, 0, 0],
+          rv: Z
+        }
+      ];
+      const HIP_TWO = [
+        {
+          name: "Hollywood Private Hospital",
+          pm: [0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+          rv: Z
+        },
+        {
+          name: "Sample Day Surgery",
+          pm: [0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0],
+          rv: Z
+        }
+      ];
+      const KNEE = [
+        {
+          name: "Example Private Hospital",
+          pm: [2, 1, 0, 4, 3, 1, 1, 2, 1, 2, 0, 1, 1],
+          rv: [1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0]
+        },
+        {
+          name: "Sample Day Surgery",
+          pm: [1, 0, 1, 2, 1, 1, 0, 1, 1, 1, 1, 0, 0],
+          rv: [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0]
+        },
+        {
+          name: "Harbour View Hospital",
+          pm: [1, 0, 0, 1, 1, 0, 1, 1, 0, 1, 0, 1, 0],
+          rv: Z
+        }
+      ];
+      const sum = (a) => a.slice(0, 12).reduce((x, y) => x + y, 0);
+      const add = (a, b) => a.map((v, i) => v + b[i]);
+      let hipTwo = false;
+      const sel = { Hip: -1, Knee: -1 };
+
+      function sections() {
+        return [
+          { name: "Hip", hosp: hipTwo ? HIP_TWO : HIP_ONE },
+          { name: "Knee", hosp: KNEE }
+        ];
+      }
+      const allOf = (hosp) => ({
+        name: "All hospitals",
+        pm: hosp.map((h) => h.pm).reduce(add),
+        rv: hosp.map((h) => h.rv).reduce(add)
+      });
+
+      function draw(el, d) {
+        const W = el.clientWidth,
+          H = el.clientHeight;
+        const L = 34,
+          R = 6,
+          T = 22,
+          B = 26;
+        const n = 13,
+          slot = (W - L - R) / n,
+          bw = Math.min(slot * 0.62, 44);
+        const tot = d.pm.map((v, i) => v + d.rv[i]);
+        const top = Math.max(4, Math.ceil(Math.max(...tot) / 2) * 2);
+        const y = (v) => T + (H - T - B) * (1 - v / top);
+        let s = `<svg viewBox="0 0 ${W} ${H}">`;
+        for (let g = 0; g <= top; g += top > 10 ? 4 : 2) {
+          s += `<line class="gl" x1="${L}" x2="${W - R}" y1="${y(g)}" y2="${y(g)}"/>`;
+          s += `<text x="${L - 6}" y="${y(g) + 4}" text-anchor="end">${g}</text>`;
+        }
+        for (let i = 0; i < n; i++) {
+          const cx = L + slot * i + slot / 2,
+            op = i === 12 ? 0.5 : 1;
+          const hp = (H - T - B) * (d.pm[i] / top),
+            hr = (H - T - B) * (d.rv[i] / top);
+          const base = y(0);
+          if (d.pm[i])
+            s += `<rect x="${cx - bw / 2}" y="${base - hp}" width="${bw}" height="${hp}" rx="3" fill="var(--primary)" opacity="${op}"><title>${MONTHS[i]}: ${d.pm[i]} primary</title></rect>`;
+          if (d.rv[i])
+            s += `<rect x="${cx - bw / 2}" y="${base - hp - hr}" width="${bw}" height="${hr}" rx="3" fill="var(--revision)" opacity="${op}"><title>${MONTHS[i]}: ${d.rv[i]} revision</title></rect>`;
+          if (tot[i])
+            s += `<text class="v" x="${cx}" y="${base - hp - hr - 5}" text-anchor="middle" opacity="${op}">${tot[i]}</text>`;
+          s += `<text x="${cx}" y="${H - 6}" text-anchor="middle">${MONTHS[i]}</text>`;
+        }
+        el.innerHTML = s + "</svg>";
+      }
+
+      function render() {
+        const out = document.getElementById("sects");
+        out.innerHTML = "";
+        sections().forEach((sec) => {
+          const many = sec.hosp.length > 1;
+          if (!many) sel[sec.name] = -1;
+          const cur = sel[sec.name];
+          const d = !many
+            ? sec.hosp[0]
+            : cur < 0
+              ? allOf(sec.hosp)
+              : sec.hosp[cur];
+          const p = sum(d.pm),
+            r = sum(d.rv);
+          const where = !many
+            ? `<span class="sm">&middot; all at <b class="at">${d.name}</b></span>`
+            : cur < 0
+              ? ""
+              : `<span class="sm">&middot; <b class="at">${d.name}</b> only</span>`;
+          const row = (i, nm, o) =>
+            `<button type="button" class="hrow${cur === i ? " on" : ""}" data-s="${sec.name}" data-i="${i}"><span class="nm">${nm}</span><span class="st">${sum(o.pm) + sum(o.rv)} cases &middot; ${sum(o.pm)} primary, ${sum(o.rv)} revision</span></button>`;
+          const el = document.createElement("div");
+          el.className = "sect";
+          el.innerHTML =
+            `<div class="chead"><h4>${sec.name.toUpperCase()}</h4><span class="big">${p + r}</span>` +
+            `<span class="sm">cases in the last 12 months &middot; Primary <b>${p}</b> &middot; Revision <b>${r}</b></span>${where}</div>` +
+            `<div class="body ${many ? "two" : "one"}" style="height:${many ? 400 : 320}px">` +
+            (many
+              ? `<div class="list"><div class="lh">Hospitals (${sec.hosp.length})</div>${row(-1, "All hospitals", allOf(sec.hosp))}${sec.hosp.map((h, i) => row(i, h.name, h)).join("")}</div>`
+              : "") +
+            `<div class="cbox"><div class="cb"></div></div></div>`;
+          out.appendChild(el);
+          draw(el.querySelector(".cb"), d);
+          el.querySelectorAll(".hrow").forEach(
+            (b) =>
+              (b.onclick = () => {
+                sel[b.dataset.s] = Number(b.dataset.i);
+                render();
+              })
+          );
+        });
+      }
+      render();
+      window.addEventListener("resize", render);
+      document.getElementById("hip2").onclick = (e) => {
+        hipTwo = !hipTwo;
+        e.target.textContent = hipTwo
+          ? "Hip: back to one hospital"
+          : "Hip: add a second hospital";
+        render();
+      };
+      document.getElementById("theme").onclick = (e) => {
+        const light = document.documentElement.dataset.theme !== "light";
+        document.documentElement.dataset.theme = light ? "light" : "dark";
+        e.target.textContent = light ? "Dark mode" : "Light mode";
+      };
+    </script>
+  </body>
+</html>
