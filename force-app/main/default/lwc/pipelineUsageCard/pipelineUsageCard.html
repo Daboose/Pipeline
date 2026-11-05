@@ -1,0 +1,452 @@
+<template>
+  <div class={busyCls}>
+    <template for:each={neededRts} for:item="rt">
+      <c-pipeline-usage-choices
+        key={rt.id}
+        record-type-id={rt.id}
+        onchoices={handleChoices}
+      ></c-pipeline-usage-choices>
+    </template>
+
+    <div class="head">
+      <h2>{heading}</h2>
+      <span class="sp"></span>
+      <template lwc:if={isHospital}>
+        <span class="switch" lwc:if={showSwitch}>
+          <button
+            type="button"
+            data-m="mc"
+            class={mcBtnCls}
+            onclick={handleMode}
+          >
+            MyCase bookings, last 12 months
+          </button>
+          <button
+            type="button"
+            data-m="us"
+            class={usBtnCls}
+            onclick={handleMode}
+          >
+            Usage records, cases per year
+          </button>
+        </span>
+      </template>
+    </div>
+
+    <template lwc:if={loading}>
+      <div class="empty">Loading…</div>
+    </template>
+    <template lwc:if={error}>
+      <div class="sec"><div class="note bad">{error}</div></div>
+    </template>
+
+    <!-- ============ a surgeon (person account) ============ -->
+    <template lwc:if={isPerson}>
+      <div class="sec">
+        <h3>
+          Rating by portfolio <span class="sp"></span
+          ><span class="tag">stored on the account</span>
+        </h3>
+        <div class="ratings">
+          <template for:each={plates} for:item="p">
+            <div key={p.key} class={p.cls} role="img" aria-label={p.label}>
+              <span class="screw l"></span><span class="screw r"></span>
+              <div class="area">{p.area}</div>
+              <div class="coin">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path
+                    d="M12 2l3 6.8 7.4.7-5.6 4.9 1.7 7.3L12 17.9 5.5 21.7l1.7-7.3L1.6 9.5l7.4-.7z"
+                  ></path>
+                </svg>
+              </div>
+              <div class="rank">{p.rank}</div>
+              <div class="stars">{p.stars}</div>
+            </div>
+          </template>
+        </div>
+        <div class={ratingNote.cls}>
+          <b lwc:if={ratingNote.lead}>{ratingNote.lead}</b>{ratingNote.text}
+        </div>
+      </div>
+
+      <div class="sec">
+        <h3>
+          What this surgeon uses <span class="sp"></span>
+          <button
+            lwc:if={canAdd}
+            class="btn"
+            type="button"
+            onclick={handleAddToggle}
+          >
+            {addToggleLabel}
+          </button>
+        </h3>
+
+        <div class={foldCls} lwc:if={canAdd}>
+          <div class="in">
+            <div class="addbox">
+              <div class="addgrid">
+                <div class="fld">
+                  <label>Hospital</label>
+                  <template lwc:if={hasHospital}>
+                    <span class="chosen"
+                      >{hospitalName}
+                      <button
+                        class="xcirc"
+                        type="button"
+                        aria-label="Remove the hospital"
+                        onclick={handleHospitalClear}
+                      ></button
+                    ></span>
+                  </template>
+                  <template lwc:else>
+                    <span class={sboxCls}>
+                      <input
+                        type="text"
+                        placeholder="Search hospitals"
+                        autocomplete="off"
+                        value={search}
+                        oninput={handleSearch}
+                      />
+                      <button
+                        class="xcirc sclear"
+                        type="button"
+                        aria-label="Clear the search"
+                        onclick={handleSearchClear}
+                      ></button>
+                      <div class="pick" lwc:if={showHits}>
+                        <template for:each={hits} for:item="h">
+                          <div
+                            key={h.id}
+                            class="opt"
+                            data-id={h.id}
+                            data-name={h.name}
+                            onclick={handlePick}
+                          >
+                            {h.name}<small>{h.sub}</small>
+                          </div>
+                        </template>
+                        <div class="opt none" lwc:if={noHits}>
+                          No hospital found
+                        </div>
+                      </div>
+                    </span>
+                  </template>
+                </div>
+                <div class="fld">
+                  <label>Portfolio</label>
+                  <select class="sel" onchange={handleAddPortfolio}>
+                    <template for:each={portfolioChoices} for:item="o">
+                      <option
+                        key={o.value}
+                        value={o.value}
+                        selected={o.selected}
+                      >
+                        {o.label}
+                      </option>
+                    </template>
+                  </select>
+                </div>
+                <div class="fld">
+                  <label>Product</label>
+                  <select class="sel" onchange={handleAddProduct}>
+                    <template for:each={addProducts} for:item="o">
+                      <option
+                        key={o.value}
+                        value={o.value}
+                        selected={o.selected}
+                      >
+                        {o.label}
+                      </option>
+                    </template>
+                  </select>
+                </div>
+                <div class="fld">
+                  <label>Company</label>
+                  <select class="sel" onchange={handleAddCompany}>
+                    <template for:each={addCompanies} for:item="o">
+                      <option
+                        key={o.value}
+                        value={o.value}
+                        selected={o.selected}
+                      >
+                        {o.label}
+                      </option>
+                    </template>
+                  </select>
+                </div>
+                <div class="fld">
+                  <label>Cases per year</label>
+                  <input
+                    class="inp"
+                    type="number"
+                    min="0"
+                    placeholder="0"
+                    value={addCases}
+                    onchange={handleAddCases}
+                  />
+                </div>
+              </div>
+              <div class="note bad" lwc:if={addMsg}>{addMsg}</div>
+              <div class="addfoot">
+                <button class="btn" type="button" onclick={handleAddDo}>
+                  Add usage
+                </button>
+                <button
+                  class="btn sec2"
+                  type="button"
+                  onclick={handleAddToggle}
+                >
+                  Cancel
+                </button>
+                <span class="foot"
+                  >One usage per surgeon, hospital, portfolio and company.</span
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class={rowMsgCls} lwc:if={rowMsg}>{rowMsg}</div>
+
+        <template lwc:if={noLines}>
+          <div class="empty">No usages recorded for this surgeon yet.</div>
+        </template>
+        <template lwc:else>
+          <table>
+            <thead>
+              <tr>
+                <th>Portfolio</th>
+                <th>Product</th>
+                <th>Company</th>
+                <th class="num">Cases per year</th>
+                <th class="act" lwc:if={canEdit}></th>
+              </tr>
+            </thead>
+            <tbody>
+              <template for:each={groups} for:item="g">
+                <tr key={g.hospital} class="hosp">
+                  <td colspan={colCount}>{g.hospital}</td>
+                </tr>
+                <template for:each={g.rows} for:item="r">
+                  <tr key={r.k} class={r.cls}>
+                    <template lwc:if={r.editing}>
+                      <td>{r.portfolio}</td>
+                      <td>{r.label}</td>
+                      <td>
+                        <select class="sel" onchange={handleEditCompany}>
+                          <template for:each={r.options} for:item="o">
+                            <option
+                              key={o.value}
+                              value={o.value}
+                              selected={o.selected}
+                            >
+                              {o.label}
+                            </option>
+                          </template>
+                        </select>
+                      </td>
+                      <td class="num">
+                        <input
+                          class="inp"
+                          type="number"
+                          min="0"
+                          value={r.casesValue}
+                          onchange={handleEditCases}
+                        />
+                      </td>
+                      <td class="act">
+                        <button
+                          class="btn"
+                          type="button"
+                          data-usage={r.usageId}
+                          data-key={r.lineKey}
+                          onclick={handleEditSave}
+                        >
+                          Save
+                        </button>
+                        <button
+                          class="btn sec2"
+                          type="button"
+                          onclick={handleEditCancel}
+                        >
+                          Cancel
+                        </button>
+                      </td>
+                    </template>
+                    <template lwc:elseif={r.deleting}>
+                      <td colspan={r.delSpan}>
+                        <b>{r.delText}</b> This takes it off the surgeon.
+                      </td>
+                      <td class="act">
+                        <button
+                          class="btn danger"
+                          type="button"
+                          data-usage={r.usageId}
+                          data-key={r.lineKey}
+                          onclick={handleDeleteYes}
+                        >
+                          Take off
+                        </button>
+                        <button
+                          class="btn sec2"
+                          type="button"
+                          onclick={handleDeleteNo}
+                        >
+                          Keep
+                        </button>
+                      </td>
+                    </template>
+                    <template lwc:else>
+                      <td>{r.portfolio}</td>
+                      <td>{r.label}</td>
+                      <td class={r.companyCls}>{r.company}</td>
+                      <td class="num">{r.cases}</td>
+                      <td class="act" lwc:if={canEdit}>
+                        <button
+                          class="iconbtn"
+                          type="button"
+                          data-k={r.k}
+                          onclick={handleEdit}
+                        >
+                          {r.actionLabel}
+                        </button>
+                        <button
+                          lwc:if={canDelete}
+                          class="iconbtn del"
+                          type="button"
+                          data-k={r.k}
+                          onclick={handleDelete}
+                        >
+                          Delete
+                        </button>
+                      </td>
+                    </template>
+                  </tr>
+                </template>
+              </template>
+            </tbody>
+          </table>
+        </template>
+      </div>
+
+      <div class="sec" lwc:if={canMyCase}>
+        <h3>
+          MyCase bookings, last 12 months <span class="sp"></span
+          ><span class="tag">for information only</span>
+        </h3>
+        <template lwc:if={noBookings}>
+          <div class="empty">
+            No MyCase bookings for this surgeon in the last 12 months.
+          </div>
+        </template>
+        <template lwc:else>
+          <table>
+            <thead>
+              <tr>
+                <th>Surgery type</th>
+                <th class="num">Primary</th>
+                <th class="num">Revision</th>
+                <th class="num">Total</th>
+                <th class="num">Latest booking</th>
+              </tr>
+            </thead>
+            <tbody>
+              <template for:each={bookingRows} for:item="b">
+                <tr key={b.type}>
+                  <td>{b.type}</td>
+                  <template lwc:if={b.none}>
+                    <td class="num dash">–</td>
+                    <td class="num dash">–</td>
+                    <td class="num dash">–</td>
+                    <td class="num dash">–</td>
+                  </template>
+                  <template lwc:else>
+                    <td class="num">{b.primary}</td>
+                    <td class="num">{b.revision}</td>
+                    <td class="num"><b>{b.total}</b></td>
+                    <td class="num">{b.latest}</td>
+                  </template>
+                </tr>
+              </template>
+              <tr class="total">
+                <td>All types</td>
+                <td class="num">{bookingTotals.primary}</td>
+                <td class="num">{bookingTotals.revision}</td>
+                <td class="num">{bookingTotals.total}</td>
+                <td class="num"></td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="foot">
+            Surgeries booked in MyCase with usage items, past dates only. Shown
+            so you can see what this surgeon is doing now; nothing here can be
+            changed.
+          </div>
+        </template>
+      </div>
+    </template>
+
+    <!-- ============ a hospital (business account) ============ -->
+    <template lwc:if={isHospital}>
+      <div class="sec">
+        <template lwc:if={noSurgeons}>
+          <div class="empty">
+            No surgeons to show for this hospital in this view.
+          </div>
+        </template>
+        <template lwc:else>
+          <table>
+            <thead>
+              <template lwc:if={splitView}>
+                <tr>
+                  <th rowspan="2" class="bottom">Surgeon</th>
+                  <template for:each={splitHeads} for:item="h">
+                    <th key={h.t} class="num grp" colspan="2">{h.t}</th>
+                  </template>
+                </tr>
+                <tr>
+                  <template for:each={splitSubs} for:item="h">
+                    <th key={h.k} class={h.cls}>{h.t}</th>
+                  </template>
+                </tr>
+              </template>
+              <template lwc:else>
+                <tr>
+                  <th>Surgeon</th>
+                  <template for:each={typeHeads} for:item="h">
+                    <th key={h.t} class="num">{h.t}</th>
+                  </template>
+                  <th class="num">Total</th>
+                </tr>
+              </template>
+            </thead>
+            <tbody>
+              <template for:each={hospitalRows} for:item="r">
+                <tr key={r.id}>
+                  <td>
+                    <a class="lnk" data-id={r.id} onclick={handleGo}
+                      >{r.name}</a
+                    >
+                  </td>
+                  <template for:each={r.cells} for:item="c">
+                    <td key={c.k} class={c.cls}>{c.v}</td>
+                  </template>
+                </tr>
+              </template>
+              <tr class="total">
+                <td>All surgeons</td>
+                <template for:each={hospitalTotals} for:item="c">
+                  <td key={c.k} class={c.cls}>{c.v}</td>
+                </template>
+              </tr>
+            </tbody>
+          </table>
+          <div class="foot">{hospitalFoot}</div>
+        </template>
+      </div>
+    </template>
+
+    <div class="wait" lwc:if={busy}><span>Please wait…</span></div>
+  </div>
+</template>

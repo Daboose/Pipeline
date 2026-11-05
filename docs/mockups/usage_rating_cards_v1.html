@@ -1,0 +1,766 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Usage rating cards (metal): style page, version 1</title>
+    <style>
+      :root {
+        --page: #f3f3f3;
+        --card: #ffffff;
+        --line: #dddbda;
+        --text: #181818;
+        --muted: #5c5c5c;
+        --blue: #0176d3;
+        --nav: #032d60;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--page);
+        color: var(--text);
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-size: 16px;
+      }
+      .sfnav {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        height: 44px;
+        padding: 0 16px;
+        background: var(--nav);
+        color: #dbe6f5;
+        font-size: 14px;
+      }
+      .sfnav .app {
+        font-weight: 700;
+        color: #fff;
+      }
+      .sfnav .tab {
+        opacity: 0.8;
+      }
+      .sfnav .tab.on {
+        opacity: 1;
+        border-bottom: 3px solid #fff;
+        padding: 12px 0 9px;
+      }
+      .sfnav .sp {
+        flex: 1;
+      }
+      .wrap {
+        max-width: 1180px;
+        margin: 0 auto;
+        padding: 18px 20px 60px;
+      }
+      .about {
+        background: #fff;
+        border: 1px solid var(--line);
+        border-left: 4px solid var(--blue);
+        border-radius: 8px;
+        padding: 10px 16px;
+        margin-bottom: 18px;
+      }
+      .about summary {
+        font-weight: 700;
+        cursor: pointer;
+      }
+      .about ul {
+        margin: 8px 0;
+        padding-left: 22px;
+      }
+      .about p {
+        margin: 8px 0;
+      }
+      .ctl {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 22px;
+        align-items: center;
+        margin: 0 0 16px;
+      }
+      .ctl .grp {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .ctl .grp > span {
+        font-weight: 700;
+        color: var(--muted);
+        font-size: 14px;
+      }
+      .seg {
+        display: inline-flex;
+        border: 1px solid #c9c7c5;
+        border-radius: 999px;
+        overflow: hidden;
+        background: #fff;
+      }
+      .seg button {
+        border: 0;
+        background: transparent;
+        padding: 7px 16px;
+        font: inherit;
+        font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
+        color: #444;
+      }
+      .seg button.on {
+        background: var(--blue);
+        color: #fff;
+      }
+      h2 {
+        font-size: 18px;
+        margin: 26px 0 6px;
+      }
+      p.lead {
+        margin: 0 0 12px;
+        color: var(--muted);
+        font-size: 15px;
+        max-width: 80ch;
+      }
+
+      /* ================= the four metals, sampled from the sheet ================= */
+      .m-PLATINUM {
+        --sheet: conic-gradient(
+          from 0deg at 50% 52%,
+          #bdb49c,
+          #e2d9be 20deg,
+          #b3a88f 40deg,
+          #9f947b 60deg,
+          #aba089 80deg,
+          #a59a82 100deg,
+          #897d64 120deg,
+          #988c75 140deg,
+          #beb49f 160deg,
+          #ada28d 180deg,
+          #968b74 200deg,
+          #afa68d 220deg,
+          #c7bea3 240deg,
+          #796e58 260deg,
+          #766853 280deg,
+          #b5aa93 300deg,
+          #a89d84 320deg,
+          #978b75 340deg,
+          #bdb49c 360deg
+        );
+        --hi: #f4efe0;
+        --mid: #b3a88f;
+        --lo: #6d6250;
+        --ink: #3a3326;
+        --glow: rgba(244, 239, 224, 0.9);
+      }
+      .m-GOLD {
+        --sheet: conic-gradient(
+          from 0deg at 50% 52%,
+          #dfc16e,
+          #fce68b 20deg,
+          #dcb856 40deg,
+          #cea441 60deg,
+          #e0b75e 80deg,
+          #d6ae56 100deg,
+          #a37821 120deg,
+          #b78b31 140deg,
+          #edc35c 160deg,
+          #d5ab4b 180deg,
+          #ba9137 200deg,
+          #d3af4d 220deg,
+          #e5cc73 240deg,
+          #ab8327 260deg,
+          #af8629 280deg,
+          #e6be57 300deg,
+          #ddb457 320deg,
+          #c19848 340deg,
+          #dfc16e 360deg
+        );
+        --hi: #fff1b0;
+        --mid: #d6ae56;
+        --lo: #8a6513;
+        --ink: #4a3406;
+        --glow: rgba(255, 241, 176, 0.95);
+      }
+      .m-SILVER {
+        --sheet: conic-gradient(
+          from 0deg at 50% 52%,
+          #a3a7b1,
+          #c8cdd7 20deg,
+          #9599a2 40deg,
+          #808591 60deg,
+          #868a93 80deg,
+          #818691 100deg,
+          #676c77 120deg,
+          #777e89 140deg,
+          #a1a7b2 160deg,
+          #9096a0 180deg,
+          #7f858f 200deg,
+          #9aa0aa 220deg,
+          #a8aeb7 240deg,
+          #686c74 260deg,
+          #6c707a 280deg,
+          #9a9da7 300deg,
+          #969ba5 320deg,
+          #7e838d 340deg,
+          #a3a7b1 360deg
+        );
+        --hi: #e6eaf2;
+        --mid: #9599a2;
+        --lo: #565b66;
+        --ink: #23272f;
+        --glow: rgba(230, 234, 242, 0.95);
+      }
+      .m-BRONZE {
+        --sheet: conic-gradient(
+          from 0deg at 50% 52%,
+          #bc7951,
+          #e39361 20deg,
+          #ae6946 40deg,
+          #a46a47 60deg,
+          #ab6d4a 80deg,
+          #a66b48 100deg,
+          #8b5839 120deg,
+          #996240 140deg,
+          #be7f56 160deg,
+          #ad714c 180deg,
+          #9a6142 200deg,
+          #b67851 220deg,
+          #c4794f 240deg,
+          #7f4e32 260deg,
+          #855335 280deg,
+          #b87952 300deg,
+          #b2754f 320deg,
+          #9b6242 340deg,
+          #bc7951 360deg
+        );
+        --hi: #f3b58c;
+        --mid: #ad714c;
+        --lo: #6e4128;
+        --ink: #3d1f0e;
+        --glow: rgba(243, 181, 140, 0.95);
+      }
+      .m-NONE {
+        --sheet: linear-gradient(#eceae8, #e2dfdc);
+        --hi: #f6f5f4;
+        --mid: #cfccc9;
+        --lo: #9a9794;
+        --ink: #6d6a67;
+        --glow: rgba(255, 255, 255, 0);
+      }
+
+      /* ================= STYLE 1: the metal plate ================= */
+      .plate {
+        position: relative;
+        border-radius: 14px;
+        padding: 16px 14px 14px;
+        min-height: 176px;
+        color: var(--ink);
+        overflow: hidden;
+        background:
+          repeating-radial-gradient(
+            circle at 50% 52%,
+            rgba(255, 255, 255, 0.07) 0 1px,
+            rgba(0, 0, 0, 0.06) 1px 2px
+          ),
+          var(--sheet);
+        box-shadow:
+          inset 0 2px 1px rgba(255, 255, 255, 0.75),
+          inset 0 -3px 3px rgba(0, 0, 0, 0.3),
+          inset 0 0 0 1px rgba(0, 0, 0, 0.25),
+          0 6px 14px rgba(40, 30, 10, 0.28);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+      .plate .screw {
+        position: absolute;
+        top: 9px;
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 35% 30%, var(--hi), var(--lo));
+        box-shadow: 0 1px 1px rgba(0, 0, 0, 0.4);
+      }
+      .plate .screw.l {
+        left: 10px;
+      }
+      .plate .screw.r {
+        right: 10px;
+      }
+      .plate .area {
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        margin-top: 2px;
+        text-shadow: 0 1px 0 rgba(255, 255, 255, 0.55);
+      }
+      .plate .coin {
+        width: 64px;
+        height: 64px;
+        margin: 10px 0 8px;
+        border-radius: 50%;
+        background: var(--sheet);
+        box-shadow:
+          inset 0 3px 3px rgba(255, 255, 255, 0.7),
+          inset 0 -4px 5px rgba(0, 0, 0, 0.35),
+          0 0 0 3px rgba(0, 0, 0, 0.28),
+          0 0 0 5px var(--hi),
+          0 4px 8px rgba(0, 0, 0, 0.35);
+        display: grid;
+        place-items: center;
+      }
+      .plate .coin svg {
+        width: 38px;
+        height: 38px;
+        filter: drop-shadow(0 1px 0 rgba(255, 255, 255, 0.6))
+          drop-shadow(0 -1px 0 rgba(0, 0, 0, 0.35));
+      }
+      .plate .rank {
+        font-size: 22px;
+        font-weight: 900;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        text-shadow:
+          0 1px 0 rgba(255, 255, 255, 0.65),
+          0 -1px 0 rgba(0, 0, 0, 0.25);
+      }
+      .plate .stars {
+        margin-top: 4px;
+        letter-spacing: 3px;
+        font-size: 14px;
+        text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);
+      }
+
+      /* ================= STYLE 2: dark card, metal rim (like the black cards in the artwork) ================= */
+      .dark {
+        position: relative;
+        border-radius: 14px;
+        padding: 3px;
+        min-height: 176px;
+        overflow: hidden;
+        background: var(--sheet);
+        box-shadow:
+          0 0 0 1px rgba(0, 0, 0, 0.5),
+          0 6px 14px rgba(20, 20, 30, 0.35);
+      }
+      .dark .in {
+        height: 100%;
+        min-height: 170px;
+        border-radius: 11px;
+        padding: 14px 12px 12px;
+        background: radial-gradient(
+          ellipse at 50% 28%,
+          #3b3d43 0%,
+          #26272b 55%,
+          #1a1b1e 100%
+        );
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+      }
+      .dark .area {
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: #b9bcc4;
+      }
+      .dark .coin {
+        position: relative;
+        width: 66px;
+        height: 66px;
+        margin: 10px 0 8px;
+        border-radius: 50%;
+        padding: 3px;
+        background: var(--sheet);
+        box-shadow: 0 0 14px -2px var(--mid);
+      }
+      .dark .coin .face {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        background: radial-gradient(circle at 50% 40%, #2c2d31, #121316);
+        display: grid;
+        place-items: center;
+      }
+      .dark .coin svg {
+        width: 36px;
+        height: 36px;
+      }
+      .dark .rank {
+        font-size: 22px;
+        font-weight: 900;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        background: var(--sheet);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        filter: brightness(1.25) saturate(1.1);
+      }
+      .dark .stars {
+        margin-top: 4px;
+        letter-spacing: 3px;
+        font-size: 14px;
+        color: var(--hi);
+      }
+      .dark .rule {
+        margin-top: auto;
+        width: 70%;
+        height: 5px;
+        border-top: 2px solid var(--mid);
+        border-bottom: 2px solid var(--mid);
+        opacity: 0.9;
+      }
+
+      /* the star shape: metal fill from the same sheet */
+      .starfill {
+        fill: url(#none);
+      }
+
+      /* ================= glamour: a sheen sweeps across on hover ================= */
+      .plate::after,
+      .dark::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        pointer-events: none;
+        background: linear-gradient(
+          105deg,
+          transparent 38%,
+          var(--glow) 50%,
+          transparent 62%
+        );
+        transform: translateX(-120%);
+        opacity: 0.55;
+      }
+      @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+        .plate:hover::after,
+        .dark:hover::after {
+          transform: translateX(120%);
+          transition: transform 0.9s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+      }
+      .plate.m-NONE::after,
+      .dark.m-NONE::after {
+        display: none;
+      }
+
+      /* "no rating" card */
+      .plate.m-NONE {
+        background: #eceae8;
+        box-shadow: inset 0 0 0 1px #d4d1ce;
+      }
+      .plate.m-NONE .coin {
+        background: #f6f5f4;
+        box-shadow: inset 0 0 0 2px #cfccc9;
+      }
+      .plate.m-NONE .screw {
+        display: none;
+      }
+      .dark.m-NONE {
+        background: #8a8d94;
+      }
+      .dark.m-NONE .rank {
+        background: none;
+        color: #8a8d94;
+        filter: none;
+      }
+
+      /* ================= layouts ================= */
+      .strip {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 14px;
+      }
+      .acct {
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        overflow: hidden;
+      }
+      .acct .hd {
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--line);
+        background: #fafaf9;
+      }
+      .acct .hd b {
+        font-size: 18px;
+      }
+      .acct .hd div {
+        color: var(--muted);
+        font-size: 14px;
+      }
+      .acct .cols {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 14px;
+        padding: 14px;
+        background: var(--page);
+      }
+      .acct .two {
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 14px;
+      }
+      .acct .two h3 {
+        margin: 0 0 10px;
+        font-size: 16px;
+      }
+      .acct .one {
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 14px;
+        color: var(--muted);
+        font-size: 14px;
+      }
+      .ghost {
+        height: 12px;
+        border-radius: 6px;
+        background: #ecebea;
+        margin: 10px 0;
+      }
+      .gallery {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 18px;
+        max-width: 980px;
+      }
+      .gallery .plate,
+      .gallery .dark {
+        min-height: 210px;
+      }
+      .note {
+        font-size: 14px;
+        color: var(--muted);
+        margin: 8px 0 0;
+      }
+      .switch-hide {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="sfnav">
+      <span class="app">Sales</span>
+      <span class="tab">Accounts</span>
+      <span class="tab on">Dr Example Surgeon</span>
+      <span class="sp"></span>
+      <span>Simulated Salesforce navigation</span>
+    </div>
+
+    <div class="wrap">
+      <details class="about" open>
+        <summary>About this mockup</summary>
+        <p>
+          <b>What it shows.</b> Whether the brushed-metal artwork (gold,
+          platinum, bronze, silver sheet, Adobe Stock) can be used to make
+          glamorous rating cards for the surgeon's account page.
+          <b>Yes, it can.</b> The four metal colours here were sampled straight
+          from the sheet and rebuilt in CSS, so nothing heavy is loaded (the SVG
+          itself is 46 MB and could never go into Salesforce). Two card styles
+          are shown; the drawings are placeholders for the real rating tile.
+        </p>
+        <ul>
+          <li>
+            <b>Style</b> switches between the metal plate, the dark card with a
+            metal rim, and both.
+          </li>
+          <li>
+            <b>Surgeon</b> changes which ratings the account strip shows
+            (including a surgeon with some portfolios unrated).
+          </li>
+          <li>Hover a card (on a computer) and a sheen sweeps across it.</li>
+          <li>
+            Robert chose the metal plate (2026-11-05); the dark card is kept
+            only for comparison.
+          </li>
+          <li>
+            The strip is sized as it would sit in the two-thirds column of the
+            account page.
+          </li>
+        </ul>
+        <p>
+          <b>Not shown yet.</b> The rest of the usage component (see
+          <code>usage_account_component_v1.html</code>), the phone, and any
+          wording; all names and ratings are invented. Which metal is which rank
+          is as Robert said: Platinum highest, then Gold, Silver, Bronze. Rank
+          is also told by the stars (4, 3, 2, 1), so it never depends on colour
+          alone.
+        </p>
+      </details>
+
+      <div class="ctl">
+        <div class="grp">
+          <span>Style</span>
+          <div class="seg" id="segStyle">
+            <button type="button" data-v="plate" class="on">Metal plate</button>
+            <button type="button" data-v="dark">Dark card, metal rim</button>
+            <button type="button" data-v="both">Both</button>
+          </div>
+        </div>
+        <div class="grp">
+          <span>Surgeon</span>
+          <div class="seg" id="segSurg">
+            <button type="button" data-v="0" class="on">
+              Dr Alder (all four)
+            </button>
+            <button type="button" data-v="1">Dr Brook (two rated)</button>
+            <button type="button" data-v="2">Dr Cole (none)</button>
+          </div>
+        </div>
+      </div>
+
+      <h2>On the account page</h2>
+      <p class="lead">
+        The four ratings across the top of the usage component, in the
+        two-thirds column.
+      </p>
+      <div class="acct">
+        <div class="hd">
+          <b id="acctName">Dr Alder</b>
+          <div>Orthopaedic surgeon · Person account</div>
+        </div>
+        <div class="cols">
+          <div class="two">
+            <h3>Rating by portfolio</h3>
+            <div id="strips"></div>
+            <div class="ghost" style="width: 90%; margin-top: 18px"></div>
+            <div class="ghost" style="width: 75%"></div>
+            <div class="ghost" style="width: 82%"></div>
+            <p class="note">(The usages table and bookings follow here.)</p>
+          </div>
+          <div class="one">One-third column: other account details.</div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      var SURGEONS = [
+        { name: "Dr Alder", r: ["PLATINUM", "GOLD", "SILVER", "BRONZE"] },
+        { name: "Dr Brook", r: ["GOLD", null, "BRONZE", null] },
+        { name: "Dr Cole", r: [null, null, null, null] }
+      ];
+      var AREAS = ["Hip", "Knee", "Shoulder", "CMF"];
+      var STARS = { PLATINUM: 4, GOLD: 3, SILVER: 2, BRONZE: 1 };
+      var LABEL = {
+        PLATINUM: "Platinum",
+        GOLD: "Gold",
+        SILVER: "Silver",
+        BRONZE: "Bronze"
+      };
+      var style = "plate";
+      var surg = 0;
+
+      // a five point star, filled with the card's own metal gradient so it looks cut from the same sheet
+      function star(v, dark) {
+        var fill = v ? "var(--hi)" : "#bdbab7";
+        var stroke = v ? "var(--mid)" : "#a9a6a3";
+        if (dark && v) {
+          return (
+            '<svg viewBox="0 0 24 24"><defs><linearGradient id="g' +
+            v +
+            '" x1="0" y1="0" x2="1" y2="1">' +
+            '<stop offset="0" stop-color="var(--hi)"/><stop offset=".5" stop-color="var(--mid)"/><stop offset="1" stop-color="var(--lo)"/></linearGradient></defs>' +
+            '<path d="M12 2l3 6.8 7.4.7-5.6 4.9 1.7 7.3L12 17.9 5.5 21.7l1.7-7.3L1.6 9.5l7.4-.7z" fill="url(#g' +
+            v +
+            ')" stroke="var(--hi)" stroke-width=".6" stroke-linejoin="round"/></svg>'
+          );
+        }
+        return (
+          '<svg viewBox="0 0 24 24"><path d="M12 2l3 6.8 7.4.7-5.6 4.9 1.7 7.3L12 17.9 5.5 21.7l1.7-7.3L1.6 9.5l7.4-.7z" fill="' +
+          fill +
+          '" stroke="' +
+          stroke +
+          '" stroke-width="1" stroke-linejoin="round"/></svg>'
+        );
+      }
+      function starsText(v) {
+        var n = v ? STARS[v] : 0;
+        return v ? new Array(n + 1).join("★") : "";
+      }
+      function card(kind, v, area) {
+        var m = "m-" + (v || "NONE");
+        var rank = v ? LABEL[v] : "No rating";
+        if (kind === "plate") {
+          return (
+            '<div class="plate ' +
+            m +
+            '"><span class="screw l"></span><span class="screw r"></span>' +
+            '<div class="area">' +
+            area +
+            "</div>" +
+            '<div class="coin">' +
+            star(v, false) +
+            "</div>" +
+            '<div class="rank">' +
+            rank +
+            "</div>" +
+            '<div class="stars">' +
+            starsText(v) +
+            "</div></div>"
+          );
+        }
+        return (
+          '<div class="dark ' +
+          m +
+          '"><div class="in">' +
+          '<div class="area">' +
+          area +
+          "</div>" +
+          '<div class="coin"><div class="face">' +
+          star(v, true) +
+          "</div></div>" +
+          '<div class="rank">' +
+          rank +
+          "</div>" +
+          '<div class="stars">' +
+          starsText(v) +
+          "</div>" +
+          '<div class="rule"></div></div></div>'
+        );
+      }
+      function strip(kind, s) {
+        var h = '<div class="strip">';
+        for (var i = 0; i < 4; i++) h += card(kind, s.r[i], AREAS[i]);
+        return h + "</div>";
+      }
+      function render() {
+        var s = SURGEONS[surg];
+        document.getElementById("acctName").textContent = s.name;
+        var kinds = style === "both" ? ["plate", "dark"] : [style];
+        var h = "";
+        kinds.forEach(function (k, i) {
+          h += (i ? '<div style="height:14px"></div>' : "") + strip(k, s);
+        });
+        document.getElementById("strips").innerHTML = h;
+      }
+      function wire(id, fn) {
+        document.getElementById(id).addEventListener("click", function (e) {
+          var b = e.target.closest("button");
+          if (!b) return;
+          this.querySelectorAll("button").forEach(function (x) {
+            x.classList.toggle("on", x === b);
+          });
+          fn(b.getAttribute("data-v"));
+          render();
+        });
+      }
+      wire("segStyle", function (v) {
+        style = v;
+      });
+      wire("segSurg", function (v) {
+        surg = +v;
+      });
+      render();
+    </script>
+  </body>
+</html>

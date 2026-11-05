@@ -1,0 +1,806 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Usage rating graphics: style page, version 1</title>
+    <style>
+      :root {
+        --page: #f3f3f3;
+        --card: #ffffff;
+        --card2: #f8f9fb;
+        --line: #dddbda;
+        --line2: #c9c7c5;
+        --text: #181818;
+        --muted: #5c5c5c;
+        --blue: #0176d3;
+        --blue2: #014486;
+        --nav: #032d60;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--page);
+        color: var(--text);
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-size: 16px;
+      }
+      .sfnav {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        height: 44px;
+        padding: 0 16px;
+        background: var(--nav);
+        color: #dbe6f5;
+        font-size: 14px;
+      }
+      .sfnav .app {
+        font-weight: 700;
+        color: #fff;
+      }
+      .sfnav .tab {
+        opacity: 0.8;
+      }
+      .sfnav .tab.on {
+        opacity: 1;
+        border-bottom: 3px solid #fff;
+        padding: 12px 0 9px;
+      }
+      .sfnav .sp {
+        flex: 1;
+      }
+      .pill {
+        border-radius: 999px;
+        padding: 7px 16px;
+        background: transparent;
+        color: #fff;
+        border: 1px solid rgba(255, 255, 255, 0.6);
+        font-weight: 700;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+      }
+      .wrap {
+        max-width: 1180px;
+        margin: 0 auto;
+        padding: 0 0 50px;
+      }
+      .about {
+        margin: 12px 0 0;
+        background: #fff;
+        border: 1px solid var(--line);
+        border-left: 4px solid var(--blue);
+        border-radius: 4px;
+        padding: 10px 16px 12px;
+        font-size: 14px;
+        line-height: 1.5;
+      }
+      .about summary {
+        cursor: pointer;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        color: var(--blue2);
+      }
+      .about ul {
+        margin: 4px 0 8px;
+        padding-left: 20px;
+      }
+      .about p {
+        margin: 6px 0;
+      }
+      .controls {
+        margin: 10px 0 0;
+        padding: 8px 12px;
+        background: #fffbe6;
+        border: 1px dashed #d9b84c;
+        border-radius: 4px;
+        font-size: 14px;
+        display: flex;
+        gap: 14px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      .controls .lbl {
+        font-weight: 800;
+        letter-spacing: 0.06em;
+        font-size: 12px;
+        color: #7a6200;
+      }
+      .seg {
+        display: inline-flex;
+        border: 1px solid var(--line2);
+        border-radius: 999px;
+        overflow: hidden;
+        background: #fff;
+      }
+      .seg button {
+        border: 0;
+        background: transparent;
+        padding: 6px 13px;
+        cursor: pointer;
+        font-size: 14px;
+      }
+      .seg button.on {
+        background: var(--blue);
+        color: #fff;
+        font-weight: 700;
+      }
+      .fam {
+        margin-top: 14px;
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 4px;
+      }
+      .fam .hd {
+        padding: 12px 18px;
+        border-bottom: 1px solid var(--line);
+        display: flex;
+        gap: 14px;
+        align-items: baseline;
+        flex-wrap: wrap;
+      }
+      .fam .hd h2 {
+        margin: 0;
+        font-size: 18px;
+      }
+      .fam .hd span {
+        color: var(--muted);
+        font-size: 14px;
+      }
+      .big {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+        padding: 16px 18px 6px;
+      }
+      .big .one {
+        text-align: center;
+      }
+      .big svg {
+        width: 118px;
+        height: 118px;
+      }
+      .big .nm {
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        font-size: 14px;
+        margin-top: 2px;
+      }
+      .big .rk {
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .tiles {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+        padding: 10px 18px 18px;
+      }
+      .rt {
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        padding: 8px 12px;
+        background: var(--card2);
+      }
+      .rt .area {
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+        font-weight: 800;
+      }
+      .rt .val {
+        margin-top: 2px;
+        font-size: 20px;
+        font-weight: 800;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        text-transform: uppercase;
+      }
+      .rt .val svg {
+        width: 36px;
+        height: 36px;
+        flex: none;
+      }
+      .tiny {
+        padding: 0 18px 16px;
+        display: flex;
+        gap: 22px;
+        align-items: center;
+        font-size: 14px;
+        color: var(--muted);
+        flex-wrap: wrap;
+      }
+      .tiny span {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .tiny svg {
+        width: 20px;
+        height: 20px;
+      }
+      .dots .dot {
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        flex: none;
+      }
+      body.bw svg {
+        filter: grayscale(1);
+      }
+      body.bw .dots .dot {
+        filter: grayscale(1);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="sfnav">
+      <span class="app">Sales</span>
+      <span class="tab">Home</span>
+      <span class="tab on">Accounts</span>
+      <span class="sp"></span>
+      <button class="pill" type="button" id="full">Full screen</button>
+    </div>
+
+    <div class="wrap">
+      <details class="about" open>
+        <summary>ABOUT THIS MOCKUP</summary>
+        <p>
+          <b>Version 1: four ways to draw Platinum, Gold, Silver and Bronze.</b>
+          Option E (added after Robert liked the Adobe Stock medals) is drawn
+          from scratch in that style, with the ribbon stripes counting the rank.
+          The order is Platinum (highest), Gold, Silver, Bronze. Each family
+          below draws all four, large, then at the size they would be on the
+          usage card's rating tiles, then very small (as in a list or the deal
+          flyout). All are drawn as vector graphics in the code, so there are no
+          image files.
+          <b>The first row, "Today", is what the mockup of the card has now</b>
+          (a coloured dot). Invented data only.
+        </p>
+        <b>Try it:</b>
+        <ul>
+          <li>
+            Switch <b>Black and white</b> on in the yellow controls: if you can
+            still tell the four apart, the graphic does not rely on colour (for
+            anyone who finds colours hard, and for printouts).
+          </li>
+          <li>
+            Look at the smallest size in each family: that is the test of a
+            graphic.
+          </li>
+        </ul>
+        <p>
+          <b>Not shown yet:</b> how it sits in the full card (that comes after
+          you pick), "No rating" (a plain dashed outline circle, as in the card
+          mockup), and any animation.
+        </p>
+      </details>
+
+      <div class="controls">
+        <span class="lbl">MOCKUP CONTROLS (not part of Salesforce)</span>
+        <span>Colour:</span>
+        <span class="seg" id="bwseg">
+          <button type="button" data-b="0" class="on">Colour</button>
+          <button type="button" data-b="1">Black and white</button>
+        </span>
+      </div>
+
+      <div id="fams"></div>
+    </div>
+
+    <!-- shared metal paints -->
+    <svg width="0" height="0" style="position: absolute" aria-hidden="true">
+      <defs id="defs"></defs>
+    </svg>
+
+    <script>
+      var ORDER = ["platinum", "gold", "silver", "bronze"];
+      var LABEL = {
+        platinum: "Platinum",
+        gold: "Gold",
+        silver: "Silver",
+        bronze: "Bronze"
+      };
+      var RANK = {
+        platinum: "highest",
+        gold: "second",
+        silver: "third",
+        bronze: "fourth"
+      };
+      var COL = {
+        platinum: {
+          a: "#f7fafd",
+          b: "#cfd9e6",
+          c: "#74879f",
+          ribbon: "#5b84c6",
+          ink: "#44566f"
+        },
+        gold: {
+          a: "#fff4b5",
+          b: "#f2c230",
+          c: "#a07000",
+          ribbon: "#c0392b",
+          ink: "#7a5600"
+        },
+        silver: {
+          a: "#ffffff",
+          b: "#d0d5db",
+          c: "#7f8791",
+          ribbon: "#3f72ab",
+          ink: "#555d68"
+        },
+        bronze: {
+          a: "#f7cba6",
+          b: "#cd7f32",
+          c: "#76421a",
+          ribbon: "#2f7d5b",
+          ink: "#5a3012"
+        }
+      };
+      var defs = "";
+      ORDER.forEach(function (k) {
+        var c = COL[k];
+        defs +=
+          '<linearGradient id="g-' +
+          k +
+          '" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="' +
+          c.a +
+          '"/><stop offset="0.5" stop-color="' +
+          c.b +
+          '"/><stop offset="1" stop-color="' +
+          c.c +
+          '"/></linearGradient>';
+        defs +=
+          '<linearGradient id="r-' +
+          k +
+          '" x1="1" y1="1" x2="0" y2="0"><stop offset="0" stop-color="' +
+          c.a +
+          '"/><stop offset="0.55" stop-color="' +
+          c.b +
+          '"/><stop offset="1" stop-color="' +
+          c.c +
+          '"/></linearGradient>';
+      });
+      document.getElementById("defs").innerHTML = defs;
+
+      function star(cx, cy, R, r, n) {
+        var p = [];
+        for (var i = 0; i < n * 2; i++) {
+          var a = (Math.PI / n) * i - Math.PI / 2;
+          var rad = i % 2 ? r : R;
+          p.push(
+            (cx + rad * Math.cos(a)).toFixed(1) +
+              "," +
+              (cy + rad * Math.sin(a)).toFixed(1)
+          );
+        }
+        return p.join(" ");
+      }
+      function svg(inner) {
+        return (
+          '<svg viewBox="0 0 100 100" aria-hidden="true">' + inner + "</svg>"
+        );
+      }
+      function sheen(x, y, rx, ry) {
+        return (
+          '<ellipse cx="' +
+          x +
+          '" cy="' +
+          y +
+          '" rx="' +
+          rx +
+          '" ry="' +
+          ry +
+          '" fill="#fff" opacity="0.5" transform="rotate(-35 ' +
+          x +
+          " " +
+          y +
+          ')"/>'
+        );
+      }
+
+      /* family 1: round medals on a ribbon; the emblem gets simpler as the rank drops */
+      function medal(k) {
+        var c = COL[k];
+        var s =
+          '<path d="M28 2 L52 44 L40 56 L18 18 Z" fill="' +
+          c.ribbon +
+          '"/><path d="M72 2 L48 44 L60 56 L82 18 Z" fill="' +
+          c.ribbon +
+          '" opacity="0.8"/>';
+        s +=
+          '<circle cx="50" cy="66" r="30" fill="url(#g-' +
+          k +
+          ')" stroke="' +
+          c.c +
+          '" stroke-width="1.5"/>';
+        s +=
+          '<circle cx="50" cy="66" r="23" fill="url(#r-' +
+          k +
+          ')" stroke="' +
+          c.c +
+          '" stroke-width="1"/>';
+        var e = "";
+        if (k === "platinum")
+          e =
+            '<polygon points="50,51 63,66 50,81 37,66" fill="#fff" stroke="' +
+            c.ink +
+            '" stroke-width="1.5"/><polyline points="37,66 63,66 M50,51 50,81" fill="none" stroke="' +
+            c.ink +
+            '" stroke-width="1" opacity="0.6"/><path d="M44 58 L50 51 L56 58" fill="none" stroke="' +
+            c.ink +
+            '" stroke-width="1" opacity="0.6"/>';
+        if (k === "gold")
+          e =
+            '<polygon points="' +
+            star(50, 66, 14, 6, 5) +
+            '" fill="#fff8d6" stroke="' +
+            c.ink +
+            '" stroke-width="1.5"/>';
+        if (k === "silver")
+          e =
+            '<circle cx="50" cy="66" r="10" fill="none" stroke="' +
+            c.ink +
+            '" stroke-width="3"/><circle cx="50" cy="66" r="3.5" fill="' +
+            c.ink +
+            '"/>';
+        if (k === "bronze")
+          e = '<circle cx="50" cy="66" r="6" fill="' + c.ink + '"/>';
+        return svg(s + e + sheen(38, 50, 10, 4));
+      }
+
+      /* family 2: four different metal shapes; a diamond for the top, a plain disc for the bottom */
+      var SHAPES = {
+        platinum: "M50 5 L93 50 L50 95 L7 50 Z",
+        gold: "M50 5 L89 27 L89 73 L50 95 L11 73 L11 27 Z",
+        silver: "M50 5 L89 17 V50 C89 73 71 87 50 96 C29 87 11 73 11 50 V17 Z",
+        bronze: "M50 6 A44 44 0 1 1 49.9 6 Z"
+      };
+      function shape(k) {
+        var c = COL[k];
+        var s =
+          '<path d="' +
+          SHAPES[k] +
+          '" fill="url(#g-' +
+          k +
+          ')" stroke="' +
+          c.c +
+          '" stroke-width="2" stroke-linejoin="round"/>';
+        s +=
+          '<g transform="translate(50 50) scale(0.74) translate(-50 -50)"><path d="' +
+          SHAPES[k] +
+          '" fill="url(#r-' +
+          k +
+          ')" stroke="' +
+          c.c +
+          '" stroke-width="1.5" stroke-linejoin="round"/></g>';
+        return svg(s + sheen(34, 34, 12, 4));
+      }
+
+      /* family 3: round coins with chevrons, 4 for Platinum down to 1 for Bronze (rank insignia) */
+      function coin(k) {
+        var c = COL[k];
+        var n = 4 - ORDER.indexOf(k);
+        var s =
+          '<circle cx="50" cy="50" r="45" fill="url(#g-' +
+          k +
+          ')" stroke="' +
+          c.c +
+          '" stroke-width="2"/><circle cx="50" cy="50" r="37" fill="url(#r-' +
+          k +
+          ')" stroke="' +
+          c.c +
+          '" stroke-width="1"/>';
+        var gap = 13,
+          total = (n - 1) * gap + 14,
+          top = 50 - total / 2;
+        for (var i = 0; i < n; i++) {
+          var y = top + i * gap;
+          s +=
+            '<polyline points="30,' +
+            (y + 14) +
+            " 50," +
+            y +
+            " 70," +
+            (y + 14) +
+            '" fill="none" stroke="' +
+            c.ink +
+            '" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>';
+        }
+        return svg(s + sheen(32, 30, 11, 4));
+      }
+
+      /* family 4: trophy cups; the cup shrinks and loses its decoration down the ranks */
+      var TSCALE = { platinum: 1, gold: 0.92, silver: 0.84, bronze: 0.76 };
+      function trophy(k) {
+        var c = COL[k];
+        var t = TSCALE[k];
+        var s =
+          '<g transform="translate(50 94) scale(' +
+          t +
+          ') translate(-50 -94)">';
+        s +=
+          '<path d="M30 24 C10 24 10 50 32 52" fill="none" stroke="' +
+          c.c +
+          '" stroke-width="5" stroke-linecap="round"/><path d="M70 24 C90 24 90 50 68 52" fill="none" stroke="' +
+          c.c +
+          '" stroke-width="5" stroke-linecap="round"/>';
+        s +=
+          '<path d="M28 12 H72 V40 C72 58 62 66 50 66 C38 66 28 58 28 40 Z" fill="url(#g-' +
+          k +
+          ')" stroke="' +
+          c.c +
+          '" stroke-width="2" stroke-linejoin="round"/>';
+        s +=
+          '<rect x="45" y="66" width="10" height="16" fill="url(#r-' +
+          k +
+          ')" stroke="' +
+          c.c +
+          '" stroke-width="1.5"/>';
+        s +=
+          '<rect x="30" y="82" width="40" height="11" rx="3" fill="url(#g-' +
+          k +
+          ')" stroke="' +
+          c.c +
+          '" stroke-width="2"/>';
+        if (k === "platinum")
+          s +=
+            '<polygon points="50,24 58,36 50,48 42,36" fill="#fff" stroke="' +
+            c.ink +
+            '" stroke-width="1.5"/>';
+        if (k === "gold")
+          s +=
+            '<polygon points="' +
+            star(50, 37, 11, 4.6, 5) +
+            '" fill="#fff8d6" stroke="' +
+            c.ink +
+            '" stroke-width="1.3"/>';
+        s +=
+          '<ellipse cx="38" cy="26" rx="6" ry="3" fill="#fff" opacity="0.5" transform="rotate(-60 38 26)"/>';
+        s += "</g>";
+        if (k === "platinum")
+          s +=
+            '<polygon points="86,4 88.5,11 95.5,13.5 88.5,16 86,23 83.5,16 76.5,13.5 83.5,11" fill="#9fc3f0"/>';
+        return svg(s);
+      }
+
+      /* family 5: badge medals in the style of the Adobe Stock artwork: dark disc in a metal ring, faceted star, hanging ribbon.
+         The ribbon's stripes count the rank (4 Platinum, 3 Gold, 2 Silver, 1 Bronze); Platinum also gets a second ring. */
+      function facetStar(k, cx, cy, R, r) {
+        var c = COL[k],
+          out = "";
+        var O = [],
+          I = [];
+        for (var i = 0; i < 5; i++) {
+          var a = ((-90 + 72 * i) * Math.PI) / 180,
+            b = ((-90 + 72 * i + 36) * Math.PI) / 180;
+          O.push([cx + R * Math.cos(a), cy + R * Math.sin(a)]);
+          I.push([cx + r * Math.cos(b), cy + r * Math.sin(b)]);
+        }
+        function pt(p) {
+          return p[0].toFixed(1) + "," + p[1].toFixed(1);
+        }
+        for (var j = 0; j < 5; j++) {
+          var prev = I[(j + 4) % 5];
+          out +=
+            '<polygon points="' +
+            pt(O[j]) +
+            " " +
+            pt(prev) +
+            " " +
+            cx +
+            "," +
+            cy +
+            '" fill="' +
+            c.a +
+            '"/>';
+          out +=
+            '<polygon points="' +
+            pt(O[j]) +
+            " " +
+            pt(I[j]) +
+            " " +
+            cx +
+            "," +
+            cy +
+            '" fill="' +
+            c.b +
+            '"/>';
+        }
+        out +=
+          '<polygon points="' +
+          O.map(function (o, i) {
+            return pt(o) + " " + pt(I[i]);
+          }).join(" ") +
+          '" fill="none" stroke="' +
+          c.c +
+          '" stroke-width="0.8" stroke-linejoin="round"/>';
+        return out;
+      }
+      function badge(k) {
+        var c = COL[k];
+        var n = 4 - ORDER.indexOf(k);
+        var g = "url(#g-" + k + ")";
+        var s = "";
+        // ribbon: a notched frame joined to the ring, with n stripes inside (4 Platinum, 3 Gold, 2 Silver, 1 Bronze)
+        s +=
+          '<polyline points="32,42 32,10 50,17 68,10 68,42" fill="none" stroke="' +
+          g +
+          '" stroke-width="2.6" stroke-linejoin="miter"/>';
+        for (var i = 0; i < n; i++) {
+          var x = 32 + (36 * (i + 1)) / (n + 1);
+          var yt = 17 - 7 * (Math.abs(x - 50) / 18);
+          s +=
+            '<rect x="' +
+            (x - 1.3).toFixed(1) +
+            '" y="' +
+            yt.toFixed(1) +
+            '" width="2.6" height="' +
+            (42 - yt).toFixed(1) +
+            '" fill="' +
+            g +
+            '"/>';
+        }
+        // ring and dark disc
+        s +=
+          '<circle cx="50" cy="68" r="25" fill="#252a32" stroke="' +
+          g +
+          '" stroke-width="' +
+          (k === "bronze" ? 4 : 5) +
+          '"/>';
+        if (k === "platinum")
+          s +=
+            '<circle cx="50" cy="68" r="29.6" fill="none" stroke="' +
+            g +
+            '" stroke-width="1.6"/>';
+        s += facetStar(k, 50, 69, 16.5, 7);
+        return svg(s);
+      }
+
+      var FAMS = [
+        {
+          name: "Today",
+          note: "what the card mockup has now: a coloured dot",
+          dots: true
+        },
+        {
+          name: "A. Medals on ribbons",
+          note: "reads as a prize at once; the emblem gets plainer as the rank drops (diamond, star, ring, dot)",
+          f: medal
+        },
+        {
+          name: "B. Metal shapes",
+          note: "the simplest: a diamond, a hexagon, a shield and a disc; each shape is its own icon",
+          f: shape
+        },
+        {
+          name: "C. Rank coins with chevrons",
+          note: "the order explains itself: 4, 3, 2 and 1 chevrons on a coin, like rank insignia",
+          f: coin
+        },
+        {
+          name: "D. Trophies",
+          note: "a cup that gets smaller and plainer down the ranks; Platinum is the tallest, with a gem and a sparkle",
+          f: trophy
+        },
+        {
+          name: "E. Badge medals (in the style of the Adobe Stock artwork)",
+          note: "dark disc in a metal ring with a faceted star and a hanging ribbon; the ribbon has 4, 3, 2 or 1 stripes, and Platinum has a second ring",
+          f: badge
+        }
+      ];
+      var AREAS = [
+        ["Hip", "platinum"],
+        ["Knee", "gold"],
+        ["Shoulder", "silver"],
+        ["CMF", "bronze"]
+      ];
+
+      var out = "";
+      FAMS.forEach(function (fm) {
+        out +=
+          '<div class="fam' +
+          (fm.dots ? " dots" : "") +
+          '"><div class="hd"><h2>' +
+          fm.name +
+          "</h2><span>" +
+          fm.note +
+          "</span></div>";
+        function gfx(k) {
+          return fm.dots
+            ? '<span class="dot" style="display:inline-block;width:' +
+                "" +
+                '"></span>'
+            : fm.f(k);
+        }
+        if (fm.dots) {
+          var dotCol = {
+            platinum: "linear-gradient(135deg,#e5e4e2,#7d8a9a)",
+            gold: "linear-gradient(135deg,#ffe27a,#c79100)",
+            silver: "linear-gradient(135deg,#f1f1f1,#8e949a)",
+            bronze: "linear-gradient(135deg,#e4a672,#9a5a21)"
+          };
+          out += '<div class="big">';
+          ORDER.forEach(function (k) {
+            out +=
+              '<div class="one"><div style="height:118px;display:grid;place-items:center"><span class="dot" style="width:34px;height:34px;border-radius:50%;display:block;background:' +
+              dotCol[k] +
+              '"></span></div><div class="nm">' +
+              LABEL[k] +
+              '</div><div class="rk">' +
+              RANK[k] +
+              "</div></div>";
+          });
+          out += "</div>";
+          out += '<div class="tiles">';
+          AREAS.forEach(function (a) {
+            out +=
+              '<div class="rt"><div class="area">' +
+              a[0] +
+              '</div><div class="val"><span class="dot" style="background:' +
+              dotCol[a[1]] +
+              '"></span>' +
+              LABEL[a[1]] +
+              "</div></div>";
+          });
+          out += "</div></div>";
+          return;
+        }
+        out += '<div class="big">';
+        ORDER.forEach(function (k) {
+          out +=
+            '<div class="one">' +
+            fm.f(k) +
+            '<div class="nm">' +
+            LABEL[k] +
+            '</div><div class="rk">' +
+            RANK[k] +
+            "</div></div>";
+        });
+        out += '</div><div class="tiles">';
+        AREAS.forEach(function (a) {
+          out +=
+            '<div class="rt"><div class="area">' +
+            a[0] +
+            '</div><div class="val">' +
+            fm.f(a[1]) +
+            LABEL[a[1]] +
+            "</div></div>";
+        });
+        out += '</div><div class="tiny">Very small: ';
+        ORDER.forEach(function (k) {
+          out += "<span>" + fm.f(k) + LABEL[k] + "</span>";
+        });
+        out += "</div></div>";
+      });
+      document.getElementById("fams").innerHTML = out;
+
+      [].forEach.call(document.querySelectorAll("#bwseg button"), function (b) {
+        b.onclick = function () {
+          document.body.classList.toggle(
+            "bw",
+            b.getAttribute("data-b") === "1"
+          );
+          [].forEach.call(
+            document.querySelectorAll("#bwseg button"),
+            function (x) {
+              x.classList.toggle("on", x === b);
+            }
+          );
+        };
+      });
+      document.getElementById("full").onclick = function () {
+        if (document.documentElement.requestFullscreen)
+          document.documentElement.requestFullscreen();
+      };
+    </script>
+  </body>
+</html>

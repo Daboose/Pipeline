@@ -11,40 +11,40 @@
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <title>Pipeline</title>
       <style>
-          html,
-          body {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            width: 100%;
-            overflow: hidden;
-            background: #141e2e;
-            font-family:
-              -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-          }
-          #pipeline-container {
-            width: 100%;
-            height: 100vh;
-            background: #141e2e;
-          }
-          *::-webkit-scrollbar {
-            width: 10px;
-            height: 10px;
-          }
-          *::-webkit-scrollbar-track {
-            background: transparent;
-          }
-          *::-webkit-scrollbar-thumb {
-            background: #475569;
-            border-radius: 8px;
-            border: 2px solid transparent;
-            background-clip: padding-box;
-          }
-          * {
-            scrollbar-width: thin;
-            scrollbar-color: #475569 transparent;
-          }
-          /* the Pipeline loading screen, from the settled mockup */
+        html,
+        body {
+          margin: 0;
+          padding: 0;
+          height: 100%;
+          width: 100%;
+          overflow: hidden;
+          background: #141e2e;
+          font-family:
+            -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+        #pipeline-container {
+          width: 100%;
+          height: 100vh;
+          background: #141e2e;
+        }
+        *::-webkit-scrollbar {
+          width: 10px;
+          height: 10px;
+        }
+        *::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        *::-webkit-scrollbar-thumb {
+          background: #475569;
+          border-radius: 8px;
+          border: 2px solid transparent;
+          background-clip: padding-box;
+        }
+        * {
+          scrollbar-width: thin;
+          scrollbar-color: #475569 transparent;
+        }
+        /* the Pipeline loading screen, from the settled mockup */
         #splash {
           position: fixed;
           inset: 0;
@@ -100,11 +100,15 @@
         .spname .b {
           color: #eef3fa;
         }
-        .sptag {
-          color: #8b9bb0;
-          letter-spacing: 0.12em;
-          font-size: 14px;
-          text-align: center;
+        /* The tagline (Robert picked option D at the standard size, 2026-11-05): capitals in the chunky brand letters (a
+           subset of Rubik Mono One, SIL Open Font License, only the letters the tagline uses), hanging under the pipe and
+           sized from the pipe's own width, so it keeps the same proportion on any screen. The words come through the pipe
+           one by one, then CLOSER. in amber comes through after a short beat. */
+        @font-face {
+          font-family: "PipelineSplash";
+          src: url(data:font/woff;base64,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)
+            format("woff");
+        }
         #splash .splogo {
           position: absolute;
           left: 50%;
@@ -116,13 +120,84 @@
           position: absolute;
           left: 0;
           right: 0;
-          top: calc(50% + min(96px, 7.72vw) + 34px);
-          font-size: clamp(16px, 2.1vw, 30px);
-          letter-spacing: 0.1em;
+          top: calc(100% + 5.8cqw);
+          text-align: center;
+          color: #eef3fa;
+          font-family: "PipelineSplash", Impact, sans-serif;
+          font-size: max(3.7cqw, 11px);
+          line-height: 1.32;
+          text-transform: uppercase;
         }
-          #splash {
-            transition: opacity 0.4s ease;
+        .sptag .l {
+          display: flex;
+          justify-content: center;
+          align-items: baseline;
+          column-gap: 0.52em;
+          white-space: nowrap;
+        }
+        .sptag .w {
+          display: inline-block;
+          opacity: 0;
+          animation: spthrough 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+          animation-delay: calc(0.3s + var(--i) * 0.13s);
+        }
+        .sptag .w.hot {
+          color: #fdb827;
+          font-size: 1.28em;
+          animation-delay: calc(0.65s + var(--i) * 0.13s);
+        }
+        @keyframes spthrough {
+          from {
+            opacity: 0;
+            transform: translateX(-1.6em);
           }
+          60% {
+            opacity: 1;
+          }
+          to {
+            opacity: 1;
+            transform: none;
+          }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .sptag .w,
+          .sptag .w.hot {
+            animation: none;
+            opacity: 1;
+          }
+        }
+        #splash {
+          transition: opacity 0.4s ease;
+        }
+        /* phone message: shown instead of the tool on a phone (the tagline gives way to it) */
+        #splash .mnote {
+          display: none;
+          position: absolute;
+          left: 0;
+          right: 0;
+          top: calc(100% + 7cqw);
+          text-align: center;
+          color: #eef3fa;
+          font-size: max(3cqw, 17px);
+          line-height: 1.45;
+        }
+        #splash .mnote b {
+          display: block;
+          margin-bottom: 0.4em;
+          color: #fdb827;
+          font-size: 1.25em;
+          letter-spacing: 0.04em;
+          text-transform: uppercase;
+        }
+        #splash.phone {
+          cursor: default;
+        }
+        #splash.phone .sptag {
+          display: none;
+        }
+        #splash.phone .mnote {
+          display: block;
+        }
       </style>
     </head>
     <body>
@@ -134,8 +209,14 @@
           />
           <!-- prettier-ignore -->
           <!-- prettier-ignore --><svg class="spname" viewBox="225 1100 4770 800" aria-hidden="true"><text x="1860" y="1500" dy="0.36em" text-anchor="middle" font-size="300" font-weight="800" letter-spacing="16"><tspan fill="#fdb827">PIPE</tspan><tspan fill="#eef3fa">LINE</tspan></text></svg>
+          <!-- prettier-ignore -->
+          <div class="sptag"><span class="l"><span class="w" style="--i:0">Keep</span><span class="w" style="--i:1">your</span><span class="w" style="--i:2">deals</span><span class="w" style="--i:3">close,</span></span><span class="l"><span class="w" style="--i:4">and</span><span class="w" style="--i:5">your</span><span class="w" style="--i:6">risks</span><span class="w hot" style="--i:7">closer.</span></span></div>
+          <div class="mnote">
+            <b>Not designed for mobile</b>
+            Pipeline is built for a desktop or laptop screen.<br />Please open
+            it there.
+          </div>
         </div>
-        <div class="sptag">Keep your deals close, and your risks closer.</div>
       </div>
       <div id="pipeline-container"></div>
 
@@ -143,15 +224,37 @@
 
       <script>
         // The tool announces (a bubbling "pipelineready" event) when its first read of the deals is finished; the
-        // loading screen then fades away after showing for at least 1.6 seconds. It also goes by itself after 12 s.
+        // loading screen then fades away after showing for at least 2.5 seconds (the tagline takes about 2.1 s to play). It also goes by itself after 12 s.
         var pipelineSplashStart = Date.now();
         var pipelineSplashGone = false;
+        // A phone gets a short message instead of the tool (Pipeline is built for desktop; the rep phone view comes later).
+        // A phone is judged by the device, not the window: a phone browser or the Salesforce mobile app, or a small touch screen,
+        // so a narrowed desktop window and tablets still open the tool. Adding ?pipelinephone=1 to the address shows the message anywhere (for testing).
+        var pipelinePhone = (function () {
+          try {
+            if (/[?&]pipelinephone=1/.test(location.search)) {
+              return true;
+            }
+            if (
+              /iPhone|iPod|Windows Phone|Android.*Mobile|Mobile.*Android/i.test(
+                navigator.userAgent || ""
+              )
+            ) {
+              return true;
+            }
+            var touch =
+              "ontouchstart" in window || navigator.maxTouchPoints > 0;
+            return touch && Math.min(screen.width, screen.height) < 600;
+          } catch (e) {
+            return false;
+          }
+        })();
         function pipelineSplashReady() {
-          if (pipelineSplashGone) {
+          if (pipelineSplashGone || pipelinePhone) {
             return;
           }
           pipelineSplashGone = true;
-          var wait = Math.max(0, 1600 - (Date.now() - pipelineSplashStart));
+          var wait = Math.max(0, 2500 - (Date.now() - pipelineSplashStart));
           setTimeout(function () {
             var el = document.getElementById("splash");
             if (!el) {
@@ -178,14 +281,18 @@
             // not answered: the tool falls back to a new tab
           }
         });
-        $Lightning.use("c:PipelineOut", function () {
-          $Lightning.createComponent(
-            "c:pipelineApp",
-            {},
-            "pipeline-container",
-            function () {}
-          );
-        });
+        if (pipelinePhone) {
+          document.getElementById("splash").classList.add("phone");
+        } else {
+          $Lightning.use("c:PipelineOut", function () {
+            $Lightning.createComponent(
+              "c:pipelineApp",
+              {},
+              "pipeline-container",
+              function () {}
+            );
+          });
+        }
       </script>
     </body>
   </html>

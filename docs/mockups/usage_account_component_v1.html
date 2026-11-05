@@ -1,0 +1,2437 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Usage component on the Account page: mockup version 1</title>
+    <style>
+      :root {
+        --page: #f3f3f3;
+        --card: #ffffff;
+        --card2: #f8f9fb;
+        --line: #dddbda;
+        --line2: #c9c7c5;
+        --text: #181818;
+        --muted: #5c5c5c;
+        --blue: #0176d3;
+        --blue2: #014486;
+        --bluebg: #eef4ff;
+        --nav: #032d60;
+        --ok: #2e844a;
+        --okbg: #ebf7e6;
+        --warn: #8a5a00;
+        --warnbg: #fff6dd;
+        --warnline: #e4a600;
+        --bad: #ba0517;
+        --badbg: #fdeaea;
+        --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--page);
+        color: var(--text);
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-size: 16px;
+      }
+      button,
+      input,
+      select {
+        font-family: inherit;
+        font-size: inherit;
+      }
+
+      /* simulated Salesforce navigation bar */
+      .sfnav {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        height: 44px;
+        padding: 0 16px;
+        background: var(--nav);
+        color: #dbe6f5;
+        font-size: 14px;
+      }
+      .sfnav .app {
+        font-weight: 700;
+        color: #fff;
+        letter-spacing: 0.02em;
+      }
+      .sfnav .tab {
+        opacity: 0.8;
+      }
+      .sfnav .tab.on {
+        opacity: 1;
+        border-bottom: 3px solid #fff;
+        padding: 12px 0 9px;
+      }
+      .sfnav .sp {
+        flex: 1;
+      }
+      .pill {
+        border: 0;
+        border-radius: 999px;
+        padding: 7px 16px;
+        background: transparent;
+        color: #fff;
+        border: 1px solid rgba(255, 255, 255, 0.6);
+        font-weight: 700;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+      }
+
+      /* about panel */
+      .about {
+        margin: 12px auto 0;
+        max-width: 1180px;
+        background: #fff;
+        border: 1px solid var(--line);
+        border-left: 4px solid var(--blue);
+        border-radius: 4px;
+        padding: 10px 16px 12px;
+        font-size: 14px;
+        line-height: 1.5;
+      }
+      .about summary {
+        cursor: pointer;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        color: var(--blue2);
+      }
+      .about ul {
+        margin: 4px 0 8px;
+        padding-left: 20px;
+      }
+      .about p {
+        margin: 6px 0;
+      }
+
+      /* mockup controls, not part of Salesforce */
+      .controls {
+        margin: 10px auto 0;
+        max-width: 1180px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px 22px;
+        align-items: center;
+        padding: 8px 12px;
+        background: #fffbe6;
+        border: 1px dashed #d9b84c;
+        border-radius: 4px;
+        font-size: 14px;
+      }
+      .controls .lbl {
+        font-weight: 800;
+        letter-spacing: 0.06em;
+        font-size: 12px;
+        color: #7a6200;
+      }
+      .seg {
+        display: inline-flex;
+        border: 1px solid var(--line2);
+        border-radius: 999px;
+        overflow: hidden;
+        background: #fff;
+      }
+      .seg button {
+        border: 0;
+        background: transparent;
+        padding: 6px 13px;
+        cursor: pointer;
+        color: var(--text);
+        font-size: 14px;
+        white-space: nowrap;
+      }
+      .seg button.on {
+        background: var(--blue);
+        color: #fff;
+        font-weight: 700;
+      }
+
+      /* the simulated record page */
+      .rp {
+        margin: 12px auto 40px;
+        max-width: 1180px;
+        padding: 0 0 30px;
+      }
+      .highlights {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 4px;
+        padding: 14px 18px;
+        display: flex;
+        gap: 14px;
+        align-items: center;
+        margin-bottom: 12px;
+      }
+      .highlights .icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 6px;
+        background: #7f8de1;
+        color: #fff;
+        display: grid;
+        place-items: center;
+        font-weight: 800;
+        font-size: 18px;
+      }
+      .highlights .small {
+        font-size: 12px;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+      .highlights h1 {
+        margin: 0;
+        font-size: 22px;
+      }
+      .highlights .facts {
+        margin-left: auto;
+        display: flex;
+        gap: 26px;
+        font-size: 13px;
+      }
+      .highlights .facts span {
+        display: block;
+        color: var(--muted);
+      }
+      .cols {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 12px;
+        align-items: start;
+      }
+      .side .ghost {
+        border: 1px dashed var(--line2);
+        border-radius: 4px;
+        background: transparent;
+        padding: 12px 14px;
+        margin-bottom: 12px;
+        color: #8a8a8a;
+        font-size: 13px;
+      }
+      .ghost b {
+        display: block;
+        color: #777;
+        margin-bottom: 4px;
+        font-size: 14px;
+      }
+      .ghostmain {
+        border: 1px dashed var(--line2);
+        border-radius: 4px;
+        padding: 10px 14px;
+        margin-top: 12px;
+        color: #8a8a8a;
+        font-size: 13px;
+      }
+
+      /* the component itself: everything inside is ours */
+      .comp {
+        position: relative;
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 4px;
+      }
+      .comp .head {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--line);
+      }
+      .comp .head h2 {
+        margin: 0;
+        font-size: 17px;
+        font-weight: 800;
+      }
+      .comp .head .sp {
+        flex: 1;
+      }
+      .sec {
+        padding: 14px 16px;
+        border-bottom: 1px solid var(--line);
+      }
+      .sec:last-child {
+        border-bottom: 0;
+      }
+      .sec h3 {
+        margin: 0 0 10px;
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--muted);
+        font-weight: 800;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .sec h3 .sp {
+        flex: 1;
+      }
+      .sec h3 .tag {
+        text-transform: none;
+        letter-spacing: 0;
+        font-weight: 500;
+        font-size: 13px;
+      }
+
+      /* buttons: pill, bold capitals */
+      .btn {
+        border-radius: 999px;
+        padding: 8px 18px;
+        font-weight: 800;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+        border: 1px solid var(--blue);
+        background: var(--blue);
+        color: #fff;
+      }
+      .btn.sec2 {
+        background: #fff;
+        color: var(--blue);
+      }
+      .btn.danger {
+        background: var(--bad);
+        border-color: var(--bad);
+      }
+      .btn:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+      }
+      .iconbtn {
+        border: 0;
+        background: transparent;
+        cursor: pointer;
+        color: var(--blue);
+        font-size: 13px;
+        font-weight: 700;
+        padding: 4px 8px;
+        border-radius: 999px;
+      }
+      .iconbtn.del {
+        color: var(--bad);
+      }
+      .iconbtn:hover {
+        background: var(--bluebg);
+      }
+      .iconbtn.del:hover {
+        background: var(--badbg);
+      }
+
+      /* ratings across the top */
+      .ratings {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+      }
+      .rt {
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        padding: 10px 12px;
+        background: var(--card2);
+      }
+      .rt .area {
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+        font-weight: 800;
+      }
+      .rt .val {
+        margin-top: 4px;
+        font-size: 20px;
+        font-weight: 800;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .rt .dot {
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        flex: none;
+      }
+      .PLATINUM .dot {
+        background: linear-gradient(135deg, #e5e4e2, #7d8a9a);
+      }
+      .GOLD .dot {
+        background: linear-gradient(135deg, #ffe27a, #c79100);
+      }
+      .SILVER .dot {
+        background: linear-gradient(135deg, #f1f1f1, #8e949a);
+      }
+      .BRONZE .dot {
+        background: linear-gradient(135deg, #e4a672, #9a5a21);
+      }
+      .NONE .val {
+        color: #9a9a9a;
+        font-weight: 600;
+      }
+      .NONE .dot {
+        background: transparent;
+        border: 2px dashed #c4c4c4;
+      }
+      .rt .val svg {
+        width: 52px;
+        height: 52px;
+        flex: none;
+      }
+      /* ---- metal plate rating cards (from usage_rating_cards_v1.html, Robert chose these 2026-11-05) ---- */
+      /* ================= the four metals, sampled from the sheet ================= */
+      .m-PLATINUM {
+        --sheet: conic-gradient(
+          from 0deg at 50% 52%,
+          #bdb49c,
+          #e2d9be 20deg,
+          #b3a88f 40deg,
+          #9f947b 60deg,
+          #aba089 80deg,
+          #a59a82 100deg,
+          #897d64 120deg,
+          #988c75 140deg,
+          #beb49f 160deg,
+          #ada28d 180deg,
+          #968b74 200deg,
+          #afa68d 220deg,
+          #c7bea3 240deg,
+          #796e58 260deg,
+          #766853 280deg,
+          #b5aa93 300deg,
+          #a89d84 320deg,
+          #978b75 340deg,
+          #bdb49c 360deg
+        );
+        --hi: #f4efe0;
+        --mid: #b3a88f;
+        --lo: #6d6250;
+        --ink: #3a3326;
+        --glow: rgba(244, 239, 224, 0.9);
+      }
+      .m-GOLD {
+        --sheet: conic-gradient(
+          from 0deg at 50% 52%,
+          #dfc16e,
+          #fce68b 20deg,
+          #dcb856 40deg,
+          #cea441 60deg,
+          #e0b75e 80deg,
+          #d6ae56 100deg,
+          #a37821 120deg,
+          #b78b31 140deg,
+          #edc35c 160deg,
+          #d5ab4b 180deg,
+          #ba9137 200deg,
+          #d3af4d 220deg,
+          #e5cc73 240deg,
+          #ab8327 260deg,
+          #af8629 280deg,
+          #e6be57 300deg,
+          #ddb457 320deg,
+          #c19848 340deg,
+          #dfc16e 360deg
+        );
+        --hi: #fff1b0;
+        --mid: #d6ae56;
+        --lo: #8a6513;
+        --ink: #4a3406;
+        --glow: rgba(255, 241, 176, 0.95);
+      }
+      .m-SILVER {
+        --sheet: conic-gradient(
+          from 0deg at 50% 52%,
+          #a3a7b1,
+          #c8cdd7 20deg,
+          #9599a2 40deg,
+          #808591 60deg,
+          #868a93 80deg,
+          #818691 100deg,
+          #676c77 120deg,
+          #777e89 140deg,
+          #a1a7b2 160deg,
+          #9096a0 180deg,
+          #7f858f 200deg,
+          #9aa0aa 220deg,
+          #a8aeb7 240deg,
+          #686c74 260deg,
+          #6c707a 280deg,
+          #9a9da7 300deg,
+          #969ba5 320deg,
+          #7e838d 340deg,
+          #a3a7b1 360deg
+        );
+        --hi: #e6eaf2;
+        --mid: #9599a2;
+        --lo: #565b66;
+        --ink: #23272f;
+        --glow: rgba(230, 234, 242, 0.95);
+      }
+      .m-BRONZE {
+        --sheet: conic-gradient(
+          from 0deg at 50% 52%,
+          #bc7951,
+          #e39361 20deg,
+          #ae6946 40deg,
+          #a46a47 60deg,
+          #ab6d4a 80deg,
+          #a66b48 100deg,
+          #8b5839 120deg,
+          #996240 140deg,
+          #be7f56 160deg,
+          #ad714c 180deg,
+          #9a6142 200deg,
+          #b67851 220deg,
+          #c4794f 240deg,
+          #7f4e32 260deg,
+          #855335 280deg,
+          #b87952 300deg,
+          #b2754f 320deg,
+          #9b6242 340deg,
+          #bc7951 360deg
+        );
+        --hi: #f3b58c;
+        --mid: #ad714c;
+        --lo: #6e4128;
+        --ink: #3d1f0e;
+        --glow: rgba(243, 181, 140, 0.95);
+      }
+      .m-NONE {
+        --sheet: linear-gradient(#eceae8, #e2dfdc);
+        --hi: #f6f5f4;
+        --mid: #cfccc9;
+        --lo: #9a9794;
+        --ink: #6d6a67;
+        --glow: rgba(255, 255, 255, 0);
+      }
+
+      /* ================= STYLE 1: the metal plate ================= */
+      .plate {
+        position: relative;
+        border-radius: 14px;
+        padding: 16px 14px 14px;
+        min-height: 176px;
+        color: var(--ink);
+        overflow: hidden;
+        background:
+          repeating-radial-gradient(
+            circle at 50% 52%,
+            rgba(255, 255, 255, 0.07) 0 1px,
+            rgba(0, 0, 0, 0.06) 1px 2px
+          ),
+          var(--sheet);
+        box-shadow:
+          inset 0 2px 1px rgba(255, 255, 255, 0.75),
+          inset 0 -3px 3px rgba(0, 0, 0, 0.3),
+          inset 0 0 0 1px rgba(0, 0, 0, 0.25),
+          0 6px 14px rgba(40, 30, 10, 0.28);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+      .plate .screw {
+        position: absolute;
+        top: 9px;
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 35% 30%, var(--hi), var(--lo));
+        box-shadow: 0 1px 1px rgba(0, 0, 0, 0.4);
+      }
+      .plate .screw.l {
+        left: 10px;
+      }
+      .plate .screw.r {
+        right: 10px;
+      }
+      .plate .area {
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        margin-top: 2px;
+        text-shadow: 0 1px 0 rgba(255, 255, 255, 0.55);
+      }
+      .plate .coin {
+        width: 64px;
+        height: 64px;
+        margin: 10px 0 8px;
+        border-radius: 50%;
+        background: var(--sheet);
+        box-shadow:
+          inset 0 3px 3px rgba(255, 255, 255, 0.7),
+          inset 0 -4px 5px rgba(0, 0, 0, 0.35),
+          0 0 0 3px rgba(0, 0, 0, 0.28),
+          0 0 0 5px var(--hi),
+          0 4px 8px rgba(0, 0, 0, 0.35);
+        display: grid;
+        place-items: center;
+      }
+      .plate .coin svg {
+        width: 38px;
+        height: 38px;
+        filter: drop-shadow(0 1px 0 rgba(255, 255, 255, 0.6))
+          drop-shadow(0 -1px 0 rgba(0, 0, 0, 0.35));
+      }
+      .plate .rank {
+        font-size: 22px;
+        font-weight: 900;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        text-shadow:
+          0 1px 0 rgba(255, 255, 255, 0.65),
+          0 -1px 0 rgba(0, 0, 0, 0.25);
+      }
+      .plate .stars {
+        margin-top: 4px;
+        letter-spacing: 3px;
+        font-size: 14px;
+        text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);
+      }
+      /* ================= glamour: a sheen sweeps across on hover ================= */
+      .plate::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        pointer-events: none;
+        background: linear-gradient(
+          105deg,
+          transparent 38%,
+          var(--glow) 50%,
+          transparent 62%
+        );
+        transform: translateX(-120%);
+        opacity: 0.55;
+      }
+      @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+        .plate:hover::after {
+          transform: translateX(120%);
+          transition: transform 0.9s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+      }
+      .plate.m-NONE::after {
+        display: none;
+      }
+      /* "no rating" card */
+      .plate.m-NONE {
+        background: #eceae8;
+        box-shadow: inset 0 0 0 1px #d4d1ce;
+      }
+      .plate.m-NONE .coin {
+        background: #f6f5f4;
+        box-shadow: inset 0 0 0 2px #cfccc9;
+      }
+      .plate.m-NONE .screw {
+        display: none;
+      }
+      .ratings .plate {
+        min-height: 176px;
+      }
+
+      .note {
+        margin-top: 10px;
+        padding: 8px 12px;
+        border-radius: 4px;
+        font-size: 14px;
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+      .note.warn {
+        background: var(--warnbg);
+        border: 1px solid var(--warnline);
+        color: var(--warn);
+      }
+      .note.info {
+        background: var(--bluebg);
+        border: 1px solid #b6d0f7;
+        color: var(--blue2);
+      }
+      .note.ok {
+        background: var(--okbg);
+        border: 1px solid #a7d7a0;
+        color: var(--ok);
+      }
+      .note.bad {
+        background: var(--badbg);
+        border: 1px solid #f1a3aa;
+        color: var(--bad);
+      }
+
+      /* tables */
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 15px;
+      }
+      th {
+        text-align: left;
+        font-size: 12px;
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
+        color: var(--muted);
+        padding: 6px 10px;
+        border-bottom: 2px solid var(--line);
+        white-space: nowrap;
+      }
+      td {
+        padding: 8px 10px;
+        border-bottom: 1px solid var(--line);
+        vertical-align: middle;
+      }
+      td.num,
+      th.num {
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+      }
+      td.act,
+      th.act {
+        text-align: right;
+        white-space: nowrap;
+        width: 1%;
+      }
+      tr.hosp td {
+        background: #eef1f6;
+        font-weight: 800;
+        border-bottom: 1px solid var(--line2);
+        padding: 7px 10px;
+      }
+      tr.hosp td .sub {
+        font-weight: 500;
+        color: var(--muted);
+        margin-left: 8px;
+        font-size: 13px;
+      }
+      tr.flash td {
+        background: #fff3c4;
+        transition: background 1s;
+      }
+      tr.editing td,
+      tr.deleting td {
+        background: var(--bluebg);
+      }
+      tr.deleting td {
+        background: var(--badbg);
+      }
+      tr.total td {
+        font-weight: 800;
+        border-top: 2px solid var(--line2);
+        border-bottom: 0;
+      }
+      td.dash {
+        color: #a3a3a3;
+      }
+      .co-zb {
+        font-weight: 800;
+        color: var(--blue2);
+      }
+      a.lnk {
+        color: var(--blue);
+        text-decoration: none;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      a.lnk:hover {
+        text-decoration: underline;
+      }
+      .empty {
+        padding: 14px;
+        color: var(--muted);
+        text-align: center;
+        font-size: 15px;
+      }
+
+      /* fields */
+      .sel {
+        appearance: none;
+        -webkit-appearance: none;
+        border: 1px solid var(--line2);
+        border-radius: 4px;
+        padding: 7px 30px 7px 10px;
+        background: #fff
+          url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%235c5c5c' stroke-width='2'/%3E%3C/svg%3E")
+          no-repeat right 10px center;
+        color: var(--text);
+        min-width: 130px;
+      }
+      .inp {
+        border: 1px solid var(--line2);
+        border-radius: 4px;
+        padding: 7px 10px;
+        background: #fff;
+        color: var(--text);
+        width: 100px;
+        text-align: right;
+      }
+      .sel:focus,
+      .inp:focus,
+      .sbox input:focus {
+        outline: 2px solid #a8cdf5;
+        border-color: var(--blue);
+      }
+      .sbox {
+        position: relative;
+        display: inline-block;
+      }
+      .sbox input {
+        border: 1px solid var(--line2);
+        border-radius: 999px;
+        padding: 7px 34px 7px 14px;
+        width: 290px;
+      }
+      .xcirc {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: #8b8b8b;
+        position: relative;
+        border: 0;
+        cursor: pointer;
+        flex: none;
+        padding: 0;
+      }
+      .xcirc::before,
+      .xcirc::after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 10px;
+        height: 2px;
+        background: #fff;
+        border-radius: 1px;
+      }
+      .xcirc::before {
+        transform: translate(-50%, -50%) rotate(45deg);
+      }
+      .xcirc::after {
+        transform: translate(-50%, -50%) rotate(-45deg);
+      }
+      .sbox .sclear {
+        position: absolute;
+        right: 8px;
+        top: 50%;
+        transform: translateY(-50%);
+        display: none;
+      }
+      .sbox.has .sclear {
+        display: block;
+      }
+      .pick {
+        position: absolute;
+        z-index: 5;
+        top: 100%;
+        left: 0;
+        margin-top: 4px;
+        width: 360px;
+        background: #fff;
+        border: 1px solid var(--line2);
+        border-radius: 6px;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+        max-height: 210px;
+        overflow: auto;
+      }
+      .pick div {
+        padding: 8px 12px;
+        cursor: pointer;
+      }
+      .pick div:hover {
+        background: var(--bluebg);
+      }
+      .pick small {
+        color: var(--muted);
+        margin-left: 6px;
+      }
+      .chosen {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border: 1px solid var(--line2);
+        background: var(--card2);
+        border-radius: 999px;
+        padding: 5px 8px 5px 14px;
+        font-weight: 700;
+      }
+
+      /* add usage: folds open (the motion standard) */
+      .fold {
+        display: grid;
+        grid-template-rows: 0fr;
+        transition: grid-template-rows 0.4s var(--ease);
+      }
+      .fold.open {
+        grid-template-rows: 1fr;
+      }
+      .fold > .in {
+        overflow: hidden;
+        min-height: 0;
+        opacity: 0;
+        transition: opacity 0.3s;
+      }
+      .fold.open > .in {
+        opacity: 1;
+        overflow: visible;
+      }
+      .addbox {
+        margin-bottom: 12px;
+        padding: 12px 14px;
+        border: 1px solid #b6d0f7;
+        background: var(--bluebg);
+        border-radius: 6px;
+      }
+      .addgrid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px 16px;
+        align-items: flex-end;
+      }
+      .fld label {
+        display: block;
+        font-size: 12px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--muted);
+        font-weight: 800;
+        margin-bottom: 4px;
+      }
+      .addfoot {
+        display: flex;
+        gap: 10px;
+        margin-top: 12px;
+        align-items: center;
+      }
+
+      /* please wait while a change is saved */
+      .busy::after {
+        content: "PLEASE WAIT";
+        position: absolute;
+        inset: 0;
+        background: rgba(255, 255, 255, 0.78);
+        display: grid;
+        place-items: center;
+        font-weight: 800;
+        letter-spacing: 0.14em;
+        color: var(--blue2);
+        z-index: 8;
+        border-radius: 4px;
+      }
+      .foot {
+        font-size: 13px;
+        color: var(--muted);
+        margin-top: 8px;
+      }
+      .switch {
+        display: inline-flex;
+        border: 1px solid var(--line2);
+        border-radius: 999px;
+        overflow: hidden;
+      }
+      .switch button {
+        border: 0;
+        background: #fff;
+        padding: 5px 12px;
+        cursor: pointer;
+        font-size: 13px;
+        white-space: nowrap;
+      }
+      .switch button.on {
+        background: var(--blue);
+        color: #fff;
+        font-weight: 700;
+      }
+      th.grp {
+        text-align: center;
+        border-bottom: 1px solid var(--line);
+        padding-bottom: 2px;
+      }
+      th.sub {
+        font-size: 11px;
+        padding-top: 2px;
+      }
+      th.zbh,
+      td.zbc {
+        color: var(--blue2);
+      }
+      td.zbc {
+        font-weight: 700;
+      }
+      td.oth {
+        color: #555;
+      }
+      td.dash.zbc,
+      td.dash.oth {
+        color: #a3a3a3;
+        font-weight: 400;
+      }
+      td.zbc:nth-child(even),
+      th.zbh {
+        border-left: 1px solid var(--line);
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .fold,
+        .fold > .in {
+          transition: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="sfnav">
+      <span class="app">Sales</span>
+      <span class="tab">Home</span>
+      <span class="tab on">Accounts</span>
+      <span class="tab">Opportunities and Risks</span>
+      <span class="sp"></span>
+      <button class="pill" type="button" id="full">Full screen</button>
+    </div>
+
+    <details class="about" open>
+      <summary>ABOUT THIS MOCKUP</summary>
+      <p>
+        <b>Version 1: one component for any Account page.</b> It is a Lightning
+        web component placed on the Lightning <b>record page</b> of an Account
+        (not a tab, not a full-screen app), in the two-thirds column. It behaves
+        differently depending on the account it sits on: on a
+        <b>person account</b> (a surgeon) it manages their usages; on a
+        <b>business account</b> (a hospital) it only shows case totals by
+        surgeon. Light theme so it blends into the page. Invented data only.
+      </p>
+      <b>Try it:</b>
+      <ul>
+        <li>
+          Use the yellow <b>Mockup controls</b> to open the record page of Dr
+          Whitfield (a physician), Dr Okafor (an emerging consultant), Dr Nair
+          (New Zealand, no MyCase bookings) and Royal Northside Hospital (a
+          business account).
+        </li>
+        <li>
+          Surgeon: <b>Edit</b> a line (company and cases), <b>Delete</b> a line
+          (asks inline), <b>Add usage</b> (folds open; pick a hospital, try
+          adding a line that already exists to see the one-usage rule).
+        </li>
+        <li>
+          <b>"Viewer can change usages"</b> in the controls switches the Add,
+          Edit and Delete buttons off, as for someone without permission.
+        </li>
+        <li>
+          <b>Rating graphic</b> switches the four rating tiles between today's
+          dots, the metal plates (Robert's choice, 2026-11-05; from
+          <code>usage_rating_cards_v1.html</code>) and the five graphic styles
+          from the style page (<code>usage_rating_graphics_v1.html</code>). It
+          opens on the metal plates. Dr Whitfield has Gold, Silver and Bronze;
+          Dr Okafor and Dr Nair show other mixes.
+        </li>
+        <li>
+          <b>"Viewer can see MyCase": No</b> shows someone with no access to the
+          MyCase objects (for example a New Zealand user): the bookings table is
+          not on the surgeon's page at all, and the hospital page has no MyCase
+          switch, only the usage records. No error, no gap, no mention.
+        </li>
+        <li>
+          Hospital: switch between <b>MyCase bookings</b> and
+          <b>Usage records</b> (the two ways the totals could be counted; to
+          choose between). The usage records view splits every surgery type into
+          <b>ZB</b> (Zimmer Biomet) and <b>Other</b> companies; MyCase holds ZB
+          surgeries only, so it has no split. Click a surgeon's name to open
+          their page.
+        </li>
+      </ul>
+      <p>
+        <b>Not shown yet:</b> the phone, dark mode, the real company choices
+        (they come from each usage's record type), the real hospital search, the
+        grey boxes standing in for the rest of the page.
+        <b>Assumed, to confirm:</b> ratings are only recalculated by Salesforce
+        in the background, so after a change the component says so instead of
+        changing the rating at once.
+      </p>
+    </details>
+
+    <div class="controls">
+      <span class="lbl">MOCKUP CONTROLS (not part of Salesforce)</span>
+      <span>Open the record page of:</span>
+      <span class="seg" id="recseg"></span>
+      <span>Viewer can change usages:</span>
+      <span class="seg" id="permseg">
+        <button type="button" data-p="1" class="on">Yes</button>
+        <button type="button" data-p="0">No</button>
+      </span>
+      <span>Rating graphic:</span>
+      <span class="seg" id="rgseg">
+        <button type="button" data-s="plate" class="on">Metal plates</button>
+        <button type="button" data-s="dots">Dots</button>
+        <button type="button" data-s="medal">A Medals</button>
+        <button type="button" data-s="shape">B Shapes</button>
+        <button type="button" data-s="coin">C Coins</button>
+        <button type="button" data-s="trophy">D Trophies</button>
+        <button type="button" data-s="badge">E Badges</button>
+      </span>
+      <span>Viewer can see MyCase:</span>
+      <span class="seg" id="mcseg">
+        <button type="button" data-p="1" class="on">Yes</button>
+        <button type="button" data-p="0">No</button>
+      </span>
+    </div>
+
+    <svg width="0" height="0" style="position: absolute" aria-hidden="true">
+      <defs id="defs"></defs>
+    </svg>
+    <div class="rp" id="rp"></div>
+
+    <script>
+      /* ---- rating graphics (same drawings as usage_rating_graphics_v1.html) ---- */
+      var ORDER = ["platinum", "gold", "silver", "bronze"];
+      var LABEL = {
+        platinum: "Platinum",
+        gold: "Gold",
+        silver: "Silver",
+        bronze: "Bronze"
+      };
+      var RANK = {
+        platinum: "highest",
+        gold: "second",
+        silver: "third",
+        bronze: "fourth"
+      };
+      var COL = {
+        platinum: {
+          a: "#f7fafd",
+          b: "#cfd9e6",
+          c: "#74879f",
+          ribbon: "#5b84c6",
+          ink: "#44566f"
+        },
+        gold: {
+          a: "#fff4b5",
+          b: "#f2c230",
+          c: "#a07000",
+          ribbon: "#c0392b",
+          ink: "#7a5600"
+        },
+        silver: {
+          a: "#ffffff",
+          b: "#d0d5db",
+          c: "#7f8791",
+          ribbon: "#3f72ab",
+          ink: "#555d68"
+        },
+        bronze: {
+          a: "#f7cba6",
+          b: "#cd7f32",
+          c: "#76421a",
+          ribbon: "#2f7d5b",
+          ink: "#5a3012"
+        }
+      };
+      var defs = "";
+      ORDER.forEach(function (k) {
+        var c = COL[k];
+        defs +=
+          '<linearGradient id="g-' +
+          k +
+          '" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="' +
+          c.a +
+          '"/><stop offset="0.5" stop-color="' +
+          c.b +
+          '"/><stop offset="1" stop-color="' +
+          c.c +
+          '"/></linearGradient>';
+        defs +=
+          '<linearGradient id="r-' +
+          k +
+          '" x1="1" y1="1" x2="0" y2="0"><stop offset="0" stop-color="' +
+          c.a +
+          '"/><stop offset="0.55" stop-color="' +
+          c.b +
+          '"/><stop offset="1" stop-color="' +
+          c.c +
+          '"/></linearGradient>';
+      });
+      document.getElementById("defs").innerHTML = defs;
+
+      function star(cx, cy, R, r, n) {
+        var p = [];
+        for (var i = 0; i < n * 2; i++) {
+          var a = (Math.PI / n) * i - Math.PI / 2;
+          var rad = i % 2 ? r : R;
+          p.push(
+            (cx + rad * Math.cos(a)).toFixed(1) +
+              "," +
+              (cy + rad * Math.sin(a)).toFixed(1)
+          );
+        }
+        return p.join(" ");
+      }
+      function svg(inner) {
+        return (
+          '<svg viewBox="0 0 100 100" aria-hidden="true">' + inner + "</svg>"
+        );
+      }
+      function sheen(x, y, rx, ry) {
+        return (
+          '<ellipse cx="' +
+          x +
+          '" cy="' +
+          y +
+          '" rx="' +
+          rx +
+          '" ry="' +
+          ry +
+          '" fill="#fff" opacity="0.5" transform="rotate(-35 ' +
+          x +
+          " " +
+          y +
+          ')"/>'
+        );
+      }
+
+      /* family 1: round medals on a ribbon; the emblem gets simpler as the rank drops */
+      function medal(k) {
+        var c = COL[k];
+        var s =
+          '<path d="M28 2 L52 44 L40 56 L18 18 Z" fill="' +
+          c.ribbon +
+          '"/><path d="M72 2 L48 44 L60 56 L82 18 Z" fill="' +
+          c.ribbon +
+          '" opacity="0.8"/>';
+        s +=
+          '<circle cx="50" cy="66" r="30" fill="url(#g-' +
+          k +
+          ')" stroke="' +
+          c.c +
+          '" stroke-width="1.5"/>';
+        s +=
+          '<circle cx="50" cy="66" r="23" fill="url(#r-' +
+          k +
+          ')" stroke="' +
+          c.c +
+          '" stroke-width="1"/>';
+        var e = "";
+        if (k === "platinum")
+          e =
+            '<polygon points="50,51 63,66 50,81 37,66" fill="#fff" stroke="' +
+            c.ink +
+            '" stroke-width="1.5"/><polyline points="37,66 63,66 M50,51 50,81" fill="none" stroke="' +
+            c.ink +
+            '" stroke-width="1" opacity="0.6"/><path d="M44 58 L50 51 L56 58" fill="none" stroke="' +
+            c.ink +
+            '" stroke-width="1" opacity="0.6"/>';
+        if (k === "gold")
+          e =
+            '<polygon points="' +
+            star(50, 66, 14, 6, 5) +
+            '" fill="#fff8d6" stroke="' +
+            c.ink +
+            '" stroke-width="1.5"/>';
+        if (k === "silver")
+          e =
+            '<circle cx="50" cy="66" r="10" fill="none" stroke="' +
+            c.ink +
+            '" stroke-width="3"/><circle cx="50" cy="66" r="3.5" fill="' +
+            c.ink +
+            '"/>';
+        if (k === "bronze")
+          e = '<circle cx="50" cy="66" r="6" fill="' + c.ink + '"/>';
+        return svg(s + e + sheen(38, 50, 10, 4));
+      }
+
+      /* family 2: four different metal shapes; a diamond for the top, a plain disc for the bottom */
+      var SHAPES = {
+        platinum: "M50 5 L93 50 L50 95 L7 50 Z",
+        gold: "M50 5 L89 27 L89 73 L50 95 L11 73 L11 27 Z",
+        silver: "M50 5 L89 17 V50 C89 73 71 87 50 96 C29 87 11 73 11 50 V17 Z",
+        bronze: "M50 6 A44 44 0 1 1 49.9 6 Z"
+      };
+      function shape(k) {
+        var c = COL[k];
+        var s =
+          '<path d="' +
+          SHAPES[k] +
+          '" fill="url(#g-' +
+          k +
+          ')" stroke="' +
+          c.c +
+          '" stroke-width="2" stroke-linejoin="round"/>';
+        s +=
+          '<g transform="translate(50 50) scale(0.74) translate(-50 -50)"><path d="' +
+          SHAPES[k] +
+          '" fill="url(#r-' +
+          k +
+          ')" stroke="' +
+          c.c +
+          '" stroke-width="1.5" stroke-linejoin="round"/></g>';
+        return svg(s + sheen(34, 34, 12, 4));
+      }
+
+      /* family 3: round coins with chevrons, 4 for Platinum down to 1 for Bronze (rank insignia) */
+      function coin(k) {
+        var c = COL[k];
+        var n = 4 - ORDER.indexOf(k);
+        var s =
+          '<circle cx="50" cy="50" r="45" fill="url(#g-' +
+          k +
+          ')" stroke="' +
+          c.c +
+          '" stroke-width="2"/><circle cx="50" cy="50" r="37" fill="url(#r-' +
+          k +
+          ')" stroke="' +
+          c.c +
+          '" stroke-width="1"/>';
+        var gap = 13,
+          total = (n - 1) * gap + 14,
+          top = 50 - total / 2;
+        for (var i = 0; i < n; i++) {
+          var y = top + i * gap;
+          s +=
+            '<polyline points="30,' +
+            (y + 14) +
+            " 50," +
+            y +
+            " 70," +
+            (y + 14) +
+            '" fill="none" stroke="' +
+            c.ink +
+            '" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>';
+        }
+        return svg(s + sheen(32, 30, 11, 4));
+      }
+
+      /* family 4: trophy cups; the cup shrinks and loses its decoration down the ranks */
+      var TSCALE = { platinum: 1, gold: 0.92, silver: 0.84, bronze: 0.76 };
+      function trophy(k) {
+        var c = COL[k];
+        var t = TSCALE[k];
+        var s =
+          '<g transform="translate(50 94) scale(' +
+          t +
+          ') translate(-50 -94)">';
+        s +=
+          '<path d="M30 24 C10 24 10 50 32 52" fill="none" stroke="' +
+          c.c +
+          '" stroke-width="5" stroke-linecap="round"/><path d="M70 24 C90 24 90 50 68 52" fill="none" stroke="' +
+          c.c +
+          '" stroke-width="5" stroke-linecap="round"/>';
+        s +=
+          '<path d="M28 12 H72 V40 C72 58 62 66 50 66 C38 66 28 58 28 40 Z" fill="url(#g-' +
+          k +
+          ')" stroke="' +
+          c.c +
+          '" stroke-width="2" stroke-linejoin="round"/>';
+        s +=
+          '<rect x="45" y="66" width="10" height="16" fill="url(#r-' +
+          k +
+          ')" stroke="' +
+          c.c +
+          '" stroke-width="1.5"/>';
+        s +=
+          '<rect x="30" y="82" width="40" height="11" rx="3" fill="url(#g-' +
+          k +
+          ')" stroke="' +
+          c.c +
+          '" stroke-width="2"/>';
+        if (k === "platinum")
+          s +=
+            '<polygon points="50,24 58,36 50,48 42,36" fill="#fff" stroke="' +
+            c.ink +
+            '" stroke-width="1.5"/>';
+        if (k === "gold")
+          s +=
+            '<polygon points="' +
+            star(50, 37, 11, 4.6, 5) +
+            '" fill="#fff8d6" stroke="' +
+            c.ink +
+            '" stroke-width="1.3"/>';
+        s +=
+          '<ellipse cx="38" cy="26" rx="6" ry="3" fill="#fff" opacity="0.5" transform="rotate(-60 38 26)"/>';
+        s += "</g>";
+        if (k === "platinum")
+          s +=
+            '<polygon points="86,4 88.5,11 95.5,13.5 88.5,16 86,23 83.5,16 76.5,13.5 83.5,11" fill="#9fc3f0"/>';
+        return svg(s);
+      }
+
+      /* family 5: badge medals in the style of the Adobe Stock artwork: dark disc in a metal ring, faceted star, hanging ribbon.
+         The ribbon's stripes count the rank (4 Platinum, 3 Gold, 2 Silver, 1 Bronze); Platinum also gets a second ring. */
+      function facetStar(k, cx, cy, R, r) {
+        var c = COL[k],
+          out = "";
+        var O = [],
+          I = [];
+        for (var i = 0; i < 5; i++) {
+          var a = ((-90 + 72 * i) * Math.PI) / 180,
+            b = ((-90 + 72 * i + 36) * Math.PI) / 180;
+          O.push([cx + R * Math.cos(a), cy + R * Math.sin(a)]);
+          I.push([cx + r * Math.cos(b), cy + r * Math.sin(b)]);
+        }
+        function pt(p) {
+          return p[0].toFixed(1) + "," + p[1].toFixed(1);
+        }
+        for (var j = 0; j < 5; j++) {
+          var prev = I[(j + 4) % 5];
+          out +=
+            '<polygon points="' +
+            pt(O[j]) +
+            " " +
+            pt(prev) +
+            " " +
+            cx +
+            "," +
+            cy +
+            '" fill="' +
+            c.a +
+            '"/>';
+          out +=
+            '<polygon points="' +
+            pt(O[j]) +
+            " " +
+            pt(I[j]) +
+            " " +
+            cx +
+            "," +
+            cy +
+            '" fill="' +
+            c.b +
+            '"/>';
+        }
+        out +=
+          '<polygon points="' +
+          O.map(function (o, i) {
+            return pt(o) + " " + pt(I[i]);
+          }).join(" ") +
+          '" fill="none" stroke="' +
+          c.c +
+          '" stroke-width="0.8" stroke-linejoin="round"/>';
+        return out;
+      }
+      function badge(k) {
+        var c = COL[k];
+        var n = 4 - ORDER.indexOf(k);
+        var g = "url(#g-" + k + ")";
+        var s = "";
+        // ribbon: a notched frame joined to the ring, with n stripes inside (4 Platinum, 3 Gold, 2 Silver, 1 Bronze)
+        s +=
+          '<polyline points="32,42 32,10 50,17 68,10 68,42" fill="none" stroke="' +
+          g +
+          '" stroke-width="2.6" stroke-linejoin="miter"/>';
+        for (var i = 0; i < n; i++) {
+          var x = 32 + (36 * (i + 1)) / (n + 1);
+          var yt = 17 - 7 * (Math.abs(x - 50) / 18);
+          s +=
+            '<rect x="' +
+            (x - 1.3).toFixed(1) +
+            '" y="' +
+            yt.toFixed(1) +
+            '" width="2.6" height="' +
+            (42 - yt).toFixed(1) +
+            '" fill="' +
+            g +
+            '"/>';
+        }
+        // ring and dark disc
+        s +=
+          '<circle cx="50" cy="68" r="25" fill="#252a32" stroke="' +
+          g +
+          '" stroke-width="' +
+          (k === "bronze" ? 4 : 5) +
+          '"/>';
+        if (k === "platinum")
+          s +=
+            '<circle cx="50" cy="68" r="29.6" fill="none" stroke="' +
+            g +
+            '" stroke-width="1.6"/>';
+        s += facetStar(k, 50, 69, 16.5, 7);
+        return svg(s);
+      }
+
+      var PLATE_STARS = { PLATINUM: 4, GOLD: 3, SILVER: 2, BRONZE: 1 };
+      function plateCard(v, area) {
+        var m = "m-" + (v || "NONE");
+        var starSvg =
+          '<svg viewBox="0 0 24 24"><path d="M12 2l3 6.8 7.4.7-5.6 4.9 1.7 7.3L12 17.9 5.5 21.7l1.7-7.3L1.6 9.5l7.4-.7z" fill="' +
+          (v ? "var(--hi)" : "#bdbab7") +
+          '" stroke="' +
+          (v ? "var(--mid)" : "#a9a6a3") +
+          '" stroke-width="1" stroke-linejoin="round"/></svg>';
+        var rank = v ? v.charAt(0) + v.slice(1).toLowerCase() : "No rating";
+        return (
+          '<div class="plate ' +
+          m +
+          '"><span class="screw l"></span><span class="screw r"></span>' +
+          '<div class="area">' +
+          area +
+          "</div>" +
+          '<div class="coin">' +
+          starSvg +
+          "</div>" +
+          '<div class="rank">' +
+          rank +
+          "</div>" +
+          '<div class="stars">' +
+          (v ? new Array(PLATE_STARS[v] + 1).join("\u2605") : "") +
+          "</div></div>"
+        );
+      }
+      var RGF = {
+        medal: medal,
+        shape: shape,
+        coin: coin,
+        trophy: trophy,
+        badge: badge
+      };
+      var rstyle = "plate";
+      function ratingGfx(v) {
+        if (!v || rstyle === "dots") return '<span class="dot"></span>';
+        return RGF[rstyle](v.toLowerCase());
+      }
+      var TODAY = new Date("2026-11-05");
+      var COMPANIES = [
+        "ZB",
+        "Stryker",
+        "Smith+Nephew",
+        "DePuy",
+        "Lima",
+        "Arthrex"
+      ];
+      var PRODUCTS = {
+        Hip: ["Stems", "Cups"],
+        Knee: ["Knee"],
+        Shoulder: ["Anatomical", "Reverse"],
+        CMFT: ["CMFT"]
+      };
+      var HOSPITALS = [
+        ["Royal Northside Hospital", "Sydney NSW"],
+        ["St Aldric Private Hospital", "Sydney NSW"],
+        ["Harbourview Day Surgery", "Sydney NSW"],
+        ["Cedar Bay Hospital", "Melbourne VIC"],
+        ["Eastgate Private Hospital", "Melbourne VIC"],
+        ["Waitemata Bay Private", "Auckland NZ"],
+        ["Southern Cross Orthopaedic", "Brisbane QLD"]
+      ];
+      var uid = 100;
+      var R = {
+        anna: {
+          kind: "person",
+          initials: "AW",
+          name: "Dr Anna Whitfield",
+          sub: "Physician",
+          country: "Australia",
+          state: "NSW",
+          ratings: {
+            Hip: "GOLD",
+            Knee: "SILVER",
+            Shoulder: "BRONZE",
+            CMF: null
+          },
+          changed: "2025-08-14",
+          usages: [
+            ["Royal Northside Hospital", "Hip", "Stems", "ZB", 60],
+            ["Royal Northside Hospital", "Hip", "Cups", "ZB", 55],
+            ["Royal Northside Hospital", "Knee", "Knee", "Stryker", 40],
+            ["Royal Northside Hospital", "Knee", "Knee", "ZB", 25],
+            ["St Aldric Private Hospital", "Hip", "Stems", "DePuy", 30],
+            ["St Aldric Private Hospital", "Hip", "Cups", "DePuy", 30],
+            [
+              "St Aldric Private Hospital",
+              "Shoulder",
+              "Anatomical",
+              "Arthrex",
+              12
+            ],
+            ["St Aldric Private Hospital", "Shoulder", "Reverse", "ZB", 18],
+            ["Harbourview Day Surgery", "Knee", "Knee", "ZB", 35]
+          ],
+          bookings: {
+            Hip: [58, 6, "29 Oct 2026"],
+            Knee: [31, 3, "2 Nov 2026"],
+            Shoulder: [9, 2, "14 Oct 2026"],
+            CMFT: null
+          },
+          au: true
+        },
+        sam: {
+          kind: "person",
+          initials: "SO",
+          name: "Dr Sam Okafor",
+          sub: "Emerging consultant",
+          country: "Australia",
+          state: "VIC",
+          ratings: { Hip: "BRONZE", Knee: "BRONZE", Shoulder: null, CMF: null },
+          changed: "2026-10-20",
+          usages: [
+            ["Cedar Bay Hospital", "Knee", "Knee", "ZB", 20],
+            ["Eastgate Private Hospital", "Hip", "Stems", "ZB", 15],
+            ["Eastgate Private Hospital", "Hip", "Cups", "ZB", 15]
+          ],
+          bookings: {
+            Hip: [14, 0, "21 Oct 2026"],
+            Knee: [18, 1, "3 Nov 2026"],
+            Shoulder: null,
+            CMFT: null
+          },
+          au: true
+        },
+        priya: {
+          kind: "person",
+          initials: "PN",
+          name: "Dr Priya Nair",
+          sub: "Physician",
+          country: "New Zealand",
+          state: "Auckland",
+          ratings: { Hip: "SILVER", Knee: "GOLD", Shoulder: null, CMF: null },
+          changed: "2026-06-02",
+          usages: [
+            ["Waitemata Bay Private", "Knee", "Knee", "ZB", 50],
+            ["Waitemata Bay Private", "Hip", "Stems", "Lima", 25]
+          ],
+          bookings: null,
+          au: false
+        },
+        hosp: {
+          kind: "business",
+          initials: "RN",
+          name: "Royal Northside Hospital",
+          sub: "Hospital",
+          country: "Australia",
+          state: "NSW",
+          // surgeon, link key, MyCase bookings last 12 months [Hip, Knee, Shoulder, CMFT] (Zimmer Biomet surgeries only),
+          // usage records cases per year for Zimmer Biomet [Hip, Knee, Shoulder, CMFT], and for every other company [Hip, Knee, Shoulder, CMFT]
+          surgeons: [
+            [
+              "Dr Anna Whitfield",
+              "anna",
+              [64, 20, 0, 0],
+              [115, 25, 0, 0],
+              [0, 40, 0, 0]
+            ],
+            [
+              "Dr Marcus Lindqvist",
+              null,
+              [41, 12, 0, 0],
+              [50, 10, 0, 0],
+              [30, 20, 0, 0]
+            ],
+            [
+              "Dr Helen Zhou",
+              null,
+              [0, 38, 15, 0],
+              [0, 25, 24, 0],
+              [0, 45, 0, 0]
+            ],
+            [
+              "Dr Tomas Reyes",
+              null,
+              [9, 0, 0, 22],
+              [0, 0, 0, 40],
+              [20, 0, 0, 0]
+            ],
+            ["Dr Sam Okafor", "sam", [6, 0, 0, 0], [12, 0, 0, 0], [0, 0, 0, 0]]
+          ]
+        }
+      };
+      var cur = "anna";
+      var canEdit = true;
+      var canMC = true;
+      var editing = null;
+      var deleting = null;
+      var flashId = null;
+      var changedNote = false;
+      var hmode = "mc";
+      var addState = { hosp: null };
+
+      R.anna.usages = R.anna.usages.map(mk);
+      R.sam.usages = R.sam.usages.map(mk);
+      R.priya.usages = R.priya.usages.map(mk);
+      function mk(a) {
+        return {
+          id: ++uid,
+          hospital: a[0],
+          portfolio: a[1],
+          product: a[2],
+          company: a[3],
+          cases: a[4]
+        };
+      }
+      function esc(s) {
+        return String(s).replace(/[&<>"]/g, function (c) {
+          return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
+        });
+      }
+      function fmtDate(iso) {
+        var d = new Date(iso);
+        return d.toLocaleDateString("en-AU", {
+          day: "numeric",
+          month: "short",
+          year: "numeric"
+        });
+      }
+      function ago(iso) {
+        var days = Math.round((TODAY - new Date(iso)) / 86400000);
+        if (days <= 0) return "today";
+        if (days < 60) return days + " days ago";
+        return Math.round(days / 30.4) + " months ago";
+      }
+      function coHtml(c) {
+        return c === "ZB" ? '<span class="co-zb">ZB</span>' : esc(c);
+      }
+      function opts(list, sel) {
+        return list
+          .map(function (v) {
+            return (
+              "<option" +
+              (v === sel ? " selected" : "") +
+              ">" +
+              esc(v) +
+              "</option>"
+            );
+          })
+          .join("");
+      }
+
+      /* ---------- page shell ---------- */
+      function renderPage() {
+        var r = R[cur];
+        editing = deleting = flashId = null;
+        changedNote = false;
+        addState = { hosp: null };
+        var h =
+          '<div class="highlights"><div class="icon">' +
+          r.initials +
+          '</div><div><div class="small">' +
+          (r.kind === "person" ? "Person account" : "Account") +
+          "</div><h1>" +
+          esc(r.name) +
+          '</h1></div><div class="facts"><div><span>Type</span>' +
+          esc(r.sub) +
+          "</div><div><span>Country</span>" +
+          esc(r.country) +
+          "</div><div><span>State</span>" +
+          esc(r.state) +
+          "</div></div></div>";
+        h += '<div class="cols"><div class="main"><div class="comp" id="comp">';
+        h += r.kind === "person" ? personShell(r) : hospitalShell(r);
+        h +=
+          '</div><div class="ghostmain">Other components on this page (not ours)</div></div>';
+        h +=
+          '<div class="side"><div class="ghost"><b>Details</b>Fields of the account, as the page already has them.</div><div class="ghost"><b>Activity</b>Tasks and events.</div><div class="ghost"><b>Related lists</b>Not part of this component.</div></div></div>';
+        document.getElementById("rp").innerHTML = h;
+        if (r.kind === "person") {
+          renderUsages();
+          renderRatingNote();
+        } else renderHospital();
+        fillAdd();
+      }
+
+      /* ---------- surgeon (person account) ---------- */
+      function personShell(r) {
+        var h =
+          '<div class="head"><h2>Usages</h2><span class="sp"></span></div>';
+        h +=
+          '<div class="sec"><h3>Rating by portfolio <span class="sp"></span><span class="tag">stored on the account</span></h3><div class="ratings">';
+        ["Hip", "Knee", "Shoulder", "CMF"].forEach(function (a) {
+          var v = r.ratings[a];
+          if (rstyle === "plate") {
+            h += plateCard(v, a);
+            return;
+          }
+          h +=
+            '<div class="rt ' +
+            (v || "NONE") +
+            '"><div class="area">' +
+            a +
+            '</div><div class="val">' +
+            ratingGfx(v) +
+            (v || "No rating") +
+            "</div></div>";
+        });
+        h += '</div><div id="ratingnote"></div></div>';
+        h +=
+          '<div class="sec"><h3>What this surgeon uses <span class="sp"></span>' +
+          (canEdit
+            ? '<button class="btn" type="button" id="addtoggle">Add usage</button>'
+            : "") +
+          '</h3><div class="fold" id="addfold"><div class="in"><div class="addbox" id="addbox"></div></div></div><div id="usagetable"></div></div>';
+        if (canMC) {
+          h +=
+            '<div class="sec"><h3>MyCase bookings, last 12 months <span class="sp"></span><span class="tag">for information only</span></h3>' +
+            bookingsHtml(r) +
+            "</div>";
+        }
+        return h;
+      }
+      function renderRatingNote() {
+        var r = R[cur];
+        var days = Math.round((TODAY - new Date(r.changed)) / 86400000);
+        var h = "";
+        if (changedNote) {
+          h +=
+            '<div class="note info">Usages changed just now. Ratings are recalculated by Salesforce in the background, so they may take a little while to change.</div>';
+        } else if (days > 365) {
+          h +=
+            '<div class="note warn"><b>Usages last changed ' +
+            fmtDate(r.changed) +
+            " (" +
+            ago(r.changed) +
+            ").</b> Worth checking they are still right.</div>";
+        } else {
+          h +=
+            '<div class="note ok">Usages last changed ' +
+            fmtDate(r.changed) +
+            " (" +
+            ago(r.changed) +
+            ").</div>";
+        }
+        document.getElementById("ratingnote").innerHTML = h;
+      }
+      function renderUsages() {
+        var r = R[cur];
+        var el = document.getElementById("usagetable");
+        if (!r.usages.length) {
+          el.innerHTML =
+            '<div class="empty">No usages recorded for this surgeon yet.' +
+            (canEdit ? " Use Add usage." : "") +
+            "</div>";
+          return;
+        }
+        var groups = [];
+        var seen = {};
+        r.usages.forEach(function (u) {
+          if (!seen[u.hospital]) {
+            seen[u.hospital] = { name: u.hospital, rows: [] };
+            groups.push(seen[u.hospital]);
+          }
+          seen[u.hospital].rows.push(u);
+        });
+        var hs = {};
+        HOSPITALS.forEach(function (x) {
+          hs[x[0]] = x[1];
+        });
+        var h =
+          '<table><thead><tr><th>Portfolio</th><th>Product</th><th>Company</th><th class="num">Cases per year</th>' +
+          (canEdit ? '<th class="act"></th>' : "") +
+          "</tr></thead><tbody>";
+        var cols = canEdit ? 5 : 4;
+        groups.forEach(function (g) {
+          h +=
+            '<tr class="hosp"><td colspan="' +
+            cols +
+            '">' +
+            esc(g.name) +
+            '<span class="sub">' +
+            esc(hs[g.name] || "") +
+            "</span></td></tr>";
+          g.rows.forEach(function (u) {
+            var cls =
+              u.id === flashId
+                ? "flash"
+                : u.id === editing
+                  ? "editing"
+                  : u.id === deleting
+                    ? "deleting"
+                    : "";
+            if (u.id === editing) {
+              h +=
+                '<tr class="' +
+                cls +
+                '"><td>' +
+                u.portfolio +
+                "</td><td>" +
+                u.product +
+                '</td><td><select class="sel" id="ecomp">' +
+                opts(COMPANIES, u.company) +
+                '</select></td><td class="num"><input class="inp" id="ecases" type="number" min="0" value="' +
+                u.cases +
+                '" /></td><td class="act"><button class="btn" type="button" data-act="esave" data-id="' +
+                u.id +
+                '">Save</button> <button class="btn sec2" type="button" data-act="ecancel">Cancel</button></td></tr>';
+            } else if (u.id === deleting) {
+              h +=
+                '<tr class="' +
+                cls +
+                '"><td colspan="' +
+                (cols - 1) +
+                '"><b>Delete ' +
+                u.product +
+                " (" +
+                esc(u.company) +
+                ", " +
+                u.cases +
+                " cases per year) at " +
+                esc(u.hospital) +
+                '?</b> This takes it off the surgeon.</td><td class="act"><button class="btn danger" type="button" data-act="ddo" data-id="' +
+                u.id +
+                '">Delete</button> <button class="btn sec2" type="button" data-act="dcancel">Keep</button></td></tr>';
+            } else {
+              h +=
+                '<tr class="' +
+                cls +
+                '"><td>' +
+                u.portfolio +
+                "</td><td>" +
+                u.product +
+                "</td><td>" +
+                coHtml(u.company) +
+                '</td><td class="num">' +
+                u.cases +
+                "</td>" +
+                (canEdit
+                  ? '<td class="act"><button class="iconbtn" type="button" data-act="edit" data-id="' +
+                    u.id +
+                    '">Edit</button><button class="iconbtn del" type="button" data-act="del" data-id="' +
+                    u.id +
+                    '">Delete</button></td>'
+                  : "") +
+                "</tr>";
+            }
+          });
+        });
+        h += "</tbody></table>";
+        el.innerHTML = h;
+        if (flashId) {
+          var f = flashId;
+          flashId = null;
+          setTimeout(function () {
+            var row = document.querySelector("tr.flash");
+            if (row) row.classList.remove("flash");
+          }, 1800);
+        }
+      }
+      function bookingsHtml(r) {
+        if (!r.bookings) {
+          return '<div class="empty">No MyCase bookings for this surgeon in the last 12 months.</div>';
+        }
+        var h =
+          '<table><thead><tr><th>Surgery type</th><th class="num">Primary</th><th class="num">Revision</th><th class="num">Total</th><th class="num">Latest booking</th></tr></thead><tbody>';
+        var gp = 0,
+          gr = 0;
+        ["Hip", "Knee", "Shoulder", "CMFT"].forEach(function (t) {
+          var b = r.bookings[t];
+          if (!b) {
+            h +=
+              "<tr><td>" +
+              t +
+              '</td><td class="num dash">–</td><td class="num dash">–</td><td class="num dash">–</td><td class="num dash">–</td></tr>';
+          } else {
+            gp += b[0];
+            gr += b[1];
+            h +=
+              "<tr><td>" +
+              t +
+              '</td><td class="num">' +
+              b[0] +
+              '</td><td class="num">' +
+              b[1] +
+              '</td><td class="num"><b>' +
+              (b[0] + b[1]) +
+              '</b></td><td class="num">' +
+              b[2] +
+              "</td></tr>";
+          }
+        });
+        h +=
+          '<tr class="total"><td>All types</td><td class="num">' +
+          gp +
+          '</td><td class="num">' +
+          gr +
+          '</td><td class="num">' +
+          (gp + gr) +
+          '</td><td class="num"></td></tr></tbody></table>';
+        h +=
+          '<div class="foot">Surgeries booked in MyCase with usage items, past dates only. Shown so you can see what this surgeon is doing now; nothing here can be changed.</div>';
+        return h;
+      }
+
+      /* ---------- add usage ---------- */
+      function fillAdd() {
+        var box = document.getElementById("addbox");
+        if (!box) return;
+        var h =
+          '<div class="addgrid"><div class="fld"><label>Hospital</label><span id="hospslot"></span></div>';
+        h +=
+          '<div class="fld"><label>Portfolio</label><select class="sel" id="aport">' +
+          opts(Object.keys(PRODUCTS)) +
+          "</select></div>";
+        h +=
+          '<div class="fld"><label>Product</label><select class="sel" id="aprod"></select></div>';
+        h +=
+          '<div class="fld"><label>Company</label><select class="sel" id="acomp">' +
+          opts(COMPANIES) +
+          "</select></div>";
+        h +=
+          '<div class="fld"><label>Cases per year</label><input class="inp" id="acases" type="number" min="0" value="" placeholder="0" /></div></div>';
+        h +=
+          '<div id="addmsg"></div><div class="addfoot"><button class="btn" type="button" id="adddo">Add usage</button><button class="btn sec2" type="button" id="addcancel">Cancel</button><span class="foot" style="margin:0">One usage per surgeon, hospital, product and company.</span></div>';
+        box.innerHTML = h;
+        fillProd();
+        hospSlot();
+      }
+      function fillProd() {
+        var p = document.getElementById("aport").value;
+        document.getElementById("aprod").innerHTML = opts(PRODUCTS[p]);
+      }
+      function hospSlot() {
+        var s = document.getElementById("hospslot");
+        if (addState.hosp) {
+          s.innerHTML =
+            '<span class="chosen">' +
+            esc(addState.hosp) +
+            ' <button class="xcirc" type="button" id="hospx" aria-label="Remove"></button></span>';
+        } else {
+          s.innerHTML =
+            '<span class="sbox" id="hsbox"><input id="hsearch" type="text" placeholder="Search hospitals" autocomplete="off" /><button class="xcirc sclear" type="button" id="hclear" aria-label="Clear"></button><div class="pick" id="hpick" style="display:none"></div></span>';
+        }
+      }
+      function hospList() {
+        var q = document.getElementById("hsearch").value.trim().toLowerCase();
+        var box = document.getElementById("hsbox");
+        box.classList.toggle("has", q.length > 0);
+        var pick = document.getElementById("hpick");
+        var m = HOSPITALS.filter(function (x) {
+          return !q || x[0].toLowerCase().indexOf(q) >= 0;
+        });
+        pick.innerHTML = m.length
+          ? m
+              .map(function (x) {
+                return (
+                  '<div data-h="' +
+                  esc(x[0]) +
+                  '">' +
+                  esc(x[0]) +
+                  "<small>" +
+                  esc(x[1]) +
+                  "</small></div>"
+                );
+              })
+              .join("")
+          : '<div style="color:#777;cursor:default">No hospital found</div>';
+        pick.style.display = "block";
+      }
+      function addDo() {
+        var msg = document.getElementById("addmsg");
+        var hosp = addState.hosp;
+        var port = document.getElementById("aport").value;
+        var prod = document.getElementById("aprod").value;
+        var comp = document.getElementById("acomp").value;
+        var cases = document.getElementById("acases").value;
+        if (!hosp) {
+          msg.innerHTML = '<div class="note bad">Pick a hospital first.</div>';
+          return;
+        }
+        if (cases === "" || Number(cases) < 0) {
+          msg.innerHTML =
+            '<div class="note bad">Enter the cases per year (a whole number, 0 or more).</div>';
+          return;
+        }
+        var r = R[cur];
+        var dup = r.usages.filter(function (u) {
+          return (
+            u.hospital === hosp && u.product === prod && u.company === comp
+          );
+        })[0];
+        if (dup) {
+          msg.innerHTML =
+            '<div class="note warn">' +
+            esc(r.name) +
+            " already has a usage for " +
+            esc(comp) +
+            " " +
+            port +
+            " " +
+            prod +
+            " at " +
+            esc(hosp) +
+            " (" +
+            dup.cases +
+            " cases per year). Edit that line instead; it is highlighted below.</div>";
+          flashId = dup.id;
+          renderUsages();
+          return;
+        }
+        busy(function () {
+          var u = {
+            id: ++uid,
+            hospital: hosp,
+            portfolio: port,
+            product: prod,
+            company: comp,
+            cases: Number(cases)
+          };
+          // keep a hospital's lines together: insert after the last line of that hospital
+          var last = -1;
+          r.usages.forEach(function (x, i) {
+            if (x.hospital === hosp) last = i;
+          });
+          if (last >= 0) r.usages.splice(last + 1, 0, u);
+          else r.usages.push(u);
+          touched();
+          flashId = u.id;
+          renderUsages();
+          closeAdd();
+        });
+      }
+      function openAdd() {
+        document.getElementById("addfold").classList.add("open");
+        document.getElementById("addtoggle").textContent = "Close";
+      }
+      function closeAdd() {
+        document.getElementById("addfold").classList.remove("open");
+        var t = document.getElementById("addtoggle");
+        if (t) t.textContent = "Add usage";
+        addState = { hosp: null };
+        setTimeout(fillAdd, 420);
+      }
+      function touched() {
+        R[cur].changed = "2026-11-05";
+        changedNote = true;
+        renderRatingNote();
+      }
+      function busy(fn) {
+        var c = document.getElementById("comp");
+        c.classList.add("busy");
+        setTimeout(function () {
+          fn();
+          c.classList.remove("busy");
+        }, 550);
+      }
+
+      /* ---------- hospital (business account) ---------- */
+      function hospitalShell(r) {
+        var h =
+          '<div class="head"><h2>Cases by surgeon</h2><span class="sp"></span>' +
+          (canMC
+            ? '<span class="switch" id="hswitch"><button type="button" data-m="mc"' +
+              (hmode === "mc" ? ' class="on"' : "") +
+              '>MyCase bookings, last 12 months</button><button type="button" data-m="us"' +
+              (hmode === "us" ? ' class="on"' : "") +
+              ">Usage records, cases per year</button></span>"
+            : "") +
+          "</div>";
+        h += '<div class="sec" id="hbody"></div>';
+        return h;
+      }
+      function renderHospital() {
+        var r = R[cur];
+        var split = hmode === "us" || !canMC;
+        function sum(a) {
+          return a.reduce(function (x, y) {
+            return x + y;
+          }, 0);
+        }
+        var rows = r.surgeons.slice().sort(function (x, y) {
+          return split
+            ? sum(y[3]) + sum(y[4]) - sum(x[3]) - sum(x[4])
+            : sum(y[2]) - sum(x[2]);
+        });
+        var types = ["Hip", "Knee", "Shoulder", "CMFT"];
+        var totA = [0, 0, 0, 0],
+          totB = [0, 0, 0, 0];
+        var h = "<table><thead>";
+        if (split) {
+          h +=
+            '<tr><th rowspan="2" style="vertical-align:bottom">Surgeon</th>' +
+            types
+              .map(function (t) {
+                return '<th class="num grp" colspan="2">' + t + "</th>";
+              })
+              .join("") +
+            '<th class="num grp" colspan="2">All types</th></tr><tr>' +
+            types
+              .concat(["All"])
+              .map(function () {
+                return '<th class="num sub zbh">ZB</th><th class="num sub">Other</th>';
+              })
+              .join("") +
+            "</tr>";
+        } else {
+          h +=
+            "<tr><th>Surgeon</th>" +
+            types
+              .map(function (t) {
+                return '<th class="num">' + t + "</th>";
+              })
+              .join("") +
+            '<th class="num">Total</th></tr>';
+        }
+        h += "</thead><tbody>";
+        function cell(v, cls) {
+          return v
+            ? '<td class="num ' + cls + '">' + v + "</td>"
+            : '<td class="num dash ' + cls + '">–</td>';
+        }
+        rows.forEach(function (sg) {
+          h +=
+            "<tr><td>" +
+            (sg[1]
+              ? '<a class="lnk" data-go="' + sg[1] + '">' + esc(sg[0]) + "</a>"
+              : '<a class="lnk" style="cursor:default">' +
+                esc(sg[0]) +
+                "</a>") +
+            "</td>";
+          if (split) {
+            for (var i = 0; i < 4; i++) {
+              totA[i] += sg[3][i];
+              totB[i] += sg[4][i];
+              h += cell(sg[3][i], "zbc") + cell(sg[4][i], "oth");
+            }
+            h +=
+              '<td class="num zbc"><b>' +
+              sum(sg[3]) +
+              '</b></td><td class="num oth"><b>' +
+              sum(sg[4]) +
+              "</b></td>";
+          } else {
+            for (var k = 0; k < 4; k++) {
+              totA[k] += sg[2][k];
+              h += cell(sg[2][k], "");
+            }
+            h += '<td class="num"><b>' + sum(sg[2]) + "</b></td>";
+          }
+          h += "</tr>";
+        });
+        h += '<tr class="total"><td>All surgeons</td>';
+        if (split) {
+          for (var q = 0; q < 4; q++)
+            h +=
+              '<td class="num zbc">' +
+              totA[q] +
+              '</td><td class="num oth">' +
+              totB[q] +
+              "</td>";
+          h +=
+            '<td class="num zbc">' +
+            sum(totA) +
+            '</td><td class="num oth">' +
+            sum(totB) +
+            "</td>";
+        } else {
+          h +=
+            totA
+              .map(function (v) {
+                return '<td class="num">' + v + "</td>";
+              })
+              .join("") +
+            '<td class="num">' +
+            sum(totA) +
+            "</td>";
+        }
+        h += "</tr></tbody></table>";
+        h +=
+          '<div class="foot">' +
+          (split
+            ? "Cases per year written on the surgeons' usage records for this hospital, split between Zimmer Biomet (ZB) and every other company, by surgeon and portfolio."
+            : "Surgeries booked in MyCase at this hospital in the last 12 months, primary and revision together. MyCase holds Zimmer Biomet surgeries only, so there is no split here: the split is on the usage records view.") +
+          " Totals only: no ratings.</div>";
+        document.getElementById("hbody").innerHTML = h;
+      }
+
+      /* ---------- events ---------- */
+      document.addEventListener("click", function (e) {
+        var t = e.target;
+        var a = t.getAttribute && t.getAttribute("data-act");
+        var r = R[cur];
+        if (a === "edit") {
+          editing = Number(t.getAttribute("data-id"));
+          deleting = null;
+          renderUsages();
+        } else if (a === "ecancel") {
+          editing = null;
+          renderUsages();
+        } else if (a === "esave") {
+          var id = Number(t.getAttribute("data-id"));
+          var comp = document.getElementById("ecomp").value;
+          var cs = document.getElementById("ecases").value;
+          var u = r.usages.filter(function (x) {
+            return x.id === id;
+          })[0];
+          var clash = r.usages.filter(function (x) {
+            return (
+              x.id !== id &&
+              x.hospital === u.hospital &&
+              x.product === u.product &&
+              x.company === comp
+            );
+          })[0];
+          if (cs === "" || Number(cs) < 0) {
+            alert("Enter the cases per year.");
+            return;
+          }
+          if (clash) {
+            flashId = clash.id;
+            editing = null;
+            renderUsages();
+            alert(
+              r.name +
+                " already has " +
+                comp +
+                " " +
+                u.product +
+                " at " +
+                u.hospital +
+                ". Edit that line instead."
+            );
+            return;
+          }
+          busy(function () {
+            u.company = comp;
+            u.cases = Number(cs);
+            editing = null;
+            touched();
+            flashId = id;
+            renderUsages();
+          });
+        } else if (a === "del") {
+          deleting = Number(t.getAttribute("data-id"));
+          editing = null;
+          renderUsages();
+        } else if (a === "dcancel") {
+          deleting = null;
+          renderUsages();
+        } else if (a === "ddo") {
+          var did = Number(t.getAttribute("data-id"));
+          busy(function () {
+            r.usages = r.usages.filter(function (x) {
+              return x.id !== did;
+            });
+            deleting = null;
+            touched();
+            renderUsages();
+          });
+        }
+        if (t.id === "addtoggle") {
+          if (document.getElementById("addfold").classList.contains("open"))
+            closeAdd();
+          else openAdd();
+        }
+        if (t.id === "addcancel") closeAdd();
+        if (t.id === "adddo") addDo();
+        if (t.id === "hospx") {
+          addState.hosp = null;
+          hospSlot();
+        }
+        if (t.id === "hclear") {
+          document.getElementById("hsearch").value = "";
+          hospList();
+          document.getElementById("hsearch").focus();
+        }
+        if (t.getAttribute && t.getAttribute("data-h")) {
+          addState.hosp = t.getAttribute("data-h");
+          hospSlot();
+        }
+        if (t.getAttribute && t.getAttribute("data-go")) {
+          setRec(t.getAttribute("data-go"));
+        }
+        if (t.getAttribute && t.getAttribute("data-m")) {
+          hmode = t.getAttribute("data-m");
+          [].forEach.call(
+            document.querySelectorAll("#hswitch button"),
+            function (b) {
+              b.classList.toggle("on", b.getAttribute("data-m") === hmode);
+            }
+          );
+          renderHospital();
+        }
+        if (!t.closest || !t.closest("#hsbox")) {
+          var pk = document.getElementById("hpick");
+          if (pk) pk.style.display = "none";
+        }
+      });
+      document.addEventListener("input", function (e) {
+        if (e.target.id === "hsearch") hospList();
+      });
+      document.addEventListener("focusin", function (e) {
+        if (e.target.id === "hsearch") hospList();
+      });
+      document.addEventListener("change", function (e) {
+        if (e.target.id === "aport") fillProd();
+      });
+
+      function buildSeg() {
+        var s = document.getElementById("recseg");
+        s.innerHTML = [
+          ["anna", "Dr Whitfield (physician)"],
+          ["sam", "Dr Okafor (emerging consultant)"],
+          ["priya", "Dr Nair (New Zealand)"],
+          ["hosp", "Royal Northside Hospital"]
+        ]
+          .map(function (x) {
+            return (
+              '<button type="button" data-r="' +
+              x[0] +
+              '"' +
+              (x[0] === cur ? ' class="on"' : "") +
+              ">" +
+              x[1] +
+              "</button>"
+            );
+          })
+          .join("");
+        [].forEach.call(s.querySelectorAll("button"), function (b) {
+          b.onclick = function () {
+            setRec(b.getAttribute("data-r"));
+          };
+        });
+      }
+      function setRec(k) {
+        cur = k;
+        [].forEach.call(
+          document.querySelectorAll("#recseg button"),
+          function (b) {
+            b.classList.toggle("on", b.getAttribute("data-r") === k);
+          }
+        );
+        renderPage();
+        window.scrollTo(0, 0);
+      }
+      [].forEach.call(
+        document.querySelectorAll("#permseg button"),
+        function (b) {
+          b.onclick = function () {
+            canEdit = b.getAttribute("data-p") === "1";
+            [].forEach.call(
+              document.querySelectorAll("#permseg button"),
+              function (x) {
+                x.classList.toggle("on", x === b);
+              }
+            );
+            renderPage();
+          };
+        }
+      );
+      [].forEach.call(document.querySelectorAll("#mcseg button"), function (b) {
+        b.onclick = function () {
+          canMC = b.getAttribute("data-p") === "1";
+          [].forEach.call(
+            document.querySelectorAll("#mcseg button"),
+            function (x) {
+              x.classList.toggle("on", x === b);
+            }
+          );
+          renderPage();
+        };
+      });
+      [].forEach.call(document.querySelectorAll("#rgseg button"), function (b) {
+        b.onclick = function () {
+          rstyle = b.getAttribute("data-s");
+          [].forEach.call(
+            document.querySelectorAll("#rgseg button"),
+            function (x) {
+              x.classList.toggle("on", x === b);
+            }
+          );
+          renderPage();
+        };
+      });
+      document.getElementById("full").onclick = function () {
+        var d = document.documentElement;
+        if (d.requestFullscreen) d.requestFullscreen();
+      };
+      buildSeg();
+      renderPage();
+    </script>
+  </body>
+</html>
