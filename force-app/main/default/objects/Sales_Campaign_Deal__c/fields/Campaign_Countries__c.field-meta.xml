@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+  <fullName>Campaign_Countries__c</fullName>
+  <description
+  >Pipeline: the campaign's countries, read from the campaign so it can be shown in a related list on the Opportunities &amp; Risks page.</description>
+  <formula>Campaign__r.Countries_Text__c</formula>
+  <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+  <label>Campaign Countries</label>
+  <trackTrending>false</trackTrending>
+  <type>Text</type>
+</CustomField>

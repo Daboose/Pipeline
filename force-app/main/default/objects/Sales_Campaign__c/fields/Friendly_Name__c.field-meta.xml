@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+  <fullName>Friendly_Name__c</fullName>
+  <description
+  >Pipeline: the name the campaign manager types. The full Campaign Name (friendly name plus country codes) is set by the system.</description>
+  <inlineHelpText
+  >What the campaign is called, up to 40 characters. The country codes are added for you.</inlineHelpText>
+  <label>Friendly Name</label>
+  <length>40</length>
+  <required>true</required>
+  <trackTrending>false</trackTrending>
+  <type>Text</type>
+  <unique>false</unique>
+</CustomField>

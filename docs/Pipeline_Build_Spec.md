@@ -477,3 +477,58 @@ Robert's design, mockup `docs/mockups/pipeline_event_link_v1.html` (approved, "b
 **Stage path with both ends** (`pipelineDeal` `pathSteps`): the open stages, then the winning stage (green) and the losing stage (red) side by side, so a deal can be set to either from the path (before, only the winning end showed, and the losing one only after the deal was lost). "Closed Lost" is not a stage name in the data: the real ends are Conversion / Unsuccessful Conversion (opportunities), Closed Retained / Lost Business (risks), Closed Won / Deal Lost (ROSA). Finished steps are outlined in the current stage colour; won or lost turns the whole path that colour.
 
 **To confirm:** the Event field's place in the flyout (near the bottom, before Background information); whether an Event column is wanted in the lists (not built); the stage dropdown for each record type still decides which closing stages are offered. **For PROD later:** nothing new to tick except the changed Apex classes and components (`PipelineController`, `PipelineLookupController` with their tests, `pipelineApp`, `pipelineDeal`, `pipelineSelection`, `pipelineFilterModel`), plus the field itself and its permission set, which are Robert's.
+
+## Campaign Management, slice 1 (UAT only, 2026-11-06)
+
+**Built in UAT only (Robert said "build" after approving the three objects, their names and fields, and the Sales Campaign naming). Dry run `0AfOg000007HSS5KAO` and deploy `0AfOg000007HRr0KAG`: 51 components, 14/14 tests (`PipelineCampaignRulesTest`, `PipelineCampaignControllerTest`). Not in DEV, not committed. The permission set `Pipeline_Campaign_Manager` was assigned to Robert's UAT user so he can test.**
+
+**What is in it**
+
+- **Three new objects** (`docs/Pipeline_Campaign_Objects_Proposal.md`): `Sales_Campaign__c` (Friendly Name, Countries, Portfolios, Active, Campaign Manager, Start and End Date, Description, Member Count roll-up, Countries (text), Portfolios (text); Name set by a trigger), `Sales_Campaign_Member__c` (Campaign master-detail, Surgeon lookup to Account, Unique Key, seven formula fields reading the campaign) and `Sales_Campaign_Deal__c` (Campaign and Deal, both master-detail, Unique Key, the same seven formulas). Validation rules: end date not before start, campaign manager required, member must be a Physician or Emerging Consultant account.
+- **Three triggers on the new objects only** (`PipelineSalesCampaignTrigger`, `...MemberTrigger`, `...DealTrigger`) calling `PipelineCampaignRules` (the name, the text fields, the unique keys). No trigger on any existing object.
+- **`PipelineCampaignController`** (list, one campaign with members, save, switch on or off, surgeon search with the 2-character rule, both names, country scope and widening, hospitals from `Healthcare_Surgeon_Relationship__c`, add and remove members, manager search of active non-portal users).
+- **The screen:** LWC `pipelineCampaigns` (+ `pipelineCampaignModel`), Aura app `PipelineCampaignOut`, Visualforce page `PipelineCampaigns`, tab `Pipeline_Campaigns`, app **Campaign Management** (`Pipeline_Campaign_Management`), permission set **`Pipeline_Campaign_Manager`**. Version on screen: v0.1. Dark and light buttons (not yet saved as a setting; it opens in the person's saved Pipeline theme).
+- **Not in this slice:** the importer (paste or CSV and the check screen), the Campaigns control for reps, the Pipeline Campaign view.
+
+**Changes from the written proposal (all told to Robert):**
+
+1. `Deal__c` on the link is a **master-detail** to `SalesRisks__c` (not a lookup), so deleting a deal removes its links and a required lookup can never block a deal being deleted. It adds a related list on Opportunities & Risks and changes no file of that object.
+2. Because of that, `Pipeline_Campaign_Manager` includes **read** on `SalesRisks__c` (Salesforce requires it for read on the link object).
+3. `Campaign_Manager__c` and `Surgeon__c` are lookups that clear if the user or account is deleted (so they never block an Account delete or merge); "required" is enforced by validation rules instead.
+4. Three triggers (name and two keys), not one.
+
+**Lessons:** a whole-project validation with tests fails when the person running it has no field access to new fields, so the new tests run as a test user holding `Pipeline_Campaign_Manager` (works for whoever deploys, including Gearset); a validation rule name is at most 40 characters; a multi-select list is written in the order Salesforce lists its values.
+
+**To test in UAT (Robert tests there himself):** open the app **Campaign Management** (hard refresh with Cmd+Shift+R), make a campaign, add members by search, remove one, switch it off and on.
+
+### Campaign Management 0.2 (UAT only, 2026-11-07): Robert's first test feedback
+
+Robert tested 0.1 and sent it back: cramped, tiny search box and table, "CampaignManagement" with no space, outlined buttons, no breadcrumbs, Save below the fold, import not visible. 0.2: full-width layout with roomy two-column form, page bar with breadcrumbs and the page's actions (Save and Cancel, Edit and Deactivate, New campaign) on the right, all buttons filled, a space in the two-colour titles (the template drops whitespace between spans, so the gap is CSS now), portfolios in capitals, Light is the default theme (Dark is remembered on that computer), big surgeon search, and an Import members button that says importing is the next piece. Spacing was checked by rendering the real markup and CSS at 1440 x 900 in Chrome (not in Salesforce itself).
+
+### Campaign Management 0.3 (UAT only, 2026-11-07): tables work like Excel
+
+Robert: any table should sort by clicking a heading and have column widths he can drag, "like Excel", and be wide by default. 0.3 adds both to the campaign list and the members table (click a heading to sort, again to flip, blanks last; drag a column edge to resize, double-click the edge to reset; widths are remembered on that computer). Also fixes the description box (a textarea cannot take its text from the template, so it is filled in when the form opens). Dry run `0AfOg000007HqNxKAK`; component-only deploys need no tests; 22 component tests pass. Rule recorded in CLAUDE.md.
+
+### Campaign Management 0.4 (UAT only, 2026-11-07): back to Pipeline's own scale
+
+Robert said 0.3 looked like 150% zoom: "an excessive use of the spacing". 0.4 returns text, buttons and fields to Pipeline's own sizes (15px text, 36px controls), takes the second row away (the breadcrumbs, the page's actions, the theme buttons and Full screen all sit in the one top bar), drops the big page titles ("Your Campaigns" is gone; the form and campaign headings are small), and trims the padding in and around the tables (the table runs edge to edge in its card, 8 to 9px cell padding) and tiles. Rendered at 1800 px wide in Chrome to check. Lesson (also in memory): generous means the full width and sensible gaps, not oversized type; copy Pipeline's own sizes.
+
+### Campaign Management 0.5 (UAT only, 2026-11-07): the name once
+
+Robert: the campaign name was shown twice (in the breadcrumb and as the heading). 0.5 shows it once, as the page heading, with the breadcrumb trail underneath it ("Campaigns > Campaign details", and "Campaigns > Campaign details > Edit" on the form); the trail never repeats the name and is no longer in the top bar. The English name is shown after a surgeon's name only when it differs from it (it showed "Bruce Ashford (English: Bruce Ashford)").
+
+### Campaign Management 0.6 (UAT only, 2026-11-07): Save and Cancel inside the form
+
+Robert liked the new-campaign screen (full width, two chunks, everything on one screen) and wanted Save campaign and Cancel at the bottom right of the form's own panel, not in the top bar. Done; the top bar no longer carries them for the form (Edit campaign and Deactivate stay in the top bar on a campaign for now).
+
+### Campaign Management 0.7 (UAT only, 2026-11-07): the heading is the trail
+
+Robert redesigned it in an image editor: one line under the top bar that is both the breadcrumb and the page heading, "Campaigns" (a link back) followed by the campaign's name, with no empty row and no separate title. 0.7 does exactly that on a campaign ("Campaigns Shoulder Sydney Meeting AU-NZ"), on a new campaign ("Campaigns New campaign") and on the edit form ("Campaigns <name> Edit", the name linking back to the campaign). The list has no heading (the app title says where you are).
+
+### Campaign Management 0.8 (UAT only, 2026-11-07): no wasted space on a campaign
+
+Robert marked up 0.7: the countries were shown again under a name that already holds them (removed), and the counts were crammed at the left with a big empty area on the right while the members table sat low. 0.8: the three counts moved to the top right, level with the heading; the surgeon search, Import members and Remove ticked moved into the members table's own header (the separate Add members card is gone), so the table starts high on the page. New design notes in `/Users/robertreeves/VSCODE/AAADESIGN/` (`space-and-layout.md`, `buttons.md`).
+
+### Campaign Management 0.9 (UAT only, 2026-11-07): level rows
+
+Robert drew a line through the Active pill and the facts text beside it: not level. 0.9 aligns them on one baseline at one size, makes the "Show inactive" chip as tall as the search box, puts every table cell on one baseline (so a status pill sits on the same line as the text in its row), and stops button labels wrapping. Rule added to CLAUDE.md and `/Users/robertreeves/VSCODE/AAADESIGN/space-and-layout.md`.

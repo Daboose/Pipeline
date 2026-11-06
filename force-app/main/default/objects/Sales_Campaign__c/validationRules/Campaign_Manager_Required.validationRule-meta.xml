@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+  <fullName>Campaign_Manager_Required</fullName>
+  <active>true</active>
+  <description
+  >Pipeline: every campaign needs a campaign manager, the person responsible for it.</description>
+  <errorConditionFormula>ISBLANK(Campaign_Manager__c)</errorConditionFormula>
+  <errorDisplayField>Campaign_Manager__c</errorDisplayField>
+  <errorMessage>Choose a campaign manager.</errorMessage>
+</ValidationRule>

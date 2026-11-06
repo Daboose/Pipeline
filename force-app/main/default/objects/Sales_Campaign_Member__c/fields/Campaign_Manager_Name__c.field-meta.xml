@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+  <fullName>Campaign_Manager_Name__c</fullName>
+  <description
+  >Pipeline: the campaign manager's name, read from the campaign so it can be shown in a related list on the surgeon's Account page.</description>
+  <formula
+  >TRIM(Campaign__r.Campaign_Manager__r.FirstName &amp; ' ' &amp; Campaign__r.Campaign_Manager__r.LastName)</formula>
+  <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+  <label>Campaign Manager</label>
+  <trackTrending>false</trackTrending>
+  <type>Text</type>
+</CustomField>

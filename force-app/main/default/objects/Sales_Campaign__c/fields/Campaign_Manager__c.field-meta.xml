@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+  <fullName>Campaign_Manager__c</fullName>
+  <description
+  >Pipeline: the person responsible for the campaign. Shown to reps when a surgeon is not on the campaign, so they know who to ask.</description>
+  <inlineHelpText>The person responsible for this campaign.</inlineHelpText>
+  <deleteConstraint>SetNull</deleteConstraint>
+  <label>Campaign Manager</label>
+  <referenceTo>User</referenceTo>
+  <relationshipName>Sales_Campaigns_Managed</relationshipName>
+  <required>false</required>
+  <trackTrending>false</trackTrending>
+  <type>Lookup</type>
+</CustomField>

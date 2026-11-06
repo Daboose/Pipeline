@@ -1,0 +1,515 @@
+<template>
+  <div class="root" data-theme={theme} data-head={headColour}>
+    <header class="top">
+      <span class="word"
+        ><span class="pipe">CAMPAIGN</span
+        ><span class="line">MANAGEMENT</span></span
+      >
+      <span class="ver">{version}</span>
+      <span class="sp"></span>
+      <div class="actions" lwc:if={ready}>
+        <template lwc:if={isList}>
+          <button
+            type="button"
+            class="btn"
+            lwc:if={canManage}
+            onclick={handleNew}
+          >
+            New campaign
+          </button>
+        </template>
+        <template lwc:elseif={isDetail}>
+          <button
+            type="button"
+            class="btn sec"
+            lwc:if={canManage}
+            onclick={handleEdit}
+          >
+            Edit campaign
+          </button>
+          <button
+            type="button"
+            class="btn danger"
+            lwc:if={canManage}
+            onclick={handleToggleActive}
+          >
+            {toggleActiveText}
+          </button>
+        </template>
+      </div>
+      <span class="seg">
+        <button
+          type="button"
+          class={darkCls}
+          data-theme="dark"
+          onclick={handleTheme}
+        >
+          Dark
+        </button>
+        <button
+          type="button"
+          class={lightCls}
+          data-theme="light"
+          onclick={handleTheme}
+        >
+          Light
+        </button>
+      </span>
+      <button
+        type="button"
+        class="icb"
+        title="Full screen"
+        aria-label="Full screen"
+        onclick={handleFullScreen}
+      >
+        <svg
+          viewBox="0 0 24 24"
+          width="20"
+          height="20"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"></path>
+        </svg>
+      </button>
+    </header>
+
+    <div class="err" lwc:if={error}>{error}</div>
+
+    <main class="main" lwc:if={ready}>
+      <!-- ============ the list ============ -->
+      <template lwc:if={isList}>
+        <div class="toolrow">
+          <span class="sbox big">
+            <input
+              class="in search"
+              type="text"
+              placeholder="Search campaigns"
+              value={q}
+              oninput={handleQ}
+            />
+            <button
+              type="button"
+              class="xcirc sclear"
+              lwc:if={hasQ}
+              aria-label="Clear"
+              onclick={handleQClear}
+            ></button>
+          </span>
+          <button type="button" class={inactiveCls} onclick={handleInactive}>
+            Show inactive
+          </button>
+        </div>
+        <p class="note" lwc:if={cannotManage}>
+          You can look at the campaigns here. Creating and changing them needs
+          the Campaign Manager permission.
+        </p>
+        <div class="card full tablecard">
+          <table class="tbl" style={listTableStyle}>
+            <colgroup lwc:if={listHasWidths}>
+              <template for:each={listCols} for:item="c">
+                <col key={c.id} style={c.style} />
+              </template>
+            </colgroup>
+            <thead>
+              <tr>
+                <template for:each={listHeads} for:item="h">
+                  <th key={h.id} class={h.cls} data-table="list" data-id={h.id}>
+                    <span
+                      class="lab2"
+                      data-table="list"
+                      data-id={h.id}
+                      onclick={handleSort}
+                      title="Click to sort"
+                      >{h.label}<span class="arrow">{h.arrow}</span></span
+                    >
+                    <i
+                      class="rz"
+                      data-table="list"
+                      data-id={h.id}
+                      title="Drag to resize. Double-click to reset the widths."
+                      onmousedown={handleResizeStart}
+                      ondblclick={handleWidthsReset}
+                    ></i>
+                  </th>
+                </template>
+              </tr>
+            </thead>
+            <tbody>
+              <template for:each={listRows} for:item="c">
+                <tr
+                  key={c.id}
+                  class="click"
+                  data-id={c.id}
+                  onclick={handleOpen}
+                >
+                  <td class="strong">{c.name}</td>
+                  <td class="caps">{c.portfoliosText}</td>
+                  <td>{c.countriesText}</td>
+                  <td>{c.managerName}</td>
+                  <td><span class={c.statusCls}>{c.statusText}</span></td>
+                  <td class="num">{c.memberCount}</td>
+                  <td class="num">{c.dealCount}</td>
+                </tr>
+              </template>
+              <tr lwc:if={noRows}>
+                <td colspan="7" class="empty">No campaigns to show.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="note">
+          Inactive campaigns are hidden unless you show them, and deals cannot
+          be linked to them. Click a campaign to open it.
+        </p>
+      </template>
+
+      <!-- ============ the form ============ -->
+      <template lwc:elseif={isForm}>
+        <h1 class="head1 trail">
+          <template for:each={crumbs} for:item="c">
+            <span key={c.key} class="crumb">
+              <button
+                type="button"
+                class="crumblink"
+                lwc:if={c.link}
+                data-target={c.target}
+                onclick={handleCrumb}
+              >
+                {c.label}
+              </button>
+              <span class="crumbhere" lwc:else>{c.label}</span>
+            </span>
+          </template>
+        </h1>
+        <div class="card full formcard">
+          <div class="nameblock">
+            <span class="lab first"
+              >Campaign name (set automatically, cannot be typed)</span
+            >
+            <div class="nameprev">
+              {namePreview}<span class="lock">LOCKED</span>
+            </div>
+          </div>
+          <ul class="problems" lwc:if={hasProblems}>
+            <template for:each={problemItems} for:item="p">
+              <li key={p.key}>{p.text}</li>
+            </template>
+          </ul>
+          <div class="cols">
+            <div class="col">
+              <label class="lab first" for="fname">Friendly name</label>
+              <div class="row">
+                <input
+                  id="fname"
+                  class="in wide"
+                  type="text"
+                  maxlength={nameLimit}
+                  value={form.friendlyName}
+                  oninput={handleName}
+                  placeholder="For example: Shoulder Sydney Meeting"
+                />
+                <span class="count">{nameCount}</span>
+              </div>
+              <span class="lab">Countries (one or many)</span>
+              <div class="chips">
+                <template for:each={countryChips} for:item="c">
+                  <button
+                    key={c.value}
+                    type="button"
+                    class={c.cls}
+                    data-v={c.value}
+                    onclick={handleCountry}
+                  >
+                    {c.label}
+                  </button>
+                </template>
+              </div>
+              <span class="lab">Portfolios (one or many)</span>
+              <div class="chips">
+                <template for:each={portfolioChips} for:item="p">
+                  <button
+                    key={p.value}
+                    type="button"
+                    class={p.cls}
+                    data-v={p.value}
+                    onclick={handlePortfolio}
+                  >
+                    {p.label}
+                  </button>
+                </template>
+              </div>
+              <span class="lab">What is this campaign for? (optional)</span>
+              <textarea class="in area" onchange={handleDesc}></textarea>
+            </div>
+            <div class="col">
+              <span class="lab first">Campaign manager</span>
+              <div class="rel">
+                <span class="sbox big">
+                  <input
+                    class="in search"
+                    type="text"
+                    placeholder="Search for a person"
+                    value={managerShown}
+                    oninput={handleMgrInput}
+                  />
+                  <button
+                    type="button"
+                    class="xcirc sclear"
+                    lwc:if={hasManagerText}
+                    aria-label="Clear"
+                    onclick={handleMgrClear}
+                  ></button>
+                </span>
+                <div class="pop" lwc:if={showMgrPop}>
+                  <template for:each={mgrHits} for:item="m">
+                    <button
+                      key={m.id}
+                      type="button"
+                      class="opt"
+                      data-id={m.id}
+                      data-name={m.name}
+                      onclick={handleMgrPick}
+                    >
+                      {m.name}
+                    </button>
+                  </template>
+                  <div class="foot" lwc:if={mgrShort}>
+                    Type at least 2 letters.
+                  </div>
+                  <div class="foot" lwc:if={mgrNone}>
+                    Nobody found. Only active people who work for the company
+                    are offered.
+                  </div>
+                </div>
+              </div>
+              <span class="lab">Active</span>
+              <button
+                type="button"
+                class={activeSwitchCls}
+                onclick={handleActiveSwitch}
+              >
+                <i></i><span>{activeText}</span>
+              </button>
+              <span class="lab">Start and end (optional)</span>
+              <div class="row">
+                <input
+                  class="in date"
+                  type="date"
+                  value={form.startDate}
+                  onchange={handleStart}
+                />
+                <span class="muted">to</span>
+                <input
+                  class="in date"
+                  type="date"
+                  value={form.endDate}
+                  onchange={handleEnd}
+                />
+              </div>
+            </div>
+          </div>
+          <div class="formactions">
+            <button type="button" class="btn sec" onclick={handleCancelForm}>
+              Cancel
+            </button>
+            <button
+              type="button"
+              class="btn"
+              disabled={saveDisabled}
+              onclick={handleSave}
+            >
+              Save campaign
+            </button>
+          </div>
+        </div>
+      </template>
+
+      <!-- ============ one campaign ============ -->
+      <template lwc:elseif={isDetail}>
+        <div class="topband">
+          <div class="tl">
+            <h1 class="head1 trail">
+              <template for:each={crumbs} for:item="c">
+                <span key={c.key} class="crumb">
+                  <button
+                    type="button"
+                    class="crumblink"
+                    lwc:if={c.link}
+                    data-target={c.target}
+                    onclick={handleCrumb}
+                  >
+                    {c.label}
+                  </button>
+                  <span class="crumbhere" lwc:else>{c.label}</span>
+                </span>
+              </template>
+            </h1>
+            <div class="row factsrow">
+              <span class={statusTag}>{statusText}</span>
+              <span class="facts caps">{facts}</span>
+            </div>
+            <p class="note" lwc:if={hasActiveNote}>{activeNote}</p>
+          </div>
+          <div class="kpis">
+            <div class="kpi"><b>{counts.total}</b><span>Members</span></div>
+            <div class="kpi">
+              <b>{counts.withDeal}</b><span>With a deal</span>
+            </div>
+            <div class="kpi gap">
+              <b>{counts.none}</b><span>No deal yet</span>
+            </div>
+          </div>
+        </div>
+        <div class="card full tablecard">
+          <div class="cardhead">
+            <h2>Members</h2>
+            <span class="rel" lwc:if={canManage}>
+              <span class="sbox big">
+                <input
+                  class="in search"
+                  type="text"
+                  placeholder="Type a surgeon's name to add them"
+                  value={memberQ}
+                  oninput={handleMemberQ}
+                />
+                <button
+                  type="button"
+                  class="xcirc sclear"
+                  lwc:if={hasMemberQ}
+                  aria-label="Clear"
+                  onclick={handleMemberQClear}
+                ></button>
+              </span>
+              <div class="pop" lwc:if={showSearch}>
+                <div class="foot" lwc:if={searchShort}>
+                  Type at least 2 characters. The name or the English name both
+                  work.
+                </div>
+                <template for:each={hits} for:item="h">
+                  <button
+                    key={h.key}
+                    type="button"
+                    class="opt"
+                    data-id={h.id}
+                    disabled={h.disabled}
+                    onclick={handleAdd}
+                  >
+                    {h.nameText}<span lwc:if={h.already}>
+                      (already a member)</span
+                    >
+                    <small>{h.sub}</small>
+                  </button>
+                </template>
+                <div class="foot" lwc:if={noHits}>
+                  No physician or emerging consultant matches.
+                </div>
+                <div class="foot" lwc:if={outsideText}>{outsideText}</div>
+                <div class="foot" lwc:if={heldBackText}>{heldBackText}</div>
+                <div class="foot scope" lwc:if={search}>
+                  <span>{scopeText}</span>
+                  <button type="button" class="btn small" onclick={handleWiden}>
+                    {widenText}
+                  </button>
+                </div>
+              </div>
+            </span>
+            <button
+              type="button"
+              class="btn"
+              lwc:if={canManage}
+              onclick={handleImport}
+            >
+              Import members
+            </button>
+            <span class="sp"></span>
+            <button
+              type="button"
+              class="btn danger"
+              lwc:if={canManage}
+              disabled={removeDisabled}
+              onclick={handleRemove}
+            >
+              {removeText}
+            </button>
+          </div>
+          <p class="ok pad" lwc:if={hasToast}>{toast}</p>
+          <table class="tbl" style={memberTableStyle}>
+            <colgroup lwc:if={memberHasWidths}>
+              <template for:each={memberCols} for:item="c">
+                <col key={c.id} style={c.style} />
+              </template>
+            </colgroup>
+            <thead>
+              <tr>
+                <th class="tick"></th>
+                <template for:each={memberHeads} for:item="h">
+                  <th
+                    key={h.id}
+                    class={h.cls}
+                    data-table="members"
+                    data-id={h.id}
+                  >
+                    <span
+                      class="lab2"
+                      data-table="members"
+                      data-id={h.id}
+                      onclick={handleSort}
+                      title="Click to sort"
+                      >{h.label}<span class="arrow">{h.arrow}</span></span
+                    >
+                    <i
+                      class="rz"
+                      data-table="members"
+                      data-id={h.id}
+                      title="Drag to resize. Double-click to reset the widths."
+                      onmousedown={handleResizeStart}
+                      ondblclick={handleWidthsReset}
+                    ></i>
+                  </th>
+                </template>
+              </tr>
+            </thead>
+            <tbody>
+              <template for:each={memberRows} for:item="m">
+                <tr key={m.key}>
+                  <td class="tick">
+                    <input
+                      type="checkbox"
+                      data-id={m.memberId}
+                      checked={m.ticked}
+                      onchange={handleTick}
+                      lwc:if={canManage}
+                    />
+                  </td>
+                  <td class="strong">{m.nameText}</td>
+                  <td>{m.hospitals}</td>
+                  <td>{m.placeText}</td>
+                  <td>{m.type}</td>
+                  <td><span class={m.dealCls}>{m.dealText}</span></td>
+                </tr>
+              </template>
+              <tr lwc:if={noMembers}>
+                <td colspan="6" class="empty">
+                  No members yet. Type a surgeon's name above to add one.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="note" lwc:if={truncated}>
+          Only the first 2,000 members are shown.
+        </p>
+      </template>
+    </main>
+
+    <div class="wait" lwc:if={busy}>
+      <div class="spin"></div>
+      <span>Please wait…</span>
+    </div>
+  </div>
+</template>

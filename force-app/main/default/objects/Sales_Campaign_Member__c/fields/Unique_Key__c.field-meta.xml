@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+  <fullName>Unique_Key__c</fullName>
+  <description
+  >Pipeline: campaign Id and surgeon Id together, set by the system, so a surgeon cannot be added to a campaign twice. Do not edit.</description>
+  <inlineHelpText>Set by the system. Do not edit.</inlineHelpText>
+  <caseSensitive>true</caseSensitive>
+  <label>Unique Key</label>
+  <length>40</length>
+  <trackTrending>false</trackTrending>
+  <type>Text</type>
+  <unique>true</unique>
+</CustomField>

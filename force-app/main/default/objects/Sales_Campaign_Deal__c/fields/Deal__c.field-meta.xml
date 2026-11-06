@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+  <fullName>Deal__c</fullName>
+  <description
+  >Pipeline: the deal (an opportunity, risk or ROSA deal) linked to the campaign. Deleting the deal removes its links; the deal itself is never changed by a link.</description>
+  <inlineHelpText>The deal.</inlineHelpText>
+  <label>Deal</label>
+  <referenceTo>SalesRisks__c</referenceTo>
+  <relationshipLabel>Sales Campaign Deals</relationshipLabel>
+  <relationshipName>Sales_Campaign_Deals</relationshipName>
+  <relationshipOrder>1</relationshipOrder>
+  <reparentableMasterDetail>false</reparentableMasterDetail>
+  <trackTrending>false</trackTrending>
+  <type>MasterDetail</type>
+  <writeRequiresMasterRead>true</writeRequiresMasterRead>
+</CustomField>

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+  <fullName>Portfolios__c</fullName>
+  <description
+  >Pipeline: the portfolios the campaign covers. A deal is only offered the campaign when its portfolio is one of these.</description>
+  <inlineHelpText>Pick every portfolio the campaign covers.</inlineHelpText>
+  <label>Portfolios</label>
+  <required>true</required>
+  <trackTrending>false</trackTrending>
+  <type>MultiselectPicklist</type>
+  <visibleLines>4</visibleLines>
+  <valueSet>
+    <restricted>true</restricted>
+    <valueSetDefinition>
+      <sorted>false</sorted>
+        <value>
+          <fullName>Hip</fullName>
+          <default>false</default>
+          <label>Hip</label>
+        </value>
+        <value>
+          <fullName>Knee</fullName>
+          <default>false</default>
+          <label>Knee</label>
+        </value>
+        <value>
+          <fullName>Extremities</fullName>
+          <default>false</default>
+          <label>Extremities</label>
+        </value>
+        <value>
+          <fullName>CMFT</fullName>
+          <default>false</default>
+          <label>CMFT</label>
+        </value>
+    </valueSetDefinition>
+  </valueSet>
+</CustomField>

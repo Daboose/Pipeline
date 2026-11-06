@@ -46,11 +46,11 @@ One row per deal per campaign: the link a rep switches on and off. Nobody works 
 | Unique Key                                                                                                                                                                                                                                                                                                                                                                     | text, unique                                      | Campaign + deal.                                           |
 | Rules kept in code (not in a trigger on `SalesRisks__c`): the campaign is active, covers the deal owner's country and the deal's portfolio, and the deal's Primary HCP is a member; the person can edit the deal. If a Primary HCP is changed after linking, the Campaign view shows the link as "surgeon no longer a member" rather than a trigger rewriting it (to confirm). |
 
-## Permission sets (new)
+## Permission sets (new) and how reps get access
 
-- `Pipeline_Campaign_Manager`: create and change campaigns and members; the Campaign Management app and its classes.
-- `Pipeline_Campaign_User`: read campaigns and members; create and delete links for deals the person can edit; for reps (who do not have `Pipeline_User`).
-- Pipeline users: read access added to `Pipeline_User` for the Campaign view.
+- `Pipeline_Campaign_Manager` (the only new permission set for people): create, edit and delete campaigns and their members, and the Campaign Management app and its classes. Robert gives it to campaign managers.
+- **No permission set for reps (Robert, 2026-11-06).** He does not want one to give to every user: he will add the access to the 10 country profiles that already drive Sales and Risks. After the build Claude tells him exactly what a rep's profile needs. Expected: read on APAC Campaign (for the lookup); read, create and delete on APAC Campaign Deal (the link) with its fields; and access to the Campaigns control's Apex class. Membership checks are made in code in system mode, so reps should not need to read the members.
+- Pipeline users: read access added to `Pipeline_User` (ours) for the Campaign view.
 
 ## What would be built, in three separate stages (each deployable on its own)
 
@@ -62,6 +62,23 @@ One row per deal per campaign: the link a rep switches on and off. Nobody works 
 
 - A multi-value field on the deal: needs a new field on an existing object, cannot be reported on, cannot say "which surgeons are missing".
 - A deal lookup on the member row (two objects): one deal per surgeon per campaign only; Robert wants a surgeon to have more than one.
+
+## Added 2026-11-06 (Robert): formula fields on the link and member objects, for related lists
+
+Robert approved the three objects and field list ("everything looks really good"), and asked for **formula fields on APAC Campaign Deal that read the campaign's details**, so a related list of campaigns on the Opportunities & Risks page can show them (and, the same way, formula fields on APAC Campaign Member for a campaigns related list on the surgeon's Account). The relationship fields already exist (`Campaign__c` is a master-detail), so these are simple formulas. **Confirmed by Robert, 2026-11-06 ("that's a good idea"): all seven.**
+
+- Campaign Name, Campaign Active, Campaign Manager (name), Start Date, End Date.
+- **Portfolios and Countries:** a formula cannot read a multi-select list as text, so two read-only helper text fields on APAC Campaign (`Countries_Text__c`, `Portfolios_Text__c`), filled by the same trigger that sets the name, and the formulas read those.
+  The related lists themselves go on the Opportunities & Risks and Account layouts (existing things): Robert adds them in App Builder or the layout himself.
+
+## NAME COLLISION FOUND 2026-11-06 (read-only check of PROD, UAT and DEV): `APAC_Campaign__c` already exists
+
+An existing custom object **`APAC_Campaign__c`, label "APAC Campaign"**, is in all three orgs. It has Name, `Active__c` ("Active?"), `Country__c` (multi-select, AU IN KR MY NZ SG TH TW) and `Description__c`, and 10 records in PROD (names such as "General HCP Check-In", "ATAS 2025", "Hips", "Knees", "New User Tracking"; mostly Thailand, created 2024 to 2026). Its only child is `APAC_Check_In__c` ("APAC Check In", 445 records in PROD: an HCP and healthcare facility visit log with feedback, pointing at the campaign). So it is a label for check-ins, not a selling campaign. **Our proposed object name `APAC_Campaign__c` cannot be created, and its fields would clash.** Hard rule: never change an existing object without explicit sign-off. Separately, `Campaign_Member_List__c` ("Course Member List", 44,622 records, China's courses on the standard Campaign object) exists and is unrelated.
+**Recommendation: three differently named new objects**, e.g. `APAC_Sales_Campaign__c` ("APAC Sales Campaign"), `APAC_Sales_Campaign_Member__c` and `APAC_Sales_Campaign_Deal__c`, fields unchanged. Not decided; names are not changed in this document until Robert decides.
+
+## DECIDED 2026-11-06 (Robert): the objects are called **Sales Campaign**, with no APAC
+
+Free in PROD, UAT and DEV (checked): **`Sales_Campaign__c`** ("Sales Campaign"), **`Sales_Campaign_Member__c`** ("Sales Campaign Member") and **`Sales_Campaign_Deal__c`** ("Sales Campaign Deal"). Everywhere in this document, "APAC Campaign", "APAC Campaign Member" and "APAC Campaign Deal" (and their API names `APAC_Campaign__c` and so on) mean these three. The existing `APAC_Campaign__c` (check-in topics) is left alone. Fields, formulas, triggers, permission sets and screens are as written. The related list on Opportunities & Risks is "Sales Campaign Deals".
 
 ---
 
@@ -95,8 +112,12 @@ An event is attendance; a campaign is a chosen target list with a sales outcome.
 - Phone: must be proven in the Salesforce mobile app.
 - Record page and Account layout changes need Robert's explicit sign-off when built (he makes them in App Builder).
 - Whether the campaign tool stays in this repo (assumed yes).
-- A rep with only `Pipeline_Campaign_User`: confirm record access to the deals they link.
+- The exact profile permissions a rep needs (to be listed for Robert after the build; he adds them to the 10 country profiles himself).
 
 ## Next
 
 Robert's OK on the objects, then "build" for stage 1 only (UAT first, dry run, then deploy; DEV on his word; PROD by Gearset with a table, title and summary).
+
+## BUILT 2026-11-06 (slice 1, UAT only)
+
+Built as `Sales_Campaign__c`, `Sales_Campaign_Member__c` and `Sales_Campaign_Deal__c`. Differences from the text above: the link's Deal field is a master-detail (not a lookup); `Pipeline_Campaign_Manager` also reads `SalesRisks__c`; `Campaign_Manager__c` and `Surgeon__c` clear on delete with required enforced by validation rules; three triggers. See Build Spec "Campaign Management, slice 1".

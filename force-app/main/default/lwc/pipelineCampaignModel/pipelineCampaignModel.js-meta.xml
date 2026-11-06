@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+  <apiVersion>68.0</apiVersion>
+  <description
+  >Pipeline: the rules of the Campaign Management form (the campaign name preview, what stops a form being saved, counts of members with and without a deal). Pure logic, no screen.</description>
+  <isExposed>false</isExposed>
+</LightningComponentBundle>

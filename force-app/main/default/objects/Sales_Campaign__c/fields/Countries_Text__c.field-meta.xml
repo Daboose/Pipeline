@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+  <fullName>Countries_Text__c</fullName>
+  <description
+  >Pipeline: the countries as plain text (for example SG, MY, TH), set by the system so the member and deal records can show them. Do not edit.</description>
+  <inlineHelpText>Set by the system. Do not edit.</inlineHelpText>
+  <label>Countries (text)</label>
+  <length>80</length>
+  <trackTrending>false</trackTrending>
+  <type>Text</type>
+  <unique>false</unique>
+</CustomField>

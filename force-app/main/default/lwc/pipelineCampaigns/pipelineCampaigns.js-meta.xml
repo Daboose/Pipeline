@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+  <apiVersion>68.0</apiVersion>
+  <description
+  >Pipeline: Campaign Management, the full-screen tool for campaign managers: the list of Sales Campaigns, a form to create or change one, and one campaign with its members (add by searching, remove, switch on or off). Hosted by the PipelineCampaigns page.</description>
+  <isExposed>false</isExposed>
+</LightningComponentBundle>

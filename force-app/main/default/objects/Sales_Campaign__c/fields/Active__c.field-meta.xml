@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+  <fullName>Active__c</fullName>
+  <description
+  >Pipeline: only an active campaign can be linked to deals. Switching it off removes it from the choices without deleting anything.</description>
+  <inlineHelpText
+  >Untick to retire the campaign. Deals can no longer be linked to it.</inlineHelpText>
+  <defaultValue>true</defaultValue>
+  <label>Active</label>
+  <trackTrending>false</trackTrending>
+  <type>Checkbox</type>
+</CustomField>

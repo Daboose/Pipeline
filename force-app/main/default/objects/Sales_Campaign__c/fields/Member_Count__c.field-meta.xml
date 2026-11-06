@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+  <fullName>Member_Count__c</fullName>
+  <description
+  >Pipeline: how many surgeons are members of the campaign (a count of its Sales Campaign Members).</description>
+  <inlineHelpText>Number of surgeons in the campaign.</inlineHelpText>
+  <label>Member Count</label>
+  <summaryForeignKey>Sales_Campaign_Member__c.Campaign__c</summaryForeignKey>
+  <summaryOperation>count</summaryOperation>
+  <trackTrending>false</trackTrending>
+  <type>Summary</type>
+</CustomField>
