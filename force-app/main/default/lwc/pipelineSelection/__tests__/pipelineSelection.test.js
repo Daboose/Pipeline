@@ -276,4 +276,80 @@ describe("c-pipeline-selection", () => {
     await flush();
     expect(text()).toEqual(["Persona", "Vanguard"]);
   });
+
+  describe("Link to APAC Event", () => {
+    const eventBtns = (el) =>
+      el.shadowRoot.querySelector('.seg[aria-label="Link to APAC Event"]');
+
+    it("offers no Event choice, and says nothing about it, to someone who cannot see the field", () => {
+      const el = make();
+      expect(eventBtns(el)).toBeNull();
+      expect(el.shadowRoot.textContent).not.toContain("Has an event");
+    });
+
+    it("offers it to someone who can, as Any / Has an event / No event, starting on Any", () => {
+      const el = make({ canEvent: true });
+      const seg = eventBtns(el);
+      expect(
+        [...seg.querySelectorAll("button")].map((b) => b.textContent.trim())
+      ).toEqual(["Any", "Has an event", "No event"]);
+      expect(seg.querySelector(".on").textContent.trim()).toBe("Any");
+      expect(el.shadowRoot.querySelector("c-pipeline-lookup")).toBeNull();
+    });
+
+    it("shows the event search under 'Has an event', and Apply carries the choice", async () => {
+      const el = make({ canEvent: true });
+      const apply = jest.fn();
+      el.addEventListener("apply", apply);
+      btn(el, "Has an event").click();
+      await Promise.resolve();
+      const lookup = el.shadowRoot.querySelector("c-pipeline-lookup");
+      expect(lookup.fieldName).toBe("APAC_Event__c");
+      lookup.dispatchEvent(
+        new CustomEvent("change", {
+          detail: { id: "e1", name: "Hip Masterclass" }
+        })
+      );
+      await Promise.resolve();
+      btn(el, "Apply").click();
+      expect(apply.mock.calls[0][0].detail.filter).toMatchObject({
+        evMode: "has",
+        evId: "e1",
+        evName: "Hip Masterclass"
+      });
+    });
+
+    it("forgets the chosen event when the choice goes back to Any or No event", async () => {
+      const el = make({
+        canEvent: true,
+        filter: {
+          ...defaultFilter(["opp"], CHOICES, MINE),
+          evMode: "has",
+          evId: "e1",
+          evName: "Hip Masterclass"
+        }
+      });
+      const apply = jest.fn();
+      el.addEventListener("apply", apply);
+      btn(el, "No event").click();
+      await Promise.resolve();
+      btn(el, "Apply").click();
+      expect(apply.mock.calls[0][0].detail.filter).toMatchObject({
+        evMode: "none",
+        evId: "",
+        evName: ""
+      });
+    });
+
+    it("greys the group out when only risks are chosen", async () => {
+      const el = make({
+        canEvent: true,
+        filter: defaultFilter(["risk"], CHOICES, MINE)
+      });
+      expect(eventBtns(el).parentElement.className).toContain("off");
+      btn(el, "Opportunities").click();
+      await Promise.resolve();
+      expect(eventBtns(el).parentElement.className).not.toContain("off");
+    });
+  });
 });

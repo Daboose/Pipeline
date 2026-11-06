@@ -398,4 +398,118 @@ describe("c-pipeline-deal", () => {
       ).toBe("2027");
     });
   });
+
+  describe("Link to APAC Event", () => {
+    async function open(kind, infoFields) {
+      const el = createElement("c-pipeline-deal", { is: PipelineDeal });
+      el.deal = { ...deal, kind };
+      el.index = 0;
+      el.total = 1;
+      document.body.appendChild(el);
+      infoAdapter.emit({ fields: infoFields });
+      recordAdapter.emit({
+        recordTypeId: "012000000000001",
+        fields: {
+          APAC_Event__c: { value: "a0E000000000001" },
+          APAC_Event__r: {
+            value: { fields: { Name: { value: "Hip Masterclass Sydney" } } }
+          }
+        }
+      });
+      picklistAdapter.emit({ picklistFieldValues: {} });
+      await Promise.resolve();
+      await Promise.resolve();
+      return el;
+    }
+    const row = (el) => el.shadowRoot.querySelector("[data-api=APAC_Event__c]");
+
+    it("shows the Event field on an opportunity for a person who can see it, with the event's name", async () => {
+      const el = await open("opp", { APAC_Event__c: { updateable: true } });
+      expect(row(el)).not.toBeNull();
+      expect(el.shadowRoot.textContent).toContain("Link to APAC Event");
+    });
+
+    it("shows it on a ROSA deal too", async () => {
+      const el = await open("rosa", { APAC_Event__c: { updateable: true } });
+      expect(row(el)).not.toBeNull();
+    });
+
+    it("never shows it on a risk", async () => {
+      const el = await open("risk", { APAC_Event__c: { updateable: true } });
+      expect(row(el)).toBeNull();
+      expect(el.shadowRoot.textContent).not.toContain("APAC Event");
+    });
+
+    it("shows no trace of it to a person Salesforce does not report the field to", async () => {
+      const el = await open("opp", {});
+      expect(row(el)).toBeNull();
+      expect(el.shadowRoot.textContent).not.toContain("APAC Event");
+    });
+  });
+
+  describe("the stage path", () => {
+    async function open(kind, stage, values) {
+      const el = createElement("c-pipeline-deal", { is: PipelineDeal });
+      el.deal = { ...deal, kind, stage };
+      el.index = 0;
+      el.total = 1;
+      document.body.appendChild(el);
+      infoAdapter.emit({ fields: { Stage__c: { updateable: true } } });
+      recordAdapter.emit({
+        recordTypeId: "012000000000001",
+        fields: { Stage__c: { value: stage } }
+      });
+      picklistAdapter.emit({
+        picklistFieldValues: {
+          Stage__c: { values: values.map((v) => ({ value: v, label: v })) }
+        }
+      });
+      await Promise.resolve();
+      await Promise.resolve();
+      return el;
+    }
+    const steps = (el) => [...el.shadowRoot.querySelectorAll(".pstep")];
+    const OPP = ["Plan", "Action", "Conversion", "Unsuccessful Conversion"];
+
+    it("shows both closing stages at the end, the winning one then the losing one", async () => {
+      const el = await open("opp", "Action", OPP);
+      expect(steps(el).map((s) => s.textContent.trim())).toEqual([
+        "Plan",
+        "Action",
+        "Conversion",
+        "Unsuccessful Conversion"
+      ]);
+      const [, , won, lost] = steps(el);
+      expect(won.className).toContain("endwon");
+      expect(lost.className).toContain("endlost");
+    });
+
+    it("lights the losing stage red, and outlines everything before it, when the deal is lost", async () => {
+      const el = await open("opp", "Unsuccessful Conversion", OPP);
+      const [plan, , won, lost] = steps(el);
+      expect(lost.className).toContain("lost");
+      expect(lost.className).toContain("cur");
+      expect(plan.className).toContain("done");
+      expect(won.className).toContain("endwon");
+    });
+
+    it("lights the winning stage green when the deal is won, leaving the losing stage tinted", async () => {
+      const el = await open("rosa", "Closed Won", [
+        "Sales Pipeline",
+        "Closed Won",
+        "Deal Lost"
+      ]);
+      const [, won, lost] = steps(el);
+      expect(won.className).toContain("cur");
+      expect(won.getAttribute("style")).toContain("#16a34a");
+      expect(lost.className).toContain("endlost");
+    });
+
+    it("sets the stage from either closing step", async () => {
+      const el = await open("opp", "Action", OPP);
+      steps(el)[3].click();
+      await Promise.resolve();
+      expect(steps(el)[3].className).toContain("cur");
+    });
+  });
 });

@@ -1,0 +1,1606 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>
+      Pipeline mockup: Link to APAC Event and the two-ended stage path, version
+      1
+    </title>
+    <style>
+      :root,
+      [data-theme="dark"] {
+        --page: #0e1623;
+        --panel: #171b24;
+        --card: #1a2740;
+        --box: #1e232e;
+        --line: #2c3444;
+        --line2: #2f4163;
+        --edge: #5b6f93;
+        --text: #e8edf5;
+        --muted: #9fb0cc;
+        --pipe: #fdb827;
+        --head: #f472b6;
+        --headbg: rgba(244, 114, 182, 0.14);
+        --indigo: #6366f1;
+        --indigo2: #a5b4fc;
+        --field: #11151c;
+        --ok: #4ee0b0;
+        --bad: #f87171;
+        --won: #22c55e;
+        --scrim: rgba(8, 12, 20, 0.55);
+      }
+      [data-theme="light"] {
+        --page: #e9edf4;
+        --panel: #ffffff;
+        --card: #ffffff;
+        --box: #eef2fa;
+        --line: #d5dcea;
+        --line2: #d5dcea;
+        --edge: #b3bfd6;
+        --text: #1b2640;
+        --muted: #5d6b85;
+        --pipe: #b7791f;
+        --head: #db2777;
+        --headbg: rgba(219, 39, 119, 0.09);
+        --indigo: #4f46e5;
+        --indigo2: #4f46e5;
+        --field: #ffffff;
+        --ok: #0f9d74;
+        --bad: #dc2626;
+        --won: #16a34a;
+        --scrim: rgba(30, 45, 80, 0.35);
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--page);
+        color: var(--text);
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-size: 16px;
+      }
+      button,
+      input,
+      select {
+        font-family: inherit;
+      }
+      .sfnav {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        height: 44px;
+        padding: 0 16px;
+        background: #0b1220;
+        border-bottom: 1px solid #2f4163;
+        color: #cdd6e6;
+        font-size: 14px;
+      }
+      .sfnav .app {
+        font-weight: 800;
+        letter-spacing: 0.14em;
+      }
+      .sfnav .app b {
+        color: #fdb827;
+      }
+      .sfnav .tab {
+        color: #9fb0cc;
+      }
+      .sfnav .tab.on {
+        color: #fff;
+        border-bottom: 2px solid #6366f1;
+        padding-bottom: 2px;
+      }
+      .sp {
+        flex: 1;
+      }
+      .pill {
+        border: 1px solid var(--indigo);
+        background: transparent;
+        color: var(--text);
+        border-radius: 999px;
+        padding: 7px 18px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+      }
+      .pill.on {
+        background: var(--indigo);
+        color: #fff;
+      }
+      .sfnav .pill {
+        color: #e8edf5;
+      }
+      .about {
+        margin: 14px 16px;
+        padding: 12px 18px;
+        background: var(--card);
+        border: 1px solid var(--edge);
+        border-radius: 12px;
+        font-size: 15px;
+        line-height: 1.5;
+      }
+      .about summary {
+        cursor: pointer;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        color: var(--pipe);
+      }
+      .about ul {
+        margin: 4px 0 8px;
+        padding-left: 22px;
+      }
+      .tools {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+        padding: 0 16px 8px;
+      }
+      .tools .lab {
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        margin-left: 14px;
+      }
+      .tools .lab:first-child {
+        margin-left: 0;
+      }
+      .mocknote {
+        margin: 0 16px 10px;
+        padding: 8px 14px;
+        border: 1px dashed var(--edge);
+        border-radius: 10px;
+        color: var(--muted);
+        font-size: 14px;
+        font-style: italic;
+      }
+      .stagewrap {
+        padding: 0 16px 30px;
+      }
+
+      /* ---------- shared bits ---------- */
+      .btn {
+        border-radius: 999px;
+        padding: 9px 22px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+        border: 1px solid var(--indigo);
+        background: var(--indigo);
+        color: #fff;
+      }
+      .btn.sec {
+        background: transparent;
+        color: var(--text);
+        border-color: var(--edge);
+      }
+      .btn.danger {
+        background: transparent;
+        color: var(--bad);
+        border-color: var(--bad);
+      }
+      .btn[disabled] {
+        opacity: 0.4;
+        cursor: default;
+      }
+      .in {
+        width: 100%;
+        background: var(--field);
+        color: var(--text);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 9px 11px;
+        font-size: 15px;
+      }
+      .in.search {
+        border-radius: 999px;
+        padding-left: 16px;
+        padding-right: 40px;
+      }
+      .sbox {
+        position: relative;
+      }
+      .xcirc {
+        position: relative;
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        border: 1px solid var(--edge);
+        background: transparent;
+        cursor: pointer;
+        padding: 0;
+        flex: none;
+      }
+      .xcirc::before,
+      .xcirc::after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 10px;
+        height: 2px;
+        background: var(--muted);
+        border-radius: 1px;
+      }
+      .xcirc::before {
+        transform: translate(-50%, -50%) rotate(45deg);
+      }
+      .xcirc::after {
+        transform: translate(-50%, -50%) rotate(-45deg);
+      }
+      .sclear {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        margin-top: -11px;
+      }
+      .xchip {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        background: var(--indigo);
+        color: #fff;
+        border-radius: 999px;
+        padding: 6px 8px 6px 16px;
+        font-size: 15px;
+        font-weight: 700;
+        margin-bottom: 8px;
+      }
+      .xchip small {
+        font-weight: 400;
+        opacity: 0.85;
+      }
+      .xchip .xcirc {
+        border-color: rgba(255, 255, 255, 0.7);
+      }
+      .xchip .xcirc::before,
+      .xchip .xcirc::after {
+        background: #fff;
+      }
+      .list {
+        margin-top: 6px;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        overflow: hidden;
+        background: var(--field);
+      }
+      .opt {
+        display: flex;
+        justify-content: space-between;
+        gap: 14px;
+        width: 100%;
+        text-align: left;
+        background: transparent;
+        border: 0;
+        border-bottom: 1px solid var(--line);
+        color: var(--text);
+        padding: 9px 14px;
+        font-size: 15px;
+        cursor: pointer;
+      }
+      .opt:last-child {
+        border-bottom: 0;
+      }
+      .opt small {
+        color: var(--muted);
+        font-size: 14px;
+        white-space: nowrap;
+      }
+      .opt:hover {
+        background: var(--box);
+      }
+      .none {
+        padding: 9px 14px;
+        color: var(--muted);
+        font-size: 15px;
+      }
+      .hint {
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.4;
+      }
+
+      /* ---------- scene 1: Change selection ---------- */
+      .sel {
+        background: var(--panel);
+        border: 1px solid var(--edge);
+        border-top: 3px solid var(--indigo);
+        border-radius: 14px;
+        overflow: hidden;
+      }
+      .phead {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 16px;
+        padding: 12px 20px;
+        border-bottom: 1px solid var(--line);
+      }
+      .wm {
+        font-size: 22px;
+        font-weight: 900;
+        letter-spacing: 0.14em;
+        white-space: nowrap;
+      }
+      .wm b {
+        color: var(--pipe);
+      }
+      .ktogs {
+        display: flex;
+        gap: 8px;
+      }
+      .kt {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        border: 1px solid var(--edge);
+        background: transparent;
+        color: var(--text);
+        border-radius: 999px;
+        padding: 7px 14px 7px 18px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+      }
+      .kt .kbox {
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        border: 2px solid var(--edge);
+        position: relative;
+      }
+      .kt.on {
+        background: var(--indigo);
+        border-color: var(--indigo);
+        color: #fff;
+      }
+      .kt.on .kbox {
+        background: #fff;
+        border-color: #fff;
+      }
+      .kt.on .kbox::after {
+        content: "";
+        position: absolute;
+        left: 4px;
+        top: 1px;
+        width: 5px;
+        height: 9px;
+        border: solid var(--indigo);
+        border-width: 0 2px 2px 0;
+        transform: rotate(45deg);
+      }
+      .pbody {
+        padding: 14px 20px 6px;
+      }
+      .myf {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+        margin-bottom: 12px;
+      }
+      .myf .t,
+      .fld .t {
+        font-size: 12px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--muted);
+        font-weight: 800;
+      }
+      .fchip {
+        border: 1px solid var(--edge);
+        background: var(--box);
+        color: var(--text);
+        border-radius: 999px;
+        padding: 6px 14px;
+        font-size: 14px;
+        cursor: pointer;
+      }
+      .fchip .star {
+        color: var(--pipe);
+        margin-right: 4px;
+      }
+      .cols {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 16px;
+        align-items: start;
+      }
+      .group {
+        background: var(--box);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 12px 14px 14px;
+        margin-bottom: 14px;
+      }
+      .group .gt {
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.14em;
+        color: var(--pipe);
+        margin-bottom: 8px;
+      }
+      .pills {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .sg {
+        font-size: 12px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+        font-weight: 800;
+        margin: 8px 0 6px;
+      }
+      .opill {
+        border: 1px solid var(--edge);
+        background: transparent;
+        color: var(--text);
+        border-radius: 999px;
+        padding: 6px 14px;
+        font-size: 15px;
+        cursor: pointer;
+      }
+      .opill.on {
+        background: var(--indigo);
+        border-color: var(--indigo);
+        color: #fff;
+      }
+      .seg {
+        display: inline-flex;
+        border: 1px solid var(--edge);
+        border-radius: 999px;
+        overflow: hidden;
+        margin-bottom: 10px;
+      }
+      .seg button {
+        background: transparent;
+        border: 0;
+        color: var(--text);
+        padding: 8px 16px;
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        cursor: pointer;
+        border-right: 1px solid var(--edge);
+      }
+      .seg button:last-child {
+        border-right: 0;
+      }
+      .seg button.on {
+        background: var(--indigo);
+        color: #fff;
+      }
+      .group.off {
+        opacity: 0.45;
+      }
+      .group.off .seg,
+      .group.off .sbox,
+      .group.off .xchip {
+        pointer-events: none;
+      }
+      .group.newbox {
+        border-color: var(--indigo2);
+        box-shadow: 0 0 0 1px var(--indigo2);
+      }
+      .tagnew {
+        display: inline-block;
+        margin-left: 8px;
+        font-size: 11px;
+        letter-spacing: 0.1em;
+        background: var(--indigo);
+        color: #fff;
+        border-radius: 999px;
+        padding: 2px 9px;
+        vertical-align: 2px;
+      }
+      .actions {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 20px;
+        border-top: 1px solid var(--line);
+      }
+      .actions .msg {
+        color: var(--ok);
+        font-size: 15px;
+      }
+      .savebox {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+      .savebox .in {
+        width: 260px;
+      }
+      .applied {
+        margin: 10px 0 0;
+        padding: 10px 16px;
+        border: 1px solid var(--edge);
+        border-radius: 12px;
+        background: var(--card);
+        font-size: 16px;
+      }
+      .applied b {
+        color: var(--pipe);
+      }
+
+      /* ---------- scene 2: the deal flyout ---------- */
+      .fly {
+        display: flex;
+        flex-direction: column;
+        background: var(--page);
+        border: 1px solid var(--edge);
+        border-left: 3px solid var(--indigo);
+        border-radius: 14px;
+        overflow: hidden;
+      }
+      .hd {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 12px 20px;
+        border-bottom: 1px solid var(--line2);
+        background: var(--card);
+      }
+      .hd .name {
+        font-size: 20px;
+        font-weight: 700;
+        white-space: nowrap;
+      }
+      .hd .sub {
+        color: var(--muted);
+        font-size: 14px;
+        white-space: nowrap;
+      }
+      .rbtn {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        border: 1px solid var(--edge);
+        background: transparent;
+        color: var(--text);
+        font-size: 15px;
+      }
+      .kf {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 36px;
+        padding: 10px 20px;
+        border-bottom: 1px solid var(--line2);
+      }
+      .kf div span {
+        display: block;
+        font-size: 11px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--muted);
+        font-weight: 800;
+      }
+      .kf div b {
+        font-size: 17px;
+      }
+      .deal {
+        display: grid;
+        grid-template-columns: 1.2fr 1fr;
+        gap: 18px;
+        padding: 16px 20px;
+        align-items: start;
+      }
+      .card {
+        background: var(--card);
+        border: 1px solid var(--edge);
+        border-radius: 14px;
+        padding: 14px 18px 18px;
+      }
+      .card h3 {
+        margin: 0 0 10px;
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--pipe);
+      }
+      .fgrid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px 16px;
+      }
+      .f.full {
+        grid-column: 1 / 3;
+      }
+      .f label {
+        display: block;
+        font-size: 11px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--muted);
+        font-weight: 800;
+        margin-bottom: 4px;
+      }
+      .f .ro {
+        background: var(--field);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 9px 11px;
+        font-size: 15px;
+      }
+      .f.ev .xchip {
+        margin-bottom: 0;
+      }
+      .post {
+        border-top: 1px solid var(--line2);
+        padding: 10px 0;
+        font-size: 15px;
+        line-height: 1.45;
+      }
+      .post b {
+        margin-right: 6px;
+      }
+      .post span {
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .fly .actions {
+        background: var(--card);
+        border-top: 1px solid var(--line2);
+      }
+
+      /* ---------- the stage path ---------- */
+      .path {
+        display: flex;
+        min-width: 0;
+      }
+      .pstep {
+        --shape: polygon(
+          0 0,
+          calc(100% - 14px) 0,
+          100% 50%,
+          calc(100% - 14px) 100%,
+          0 100%,
+          14px 50%
+        );
+        --ring: #14b8a6;
+        position: relative;
+        border: 0;
+        margin-left: -6px;
+        padding: 9px 20px 9px 24px;
+        font-size: 14px;
+        font-weight: 700;
+        white-space: nowrap;
+        color: var(--muted);
+        background: var(--line);
+        clip-path: var(--shape);
+        cursor: pointer;
+      }
+      .pstep.first {
+        margin-left: 0;
+        padding-left: 16px;
+        --shape: polygon(
+          0 0,
+          calc(100% - 14px) 0,
+          100% 50%,
+          calc(100% - 14px) 100%,
+          0 100%
+        );
+        border-radius: 8px 0 0 8px;
+      }
+      .pstep > span {
+        position: relative;
+        z-index: 1;
+      }
+      .pstep.done {
+        background: var(--ring);
+        color: var(--text);
+      }
+      .pstep.done::before {
+        content: "";
+        position: absolute;
+        inset: 2px;
+        background: var(--card);
+        clip-path: var(--shape);
+      }
+      .pstep.cur {
+        background: var(--ring);
+        color: #fff;
+      }
+      .pstep.won {
+        --ring: var(--won);
+      }
+      .pstep.lostend {
+        --ring: var(--bad);
+      }
+      .pstep.wonlit {
+        background: var(--won);
+        color: #fff;
+      }
+      .pstep.lostlit {
+        background: var(--bad);
+        color: #fff;
+      }
+      .pstep.wonidle {
+        color: var(--text);
+        background: color-mix(in srgb, var(--won) 38%, var(--card));
+      }
+      .pstep.lostidle {
+        color: var(--text);
+        background: color-mix(in srgb, var(--bad) 38%, var(--card));
+      }
+      .pstep.endgap {
+        margin-left: 10px;
+      }
+      .pathrow {
+        display: grid;
+        grid-template-columns: 170px 1fr;
+        gap: 14px;
+        align-items: center;
+        background: var(--card);
+        border: 1px solid var(--edge);
+        border-radius: 14px;
+        padding: 16px 20px;
+        margin-bottom: 14px;
+      }
+      .pathrow .lab {
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        font-size: 13px;
+        color: var(--pipe);
+      }
+      .pathrow .lab small {
+        display: block;
+        color: var(--muted);
+        letter-spacing: 0;
+        text-transform: none;
+        font-weight: 400;
+        font-size: 14px;
+        margin-top: 3px;
+      }
+      .pathrow .pcap {
+        grid-column: 2;
+        color: var(--muted);
+        font-size: 14px;
+      }
+    </style>
+  </head>
+  <body data-theme="dark">
+    <div class="sfnav">
+      <span class="app"><b>PIPE</b>LINE</span>
+      <span class="tab on">Pipeline</span>
+      <span class="tab">Opportunities &amp; Risks</span>
+      <span class="tab">Accounts</span>
+      <span class="sp"></span>
+      <button type="button" class="pill" id="fullbtn">Full screen</button>
+    </div>
+
+    <details class="about" open>
+      <summary>ABOUT THIS MOCKUP</summary>
+      <p>
+        <b>Version 1, invented data only.</b> It shows three things Robert asked
+        for on 2026-11-06: (1) the new <b>Event</b> choice in Change selection,
+        which can be saved inside a named filter; (2) the
+        <b>Event field in the deal flyout</b>; (3) the
+        <b>stage path with both ends</b> (the winning stage in green and the
+        losing stage in red) next to what it does today.
+      </p>
+      <ul>
+        <li>
+          <b>The Event box only exists for people who can see the field.</b>
+          Switch <b>This person</b> to “Cannot see the field” to see the screens
+          without it. Nothing shows, nothing is explained.
+        </li>
+        <li>
+          Events apply to <b>opportunities and ROSA deals, never risks</b>.
+          Switch off Opportunities and ROSA in Change selection and the Event
+          group greys out. Open a Risk in the flyout and the Event field is
+          gone.
+        </li>
+        <li>
+          Try it: on <b>Change selection</b> choose “Has an event”, type “hip”
+          and pick an event, press Apply, then “Save as filter”. Then switch the
+          person to “Cannot see the field” and open the saved filter.
+        </li>
+        <li>
+          On <b>Deal flyout</b> pick a different deal type, change the event and
+          watch Save changes light up. Click a path step to move the stage.
+        </li>
+        <li>
+          On <b>Stage path</b> pick a stage, and compare today’s path with the
+          two-ended one.
+        </li>
+      </ul>
+      <p class="hint">
+        Not shown yet: how “No event” counts appear in the list, the Event
+        column in the lists, the phone view. The 59 events in UAT are real, the
+        names below are invented.
+      </p>
+    </details>
+
+    <div class="tools">
+      <span class="lab">Show</span>
+      <button type="button" class="pill on" data-scene="sel">
+        Change selection
+      </button>
+      <button type="button" class="pill" data-scene="fly">Deal flyout</button>
+      <button type="button" class="pill" data-scene="path">Stage path</button>
+      <span class="lab">This person</span>
+      <button type="button" class="pill on" data-access="yes">
+        Can see the field
+      </button>
+      <button type="button" class="pill" data-access="no">
+        Cannot see the field
+      </button>
+      <span class="lab">Theme</span>
+      <button type="button" class="pill on" data-theme-btn="dark">Dark</button>
+      <button type="button" class="pill" data-theme-btn="light">Light</button>
+    </div>
+    <div class="mocknote" id="mocknote" hidden></div>
+
+    <div class="stagewrap" id="stage"></div>
+
+    <script>
+      /* ---------- invented data ---------- */
+      var EVENTS = [
+        { id: "e1", name: "ANZ Orthopaedic Summit 2026", date: "12 Mar 2026" },
+        { id: "e2", name: "Hip Masterclass Sydney", date: "4 May 2026" },
+        {
+          id: "e3",
+          name: "Knee Revision Workshop Auckland",
+          date: "18 Jun 2026"
+        },
+        {
+          id: "e4",
+          name: "Extremities Cadaver Lab Melbourne",
+          date: "2 Aug 2026"
+        },
+        { id: "e5", name: "ROSA Launch Evening Brisbane", date: "9 Sep 2026" },
+        { id: "e6", name: "CMFT Symposium Perth", date: "21 Oct 2026" },
+        {
+          id: "e7",
+          name: "Hip and Knee Education Day Adelaide",
+          date: "14 Nov 2026"
+        }
+      ];
+      var STAGES = {
+        opp: {
+          name: "Hip Opportunity",
+          steps: ["Plan", "Action", "Commit/Contract", "1st Case", "5th Case"],
+          won: "Conversion",
+          lost: "Unsuccessful Conversion"
+        },
+        risk: {
+          name: "Risk",
+          steps: [
+            "Unhappy",
+            "Meeting With Competitors",
+            "1st Case Competitor",
+            "Multiple Cases Competitor"
+          ],
+          won: "Closed Retained",
+          lost: "Lost Business"
+        },
+        rosa: {
+          name: "ROSA opportunity",
+          steps: [
+            "Sales Pipeline",
+            "Surgeon Engagement",
+            "Executive Presentation",
+            "Negotiation"
+          ],
+          won: "Closed Won",
+          lost: "Deal Lost"
+        }
+      };
+      var RING = ["#14b8a6", "#38bdf8", "#818cf8", "#f59e0b", "#fb7185"];
+
+      var S = {
+        scene: "sel",
+        access: true,
+        theme: "dark",
+        // Change selection
+        kinds: { opp: true, risk: false, rosa: true },
+        evMode: "any", // any | has | none
+        evChosen: null,
+        evTerm: "",
+        country: "AU",
+        portfolio: "Hip",
+        filters: [
+          {
+            name: "Hip Masterclass follow-ups",
+            kinds: { opp: true, risk: false, rosa: false },
+            evMode: "has",
+            evChosen: "e2"
+          }
+        ],
+        saving: false,
+        saveName: "",
+        msg: "",
+        applied: "",
+        // Flyout and path
+        kind: "opp",
+        stage: {
+          opp: "Action",
+          risk: "Meeting With Competitors",
+          rosa: "Negotiation"
+        },
+        dealEvent: { opp: "e2", rosa: null },
+        dealTerm: "",
+        dirty: false
+      };
+
+      function ev(id) {
+        return EVENTS.filter(function (e) {
+          return e.id === id;
+        })[0];
+      }
+      function esc(s) {
+        return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;");
+      }
+      function hits(term) {
+        var t = term.trim().toLowerCase();
+        if (t.length < 2) return [];
+        return EVENTS.filter(function (e) {
+          return e.name.toLowerCase().indexOf(t) >= 0;
+        }).slice(0, 6);
+      }
+      function optList(list, handler) {
+        if (!list.length) return '<div class="none">Nothing found</div>';
+        return list
+          .map(function (e) {
+            return (
+              '<button type="button" class="opt" data-act="' +
+              handler +
+              '" data-id="' +
+              e.id +
+              '">' +
+              esc(e.name) +
+              "<small>" +
+              e.date +
+              "</small></button>"
+            );
+          })
+          .join("");
+      }
+
+      /* ---------- scene 1: Change selection ---------- */
+      function kindBtn(k, label) {
+        return (
+          '<button type="button" class="kt' +
+          (S.kinds[k] ? " on" : "") +
+          '" data-act="kind" data-k="' +
+          k +
+          '"><span>' +
+          label +
+          '</span><span class="kbox"></span></button>'
+        );
+      }
+      function opill(label, on, act, v) {
+        return (
+          '<button type="button" class="opill' +
+          (on ? " on" : "") +
+          '" data-act="' +
+          act +
+          '" data-v="' +
+          v +
+          '">' +
+          label +
+          "</button>"
+        );
+      }
+      function eventGroup() {
+        if (!S.access) return "";
+        var eligible = S.kinds.opp || S.kinds.rosa;
+        var h =
+          '<div class="group newbox' +
+          (eligible ? "" : " off") +
+          '"><div class="gt">EVENT<span class="tagnew">NEW</span></div>';
+        h +=
+          '<div class="seg">' +
+          [
+            ["any", "Any"],
+            ["has", "Has an event"],
+            ["none", "No event"]
+          ]
+            .map(function (m) {
+              return (
+                '<button type="button" class="' +
+                (S.evMode === m[0] ? "on" : "") +
+                '" data-act="evmode" data-v="' +
+                m[0] +
+                '">' +
+                m[1] +
+                "</button>"
+              );
+            })
+            .join("") +
+          "</div>";
+        if (S.evMode === "has") {
+          if (S.evChosen) {
+            var e = ev(S.evChosen);
+            h +=
+              '<div><span class="xchip">' +
+              esc(e.name) +
+              " <small>" +
+              e.date +
+              '</small><button type="button" class="xcirc" data-act="evclear" aria-label="Clear event"></button></span></div>';
+          } else {
+            h +=
+              '<div class="sbox"><input class="in search" id="evq" type="text" placeholder="Type part of an event name…" value="' +
+              esc(S.evTerm) +
+              '" />';
+            if (S.evTerm)
+              h +=
+                '<button type="button" class="xcirc sclear" data-act="evtermclear" aria-label="Clear the search"></button>';
+            h += "</div>";
+            if (S.evTerm.trim().length >= 2)
+              h +=
+                '<div class="list">' +
+                optList(hits(S.evTerm), "evpick") +
+                "</div>";
+          }
+          h +=
+            '<div class="hint" style="margin-top:8px">' +
+            (S.evChosen
+              ? "Only deals linked to this event."
+              : "Leave the search empty to see every deal that has any event.") +
+            "</div>";
+        } else if (S.evMode === "none") {
+          h +=
+            '<div class="hint">Only deals that are not linked to an event yet.</div>';
+        } else {
+          h +=
+            '<div class="hint">Deals are shown whether or not they have an event.</div>';
+        }
+        if (!eligible)
+          h +=
+            '<div class="hint" style="margin-top:8px">Events apply to opportunities and ROSA deals, not to risks.</div>';
+        return h + "</div>";
+      }
+      function summary() {
+        var ks = [];
+        if (S.kinds.opp) ks.push("Opportunities");
+        if (S.kinds.risk) ks.push("Risks");
+        if (S.kinds.rosa) ks.push("ROSA");
+        var s =
+          "<b>" +
+          (ks.join(" + ") || "Nothing selected") +
+          "</b> · " +
+          S.country +
+          " · " +
+          S.portfolio;
+        if (S.access && (S.kinds.opp || S.kinds.rosa)) {
+          if (S.evMode === "has")
+            s +=
+              " · Event: <b>" +
+              (S.evChosen ? esc(ev(S.evChosen).name) : "any event") +
+              "</b>";
+          if (S.evMode === "none") s += " · Event: <b>none</b>";
+        }
+        return s;
+      }
+      function selScene() {
+        var h =
+          '<div class="sel"><div class="phead"><span class="wm"><b>CHOOSE</b> YOUR DATA</span><div class="ktogs">' +
+          kindBtn("opp", "Opportunities") +
+          kindBtn("risk", "Risks") +
+          kindBtn("rosa", "ROSA") +
+          '</div><span class="sp"></span><button type="button" class="btn danger" data-act="reset">Reset</button></div>';
+        h +=
+          '<div class="pbody"><div class="myf"><span class="t">My filters</span>' +
+          S.filters
+            .map(function (f, i) {
+              return (
+                '<button type="button" class="fchip" data-act="loadf" data-i="' +
+                i +
+                '"><span class="star">★</span>' +
+                esc(f.name) +
+                "</button>"
+              );
+            })
+            .join("") +
+          "</div>";
+        h +=
+          '<div class="cols"><div>' +
+          '<div class="group"><div class="gt">WHERE</div><div class="sg">Country</div><div class="pills">' +
+          opill("AU", S.country === "AU", "country", "AU") +
+          opill("NZ", S.country === "NZ", "country", "NZ") +
+          '</div><div class="sg">State</div><div class="pills">' +
+          ["NSW", "VIC", "QLD", "WA"]
+            .map(function (x) {
+              return opill(x, false, "noop", x);
+            })
+            .join("") +
+          "</div></div>" +
+          "</div><div>" +
+          '<div class="group"><div class="gt">WHAT</div><div class="sg">Portfolio</div><div class="pills">' +
+          ["Hip", "Knee", "Extremities", "CMFT"]
+            .map(function (x) {
+              return opill(x, S.portfolio === x, "portfolio", x);
+            })
+            .join("") +
+          '</div></div><div class="group"><div class="gt">STAGE</div><div class="pills">' +
+          ["Plan", "Action", "Commit/Contract", "1st Case", "5th Case"]
+            .map(function (x) {
+              return opill(x, true, "noop", x);
+            })
+            .join("") +
+          "</div></div></div><div>" +
+          eventGroup() +
+          "</div></div></div>";
+        h += '<div class="actions">';
+        if (S.saving) {
+          h +=
+            '<div class="savebox"><input class="in" id="fname" type="text" placeholder="Name this filter" value="' +
+            esc(S.saveName) +
+            '" /><button type="button" class="btn" data-act="savego">Save</button><button type="button" class="btn sec" data-act="savecancel">Cancel</button></div>';
+        } else {
+          h +=
+            '<button type="button" class="btn sec" data-act="saveopen">Save as filter</button>';
+        }
+        h +=
+          '<span class="msg">' +
+          esc(S.msg) +
+          '</span><span class="sp"></span><button type="button" class="btn sec" data-act="noop">Cancel</button><button type="button" class="btn" data-act="apply">Apply</button></div></div>';
+        h +=
+          '<div class="applied">' +
+          (S.applied
+            ? "Applied: " + S.applied
+            : "Nothing applied yet. Press Apply to see the choice summarised here.") +
+          "</div>";
+        return h;
+      }
+
+      /* ---------- path ---------- */
+      function stageColour(i) {
+        return RING[i % RING.length];
+      }
+      /* today: only one end; the lost stage appears only if the deal is already lost */
+      function pathToday(kind) {
+        var d = STAGES[kind],
+          now = S.stage[kind];
+        var lost = now === d.lost;
+        var steps = d.steps.concat([lost ? d.lost : d.won]);
+        var cur = steps.indexOf(now);
+        var ring = lost
+          ? "var(--bad)"
+          : cur === steps.length - 1
+            ? "var(--won)"
+            : stageColour(Math.max(cur, 0));
+        return (
+          '<div class="path">' +
+          steps
+            .map(function (s, i) {
+              var cls =
+                "pstep" +
+                (i === 0 ? " first" : "") +
+                (i < cur ? " done" : i === cur ? " cur" : "");
+              return (
+                '<button type="button" class="' +
+                cls +
+                '" style="--ring:' +
+                ring +
+                '" data-act="step" data-v="' +
+                esc(s) +
+                '"><span>' +
+                esc(s) +
+                "</span></button>"
+              );
+            })
+            .join("") +
+          "</div>"
+        );
+      }
+      /* proposed: the open steps, then the winning end (green) and the losing end (red) side by side */
+      function pathBoth(kind) {
+        var d = STAGES[kind],
+          now = S.stage[kind];
+        var isWon = now === d.won,
+          isLost = now === d.lost;
+        var cur = d.steps.indexOf(now);
+        var ring = isWon
+          ? "var(--won)"
+          : isLost
+            ? "var(--bad)"
+            : stageColour(Math.max(cur, 0));
+        var h =
+          '<div class="path">' +
+          d.steps
+            .map(function (s, i) {
+              var done = isWon || isLost ? true : i < cur;
+              var cls =
+                "pstep" +
+                (i === 0 ? " first" : "") +
+                (done ? " done" : i === cur ? " cur" : "");
+              return (
+                '<button type="button" class="' +
+                cls +
+                '" style="--ring:' +
+                ring +
+                '" data-act="step" data-v="' +
+                esc(s) +
+                '"><span>' +
+                esc(s) +
+                "</span></button>"
+              );
+            })
+            .join("");
+        h +=
+          '<button type="button" class="pstep ' +
+          (isWon ? "wonlit" : "wonidle") +
+          '" data-act="step" data-v="' +
+          esc(d.won) +
+          '"><span>' +
+          esc(d.won) +
+          "</span></button>";
+        h +=
+          '<button type="button" class="pstep endgap ' +
+          (isLost ? "lostlit" : "lostidle") +
+          '" data-act="step" data-v="' +
+          esc(d.lost) +
+          '"><span>' +
+          esc(d.lost) +
+          "</span></button></div>";
+        return h;
+      }
+      function kindSwitch() {
+        return (
+          '<span class="lab">Deal type</span>' +
+          [
+            ["opp", "Opportunity"],
+            ["risk", "Risk"],
+            ["rosa", "ROSA"]
+          ]
+            .map(function (k) {
+              return (
+                '<button type="button" class="pill' +
+                (S.kind === k[0] ? " on" : "") +
+                '" data-act="dealkind" data-v="' +
+                k[0] +
+                '">' +
+                k[1] +
+                "</button>"
+              );
+            })
+            .join("")
+        );
+      }
+      function pathScene() {
+        var d = STAGES[S.kind];
+        var all = d.steps.concat([d.won, d.lost]);
+        var h =
+          '<div class="tools" style="padding-left:0">' +
+          kindSwitch() +
+          '<span class="lab">Move the deal to</span>' +
+          all
+            .map(function (s) {
+              return (
+                '<button type="button" class="pill' +
+                (S.stage[S.kind] === s ? " on" : "") +
+                '" data-act="step" data-v="' +
+                esc(s) +
+                '">' +
+                esc(s) +
+                "</button>"
+              );
+            })
+            .join("") +
+          "</div>";
+        h +=
+          '<div class="pathrow"><div class="lab">Today<small>Version 0.59</small></div>' +
+          pathToday(S.kind) +
+          '<div class="pcap">Only one end shows. The losing stage appears only after the deal has already been lost, so a rep cannot pick it from the path.</div></div>';
+        h +=
+          '<div class="pathrow"><div class="lab">Proposed<small>Both ends</small></div>' +
+          pathBoth(S.kind) +
+          '<div class="pcap">The winning stage (green) and the losing stage (red) both sit at the end. Click either to set the deal. When a deal is won or lost the whole path takes that colour.</div></div>';
+        return h;
+      }
+
+      /* ---------- scene 2: the deal flyout ---------- */
+      function dealEventField() {
+        if (!S.access || S.kind === "risk") return "";
+        var id = S.dealEvent[S.kind],
+          h = '<div class="f ev full"><label>Link to APAC Event</label>';
+        if (id) {
+          var e = ev(id);
+          h +=
+            '<span class="xchip">' +
+            esc(e.name) +
+            " <small>" +
+            e.date +
+            '</small><button type="button" class="xcirc" data-act="dealevclear" aria-label="Clear event"></button></span>';
+        } else {
+          h +=
+            '<div class="sbox"><input class="in search" id="dealq" type="text" placeholder="Type part of an event name…" value="' +
+            esc(S.dealTerm) +
+            '" />';
+          if (S.dealTerm)
+            h +=
+              '<button type="button" class="xcirc sclear" data-act="dealtermclear" aria-label="Clear the search"></button>';
+          h += "</div>";
+          if (S.dealTerm.trim().length >= 2)
+            h +=
+              '<div class="list">' +
+              optList(hits(S.dealTerm), "dealevpick") +
+              "</div>";
+        }
+        return h + "</div>";
+      }
+      function flyScene() {
+        var d = STAGES[S.kind],
+          isRisk = S.kind === "risk",
+          isRosa = S.kind === "rosa";
+        var title = isRosa
+          ? "Southern Cross Private Hospital"
+          : "Dr Alex Morgan";
+        var sub = d.name;
+        var fields = isRosa
+          ? [
+              ["Healthcare facility", "Southern Cross Private Hospital"],
+              ["ROSA deal type", "Capital sale"],
+              ["ROSA growth $", "A$420,000"],
+              ["Expected closing quarter", "Q1 2027"]
+            ]
+          : isRisk
+            ? [
+                ["Primary HCP", "Dr Alex Morgan"],
+                ["Healthcare facility", "Bayside Hospital"],
+                ["Annual value at risk", "A$180,000"],
+                ["Expected closing quarter", "Q4 2026"]
+              ]
+            : [
+                ["Primary HCP", "Dr Alex Morgan"],
+                ["Healthcare facility", "Bayside Hospital"],
+                ["Expected annual value", "A$250,000"],
+                ["Expected closing quarter", "Q4 2026"]
+              ];
+        var h =
+          '<div class="tools" style="padding-left:0">' +
+          kindSwitch() +
+          "</div>";
+        h +=
+          '<div class="fly"><div class="hd"><div><div class="name">' +
+          title +
+          '</div><div class="sub">' +
+          sub +
+          "</div></div>" +
+          pathBoth(S.kind) +
+          '<span class="sp"></span><button type="button" class="rbtn">‹</button><span class="sub">3 of 14</span><button type="button" class="rbtn">›</button></div>';
+        h +=
+          '<div class="kf"><div><span>Owner</span><b>Sam Taylor</b></div><div><span>Value</span><b>' +
+          fields[2][1] +
+          "</b></div><div><span>Close quarter</span><b>" +
+          fields[3][1] +
+          "</b></div><div><span>Last posted</span><b>12 d</b></div><div><span>Last stage move</span><b>41 d</b></div></div>";
+        h +=
+          '<div class="deal"><div class="card"><h3>Details</h3><div class="fgrid">' +
+          fields
+            .map(function (f) {
+              return (
+                '<div class="f"><label>' +
+                f[0] +
+                '</label><div class="ro">' +
+                f[1] +
+                "</div></div>"
+              );
+            })
+            .join("") +
+          '<div class="f"><label>Stage</label><div class="ro">' +
+          esc(S.stage[S.kind]) +
+          "</div></div>" +
+          '<div class="f"><label>Rep priority</label><div class="ro">Yes</div></div>' +
+          dealEventField() +
+          '</div></div><div class="card"><h3>Chatter</h3>' +
+          '<div class="post"><b>Sam Taylor</b><span>12 days ago</span><br />Surgeon keen, waiting on theatre list for the new year.</div>' +
+          '<div class="post"><b>Jo Lee</b><span>30 days ago</span><br />Quote sent. Follow-up booked.</div></div></div>';
+        h +=
+          '<div class="actions"><button type="button" class="btn sec">Open in Salesforce</button><span class="sp"></span><button type="button" class="btn sec" data-act="dealcancel"' +
+          (S.dirty ? "" : " disabled") +
+          '>Cancel</button><button type="button" class="btn"' +
+          (S.dirty ? "" : " disabled") +
+          ' data-act="dealsave">Save changes</button></div></div>';
+        return h;
+      }
+
+      /* ---------- drawing ---------- */
+      var NOTES = {
+        sel: "Mockup note: the Event group sits as a third column. It is only on the page for people who can see the field; nobody else is told it exists.",
+        fly: "Mockup note: the Event field appears for opportunities and ROSA deals only, and only for people who can see the field. A Risk never shows it.",
+        path: "Mockup note: the same path, as a tool, is also shown at the top of the deal flyout (the Deal flyout view uses the proposed path)."
+      };
+      function draw(keepFocus) {
+        var active = document.activeElement && document.activeElement.id;
+        var pos =
+          document.activeElement && document.activeElement.selectionStart;
+        document.body.setAttribute("data-theme", S.theme);
+        document.getElementById("stage").innerHTML =
+          S.scene === "sel"
+            ? selScene()
+            : S.scene === "fly"
+              ? flyScene()
+              : pathScene();
+        var note = document.getElementById("mocknote");
+        var text =
+          NOTES[S.scene] +
+          (!S.access && S.scene !== "path"
+            ? " This person cannot see the field, so none of it is on the page."
+            : "");
+        note.textContent = text;
+        note.hidden = false;
+        Array.prototype.forEach.call(
+          document.querySelectorAll("[data-scene]"),
+          function (b) {
+            b.classList.toggle("on", b.dataset.scene === S.scene);
+          }
+        );
+        Array.prototype.forEach.call(
+          document.querySelectorAll("[data-access]"),
+          function (b) {
+            b.classList.toggle("on", (b.dataset.access === "yes") === S.access);
+          }
+        );
+        Array.prototype.forEach.call(
+          document.querySelectorAll("[data-theme-btn]"),
+          function (b) {
+            b.classList.toggle("on", b.dataset.themeBtn === S.theme);
+          }
+        );
+        if (keepFocus && active) {
+          var el = document.getElementById(active);
+          if (el) {
+            el.focus();
+            if (pos != null && el.setSelectionRange)
+              el.setSelectionRange(pos, pos);
+          }
+        }
+      }
+
+      document.addEventListener("input", function (e) {
+        if (e.target.id === "evq") {
+          S.evTerm = e.target.value;
+          draw(true);
+        }
+        if (e.target.id === "dealq") {
+          S.dealTerm = e.target.value;
+          draw(true);
+        }
+        if (e.target.id === "fname") {
+          S.saveName = e.target.value;
+        }
+      });
+      document.addEventListener("click", function (e) {
+        var t = e.target.closest(
+          "[data-scene],[data-access],[data-theme-btn],[data-act]"
+        );
+        if (!t) return;
+        var d = t.dataset;
+        if (d.scene) {
+          S.scene = d.scene;
+          S.msg = "";
+          draw();
+          return;
+        }
+        if (d.access) {
+          S.access = d.access === "yes";
+          draw();
+          return;
+        }
+        if (d.themeBtn) {
+          S.theme = d.themeBtn;
+          draw();
+          return;
+        }
+        var a = d.act,
+          v = d.v;
+        if (a === "kind") S.kinds[d.k] = !S.kinds[d.k];
+        else if (a === "country") S.country = v;
+        else if (a === "portfolio") S.portfolio = v;
+        else if (a === "evmode") {
+          S.evMode = v;
+          if (v !== "has") {
+            S.evChosen = null;
+            S.evTerm = "";
+          }
+        } else if (a === "evpick") {
+          S.evChosen = d.id;
+          S.evTerm = "";
+        } else if (a === "evclear") S.evChosen = null;
+        else if (a === "evtermclear") S.evTerm = "";
+        else if (a === "reset") {
+          S.kinds = { opp: true, risk: false, rosa: true };
+          S.evMode = "any";
+          S.evChosen = null;
+          S.evTerm = "";
+          S.msg = "";
+          S.applied = "";
+        } else if (a === "apply") {
+          S.applied = summary();
+          S.msg = "";
+        } else if (a === "saveopen") {
+          S.saving = true;
+          S.saveName = "";
+        } else if (a === "savecancel") S.saving = false;
+        else if (a === "savego") {
+          var nm = (S.saveName || "").trim() || "My new filter";
+          S.filters.push({
+            name: nm,
+            kinds: JSON.parse(JSON.stringify(S.kinds)),
+            evMode: S.access ? S.evMode : "any",
+            evChosen: S.access ? S.evChosen : null
+          });
+          S.saving = false;
+          S.msg =
+            "Saved “" +
+            nm +
+            "”" +
+            (S.access && S.evMode !== "any" ? " with its event choice." : ".");
+        } else if (a === "loadf") {
+          var f = S.filters[+d.i];
+          S.kinds = JSON.parse(JSON.stringify(f.kinds));
+          if (S.access) {
+            S.evMode = f.evMode;
+            S.evChosen = f.evChosen;
+          } else {
+            S.evMode = "any";
+            S.evChosen = null;
+          }
+          S.msg =
+            S.access || f.evMode === "any"
+              ? "Loaded “" + f.name + "”."
+              : "Loaded “" +
+                f.name +
+                "”. Its event choice is ignored because you cannot see the Event field.";
+        } else if (a === "dealkind") {
+          S.kind = v;
+          S.dirty = false;
+          S.dealTerm = "";
+        } else if (a === "step") {
+          S.stage[S.kind] = v;
+          S.dirty = true;
+        } else if (a === "dealevpick") {
+          S.dealEvent[S.kind] = d.id;
+          S.dealTerm = "";
+          S.dirty = true;
+        } else if (a === "dealevclear") {
+          S.dealEvent[S.kind] = null;
+          S.dirty = true;
+        } else if (a === "dealtermclear") S.dealTerm = "";
+        else if (a === "dealsave" || a === "dealcancel") S.dirty = false;
+        draw();
+      });
+      document.getElementById("fullbtn").addEventListener("click", function () {
+        document.getElementById("mocknote").textContent =
+          "Mockup note: in Salesforce this opens Pipeline in a new full-screen tab without the Salesforce navigation.";
+      });
+      /* optional: open straight onto a view, e.g. #scene=fly&kind=risk&access=no&theme=light */
+      location.hash
+        .slice(1)
+        .split("&")
+        .forEach(function (p) {
+          var kv = p.split("=");
+          if (kv[0] === "scene") S.scene = kv[1];
+          if (kv[0] === "kind") S.kind = kv[1];
+          if (kv[0] === "access") S.access = kv[1] !== "no";
+          if (kv[0] === "theme") S.theme = kv[1];
+          if (kv[0] === "ev") {
+            S.evMode = "has";
+            S.evChosen = kv[1];
+          }
+        });
+      draw();
+    </script>
+  </body>
+</html>

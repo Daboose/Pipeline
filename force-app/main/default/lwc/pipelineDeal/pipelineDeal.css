@@ -90,7 +90,7 @@
   display: flex;
   flex: 1 1 auto;
   min-width: 0;
-  max-width: 900px;
+  max-width: 1060px;
   margin-left: 8px;
 }
 /* each step is an arrow; --shape is its outline, used again for the inner fill that leaves a coloured ring */
@@ -186,6 +186,18 @@
 .pstep.lost {
   background: var(--bad);
   color: #fff;
+}
+/* the two closing stages when the deal is not at either: tinted green (won) and red (lost), the lost one set a little apart */
+.pstep.endwon {
+  background: color-mix(in srgb, #16a34a 38%, var(--panel2));
+  color: var(--text);
+}
+.pstep.endlost {
+  background: color-mix(in srgb, var(--bad) 38%, var(--panel2));
+  color: var(--text);
+}
+.pstep.endgap {
+  margin-left: 4px;
 }
 
 .under {

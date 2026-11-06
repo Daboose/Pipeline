@@ -10,6 +10,7 @@ import {
   serverChanged,
   clientMatch,
   chipList,
+  withoutEvent,
   teamRows,
   MINE
 } from "c/pipelineFilterModel";
@@ -257,5 +258,67 @@ describe("c-pipeline-filter-model", () => {
       ...CHOICES.opp.closed,
       ...CHOICES.risk.closed
     ]);
+  });
+
+  describe("Link to APAC Event", () => {
+    const f = defaultFilter(["opp", "risk", "rosa"], CHOICES, "");
+    const linked = {
+      id: "x",
+      kind: "opp",
+      eventId: "e1",
+      eventName: "Masterclass"
+    };
+    const other = { id: "y", kind: "rosa", eventId: "e2", eventName: "Summit" };
+    const bare = { id: "z", kind: "opp", eventId: null };
+    const risk = { id: "r", kind: "risk", eventId: null };
+
+    it("starts as any event and shows every deal", () => {
+      expect(f.evMode).toBe("any");
+      [linked, other, bare, risk].forEach((d) =>
+        expect(clientMatch(d, f, NOW)).toBe(true)
+      );
+    });
+    it("'has an event' keeps deals with any event, or with the one chosen", () => {
+      const has = { ...f, evMode: "has" };
+      expect(clientMatch(linked, has, NOW)).toBe(true);
+      expect(clientMatch(bare, has, NOW)).toBe(false);
+      const one = { ...has, evId: "e1", evName: "Masterclass" };
+      expect(clientMatch(linked, one, NOW)).toBe(true);
+      expect(clientMatch(other, one, NOW)).toBe(false);
+    });
+    it("'no event' keeps only deals with none", () => {
+      const none = { ...f, evMode: "none" };
+      expect(clientMatch(bare, none, NOW)).toBe(true);
+      expect(clientMatch(linked, none, NOW)).toBe(false);
+    });
+    it("leaves risks alone, because a risk can never be linked", () => {
+      expect(clientMatch(risk, { ...f, evMode: "has" }, NOW)).toBe(true);
+      expect(clientMatch(risk, { ...f, evMode: "none" }, NOW)).toBe(true);
+    });
+    it("says it in a chip, and is read back from a saved filter", () => {
+      const one = { ...f, evMode: "has", evId: "e1", evName: "Masterclass" };
+      expect(chipList(one, CHOICES, [], false).map((c) => c.text)).toContain(
+        "Masterclass"
+      );
+      const back = fromSaved(
+        JSON.parse(JSON.stringify(one)),
+        CHOICES,
+        true,
+        ""
+      );
+      expect(back.evMode).toBe("has");
+      expect(back.evId).toBe("e1");
+    });
+    it("is put back to any for a person who cannot see the field", () => {
+      const one = { ...f, evMode: "has", evId: "e1", evName: "Masterclass" };
+      expect(withoutEvent(one)).toMatchObject({
+        evMode: "any",
+        evId: "",
+        evName: ""
+      });
+    });
+    it("is not part of what makes the server read again", () => {
+      expect(serverChanged(f, { ...f, evMode: "has" })).toBe(false);
+    });
   });
 });

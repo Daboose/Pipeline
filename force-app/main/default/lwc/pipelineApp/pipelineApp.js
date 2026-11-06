@@ -21,6 +21,7 @@ import {
   serverFilter,
   serverChanged,
   clientMatch,
+  withoutEvent,
   MINE
 } from "c/pipelineFilterModel";
 import { quarterRank } from "c/pipelineFormat";
@@ -42,7 +43,7 @@ function stableJson(value) {
  * Usages, Surgeries and Chatter, saved filters); 0.10 follows the final mockup: a filter bar with chips and a Change
  * selection panel with Apply, in place of the always-visible Choose Your Data panel.
  */
-const PIPELINE_VERSION = "0.59";
+const PIPELINE_VERSION = "0.60";
 
 /** The colours a person can choose for the headings (Robert, 2026-11-02); the look of each is in pipelineApp.css. */
 const HEAD_COLOURS = [
@@ -274,15 +275,21 @@ export default class PipelineApp extends LightningElement {
         this.startTeam
       );
     }
-    this.filter = f;
+    this.filter = this.canEvent ? f : withoutEvent(f);
     this.loadDeals();
   }
   parse(row) {
     try {
       const saved = JSON.parse(row.json);
+      const read = fromSaved(
+        saved,
+        this.choices,
+        this.isManager,
+        this.startTeam
+      );
       return {
         saved,
-        filter: fromSaved(saved, this.choices, this.isManager, this.startTeam)
+        filter: this.canEvent ? read : withoutEvent(read)
       };
     } catch {
       return null;
@@ -391,6 +398,10 @@ export default class PipelineApp extends LightningElement {
   }
   get ready() {
     return !!(this.ctx && this.filter);
+  }
+  /** True when this person can see the Link to APAC Event field: only then is the Event choice offered or applied. */
+  get canEvent() {
+    return !!(this.ctx && this.ctx.canEvent);
   }
   get isManager() {
     return !!(this.ctx && this.ctx.isManager);

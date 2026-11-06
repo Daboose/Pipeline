@@ -166,6 +166,13 @@
   gap: 14px;
   align-items: start;
 }
+.group.off {
+  opacity: 0.45;
+  pointer-events: none;
+}
+.eventpick {
+  margin-top: 10px;
+}
 .group {
   background: var(--pgroup);
   border: 1px solid var(--pline);

@@ -25,6 +25,13 @@ import {
 
 const SLIDE_IN_DELAY_MS = 30; // lets the closed position be drawn first, so the slide runs
 const SLIDE_OUT_MS = 450; // a little longer than the slide itself (0.4 s in the style sheet)
+const WON_GREEN = "#16a34a";
+/**
+ * Fields that exist in only some orgs and that only some people may see (Link to APAC Event, opportunities and ROSA deals
+ * only, never risks). A row for one of them is shown only when Salesforce reports the field to this person, so anyone
+ * without access, and any org without the field, sees no trace of it.
+ */
+const OPTIONAL_FIELDS = ["APAC_Event__c"];
 const QUARTER_FIELD = "Expected_Closure_Quarter__c";
 const YEAR_FIELD = "Expected_Closing_Year__c";
 
@@ -51,6 +58,7 @@ const FIELDS = {
     ["myMo__c", "MyMo", "bool"],
     ["myMo_Stage__c", "MyMo stage", "picklist"],
     ["Link_To_ROSA_Deal__c", "Link to ROSA deal", "lookup"],
+    ["APAC_Event__c", "Link to APAC Event", "lookup"],
     ["Objective__c", "Background information", "textarea", false, true]
   ],
   risk: [
@@ -79,6 +87,7 @@ const FIELDS = {
     ["Expected_Closing_Year__c", "Expected closing year", "picklist"],
     ["Install_Date__c", "Install date", "date"],
     ["Close_Date__c", "Close date", "date"],
+    ["APAC_Event__c", "Link to APAC Event", "lookup"],
     ["ROSA_Platform_Shoulder_Stage__c", "ROSA platform: shoulder", "picklist"],
     ["ROSA_Platform_Hip_Stage__c", "ROSA platform: hip", "picklist"],
     [
@@ -462,31 +471,47 @@ export default class PipelineDeal extends LightningElement {
   get stageNow() {
     return this.valueOf("Stage__c") || (this._deal && this._deal.stage);
   }
+  /**
+   * The stage path (Robert, 2026-11-06): the open stages, then BOTH closing stages side by side, the winning one in green
+   * and the losing one in red, so a deal can be set to either from the path. Finished steps are outlined in the colour of
+   * the stage the deal is at; once a deal is won or lost the whole path takes that colour.
+   */
   get pathSteps() {
     const ends = ENDS[this.kind];
     const values = (this.choices("Stage__c") || []).map((v) => v.value);
-    const open = values.filter((v) => v !== ends.won && v !== ends.lost);
     const now = this.stageNow;
+    const isWon = now === ends.won;
     const isLost = now === ends.lost;
-    const steps = open.slice();
-    if (!values.length) steps.push(now);
-    else if (values.includes(ends.won) || isLost)
-      steps.push(isLost ? ends.lost : ends.won);
-    const cur = steps.indexOf(now);
-    const curColour = isLost
+    const open = values.filter((v) => v !== ends.won && v !== ends.lost);
+    if (!values.length) open.push(now);
+    const closing = values.length
+      ? [ends.won, ends.lost].filter((v) => values.includes(v) || v === now)
+      : [];
+    const all = [...open, ...closing];
+    const at = open.indexOf(now);
+    const ring = isLost
       ? "var(--bad)"
-      : cur === steps.length - 1
-        ? "#16a34a"
-        : STAGE_COLOURS[Math.max(cur, 0) % STAGE_COLOURS.length];
-    return steps.map((value, i) => {
-      let cls = "pstep" + (i < cur ? " done" : i === cur ? " cur" : "");
+      : isWon
+        ? WON_GREEN
+        : STAGE_COLOURS[Math.max(at, 0) % STAGE_COLOURS.length];
+    return all.map((value, i) => {
+      let cls = "pstep";
+      let style = `--ring:${ring}`;
       if (i === 0) cls += " first";
-      if (i === steps.length - 1) cls += " last";
-      let style = `--ring:${curColour}`;
-      if (i === cur) {
-        if (isLost) cls += " lost";
-        else style += `;background:${curColour}`;
+      if (i === all.length - 1) cls += " last";
+      if (i < open.length) {
+        if (isWon || isLost || i < at) cls += " done";
+        else if (i === at) {
+          cls += " cur";
+          style += `;background:${ring}`;
+        }
+      } else if (value === now) {
+        cls += isLost ? " cur lost" : " cur";
+        if (!isLost) style += `;background:${WON_GREEN}`;
+      } else {
+        cls += value === ends.won ? " endwon" : " endlost";
       }
+      if (value === ends.lost && i > 0) cls += " endgap";
       return { value, cls, style };
     });
   }
@@ -545,60 +570,68 @@ export default class PipelineDeal extends LightningElement {
   }
   get rawFieldRows() {
     if (!this.fieldsLoaded) return [];
-    return FIELDS[this.kind].map(([fieldName, label, type, req, wide]) => {
-      const value = this.valueOf(fieldName);
-      const choices = this.choices(fieldName);
-      const editable = type !== "readonly" && this.updateable(fieldName);
-      const row = {
-        api: fieldName,
-        label,
-        req: !!req,
-        value: value === null || value === undefined ? "" : value,
-        cls:
-          "field" +
-          (wide ? " wide" : "") +
-          (fieldName in this.draft ? " changed" : "")
-      };
-      let control = editable ? type : "readonly";
-      if ((control === "picklist" || control === "multi") && !choices)
-        control = "readonly";
-      if (control === "picklist") {
-        const list = choices.map((c) => ({ value: c.value, label: c.label }));
-        if (value && !list.some((c) => c.value === value))
-          list.unshift({ value, label: value });
-        if (!req) list.unshift({ value: "", label: "–" });
-        row.options = list.map((o) => ({
-          ...o,
-          selected: o.value === (value || "")
-        }));
-        row.isSelect = true;
-      } else if (control === "multi") {
-        const on = value ? String(value).split(";") : [];
-        row.options = choices.map((c) => ({
-          value: c.value,
-          label: c.label,
-          cls: "pill" + (on.includes(c.value) ? " on" : "")
-        }));
-        row.isMulti = true;
-      } else if (control === "lookup") {
-        row.isLookup = true;
-        row.lookupName = this.lookupName(fieldName);
-      } else if (control === "number") {
-        row.isNumber = true;
-      } else if (control === "date") {
-        row.isDate = true;
-      } else if (control === "bool") {
-        row.isBool = true;
-        row.text = value ? "Yes" : "No";
-        row.togCls = "tog" + (value ? " on" : "");
-      } else if (control === "textarea") {
-        row.isTextarea = true;
-      } else {
-        row.isReadOnly = true;
-        row.text = this.readText(fieldName, type, value);
-      }
-      return row;
-    });
+    return FIELDS[this.kind]
+      .filter(([fieldName]) => this.fieldAvailable(fieldName))
+      .map(([fieldName, label, type, req, wide]) => {
+        const value = this.valueOf(fieldName);
+        const choices = this.choices(fieldName);
+        const editable = type !== "readonly" && this.updateable(fieldName);
+        const row = {
+          api: fieldName,
+          label,
+          req: !!req,
+          value: value === null || value === undefined ? "" : value,
+          cls:
+            "field" +
+            (wide ? " wide" : "") +
+            (fieldName in this.draft ? " changed" : "")
+        };
+        let control = editable ? type : "readonly";
+        if ((control === "picklist" || control === "multi") && !choices)
+          control = "readonly";
+        if (control === "picklist") {
+          const list = choices.map((c) => ({ value: c.value, label: c.label }));
+          if (value && !list.some((c) => c.value === value))
+            list.unshift({ value, label: value });
+          if (!req) list.unshift({ value: "", label: "–" });
+          row.options = list.map((o) => ({
+            ...o,
+            selected: o.value === (value || "")
+          }));
+          row.isSelect = true;
+        } else if (control === "multi") {
+          const on = value ? String(value).split(";") : [];
+          row.options = choices.map((c) => ({
+            value: c.value,
+            label: c.label,
+            cls: "pill" + (on.includes(c.value) ? " on" : "")
+          }));
+          row.isMulti = true;
+        } else if (control === "lookup") {
+          row.isLookup = true;
+          row.lookupName = this.lookupName(fieldName);
+        } else if (control === "number") {
+          row.isNumber = true;
+        } else if (control === "date") {
+          row.isDate = true;
+        } else if (control === "bool") {
+          row.isBool = true;
+          row.text = value ? "Yes" : "No";
+          row.togCls = "tog" + (value ? " on" : "");
+        } else if (control === "textarea") {
+          row.isTextarea = true;
+        } else {
+          row.isReadOnly = true;
+          row.text = this.readText(fieldName, type, value);
+        }
+        return row;
+      });
+  }
+  /** False for an optional field (see OPTIONAL_FIELDS) that Salesforce does not report to this person. */
+  fieldAvailable(fieldName) {
+    if (!OPTIONAL_FIELDS.includes(fieldName)) return true;
+    const info = this.objectInfo && this.objectInfo.data;
+    return !!(info && info.fields[fieldName]);
   }
   readText(fieldName, type, value) {
     if (type === "lookup") return this.lookupName(fieldName) || "–";

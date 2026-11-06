@@ -7,7 +7,8 @@
  * What each picker may offer follows the field's own lookup filter on SalesRisks__c (read from PROD, 2026-11-01), because the
  * standard lookup search is not available to a custom screen: Primary HCP (Account__c) only person accounts; Healthcare
  * facility (Healthcare_Facility__c) only accounts that are not person accounts; Link To ROSA Deal (Link_To_ROSA_Deal__c)
- * only deals whose record type is ROSA. If those filters ever change, change them here too. Saving still goes through
+ * only deals whose record type is ROSA; Link to APAC Event (APAC_Event__c) any APAC event, newest first, offered only to a
+ * person who can see that field (PipelineController.canSeeEvent), read by name so this class compiles where the field does not exist. If those filters ever change, change them here too. Saving still goes through
  * Salesforce, which applies the real lookup filter, so a wrong offer here is refused there, not saved.
  */
 public with sharing class PipelineLookupController {
@@ -24,7 +25,8 @@ public with sharing class PipelineLookupController {
   private static final Set<String> FIELDS = new Set<String>{
     'Account__c',
     'Healthcare_Facility__c',
-    'Link_To_ROSA_Deal__c'
+    'Link_To_ROSA_Deal__c',
+    'APAC_Event__c'
   };
 
   @AuraEnabled
@@ -41,6 +43,26 @@ public with sharing class PipelineLookupController {
       .replaceAll('[?&|!{}\\[\\]()^~*:\\\\"\'+\\-]', ' ')
       .trim();
     if (q.length() < 2) {
+      return out;
+    }
+    if (fieldName == 'APAC_Event__c') {
+      if (!PipelineController.canSeeEvent()) {
+        return out;
+      }
+      for (
+        SObject e : Database.queryWithBinds(
+          'SELECT Id, Name, Event_Start_Date__c FROM Event__c WHERE Name LIKE :term ORDER BY Event_Start_Date__c DESC NULLS LAST LIMIT 8',
+          new Map<String, Object>{ 'term' => '%' + q + '%' },
+          AccessLevel.USER_MODE
+        )
+      ) {
+        Hit h = new Hit();
+        h.id = e.Id;
+        h.name = (String) e.get('Name');
+        Datetime starts = (Datetime) e.get('Event_Start_Date__c');
+        h.sub = starts == null ? '' : starts.format('d MMM yyyy');
+        out.add(h);
+      }
       return out;
     }
     if (fieldName == 'Link_To_ROSA_Deal__c') {

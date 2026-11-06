@@ -9,6 +9,10 @@
  * The three kinds of deal are kept apart and never added together (Robert, 2026-10-25): opportunities, risks and ROSA.
  * The kind comes from the record type's developer name: ends in RISK is a risk, contains ROSA is ROSA, the rest are
  * implant opportunities (the segment, such as Hip or Knee, is in the record type name too).
+ *
+ * Link to APAC Event (Robert, 2026-11-06): SalesRisks__c.APAC_Event__c exists only in some orgs and only some people may see
+ * it, so it is never named in a way that needs it to exist. canSeeEvent() asks at run time; only when it answers yes is the
+ * field read, by name, in the deals query. Everyone else gets deals with no event and no sign that the field exists.
  */
 public with sharing class PipelineController {
   private static final Integer MAX_DEALS = 10000;
@@ -40,6 +44,9 @@ public with sharing class PipelineController {
     public List<String> brands;
     @AuraEnabled
     public List<String> quarters;
+    /** True when this person can see the Link to APAC Event field (and read the events), so the screen offers the Event choice. */
+    @AuraEnabled
+    public Boolean canEvent;
   }
 
   /** One deal, flattened for the screen. */
@@ -94,6 +101,11 @@ public with sharing class PipelineController {
     public Date installDate;
     @AuraEnabled
     public String rosaDealType;
+    /** The APAC event the deal is linked to; blank when none, and always blank for a person who cannot see the field. */
+    @AuraEnabled
+    public Id eventId;
+    @AuraEnabled
+    public String eventName;
   }
 
   /** The deals, and whether there were more than the screen can take. */
@@ -158,7 +170,23 @@ public with sharing class PipelineController {
       LIMIT 1
     ];
     c.settingsJson = mine.isEmpty() ? null : mine[0].Settings_Json__c;
+    c.canEvent = canSeeEvent();
     return c;
+  }
+
+  /**
+   * True when the signed-in person can see the deal's Link to APAC Event field and read the events it points to. The field is
+   * found by name at run time (it does not exist in every org), and field and object access are checked for this person,
+   * so a person without the permission set simply gets false.
+   */
+  public static Boolean canSeeEvent() {
+    Schema.SObjectField f = Schema.SObjectType.SalesRisks__c.fields.getMap()
+      .get('APAC_Event__c');
+    if (f == null || !f.getDescribe().isAccessible()) {
+      return false;
+    }
+    List<Schema.SObjectType> targets = f.getDescribe().getReferenceTo();
+    return !targets.isEmpty() && targets[0].getDescribe().isAccessible();
   }
 
   /** The active values of a picklist, in the order Salesforce lists them. */
@@ -223,12 +251,15 @@ public with sharing class PipelineController {
     } else {
       statusTest = 'IsClosed__c = false';
     }
+    Boolean withEvent = canSeeEvent();
     String soql =
       'SELECT Id, Name, RecordType.DeveloperName, Stage__c, IsClosed__c, OnHold__c, AmountPerYear__c, ' +
       'ROSAGrowthDollar__c, CurrencyIsoCode, Expected_Closure_Quarter__c, Expected_Closing_Year__c, OwnerId, Owner.Name, Owner_State__c, ' +
       'Owner_Country__c, PrimaryHCPName__c, Healthcare_FacilityName__c, Brand__c, Portfolio__c, ' +
       'Priority__c, State_Priority__c, Latest_Chatter_Date__c, Last_Stage_Change_Date__c, CreatedDate, ' +
-      'Close_Date__c, Install_Date__c, ROSA_Deal_Type__c FROM SalesRisks__c ' +
+      'Close_Date__c, Install_Date__c, ROSA_Deal_Type__c' +
+      (withEvent ? ', APAC_Event__c, APAC_Event__r.Name' : '') +
+      ' FROM SalesRisks__c ' +
       'WHERE ' +
       (ownerIds == null ? '' : 'OwnerId IN :ownerIds AND ') +
       'RecordType.DeveloperName NOT IN (\'Master\', \'SALE\') AND ' +
@@ -248,7 +279,7 @@ public with sharing class PipelineController {
     );
     out.truncated = rows.size() > MAX_DEALS;
     for (Integer i = 0; i < rows.size() && i < MAX_DEALS; i++) {
-      out.deals.add(toDeal(rows[i]));
+      out.deals.add(toDeal(rows[i], withEvent));
     }
     return out;
   }
@@ -284,7 +315,7 @@ public with sharing class PipelineController {
     }
   }
 
-  private static Deal toDeal(SalesRisks__c r) {
+  private static Deal toDeal(SalesRisks__c r, Boolean withEvent) {
     String rt = r.RecordType.DeveloperName == null
       ? ''
       : r.RecordType.DeveloperName.toUpperCase();
@@ -319,6 +350,11 @@ public with sharing class PipelineController {
     d.closeDate = r.Close_Date__c;
     d.installDate = r.Install_Date__c;
     d.rosaDealType = r.ROSA_Deal_Type__c;
+    if (withEvent) {
+      d.eventId = (Id) r.get('APAC_Event__c');
+      SObject event = r.getSObject('APAC_Event__r');
+      d.eventName = event == null ? null : (String) event.get('Name');
+    }
     return d;
   }
 

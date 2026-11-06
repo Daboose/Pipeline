@@ -56,6 +56,7 @@ export default class PipelineSelection extends LightningElement {
   @api teams = [];
   @api options = {};
   @api isManager = false;
+  @api canEvent = false; // the person can see the Link to APAC Event field, so the Event choice is offered
   @api startTeam = "";
   @api recordTypes = {}; // record type name to Id, to read the brands that apply
 
@@ -152,6 +153,47 @@ export default class PipelineSelection extends LightningElement {
       this.choices
     );
   }
+  /* ----- event (only for a person who can see the Link to APAC Event field) ----- */
+  /** Events apply to opportunities and ROSA deals; with only risks chosen the group is greyed out. */
+  get eventEligible() {
+    return (
+      this.draft.kinds.includes("opp") || this.draft.kinds.includes("rosa")
+    );
+  }
+  get eventCls() {
+    return "group" + (this.eventEligible ? "" : " off");
+  }
+  get eventButtons() {
+    return [
+      ["any", "Any"],
+      ["has", "Has an event"],
+      ["none", "No event"]
+    ].map(([value, label]) => ({
+      value,
+      label,
+      cls: (this.draft.evMode || "any") === value ? "on" : ""
+    }));
+  }
+  get showEventPicker() {
+    return this.draft.evMode === "has";
+  }
+  get eventHint() {
+    const mode = this.draft.evMode || "any";
+    if (mode === "has")
+      return this.draft.evId
+        ? "Only deals linked to this event."
+        : "Leave the search empty to see every deal that has any event.";
+    if (mode === "none") return "Only deals that are not linked to an event.";
+    return "Deals are shown whether or not they have an event.";
+  }
+  handleEventMode(event) {
+    const evMode = event.currentTarget.dataset.value;
+    this.set(evMode === "has" ? { evMode } : { evMode, evId: "", evName: "" });
+  }
+  handleEventPick(event) {
+    this.set({ evId: event.detail.id, evName: event.detail.name });
+  }
+
   handleReset() {
     this.draft = defaultFilter(this.draft.kinds, this.choices, this.startTeam);
     this.teamQ = "";
@@ -402,6 +444,9 @@ export default class PipelineSelection extends LightningElement {
   }
   get hasOpp() {
     return this.draft.kinds.includes("opp");
+  }
+  get hasRisk() {
+    return this.draft.kinds.includes("risk") && this.eventEligible;
   }
   get hasRosa() {
     return this.draft.kinds.includes("rosa");
