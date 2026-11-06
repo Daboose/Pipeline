@@ -98,3 +98,85 @@ export function sortRows(rows, valueOf, dir) {
     );
   });
 }
+
+export const MAX_IMPORT_LINES = 300;
+
+/**
+ * One pasted line with its symbols removed (Robert, 2026-11-07): letters of any language, digits, spaces, tabs, the hyphen,
+ * comma, full stop, apostrophe and brackets stay; stars, other symbols, emoji and invisible characters go. Names then match
+ * as if the symbols had never been typed. The server cleans the same way (PipelineCampaignImport.clean).
+ */
+export function cleanLine(line) {
+  return String(line || "")
+    .replace(/[\u200B-\u200D\uFEFF\u2060]/g, "")
+    .replace(/[\u00A0\u2000-\u200A\u202F\u205F\u3000]/g, " ")
+    .replace(/[\u2010-\u2015\u2212]/g, "-")
+    .replace(/[\u2018\u2019]/g, "'")
+    .replace(/[^\p{L}\p{M}\p{N}\t ,.\-'()]/gu, " ")
+    .replace(/ {2,}/g, " ")
+    .replace(/^[ ]+|[ ]+$/g, "");
+}
+
+/** How many pasted lines held symbols that cleaning removes, and which symbols (a few, for the notice). */
+export function cleaningReport(text) {
+  const raw = (text || "")
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter(Boolean);
+  const symbols = [];
+  let lines = 0;
+  raw.forEach((l) => {
+    const found = l
+      .replace(/[\u200B-\u200D\uFEFF\u2060\u00A0]/g, "")
+      .match(/[^\p{L}\p{M}\p{N}\t ,.\-'()\u2010-\u2015\u2212\u2018\u2019]/gu);
+    if (found) {
+      lines += 1;
+      found.forEach((c) => {
+        if (!symbols.includes(c) && symbols.length < 6) symbols.push(c);
+      });
+    }
+  });
+  return { lines, symbols };
+}
+
+/** The names in a pasted list or file: one per non-empty line, symbols removed, a header row such as "Name,Hospital" skipped, repeats dropped. */
+export function parseLines(text) {
+  const lines = (text || "")
+    .split(/\r?\n/)
+    .map((l) => cleanLine(l))
+    .filter(Boolean);
+  if (
+    lines.length &&
+    lines[0].length < 60 &&
+    /[,\t]/.test(lines[0]) &&
+    /^(name|surgeon|hcp|doctor|full name)\b/i.test(lines[0])
+  ) {
+    lines.shift();
+  }
+  const seen = new Set();
+  return lines.filter((l) => {
+    const k = l.toLowerCase();
+    if (seen.has(k)) return false;
+    seen.add(k);
+    return true;
+  });
+}
+
+/** A row of the check screen is settled when it is deleted, already a member, or has a surgeon the person has confirmed. */
+export function rowDone(r) {
+  return !!r.del || r.status === "dup" || (!!r.pick && !!r.ok);
+}
+
+/** Counts for the check screen. need = rows still waiting for a decision; toAdd = confirmed surgeons that will be added. */
+export function importCounts(rows) {
+  const live = rows.filter((r) => !r.del);
+  return {
+    exact: live.filter((r) => r.status === "exact").length,
+    choose: live.filter((r) => r.status === "many" || r.status === "suggest")
+      .length,
+    none: live.filter((r) => r.status === "none").length,
+    dup: live.filter((r) => r.status === "dup").length,
+    need: live.filter((r) => !rowDone(r)).length,
+    toAdd: live.filter((r) => r.status !== "dup" && r.pick && r.ok).length
+  };
+}

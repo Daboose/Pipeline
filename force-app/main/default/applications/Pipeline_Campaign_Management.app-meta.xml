@@ -5,13 +5,13 @@
         <shouldOverrideOrgTheme>false</shouldOverrideOrgTheme>
     </brand>
     <description
-  >Pipeline: Campaign Management, where campaign managers create selling campaigns and manage their member surgeons. (Code and component names start with Pipeline.)</description>
+  >Pipeline: Sales Campaign Management, where campaign managers create sales campaigns and manage their member surgeons. (Code and component names start with Pipeline.)</description>
     <formFactors>Large</formFactors>
     <isNavAutoTempTabsDisabled>false</isNavAutoTempTabsDisabled>
     <isNavPersonalizationDisabled>true</isNavPersonalizationDisabled>
     <isNavTabPersistenceDisabled>false</isNavTabPersistenceDisabled>
     <isOmniPinnedViewEnabled>false</isOmniPinnedViewEnabled>
-    <label>Campaign Management</label>
+    <label>Sales Campaign Management</label>
     <navType>Standard</navType>
     <tabs>Pipeline_Campaigns</tabs>
     <uiType>Lightning</uiType>

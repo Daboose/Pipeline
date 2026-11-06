@@ -4,6 +4,6 @@
   <availableInTouch>false</availableInTouch>
   <confirmationTokenRequired>false</confirmationTokenRequired>
   <description
-  >Pipeline: the full-screen page that hosts Campaign Management (the pipelineCampaigns Lightning Web Component, through the Lightning Out app PipelineCampaignOut). Opened by the Campaigns tab and by the Full screen button.</description>
+  >Pipeline: the full-screen page that hosts Sales Campaign Management (the pipelineCampaigns Lightning Web Component, through the Lightning Out app PipelineCampaignOut). Opened by the Campaigns tab and by the Full screen button.</description>
   <label>Pipeline Campaigns</label>
 </ApexPage>

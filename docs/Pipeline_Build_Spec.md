@@ -532,3 +532,73 @@ Robert marked up 0.7: the countries were shown again under a name that already h
 ### Campaign Management 0.9 (UAT only, 2026-11-07): level rows
 
 Robert drew a line through the Active pill and the facts text beside it: not level. 0.9 aligns them on one baseline at one size, makes the "Show inactive" chip as tall as the search box, puts every table cell on one baseline (so a status pill sits on the same line as the text in its row), and stops button labels wrapping. Rule added to CLAUDE.md and `/Users/robertreeves/VSCODE/AAADESIGN/space-and-layout.md`.
+
+### Campaign Management 0.10: the importer (UAT only, 2026-11-07)
+
+**Built in UAT only (Robert said "build" after the screen was approved). Deploy `0AfOg000007HsmL...` then a final fix deploy (see the last one below), 23/23 Apex tests (`PipelineCampaignRulesTest`, `PipelineCampaignControllerTest`, `PipelineCampaignImportTest`); 27 component tests.**
+
+- **Import members** button on a campaign opens a page to paste a list (one surgeon per line, straight from Excel) or choose a CSV or text file (up to 300 names at a time; a header row such as "Name,Hospital" and repeated lines are skipped). Nothing is saved there.
+- **Check names** (`PipelineCampaignImport.match`): a name matches exactly when it has the same words in any order as the surgeon's name or English name (`Preferred_Name__c`), ignoring titles (Dr, Prof ...) and capitals; "Lim, Wei Ming" is read both ways. Otherwise a surgeon with the same family name and a first name that starts the same way (Raj Kumar for Rajesh Kumar) is only a **possible** match. With several candidates a clue after the name (a comma, a dash, a tab or brackets; a hospital name or its initials such as SGH or ME) picks one when it points at exactly one. A staging, demo or clinic-contact account is never matched. A surgeon already in the campaign is marked and skipped.
+- **The check screen** (one row per name): counts at the top right (exact, need a choice, not found, already members); each row shows what was found; exact matches are ticked by the person (a **Tick all exact matches** button); several candidates give a dropdown that shows hospitals and country; **None of these? Look up** and **Not right? Look up** open the type-ahead lookup (2 characters, name or English name, campaign countries first, Widen search); a name with no match goes straight to the lookup; **Create this surgeon** opens Salesforce's own New Account page in a new tab (nothing is created for the person); a round cross deletes a row (Undo). **Add N members** stays disabled until every row has a decision; only confirmed rows become members, added together (`addMembers`, a repeat is counted not an error). The table sorts and resizes like the others.
+- Also fixed: the search results list in the members header was being clipped by the table's card (the card no longer clips; only the table scrolls sideways).
+- Not built yet: the rep Campaigns control and the Pipeline Campaign view.
+
+### Sales Campaign Management 0.11 (UAT only, 2026-11-07): the name
+
+Robert, looking in the App Launcher, found two items called "Campaigns" (one is Salesforce's own Campaign tab) and asked for "Sales Campaigns", the name agreed for the objects. Renamed: the tab is **Sales Campaigns**, the app **Sales Campaign Management**, the top bar reads SALES CAMPAIGN MANAGEMENT, the first breadcrumb step is "Sales Campaigns", and the page title follows. API names are unchanged. (Other things that say "Campaigns": the standard Campaign tab and "APAC Campaigns", the check-in topics; neither is ours.)
+
+### Sales Campaign Management 0.12 (UAT only, 2026-11-07): the check screen made clear, and a gate on Remove
+
+Robert tested the importer (0.10/0.11) in UAT: he could not tell the check screen was unsaved or what to press next, disliked "Tick all exact matches" then "Add", and wanted Confirm per row. Changes (LWC only; no Apex change):
+
+- A sticky banner "NOT SAVED YET. Nothing is added to <campaign> until you press Add N members" with live counts ("N ready to add", "N need a decision"); Cancel and Add N members in the banner and again under the table.
+- Exact matches arrive ticked; "Tick all exact matches" is removed. The tick column is headed "Add". Picking a person from the dropdown or the lookup does not tick the row: a **Confirm** button (or **Yes, this one** for a suggestion) in a "Your decision" column ticks it and shows "Will be added". Changing the choice un-confirms. Rows with no choice show "Choose who" and are not added. The Add button is enabled whenever at least one row is ticked; undecided rows are skipped and counted.
+- Leaving (breadcrumb, Cancel) with unsaved rows asks in the banner (Stay here / Leave anyway); a browser "leave page?" warning (`beforeunload`) covers closing or going back, also for a pasted list. The browser warning cannot cover Salesforce's own tab bar, which sits outside our page.
+- Members card: "Remove N campaign members" (was "Remove N ticked"); pressing it only opens "Are you sure?" under the card header (Keep them / Yes, remove N).
+- Search pill `box-sizing: border-box` (it overlapped the Import button in a render); `.tag.warn`/`.tag.bad` take their colours.
+- Jest: 15 component tests (the flow, the leave guard, the remove gate). UAT deploy `0AfOg000007HqW2KAK`, 23/23 Apex tests. Not in DEV, not committed. Robert's notes: `/Users/robertreeves/VSCODE/AAADESIGN/unsaved-work.md`.
+
+### Sales Campaign Management 0.13 (UAT only, 2026-11-07): banner colour and the check screen's decision column
+
+Robert liked the banner and the Confirm flow and asked: (1) the "NOT SAVED YET" banner in an alert tone (amber to orange background, not red); (2) no cross for an existing member (nothing to decide, they are simply passed over), and the cross elsewhere was unclear and its Undo looked inactive.
+
+- Banner: light theme background `#ffdd9a` with an orange border and dark brown text; dark theme `#4a3210` with an amber border.
+- "Already a member: skipped" rows have no action. Other rows have a labelled **Skip** button (was an unlabelled cross); a skipped row shows "Skipped" and an Undo button that stays at full strength (the row's other cells are greyed, the decision cell is not). Decision column widened.
+- Jest 16 tests. UAT deploy `0AfOg000007HodyKAC`, 23/23 Apex tests. Not in DEV, not committed.
+
+### Sales Campaign Management 0.14 to 0.16 (UAT only, 2026-11-07): Select all, aligned decision column, sticky headings
+
+- **0.14:** a "Select all" box at the top of the members table's tick column (left of SURGEON): ticks or clears every member, shows a dash when only some are ticked; measured centred on the same axis as the row boxes.
+- **0.15:** the check screen's "Your decision" column has two fixed slots (status mark or Confirm, then Skip or Undo), each centred on its own axis, so the marks and buttons line up down the whole table whatever the row's state. Column heading centred over them.
+- **0.16:** on the check screen the banner AND the table's column headings stay at the top while the list scrolls (hundreds of names). The banner height and top-bar height are measured in `renderedCallback` and set as `--topbar` / `--stick` on the root; the headings are `position: sticky` under the banner. To make sticky work the table wrapper clips (`overflow-x: clip`) instead of scrolling sideways, so on a very narrow window the right-hand column can be cut off (drag column edges narrower or use Full screen).
+- UAT deploys: 0.14 `0AfOg000007HuJVKA0`, 0.15 `0AfOg000007HqUQKA0`, 0.16 `0AfOg000007HnpvKAC`; 23/23 Apex tests each; Jest 17 tests. Not in DEV, not committed.
+
+### Sales Campaign Management 0.17 (UAT only, 2026-11-07): symbols are cleaned from pasted names
+
+Robert pasted a list from Excel in which some names ended with a star (and "(NZ)"). Agreed: clean the symbols and match without them, and tell the person.
+
+- **Kept:** letters of any language (including combining marks), digits, spaces, the tab, hyphen, comma, full stop, apostrophe and brackets (brackets carry the hospital clue). En/em dashes become a hyphen and curly apostrophes a straight one; non-breaking spaces become spaces. **Removed:** stars, other symbols, emoji, invisible characters.
+- Done twice, the same way: in the screen (`cleanLine`, `cleaningReport`, `parseLines` in `pipelineCampaignModel`, so repeats are dropped after cleaning) and on the server (`PipelineCampaignImport.clean`, called by `parse`).
+- A note in the warning colour, on the paste page and under the check screen's subtitle: "Symbols (★ ✔) are removed from 14 lines, and the names are matched without them."
+- Tests: Jest 33 (component and model), Apex 24/24 (new test covers a star, a curly apostrophe and Chinese characters). UAT deploy `0AfOg000007Hl9oKAC`; a UAT smoke run turned "Stephen Andrews (NZ) ★" into name "Stephen Andrews", clue "NZ". Not in DEV, not committed.
+
+### Sales Campaign Management 0.18 (UAT only, 2026-11-07): a wide lookup panel on the check screen
+
+Robert: the lookup under a row was only as wide as the match column, so results ran far down the screen, and its two blue buttons sat right above the next row's own "Look up" button, which looked like three choices.
+
+- The panel now floats over the columns to its right (absolute, about 900 px or 60% of the screen, an indigo border and a shadow), so it no longer makes the row tall.
+- One line per surgeon: name (bold), current hospitals, country and city, type.
+- The panel's own buttons (Widen search, Create this surgeon) sit together at the bottom right of the panel, with the searching scope and "Not in Salesforce yet?" as text on the left.
+- Jest 17 tests, no Apex change. UAT deploy `0AfOg000007HleTKAS`. Not in DEV, not committed.
+
+### Sales Campaign Management 0.19 (UAT only, 2026-11-07): a bracket that is part of the surgeon's name
+
+Robert's list had "Stephen Andrews (NZ)", and in Salesforce the surgeon's family name really is "Andrews (NZ)". The importer read "(NZ)" only as a hospital hint, so the line became "Stephen Andrews" and never found him (the lookup by family name was an exact text match), while "Anthony Maher (NZ)" matched because Salesforce holds plain "Anthony Maher".
+
+- The name with the bracket kept is now also tried as an exact match, and the family names fetched from Salesforce now include the bracketed forms ("Andrews (NZ)" and "Andrews NZ"), so both kinds of record match. The bracket still works as a hint for the plain name.
+- A note under the heading no longer runs into the sentence before it.
+- Apex tests 25/25 (new test for both cases), Jest 17. UAT deploy `0AfOg000007HqasKAC`. Not in DEV, not committed.
+
+### Sales Campaign Management 0.20 (UAT only, 2026-11-07): dark mode text areas
+
+The "What is this campaign for?" box (and the pasted-list box on the import page) stayed white in dark mode because the shared field style only covers inputs and dropdowns. They now take the same field colours (near-black with light text, a muted placeholder). UAT deploy `0AfOg000007HrTjKAK`, 25/25 Apex tests, Jest 17. Not in DEV, not committed.

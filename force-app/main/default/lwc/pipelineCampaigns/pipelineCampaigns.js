@@ -9,6 +9,8 @@ import searchPeople from "@salesforce/apex/PipelineCampaignController.searchPeop
 import searchSurgeons from "@salesforce/apex/PipelineCampaignController.searchSurgeons";
 import addMember from "@salesforce/apex/PipelineCampaignController.addMember";
 import removeMembers from "@salesforce/apex/PipelineCampaignController.removeMembers";
+import matchNames from "@salesforce/apex/PipelineCampaignController.matchNames";
+import addMembers from "@salesforce/apex/PipelineCampaignController.addMembers";
 import {
   previewName,
   emptyForm,
@@ -17,11 +19,15 @@ import {
   toggled,
   memberCounts,
   sortRows,
+  parseLines,
+  cleaningReport,
+  importCounts,
+  MAX_IMPORT_LINES,
   NAME_LIMIT
 } from "c/pipelineCampaignModel";
 
 /** Shown on the screen; raise it with each change that goes out. */
-export const CAMPAIGN_VERSION = "0.9";
+export const CAMPAIGN_VERSION = "0.20";
 const THEME_KEY = "pipelineCampaignTheme";
 const WIDTHS_KEY = "pipelineCampaignWidths";
 
@@ -42,7 +48,16 @@ const MEMBER_COLUMNS = [
   ["type", "Type", false, 200],
   ["deal", "Deal in this campaign", false, 240]
 ];
+const RECON_COLUMNS = [
+  ["file", "In your file", false, 260],
+  ["match", "Match in Salesforce", false, 340],
+  ["hospitals", "Current hospitals", false, 320],
+  ["place", "Country · city", false, 170],
+  ["status", "What we found", false, 230]
+];
 const TICK_WIDTH = 56;
+const ACTION_WIDTH = 236; // the check screen's last column holds the Confirm button or the "will be added" mark, and the delete cross
+const STATUS_ORDER = { exact: 0, suggest: 1, many: 2, none: 3, dup: 4 };
 
 /** The name, with the English name after it only when it says something different. */
 function withEnglish(name, english) {
@@ -89,9 +104,18 @@ export default class PipelineCampaigns extends LightningElement {
   seq = 0;
   toast = "";
   descPending = false;
-  sorts = { list: { id: "name", dir: 1 }, members: { id: "name", dir: 1 } };
-  widths = { list: null, members: null }; // null: the table finds its own widths; otherwise {column: pixels}
+  pasteText = "";
+  rows = []; // the check screen's rows
+  sorts = {
+    list: { id: "name", dir: 1 },
+    members: { id: "name", dir: 1 },
+    recon: { id: "", dir: 1 }
+  };
+  widths = { list: null, members: null, recon: null }; // null: the table finds its own widths; otherwise {column: pixels}
   live = null;
+  removeAsking = false; // the members card is asking "are you sure?" before removing
+  leaveAsking = false; // the check screen is asking "leave without adding?"
+  leaveThen = null; // what to do if the person confirms they want to leave
   themeChoice = "light"; // light unless the person chose dark here (remembered on this computer)
 
   connectedCallback() {
@@ -105,15 +129,28 @@ export default class PipelineCampaigns extends LightningElement {
       if (saved)
         this.widths = {
           list: saved.list || null,
-          members: saved.members || null
+          members: saved.members || null,
+          recon: saved.recon || null
         };
     } catch {
       // storage not available: stay on light
     }
+    // a browser warning if the page is closed or left while a pasted list or a check screen holds work that is not added yet
+    this.beforeUnload = (e) => {
+      if (this.unsaved) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    };
+    window.addEventListener("beforeunload", this.beforeUnload);
     this.run(async () => {
       this.ctx = await getContext();
       this.campaigns = await listCampaigns();
     });
+  }
+
+  disconnectedCallback() {
+    window.removeEventListener("beforeunload", this.beforeUnload);
   }
 
   /** Runs one thing behind the "please wait" cover and shows a plain message if it fails. */
@@ -157,6 +194,12 @@ export default class PipelineCampaigns extends LightningElement {
   get isDetail() {
     return this.view === "detail";
   }
+  get isImport() {
+    return this.view === "import";
+  }
+  get isReconcile() {
+    return this.view === "reconcile";
+  }
   get ready() {
     return !!this.ctx;
   }
@@ -176,15 +219,24 @@ export default class PipelineCampaigns extends LightningElement {
     }
   }
   handleImport() {
-    this.toast =
-      "Importing a list of surgeons is the next piece to be built. For now, add them one at a time here.";
+    this.pasteText = "";
+    this.rows = [];
+    this.error = "";
+    this.view = "import";
   }
 
   // ---------- where you are: one heading line that is also the trail (Robert, 2026-11-07): "Campaigns" (a link back) then this page's name ----------
   get crumbs() {
-    const out = [{ label: "Campaigns", target: "list", link: true }];
+    const out = [{ label: "Sales Campaigns", target: "list", link: true }];
     if (this.isDetail) {
       out.push({ label: this.campaignName, target: "", link: false });
+    } else if (this.isImport || this.isReconcile) {
+      out.push({
+        label: this.detail.campaign.name,
+        target: "detail",
+        link: true
+      });
+      out.push({ label: "Import members", target: "", link: false });
     } else if (this.form.id && this.detail) {
       out.push({
         label: this.detail.campaign.name,
@@ -199,11 +251,39 @@ export default class PipelineCampaigns extends LightningElement {
   }
   handleCrumb(event) {
     const t = event.currentTarget.dataset.target;
-    if (t === "detail") {
-      this.view = "detail";
-    } else {
-      this.handleBackToList();
+    this.guard(() => {
+      if (t === "detail") {
+        this.view = "detail";
+      } else {
+        this.handleBackToList();
+      }
+    });
+  }
+  /** True while the person holds work that is not saved: names on the check screen, or a pasted list (Robert, 2026-11-07). */
+  get unsaved() {
+    if (this.view === "reconcile") return this.rows.length > 0;
+    if (this.view === "import") return this.pasteText.trim().length > 0;
+    return false;
+  }
+  /** Runs a way out of the page; if work would be lost, asks first (the banner shows Stay here / Leave anyway). */
+  guard(go) {
+    if (this.view === "reconcile" && this.unsaved) {
+      this.leaveThen = go;
+      this.leaveAsking = true;
+      return;
     }
+    go();
+  }
+  handleStay() {
+    this.leaveAsking = false;
+    this.leaveThen = null;
+  }
+  handleLeave() {
+    const go = this.leaveThen;
+    this.leaveAsking = false;
+    this.leaveThen = null;
+    this.rows = [];
+    if (go) go();
   }
   handleFullScreen() {
     let inFrame = true;
@@ -359,6 +439,22 @@ export default class PipelineCampaigns extends LightningElement {
         this.descPending = false;
       }
     }
+    // the check screen's banner and column headings stay in view while the list scrolls: measure the top bar and the banner so the headings stick just under them
+    if (this.isReconcile) {
+      const root = this.template.querySelector(".root");
+      const bar = this.template.querySelector(".top");
+      const banner = this.template.querySelector(".unsaved");
+      if (root && bar) {
+        root.style.setProperty("--topbar", bar.offsetHeight + "px");
+        root.style.setProperty(
+          "--stick",
+          bar.offsetHeight + (banner ? banner.offsetHeight : 0) + "px"
+        );
+      }
+    }
+    // some members ticked but not all: the Select all box shows a dash
+    const all = this.template.querySelector("input.selall");
+    if (all) all.indeterminate = this.tickedIds.length > 0 && !this.allTicked;
   }
 
   handleNew() {
@@ -455,6 +551,7 @@ export default class PipelineCampaigns extends LightningElement {
   async loadDetail(id) {
     this.detail = await getCampaign({ campaignId: id });
     this.view = "detail";
+    this.removeAsking = false;
     this.memberQ = "";
     this.search = null;
     this.wide = false;
@@ -531,7 +628,9 @@ export default class PipelineCampaigns extends LightningElement {
   }
   get removeText() {
     const n = this.tickedIds.length;
-    return n ? `Remove ${n} ticked` : "Remove ticked";
+    return n
+      ? `Remove ${n} campaign member${n === 1 ? "" : "s"}`
+      : "Remove campaign members";
   }
   get truncated() {
     return !!(this.detail && this.detail.truncated);
@@ -548,6 +647,18 @@ export default class PipelineCampaigns extends LightningElement {
     return this.toast.length > 0;
   }
 
+  get allTicked() {
+    const m = this.detail ? this.detail.members : [];
+    return m.length > 0 && m.every((x) => x.ticked);
+  }
+  /** Select all: ticks every member, or clears them if all were ticked. */
+  handleTickAll(event) {
+    const on = event.target.checked;
+    this.detail = {
+      ...this.detail,
+      members: this.detail.members.map((m) => ({ ...m, ticked: on }))
+    };
+  }
   handleTick(event) {
     const id = event.target.dataset.id;
     this.detail = {
@@ -565,8 +676,28 @@ export default class PipelineCampaigns extends LightningElement {
       this.campaigns = await listCampaigns();
     });
   }
+  // the Remove button only asks "Are you sure?" underneath; the second button does the removing (Robert, 2026-11-07)
+  get removeAskText() {
+    const n = this.tickedIds.length;
+    const name = this.campaign ? this.campaign.name : "this campaign";
+    return `Remove ${n} member${n === 1 ? "" : "s"} from ${name}? The surgeon${n === 1 ? " stays" : "s stay"} in Salesforce; only the link to this campaign is removed.`;
+  }
+  get removeYesText() {
+    const n = this.tickedIds.length;
+    return `Yes, remove ${n}`;
+  }
+  get showRemoveAsk() {
+    return this.removeAsking && this.tickedIds.length > 0;
+  }
   handleRemove() {
+    if (this.tickedIds.length) this.removeAsking = true;
+  }
+  handleRemoveNo() {
+    this.removeAsking = false;
+  }
+  handleRemoveYes() {
     const ids = this.tickedIds;
+    this.removeAsking = false;
     if (!ids.length) return;
     this.run(async () => {
       await removeMembers({ memberIds: ids });
@@ -669,6 +800,333 @@ export default class PipelineCampaigns extends LightningElement {
     });
   }
 
+  // ---------- importing a list of names (Robert, 2026-11-07): paste or file, then a check screen; nothing is saved until every row is settled ----------
+  get pasteCount() {
+    return parseLines(this.pasteText).length;
+  }
+  get pasteDisabled() {
+    return this.pasteCount === 0;
+  }
+  get pasteCountText() {
+    const n = this.pasteCount;
+    return n === 1 ? "1 name" : `${n} names`;
+  }
+  get cleanLineCount() {
+    return cleaningReport(this.pasteText).lines;
+  }
+  get hasCleanNote() {
+    return this.cleanLineCount > 0;
+  }
+  /** Symbols are taken out of the pasted names before they are matched; the person is told, never surprised. */
+  get cleanNote() {
+    const r = cleaningReport(this.pasteText);
+    const lines = r.lines === 1 ? "1 line" : `${r.lines} lines`;
+    return `Symbols (${r.symbols.join(" ")}) are removed from ${lines}, and the names are matched without them.`;
+  }
+  get maxLines() {
+    return MAX_IMPORT_LINES;
+  }
+  handlePaste(event) {
+    this.pasteText = event.target.value;
+  }
+  handleFile(event) {
+    const file = event.target.files && event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      this.pasteText = String(reader.result || "");
+      const box = this.template.querySelector("textarea");
+      if (box) box.value = this.pasteText;
+    };
+    reader.readAsText(file);
+  }
+  handleBackToCampaign() {
+    this.guard(() => {
+      this.view = "detail";
+    });
+  }
+  handleCheckNames() {
+    const lines = parseLines(this.pasteText);
+    if (!lines.length) return;
+    if (lines.length > MAX_IMPORT_LINES) {
+      this.error = `Please import up to ${MAX_IMPORT_LINES} names at a time (this list has ${lines.length}).`;
+      return;
+    }
+    this.run(async () => {
+      const found = await matchNames({
+        campaignId: this.campaign.id,
+        lines
+      });
+      this.rows = found.map((r) => {
+        const chosen = r.pickId
+          ? (r.cands || []).find((c) => c.id === r.pickId) || null
+          : null;
+        return {
+          text: r.text,
+          status: r.status,
+          cands: r.cands || [],
+          pick: r.pickId || "",
+          chosen,
+          ok: r.status === "exact" && !!chosen, // an exact match arrives ticked; everything else waits for the person's Confirm
+
+          del: false,
+          look: false,
+          q: "",
+          search: null
+        };
+      });
+      this.leaveAsking = false;
+      this.view = "reconcile";
+    });
+  }
+  get reconCounts() {
+    return importCounts(this.rows);
+  }
+  get unsavedText() {
+    const name = this.campaign ? this.campaign.name : "the campaign";
+    return `Nothing is added to ${name} until you press ${this.addAllText}.`;
+  }
+  get tickedText() {
+    const c = this.reconCounts;
+    const parts = [`${c.toAdd} ready to add`];
+    if (c.need) parts.push(`${c.need} need a decision`);
+    return parts.join(" · ");
+  }
+  get addAllDisabled() {
+    return this.reconCounts.toAdd === 0;
+  }
+  get addAllText() {
+    const n = this.reconCounts.toAdd;
+    return `Add ${n} member${n === 1 ? "" : "s"}`;
+  }
+  statusInfo(r) {
+    const t = {
+      exact: ["Exact match", "tag ok"],
+      suggest: ["Possible match", "tag warn"],
+      many: ["Several people share this name", "tag warn"],
+      none: ["Not found", "tag bad"],
+      dup: ["Already a member: skipped", "tag off"]
+    }[r.status];
+    return { text: t[0], cls: t[1] };
+  }
+  get reconRows() {
+    const place = (c) => {
+      return c ? [c.country, c.city].filter(Boolean).join(" · ") : "";
+    };
+    const by = {
+      file: (r) => r.text,
+      match: (r) => (r.chosen ? r.chosen.name : ""),
+      hospitals: (r) => (r.chosen ? r.chosen.hospitals : ""),
+      place: (r) => place(r.chosen),
+      status: (r) => STATUS_ORDER[r.status]
+    };
+    const indexed = this.rows.map((r, i) => ({ ...r, i }));
+    const sort = this.sorts.recon;
+    const ordered = sort.id
+      ? sortRows(indexed, by[sort.id], sort.dir)
+      : indexed;
+    return ordered.map((r) => {
+      const info = this.statusInfo(r);
+      const lookMode = r.look || r.status === "none";
+      const showLookupBox = !r.del && lookMode && !r.pick;
+      const showSelect = !r.del && !lookMode && r.status === "many";
+      const showName = !r.del && !!r.pick && !showSelect;
+      const hits = ((r.search && r.search.hits) || []).map((h) => ({
+        ...h,
+        key: h.id,
+        nameText: withEnglish(h.name, h.preferredName),
+        hospitalsText: h.hospitals || "no hospital on record",
+        placeText: [h.country, h.city].filter(Boolean).join(" · ")
+      }));
+      const typed = r.q.trim().length;
+      return {
+        key: "r" + r.i,
+        i: r.i,
+        text: r.text,
+        rowCls: r.del ? "gone" : "",
+        statusText: info.text,
+        statusCls: info.cls,
+        showTick: r.status !== "dup" && !r.del,
+        tickDisabled: !r.pick,
+        ok: r.ok,
+        showConfirm: !r.del && r.status !== "dup" && !!r.pick && !r.ok,
+        confirmText: r.status === "suggest" ? "Yes, this one" : "Confirm",
+        showReady: !r.del && r.status !== "dup" && !!r.pick && r.ok,
+        showNeeds: !r.del && r.status !== "dup" && !r.pick,
+        showSelect,
+        options: [
+          { value: "", label: "Choose who it is…", selected: !r.pick },
+          ...r.cands.map((c) => ({
+            value: c.id,
+            selected: r.pick === c.id,
+            label:
+              withEnglish(c.name, c.preferredName) +
+              " · " +
+              (c.hospitals || "no hospital on record") +
+              " · " +
+              place(c)
+          }))
+        ],
+        showName,
+        nameText: r.chosen
+          ? withEnglish(r.chosen.name, r.chosen.preferredName)
+          : "",
+        showUnpick: showName && lookMode,
+        showLookupBox,
+        showLookupBtn:
+          !r.del &&
+          !lookMode &&
+          (r.status === "many" || r.status === "suggest"),
+        q: r.q,
+        hasQ: typed > 0,
+        popOpen: showLookupBox && typed > 0,
+        popShort: typed < 2,
+        popHits: hits,
+        popNone: typed >= 2 && r.search && hits.length === 0,
+        popScope: r.search
+          ? r.search.scope === "ALL"
+            ? "Searching every country."
+            : "Searching " + r.search.scope + "."
+          : "",
+        wideText: r.wide ? "Back to the campaign's countries" : "Widen search",
+        hospitals: r.chosen ? r.chosen.hospitals : "",
+        placeText: place(r.chosen),
+        showDel: !r.del && r.status !== "dup", // an existing member needs no action: they are simply passed over
+        showUndo: r.del,
+        note:
+          r.status === "many" && !r.pick && !r.del
+            ? "Check who this is before you pick."
+            : ""
+      };
+    });
+  }
+  patchRow(i, patch) {
+    this.rows = this.rows.map((r, k) => (k === i ? { ...r, ...patch } : r));
+  }
+  rowIndex(event) {
+    return Number(event.currentTarget.dataset.i);
+  }
+  handleRowOk(event) {
+    this.patchRow(this.rowIndex(event), { ok: event.target.checked });
+  }
+  handleRowSelect(event) {
+    const i = this.rowIndex(event);
+    const id = event.target.value;
+    const chosen = this.rows[i].cands.find((c) => c.id === id) || null;
+    this.patchRow(i, { pick: id, chosen, ok: false });
+  }
+  handleRowConfirm(event) {
+    this.patchRow(this.rowIndex(event), { ok: true });
+  }
+  handleRowLookup(event) {
+    this.patchRow(this.rowIndex(event), {
+      look: true,
+      pick: "",
+      chosen: null,
+      ok: false,
+      q: "",
+      search: null
+    });
+  }
+  handleRowUnpick(event) {
+    this.patchRow(this.rowIndex(event), {
+      pick: "",
+      chosen: null,
+      ok: false,
+      q: "",
+      search: null
+    });
+  }
+  handleRowQ(event) {
+    const i = this.rowIndex(event);
+    this.patchRow(i, { q: event.target.value });
+    this.runRowSearch(i, false);
+  }
+  handleRowQClear(event) {
+    this.patchRow(this.rowIndex(event), { q: "", search: null });
+  }
+  handleRowWiden(event) {
+    const i = this.rowIndex(event);
+    this.patchRow(i, { wide: !this.rows[i].wide });
+    this.runRowSearch(i, true);
+  }
+  runRowSearch(i, now) {
+    clearTimeout(this.timer);
+    const mine = ++this.seq;
+    const row = () => this.rows[i];
+    if (row().q.trim().length < 2) {
+      this.patchRow(i, { search: null });
+      return;
+    }
+    // eslint-disable-next-line @lwc/lwc/no-async-operation
+    this.timer = setTimeout(
+      async () => {
+        try {
+          const r = await searchSurgeons({
+            campaignId: this.campaign.id,
+            term: row().q,
+            wide: !!row().wide
+          });
+          if (mine === this.seq) this.patchRow(i, { search: r });
+        } catch (e) {
+          this.error = errorText(e);
+        }
+      },
+      now ? 0 : 250
+    );
+  }
+  handleRowPickFound(event) {
+    const i = this.rowIndex(event);
+    const id = event.currentTarget.dataset.id;
+    const hit = this.rows[i].search.hits.find((h) => h.id === id);
+    this.patchRow(i, {
+      pick: id,
+      chosen: hit,
+      ok: false,
+      q: "",
+      search: null
+    });
+  }
+  handleRowCreate() {
+    window.open(
+      window.location.origin + "/lightning/o/Account/new",
+      "_blank",
+      "noopener"
+    );
+  }
+  handleRowDelete(event) {
+    this.patchRow(this.rowIndex(event), { del: true });
+  }
+  handleRowUndo(event) {
+    this.patchRow(this.rowIndex(event), { del: false });
+  }
+  handleAddAll() {
+    const ids = [
+      ...new Set(
+        this.rows
+          .filter((r) => !r.del && r.status !== "dup" && r.pick && r.ok)
+          .map((r) => r.pick)
+      )
+    ];
+    if (!ids.length) return;
+    this.run(async () => {
+      const r = await addMembers({
+        campaignId: this.campaign.id,
+        surgeonIds: ids
+      });
+      await this.loadDetail(this.campaign.id);
+      this.campaigns = await listCampaigns();
+      let msg = `Added ${r.added} member${r.added === 1 ? "" : "s"}.`;
+      if (r.alreadyMembers)
+        msg += ` ${r.alreadyMembers} were already in the campaign.`;
+      if (r.problems && r.problems.length)
+        msg += " Some could not be added: " + r.problems.join("; ");
+      this.toast = msg;
+      this.rows = [];
+      this.leaveAsking = false;
+    });
+  }
+
   // ---------- tables: click a heading to sort, drag its edge to resize, double-click the edge to reset ----------
   heads(table, defs) {
     const sort = this.sorts[table];
@@ -690,7 +1148,7 @@ export default class PipelineCampaigns extends LightningElement {
       ? this.live.widths
       : this.widths[table];
   }
-  cols(table, defs, lead) {
+  cols(table, defs, lead, trail) {
     const w = this.current(table);
     if (!w) return [];
     const out = defs.map((d) => ({
@@ -700,6 +1158,8 @@ export default class PipelineCampaigns extends LightningElement {
     }));
     if (lead)
       out.unshift({ id: "__tick", px: lead, style: "width:" + lead + "px" });
+    if (trail)
+      out.push({ id: "__end", px: trail, style: "width:" + trail + "px" });
     return out;
   }
   get listCols() {
@@ -707,6 +1167,18 @@ export default class PipelineCampaigns extends LightningElement {
   }
   get memberCols() {
     return this.cols("members", MEMBER_COLUMNS, TICK_WIDTH);
+  }
+  get reconCols() {
+    return this.cols("recon", RECON_COLUMNS, TICK_WIDTH, ACTION_WIDTH);
+  }
+  get reconHasWidths() {
+    return this.reconCols.length > 0;
+  }
+  get reconTableStyle() {
+    return this.tableStyle(this.reconCols);
+  }
+  get reconHeads() {
+    return this.heads("recon", RECON_COLUMNS);
   }
   get listHasWidths() {
     return this.listCols.length > 0;

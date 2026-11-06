@@ -6,6 +6,9 @@ import getCampaign from "@salesforce/apex/PipelineCampaignController.getCampaign
 import saveCampaign from "@salesforce/apex/PipelineCampaignController.saveCampaign";
 import searchSurgeons from "@salesforce/apex/PipelineCampaignController.searchSurgeons";
 import addMember from "@salesforce/apex/PipelineCampaignController.addMember";
+import matchNames from "@salesforce/apex/PipelineCampaignController.matchNames";
+import addMembers from "@salesforce/apex/PipelineCampaignController.addMembers";
+import removeMembers from "@salesforce/apex/PipelineCampaignController.removeMembers";
 
 jest.mock(
   "@salesforce/apex/PipelineCampaignController.getContext",
@@ -44,6 +47,16 @@ jest.mock(
 );
 jest.mock(
   "@salesforce/apex/PipelineCampaignController.addMember",
+  () => ({ default: jest.fn() }),
+  { virtual: true }
+);
+jest.mock(
+  "@salesforce/apex/PipelineCampaignController.matchNames",
+  () => ({ default: jest.fn() }),
+  { virtual: true }
+);
+jest.mock(
+  "@salesforce/apex/PipelineCampaignController.addMembers",
   () => ({ default: jest.fn() }),
   { virtual: true }
 );
@@ -113,6 +126,10 @@ function make() {
 }
 const q = (el, sel) => el.shadowRoot.querySelector(sel);
 const text = (el) => el.shadowRoot.textContent.replace(/\s+/g, " ");
+const click = (el, label) =>
+  [...el.shadowRoot.querySelectorAll("button.btn")]
+    .find((b) => b.textContent.trim() === label)
+    .click();
 const typeInto = (input, v) => {
   input.value = v;
   input.dispatchEvent(new CustomEvent("input"));
@@ -195,6 +212,59 @@ describe("c-pipeline-campaigns", () => {
     expect(t).toContain("1 deal · Plan");
     expect(t).toContain("No deal yet");
     expect(q(el, ".kpis").textContent).toContain("2");
+  });
+
+  it('asks "are you sure?" under the Remove button before removing anyone', async () => {
+    removeMembers.mockResolvedValue(undefined);
+    const el = make();
+    await flush();
+    q(el, "tr.click").click();
+    await flush();
+    const boxes = el.shadowRoot.querySelectorAll(
+      'td.tick input[type="checkbox"]'
+    );
+    boxes[0].checked = true;
+    boxes[0].dispatchEvent(new CustomEvent("change"));
+    await flush();
+    expect(text(el)).toContain("Remove 1 campaign member");
+    expect(text(el)).not.toContain("ticked");
+    click(el, "Remove 1 campaign member");
+    await flush();
+    expect(removeMembers).not.toHaveBeenCalled();
+    expect(text(el)).toContain("Yes, remove 1");
+    click(el, "Keep them");
+    await flush();
+    expect(text(el)).not.toContain("Yes, remove 1");
+    click(el, "Remove 1 campaign member");
+    await flush();
+    click(el, "Yes, remove 1");
+    await flush();
+    expect(removeMembers).toHaveBeenCalledWith({ memberIds: ["m1"] });
+  });
+
+  it("has a Select all box above the member boxes that ticks and clears them all", async () => {
+    const el = make();
+    await flush();
+    q(el, "tr.click").click();
+    await flush();
+    const all = q(el, "th.tick input.selall");
+    all.checked = true;
+    all.dispatchEvent(new CustomEvent("change"));
+    await flush();
+    expect(text(el)).toContain("Remove 2 campaign members");
+    const one = el.shadowRoot.querySelectorAll(
+      'td.tick input[type="checkbox"]'
+    )[0];
+    one.checked = false;
+    one.dispatchEvent(new CustomEvent("change"));
+    await flush();
+    expect(text(el)).toContain("Remove 1 campaign member");
+    expect(q(el, "th.tick input.selall").indeterminate).toBe(true);
+    const again = q(el, "th.tick input.selall");
+    again.checked = false;
+    again.dispatchEvent(new CustomEvent("change"));
+    await flush();
+    expect(text(el)).toContain("Remove campaign members");
   });
 
   it("searches for a surgeon only from two characters, offers widening, and adds one", async () => {
@@ -285,18 +355,6 @@ describe("c-pipeline-campaigns", () => {
     expect(text(el)).toContain("Show inactive");
   });
 
-  it("keeps a space in the two-colour titles and says importing is next", async () => {
-    const el = make();
-    await flush();
-    q(el, "tr.click").click();
-    await flush();
-    [...el.shadowRoot.querySelectorAll("button.btn")]
-      .find((b) => b.textContent.trim() === "Import members")
-      .click();
-    await flush();
-    expect(text(el)).toContain("next piece to be built");
-  });
-
   it("sorts a table by a heading and flips the order on a second click", async () => {
     listCampaigns.mockResolvedValue([
       { ...CAMP, id: "a1", name: "Bravo", memberCount: 5 },
@@ -353,5 +411,231 @@ describe("c-pipeline-campaigns", () => {
     await flush();
     expect(el.shadowRoot.querySelector("colgroup")).toBeNull();
     window.localStorage.removeItem("pipelineCampaignWidths");
+  });
+
+  const ROWS = [
+    {
+      text: "Dr Wei Ming Lim, SGH",
+      status: "exact",
+      pickId: "001A",
+      cands: [
+        {
+          id: "001A",
+          name: "Dr Wei Ming Lim",
+          preferredName: "",
+          country: "SG",
+          city: "",
+          type: "Physician",
+          hospitals: "Singapore General Hospital",
+          alreadyMember: false
+        }
+      ]
+    },
+    {
+      text: "Tan Ah Kow",
+      status: "many",
+      pickId: null,
+      cands: [
+        {
+          id: "001B",
+          name: "Dr Tan Ah Kow",
+          country: "SG",
+          hospitals: "Mount Elizabeth",
+          alreadyMember: false
+        },
+        {
+          id: "001C",
+          name: "Dr Tan Ah Kow",
+          country: "MY",
+          hospitals: "Gleneagles KL",
+          alreadyMember: false
+        }
+      ]
+    },
+    { text: "Nobody Atall", status: "none", pickId: null, cands: [] },
+    {
+      text: "Somchai Prasert",
+      status: "dup",
+      pickId: "001D",
+      cands: [
+        {
+          id: "001D",
+          name: "Dr Somchai Prasert",
+          country: "TH",
+          hospitals: "Bangkok Hospital",
+          alreadyMember: true
+        }
+      ]
+    }
+  ];
+  const openImport = async () => {
+    const el = make();
+    await flush();
+    q(el, "tr.click").click();
+    await flush();
+    click(el, "Import members");
+    await flush();
+    return el;
+  };
+
+  it("opens the import page, which needs at least one name, and counts them", async () => {
+    const el = await openImport();
+    expect(text(el)).toContain("Paste a list of surgeons");
+    expect(text(el)).toContain("Import members"); // the last step of the trail
+    const check = [...el.shadowRoot.querySelectorAll("button.btn")].find(
+      (b) => b.textContent.trim() === "Check names"
+    );
+    expect(check.disabled).toBe(true);
+    const area = q(el, "textarea");
+    area.value = "Name,Hospital\nDr A One\nDr B Two\nDr A One";
+    area.dispatchEvent(new CustomEvent("input"));
+    await flush();
+    expect(text(el)).toContain("2 names");
+    expect(text(el)).not.toContain("Symbols (");
+    typeInto(area, "Dr A One ★\nDr B Two ✔\nDr C Three");
+    await flush();
+    expect(text(el)).toContain(
+      "Symbols (★ ✔) are removed from 2 lines, and the names are matched without them."
+    );
+    expect(text(el)).toContain("3 names");
+  });
+
+  it("checks the names, settles every row, and adds only the confirmed surgeons", async () => {
+    matchNames.mockResolvedValue(ROWS);
+    addMembers.mockResolvedValue({ added: 2, alreadyMembers: 0, problems: [] });
+    const el = await openImport();
+    const area = q(el, "textarea");
+    area.value = "x\ny\nz\nw";
+    area.dispatchEvent(new CustomEvent("input"));
+    await flush();
+    click(el, "Check names");
+    await flush();
+    expect(matchNames).toHaveBeenCalledTimes(1);
+    expect(matchNames.mock.calls[0][0].lines).toEqual(["x", "y", "z", "w"]);
+    let t = text(el);
+    expect(t).toContain("Exact match");
+    expect(t).toContain("Several people share this name");
+    expect(t).toContain("Not found");
+    expect(t).toContain("Already a member: skipped");
+    const add = () =>
+      [...el.shadowRoot.querySelectorAll("button.btn")].find((b) =>
+        b.textContent.trim().startsWith("Add ")
+      );
+    expect(text(el)).toContain("NOT SAVED YET");
+    // the exact match arrives ticked, so one member is ready straight away
+    expect(add().textContent.trim()).toBe("Add 1 member");
+    expect(text(el)).not.toContain("Tick all exact matches");
+    // the "several people" row: choosing someone does not tick it; Confirm does
+    const select = q(el, "select");
+    select.value = "001C";
+    select.dispatchEvent(new CustomEvent("change"));
+    await flush();
+    expect(add().textContent.trim()).toBe("Add 1 member");
+    click(el, "Confirm");
+    await flush();
+    expect(add().textContent.trim()).toBe("Add 2 members");
+    // the "not found" row is left alone: it is simply not added
+    expect(text(el)).toContain("1 need a decision");
+    expect(add().disabled).toBe(false);
+    add().click();
+    await flush();
+    expect(addMembers).toHaveBeenCalledWith({
+      campaignId: "a01",
+      surgeonIds: ["001A", "001C"]
+    });
+    expect(text(el)).toContain("Added 2 members.");
+  });
+
+  it("looks a surgeon up when none of the suggestions is right", async () => {
+    matchNames.mockResolvedValue([ROWS[1]]);
+    searchSurgeons.mockResolvedValue({
+      hits: [
+        {
+          id: "001Z",
+          name: "Dr Someone Else",
+          preferredName: "",
+          country: "SG",
+          city: "",
+          type: "Physician",
+          hospitals: "H9",
+          alreadyMember: false
+        }
+      ],
+      outside: 0,
+      heldBack: 0,
+      scope: "AU, NZ"
+    });
+    const el = await openImport();
+    const area = q(el, "textarea");
+    area.value = "Tan Ah Kow";
+    area.dispatchEvent(new CustomEvent("input"));
+    await flush();
+    click(el, "Check names");
+    await flush();
+    click(el, "None of these? Look up");
+    await flush();
+    const box = [...el.shadowRoot.querySelectorAll("input.search")].find(
+      (i) => i.placeholder === "Look the surgeon up"
+    );
+    box.value = "else";
+    box.dispatchEvent(new CustomEvent("input"));
+    await flush(350);
+    expect(text(el)).toContain("Dr Someone Else");
+    expect(text(el)).toContain("Create this surgeon");
+    q(el, ".inlinepop .opt").click();
+    await flush();
+    expect(text(el)).toContain("Dr Someone Else");
+    const add = () =>
+      [...el.shadowRoot.querySelectorAll("button.btn")].find((b) =>
+        b.textContent.trim().startsWith("Add ")
+      );
+    expect(add().disabled).toBe(true); // picked, but not confirmed yet
+    click(el, "Confirm");
+    await flush();
+    expect(add().disabled).toBe(false);
+  });
+
+  it("gives an existing member no action, and a Skip button with a working Undo to the others", async () => {
+    matchNames.mockResolvedValue([ROWS[0], ROWS[3]]);
+    const el = await openImport();
+    const area = q(el, "textarea");
+    area.value = "x\ny";
+    area.dispatchEvent(new CustomEvent("input"));
+    await flush();
+    click(el, "Check names");
+    await flush();
+    const skips = [...el.shadowRoot.querySelectorAll("button.btn")].filter(
+      (b) => b.textContent.trim() === "Skip"
+    );
+    expect(skips.length).toBe(1); // the already-a-member row has none
+    skips[0].click();
+    await flush();
+    expect(text(el)).toContain("Skipped");
+    expect(text(el)).toContain("Add 0 members");
+    click(el, "Undo");
+    await flush();
+    expect(text(el)).toContain("Add 1 member");
+  });
+
+  it("asks before leaving the check screen with work that is not added", async () => {
+    matchNames.mockResolvedValue([ROWS[0]]);
+    const el = await openImport();
+    const area = q(el, "textarea");
+    area.value = "x";
+    area.dispatchEvent(new CustomEvent("input"));
+    await flush();
+    click(el, "Check names");
+    await flush();
+    click(el, "Cancel");
+    await flush();
+    expect(text(el)).toContain("LEAVE WITHOUT ADDING?");
+    click(el, "Stay here");
+    await flush();
+    expect(text(el)).toContain("NOT SAVED YET");
+    click(el, "Cancel");
+    await flush();
+    click(el, "Leave anyway");
+    await flush();
+    expect(text(el)).not.toContain("NOT SAVED YET");
   });
 });

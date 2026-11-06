@@ -310,7 +310,10 @@
 }
 .card.tablecard {
   padding: 0;
+}
+.tscroll {
   overflow-x: auto;
+  border-radius: 0 0 12px 12px;
 }
 .card h2 {
   margin: 0 0 8px;
@@ -341,6 +344,7 @@
   padding: 0 12px;
 }
 .in.search {
+  box-sizing: border-box;
   border-radius: 999px;
   width: 100%;
   padding-left: 16px;
@@ -575,9 +579,11 @@ td.tick {
   width: 44px;
   padding-right: 0;
 }
+th.tick input,
 td.tick input {
   width: 16px;
   height: 16px;
+  margin: 0;
 }
 td.empty {
   text-align: center;
@@ -710,9 +716,269 @@ th .lab2 {
 .tag {
   line-height: 1.4;
 }
+th.tick input,
 td.tick input {
-  vertical-align: -3px;
+  vertical-align: middle;
 }
 .btn {
   white-space: nowrap;
+}
+
+/* the importer */
+.in.area.big {
+  min-height: 220px;
+  height: 220px;
+}
+.formactions .counttext {
+  font-size: 13px;
+}
+.nomargin {
+  margin: 0;
+}
+.matchcell .in {
+  max-width: 100%;
+}
+.matchcell select.in {
+  display: block;
+  width: 100%;
+  margin-bottom: 6px;
+}
+.matchcell select.in + .btn.small {
+  margin-left: 0;
+}
+.inlinepop {
+  margin-top: 6px;
+  background: var(--ppanel);
+  border: 1px solid var(--edge);
+  border-radius: 10px;
+  max-width: 640px;
+  white-space: normal;
+}
+.inlinepop .opt {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  color: var(--text);
+  padding: 8px 14px;
+  font-size: 15px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--pline);
+}
+.inlinepop .opt small {
+  display: block;
+  color: var(--muted);
+  font-size: 13px;
+}
+.inlinepop .foot {
+  padding: 8px 14px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.inlinepop .foot.scope {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.rownote {
+  display: block;
+  color: var(--muted);
+  font-size: 13px;
+  margin-top: 2px;
+}
+tr.gone td:not(.act) {
+  opacity: 0.45;
+}
+.xcirc.inline {
+  position: relative;
+  margin: 0 0 0 6px;
+  vertical-align: middle;
+}
+td .btn.small {
+  margin-left: 6px;
+}
+
+/* the check screen holds unsaved work, so it says so loudly (Robert, 2026-11-07): a banner that stays under the top bar, Add at the top and the bottom */
+.unsaved {
+  position: sticky;
+  top: var(--topbar, 55px);
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: nowrap;
+  margin: 0 0 12px;
+  padding: 10px 16px;
+  /* an alert tone, amber to orange, so the banner stands out (Robert, 2026-11-07) */
+  background: #4a3210;
+  color: #ffe9bf;
+  border: 2px solid #f59e0b;
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+}
+.root[data-theme="light"] .unsaved {
+  background: #ffdd9a;
+  color: #4a2a00;
+  border-color: #e07b00;
+}
+.unsaved .btn {
+  flex: none;
+}
+.unsaved .utext {
+  min-width: 0;
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+}
+.unsaved b {
+  color: #fdb827;
+  letter-spacing: 0.08em;
+  font-size: 15px;
+}
+.root[data-theme="light"] .unsaved b {
+  color: #9a3412;
+}
+.unsaved .ucount {
+  font-weight: 700;
+}
+.unsaved .sp {
+  flex: 1 1 0;
+}
+.cardfoot {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--line);
+}
+.cardfoot .sp {
+  flex: 1 1 0;
+}
+th.act,
+td.act {
+  white-space: nowrap;
+}
+td.act .tag {
+  margin-right: 6px;
+}
+.askrow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 10px 16px;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  background: var(--panel2);
+}
+.askrow .sp {
+  flex: 1 1 0;
+}
+.tag.warn {
+  color: var(--warn);
+}
+.tag.bad {
+  color: var(--bad);
+}
+
+/* the decision column: two fixed slots, each centred on its own axis, so the status marks line up and the Skip / Undo buttons line up down the whole table (Robert, 2026-11-07) */
+.acts {
+  display: grid;
+  grid-template-columns: 132px 64px;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+}
+.acts .slot {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.acts .slot .btn {
+  margin: 0;
+  min-width: 64px;
+}
+.acts .slot.a .btn {
+  min-width: 104px;
+}
+td.act .tag {
+  margin: 0;
+}
+th.act {
+  text-align: center;
+}
+
+/* the check screen's list can be hundreds of names: its column headings stay in view under the banner. Sticky headings need the wrapper not to be a scroll box, so it clips instead of scrolling sideways. */
+.tscroll.stick {
+  overflow-x: clip;
+}
+.tscroll.stick th {
+  position: sticky;
+  top: var(--stick, 121px);
+  z-index: 4;
+  background: var(--panel);
+}
+.cleannote {
+  color: var(--warn);
+  font-weight: 700;
+}
+
+/* the lookup under a row of the check screen: a wide panel that floats over the columns to its right (it no longer makes the row tall), one line per surgeon, and its own buttons together at the bottom right (Robert, 2026-11-07) */
+.inlinepop {
+  position: absolute;
+  z-index: 3;
+  width: min(900px, 60vw);
+  max-width: none;
+  background: var(--ppanel);
+  border: 2px solid var(--indigo);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.35);
+}
+.inlinepop .opt.hit {
+  display: grid;
+  grid-template-columns: minmax(180px, 1.1fr) minmax(200px, 2fr) 120px 140px;
+  gap: 14px;
+  align-items: baseline;
+}
+.inlinepop .opt.hit span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.inlinepop .opt.hit .hn {
+  font-weight: 700;
+}
+.inlinepop .opt.hit .hh,
+.inlinepop .opt.hit .hp,
+.inlinepop .opt.hit .ht {
+  color: var(--muted);
+  font-size: 14px;
+}
+.inlinepop .opt.hit:hover {
+  background: rgba(99, 102, 241, 0.16);
+}
+.inlinepop .foot.bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.inlinepop .foot.bar .barnote {
+  flex: 1 1 auto;
+}
+.note .cleannote {
+  display: block;
+}
+
+/* the multi-line boxes (the campaign's description, the pasted list) take the same field colours as the other boxes, so they are dark with light text in dark mode */
+textarea.in {
+  box-sizing: border-box;
+  background-color: var(--pfield);
+  border: 1px solid var(--pline);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 15px;
+}
+textarea.in::placeholder {
+  color: var(--muted);
 }

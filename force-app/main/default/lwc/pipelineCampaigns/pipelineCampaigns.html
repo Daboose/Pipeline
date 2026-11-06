@@ -2,8 +2,8 @@
   <div class="root" data-theme={theme} data-head={headColour}>
     <header class="top">
       <span class="word"
-        ><span class="pipe">CAMPAIGN</span
-        ><span class="line">MANAGEMENT</span></span
+        ><span class="pipe">SALES</span
+        ><span class="line">CAMPAIGN MANAGEMENT</span></span
       >
       <span class="ver">{version}</span>
       <span class="sp"></span>
@@ -109,58 +109,65 @@
           the Campaign Manager permission.
         </p>
         <div class="card full tablecard">
-          <table class="tbl" style={listTableStyle}>
-            <colgroup lwc:if={listHasWidths}>
-              <template for:each={listCols} for:item="c">
-                <col key={c.id} style={c.style} />
-              </template>
-            </colgroup>
-            <thead>
-              <tr>
-                <template for:each={listHeads} for:item="h">
-                  <th key={h.id} class={h.cls} data-table="list" data-id={h.id}>
-                    <span
-                      class="lab2"
-                      data-table="list"
-                      data-id={h.id}
-                      onclick={handleSort}
-                      title="Click to sort"
-                      >{h.label}<span class="arrow">{h.arrow}</span></span
-                    >
-                    <i
-                      class="rz"
-                      data-table="list"
-                      data-id={h.id}
-                      title="Drag to resize. Double-click to reset the widths."
-                      onmousedown={handleResizeStart}
-                      ondblclick={handleWidthsReset}
-                    ></i>
-                  </th>
+          <div class="tscroll">
+            <table class="tbl" style={listTableStyle}>
+              <colgroup lwc:if={listHasWidths}>
+                <template for:each={listCols} for:item="c">
+                  <col key={c.id} style={c.style} />
                 </template>
-              </tr>
-            </thead>
-            <tbody>
-              <template for:each={listRows} for:item="c">
-                <tr
-                  key={c.id}
-                  class="click"
-                  data-id={c.id}
-                  onclick={handleOpen}
-                >
-                  <td class="strong">{c.name}</td>
-                  <td class="caps">{c.portfoliosText}</td>
-                  <td>{c.countriesText}</td>
-                  <td>{c.managerName}</td>
-                  <td><span class={c.statusCls}>{c.statusText}</span></td>
-                  <td class="num">{c.memberCount}</td>
-                  <td class="num">{c.dealCount}</td>
+              </colgroup>
+              <thead>
+                <tr>
+                  <template for:each={listHeads} for:item="h">
+                    <th
+                      key={h.id}
+                      class={h.cls}
+                      data-table="list"
+                      data-id={h.id}
+                    >
+                      <span
+                        class="lab2"
+                        data-table="list"
+                        data-id={h.id}
+                        onclick={handleSort}
+                        title="Click to sort"
+                        >{h.label}<span class="arrow">{h.arrow}</span></span
+                      >
+                      <i
+                        class="rz"
+                        data-table="list"
+                        data-id={h.id}
+                        title="Drag to resize. Double-click to reset the widths."
+                        onmousedown={handleResizeStart}
+                        ondblclick={handleWidthsReset}
+                      ></i>
+                    </th>
+                  </template>
                 </tr>
-              </template>
-              <tr lwc:if={noRows}>
-                <td colspan="7" class="empty">No campaigns to show.</td>
-              </tr>
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                <template for:each={listRows} for:item="c">
+                  <tr
+                    key={c.id}
+                    class="click"
+                    data-id={c.id}
+                    onclick={handleOpen}
+                  >
+                    <td class="strong">{c.name}</td>
+                    <td class="caps">{c.portfoliosText}</td>
+                    <td>{c.countriesText}</td>
+                    <td>{c.managerName}</td>
+                    <td><span class={c.statusCls}>{c.statusText}</span></td>
+                    <td class="num">{c.memberCount}</td>
+                    <td class="num">{c.dealCount}</td>
+                  </tr>
+                </template>
+                <tr lwc:if={noRows}>
+                  <td colspan="7" class="empty">No campaigns to show.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
         <p class="note">
           Inactive campaigns are hidden unless you show them, and deals cannot
@@ -437,73 +444,483 @@
               {removeText}
             </button>
           </div>
+          <div class="askrow" lwc:if={showRemoveAsk}>
+            <span>{removeAskText}</span>
+            <span class="sp"></span>
+            <button type="button" class="btn sec" onclick={handleRemoveNo}>
+              Keep them
+            </button>
+            <button type="button" class="btn danger" onclick={handleRemoveYes}>
+              {removeYesText}
+            </button>
+          </div>
           <p class="ok pad" lwc:if={hasToast}>{toast}</p>
-          <table class="tbl" style={memberTableStyle}>
-            <colgroup lwc:if={memberHasWidths}>
-              <template for:each={memberCols} for:item="c">
-                <col key={c.id} style={c.style} />
-              </template>
-            </colgroup>
-            <thead>
-              <tr>
-                <th class="tick"></th>
-                <template for:each={memberHeads} for:item="h">
-                  <th
-                    key={h.id}
-                    class={h.cls}
-                    data-table="members"
-                    data-id={h.id}
-                  >
-                    <span
-                      class="lab2"
-                      data-table="members"
-                      data-id={h.id}
-                      onclick={handleSort}
-                      title="Click to sort"
-                      >{h.label}<span class="arrow">{h.arrow}</span></span
-                    >
-                    <i
-                      class="rz"
-                      data-table="members"
-                      data-id={h.id}
-                      title="Drag to resize. Double-click to reset the widths."
-                      onmousedown={handleResizeStart}
-                      ondblclick={handleWidthsReset}
-                    ></i>
-                  </th>
+          <div class="tscroll">
+            <table class="tbl" style={memberTableStyle}>
+              <colgroup lwc:if={memberHasWidths}>
+                <template for:each={memberCols} for:item="c">
+                  <col key={c.id} style={c.style} />
                 </template>
-              </tr>
-            </thead>
-            <tbody>
-              <template for:each={memberRows} for:item="m">
-                <tr key={m.key}>
-                  <td class="tick">
+              </colgroup>
+              <thead>
+                <tr>
+                  <th class="tick">
                     <input
                       type="checkbox"
-                      data-id={m.memberId}
-                      checked={m.ticked}
-                      onchange={handleTick}
+                      class="selall"
                       lwc:if={canManage}
+                      checked={allTicked}
+                      aria-label="Select all members"
+                      title="Select all"
+                      onchange={handleTickAll}
                     />
-                  </td>
-                  <td class="strong">{m.nameText}</td>
-                  <td>{m.hospitals}</td>
-                  <td>{m.placeText}</td>
-                  <td>{m.type}</td>
-                  <td><span class={m.dealCls}>{m.dealText}</span></td>
+                  </th>
+                  <template for:each={memberHeads} for:item="h">
+                    <th
+                      key={h.id}
+                      class={h.cls}
+                      data-table="members"
+                      data-id={h.id}
+                    >
+                      <span
+                        class="lab2"
+                        data-table="members"
+                        data-id={h.id}
+                        onclick={handleSort}
+                        title="Click to sort"
+                        >{h.label}<span class="arrow">{h.arrow}</span></span
+                      >
+                      <i
+                        class="rz"
+                        data-table="members"
+                        data-id={h.id}
+                        title="Drag to resize. Double-click to reset the widths."
+                        onmousedown={handleResizeStart}
+                        ondblclick={handleWidthsReset}
+                      ></i>
+                    </th>
+                  </template>
                 </tr>
-              </template>
-              <tr lwc:if={noMembers}>
-                <td colspan="6" class="empty">
-                  No members yet. Type a surgeon's name above to add one.
-                </td>
-              </tr>
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                <template for:each={memberRows} for:item="m">
+                  <tr key={m.key}>
+                    <td class="tick">
+                      <input
+                        type="checkbox"
+                        data-id={m.memberId}
+                        checked={m.ticked}
+                        onchange={handleTick}
+                        lwc:if={canManage}
+                      />
+                    </td>
+                    <td class="strong">{m.nameText}</td>
+                    <td>{m.hospitals}</td>
+                    <td>{m.placeText}</td>
+                    <td>{m.type}</td>
+                    <td><span class={m.dealCls}>{m.dealText}</span></td>
+                  </tr>
+                </template>
+                <tr lwc:if={noMembers}>
+                  <td colspan="6" class="empty">
+                    No members yet. Type a surgeon's name above to add one.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
         <p class="note" lwc:if={truncated}>
           Only the first 2,000 members are shown.
         </p>
+      </template>
+
+      <!-- ============ import: paste or file ============ -->
+      <template lwc:elseif={isImport}>
+        <h1 class="head1 trail">
+          <template for:each={crumbs} for:item="c">
+            <span key={c.key} class="crumb">
+              <button
+                type="button"
+                class="crumblink"
+                lwc:if={c.link}
+                data-target={c.target}
+                onclick={handleCrumb}
+              >
+                {c.label}
+              </button>
+              <span class="crumbhere" lwc:else>{c.label}</span>
+            </span>
+          </template>
+        </h1>
+        <div class="card full formcard">
+          <span class="lab first"
+            >Paste a list of surgeons, one per line, straight from Excel</span
+          >
+          <textarea
+            class="in area big"
+            placeholder="Wei Ming Lim, SGH&#10;Priya Nair - Mount Elizabeth&#10;Dr Siti Abdullah"
+            oninput={handlePaste}
+          ></textarea>
+          <p class="note">
+            Add the hospital after the name (a comma, a dash or a tab) to help
+            with common names. Titles such as Dr are ignored, and so is the
+            order of the words. The English name is searched too. Nothing is
+            saved on this step: the next screen shows what each name matched,
+            and you confirm every row.
+          </p>
+          <span class="lab">...or choose a file (CSV or text)</span>
+          <input
+            type="file"
+            accept=".csv,.txt,.tsv,text/csv,text/plain"
+            onchange={handleFile}
+          />
+          <div class="formactions">
+            <span class="muted counttext"
+              >{pasteCountText} (up to {maxLines} at a time)</span
+            >
+            <span class="cleannote" lwc:if={hasCleanNote}>{cleanNote}</span>
+            <span class="sp"></span>
+            <button
+              type="button"
+              class="btn sec"
+              onclick={handleBackToCampaign}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              class="btn"
+              disabled={pasteDisabled}
+              onclick={handleCheckNames}
+            >
+              Check names
+            </button>
+          </div>
+        </div>
+      </template>
+
+      <!-- ============ import: the check screen ============ -->
+      <template lwc:elseif={isReconcile}>
+        <div class="topband">
+          <div class="tl">
+            <h1 class="head1 trail">
+              <template for:each={crumbs} for:item="c">
+                <span key={c.key} class="crumb">
+                  <button
+                    type="button"
+                    class="crumblink"
+                    lwc:if={c.link}
+                    data-target={c.target}
+                    onclick={handleCrumb}
+                  >
+                    {c.label}
+                  </button>
+                  <span class="crumbhere" lwc:else>{c.label}</span>
+                </span>
+              </template>
+            </h1>
+            <p class="note nomargin">
+              Exact matches are ready to go. For every other row, choose the
+              person and press Confirm. Only rows with a tick in the Add column
+              are added.
+              <span class="cleannote" lwc:if={hasCleanNote}>{cleanNote}</span>
+            </p>
+          </div>
+          <div class="kpis">
+            <div class="kpi">
+              <b>{reconCounts.exact}</b><span>Exact matches</span>
+            </div>
+            <div class="kpi">
+              <b>{reconCounts.choose}</b><span>Need a choice</span>
+            </div>
+            <div class="kpi gap">
+              <b>{reconCounts.none}</b><span>Not found</span>
+            </div>
+            <div class="kpi">
+              <b>{reconCounts.dup}</b><span>Already members</span>
+            </div>
+          </div>
+        </div>
+        <div class="unsaved" lwc:if={unsaved}>
+          <div class="utext" lwc:if={leaveAsking}>
+            <b>LEAVE WITHOUT ADDING?</b>
+            <span>Your choices on this page will be lost.</span>
+          </div>
+          <div class="utext" lwc:else>
+            <b>NOT SAVED YET</b>
+            <span>{unsavedText}</span>
+            <span class="ucount">{tickedText}</span>
+          </div>
+          <span class="sp"></span>
+          <template lwc:if={leaveAsking}>
+            <button type="button" class="btn sec" onclick={handleStay}>
+              Stay here
+            </button>
+            <button type="button" class="btn danger" onclick={handleLeave}>
+              Leave anyway
+            </button>
+          </template>
+          <template lwc:else>
+            <button
+              type="button"
+              class="btn sec"
+              onclick={handleBackToCampaign}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              class="btn"
+              disabled={addAllDisabled}
+              onclick={handleAddAll}
+            >
+              {addAllText}
+            </button>
+          </template>
+        </div>
+        <div class="card full tablecard">
+          <div class="cardhead">
+            <h2>Check the names</h2>
+          </div>
+          <div class="tscroll stick">
+            <table class="tbl" style={reconTableStyle}>
+              <colgroup lwc:if={reconHasWidths}>
+                <template for:each={reconCols} for:item="c">
+                  <col key={c.id} style={c.style} />
+                </template>
+              </colgroup>
+              <thead>
+                <tr>
+                  <th class="tick">Add</th>
+                  <template for:each={reconHeads} for:item="h">
+                    <th
+                      key={h.id}
+                      class={h.cls}
+                      data-table="recon"
+                      data-id={h.id}
+                    >
+                      <span
+                        class="lab2"
+                        data-table="recon"
+                        data-id={h.id}
+                        onclick={handleSort}
+                        title="Click to sort"
+                        >{h.label}<span class="arrow">{h.arrow}</span></span
+                      >
+                      <i
+                        class="rz"
+                        data-table="recon"
+                        data-id={h.id}
+                        title="Drag to resize. Double-click to reset the widths."
+                        onmousedown={handleResizeStart}
+                        ondblclick={handleWidthsReset}
+                      ></i>
+                    </th>
+                  </template>
+                  <th class="act">Your decision</th>
+                </tr>
+              </thead>
+              <tbody>
+                <template for:each={reconRows} for:item="r">
+                  <tr key={r.key} class={r.rowCls}>
+                    <td class="tick">
+                      <input
+                        type="checkbox"
+                        lwc:if={r.showTick}
+                        data-i={r.i}
+                        checked={r.ok}
+                        disabled={r.tickDisabled}
+                        onchange={handleRowOk}
+                      />
+                    </td>
+                    <td>{r.text}</td>
+                    <td class="matchcell">
+                      <template lwc:if={r.showSelect}>
+                        <select
+                          class="in"
+                          data-i={r.i}
+                          onchange={handleRowSelect}
+                        >
+                          <template for:each={r.options} for:item="o">
+                            <option
+                              key={o.value}
+                              value={o.value}
+                              selected={o.selected}
+                            >
+                              {o.label}
+                            </option>
+                          </template>
+                        </select>
+                        <button
+                          type="button"
+                          class="btn small"
+                          data-i={r.i}
+                          onclick={handleRowLookup}
+                        >
+                          None of these? Look up
+                        </button>
+                      </template>
+                      <template lwc:if={r.showName}>
+                        <span class="strong">{r.nameText}</span>
+                        <button
+                          type="button"
+                          class="xcirc inline"
+                          lwc:if={r.showUnpick}
+                          data-i={r.i}
+                          aria-label="Choose someone else"
+                          onclick={handleRowUnpick}
+                        ></button>
+                        <button
+                          type="button"
+                          class="btn small"
+                          lwc:if={r.showLookupBtn}
+                          data-i={r.i}
+                          onclick={handleRowLookup}
+                        >
+                          Not right? Look up
+                        </button>
+                      </template>
+                      <template lwc:if={r.showLookupBox}>
+                        <span class="sbox big">
+                          <input
+                            class="in search"
+                            type="text"
+                            placeholder="Look the surgeon up"
+                            data-i={r.i}
+                            value={r.q}
+                            oninput={handleRowQ}
+                          />
+                          <button
+                            type="button"
+                            class="xcirc sclear"
+                            lwc:if={r.hasQ}
+                            data-i={r.i}
+                            aria-label="Clear"
+                            onclick={handleRowQClear}
+                          ></button>
+                        </span>
+                        <div class="inlinepop" lwc:if={r.popOpen}>
+                          <div class="foot" lwc:if={r.popShort}>
+                            Type at least 2 characters. The name or the English
+                            name both work.
+                          </div>
+                          <template for:each={r.popHits} for:item="h">
+                            <button
+                              key={h.key}
+                              type="button"
+                              class="opt hit"
+                              data-i={r.i}
+                              data-id={h.id}
+                              onclick={handleRowPickFound}
+                            >
+                              <span class="hn">{h.nameText}</span>
+                              <span class="hh">{h.hospitalsText}</span>
+                              <span class="hp">{h.placeText}</span>
+                              <span class="ht">{h.type}</span>
+                            </button>
+                          </template>
+                          <div class="foot" lwc:if={r.popNone}>
+                            Nobody found.
+                          </div>
+                          <div class="foot bar">
+                            <span class="barnote"
+                              >{r.popScope} Not in Salesforce yet?</span
+                            >
+                            <button
+                              type="button"
+                              class="btn small"
+                              data-i={r.i}
+                              onclick={handleRowWiden}
+                            >
+                              {r.wideText}
+                            </button>
+                            <button
+                              type="button"
+                              class="btn small"
+                              onclick={handleRowCreate}
+                            >
+                              Create this surgeon
+                            </button>
+                          </div>
+                        </div>
+                      </template>
+                    </td>
+                    <td>{r.hospitals}</td>
+                    <td>{r.placeText}</td>
+                    <td>
+                      <span class={r.statusCls}>{r.statusText}</span
+                      ><span class="rownote" lwc:if={r.note}>{r.note}</span>
+                    </td>
+                    <td class="act">
+                      <div class="acts">
+                        <span class="slot a">
+                          <button
+                            type="button"
+                            class="btn small"
+                            lwc:if={r.showConfirm}
+                            data-i={r.i}
+                            onclick={handleRowConfirm}
+                          >
+                            {r.confirmText}
+                          </button>
+                          <span class="tag ok" lwc:if={r.showReady}
+                            >✓ Will be added</span
+                          >
+                          <span class="tag warn" lwc:if={r.showNeeds}
+                            >Choose who</span
+                          >
+                          <span class="tag off" lwc:if={r.showUndo}
+                            >Skipped</span
+                          >
+                        </span>
+                        <span class="slot b">
+                          <button
+                            type="button"
+                            class="btn small sec"
+                            lwc:if={r.showDel}
+                            data-i={r.i}
+                            title="Leave this name out of the import"
+                            onclick={handleRowDelete}
+                          >
+                            Skip
+                          </button>
+                          <button
+                            type="button"
+                            class="btn small"
+                            lwc:if={r.showUndo}
+                            data-i={r.i}
+                            onclick={handleRowUndo}
+                          >
+                            Undo
+                          </button>
+                        </span>
+                      </div>
+                    </td>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
+          </div>
+          <div class="cardfoot">
+            <span class="sp"></span>
+            <button
+              type="button"
+              class="btn sec"
+              onclick={handleBackToCampaign}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              class="btn"
+              disabled={addAllDisabled}
+              onclick={handleAddAll}
+            >
+              {addAllText}
+            </button>
+          </div>
+        </div>
       </template>
     </main>
 

@@ -366,7 +366,7 @@ public with sharing class PipelineCampaignController {
   }
 
   /** The current hospitals of each surgeon, from the Account Relationship records (no end date, neither side inactive). */
-  private static Map<Id, List<String>> hospitalsFor(Set<Id> surgeonIds) {
+  public static Map<Id, List<String>> hospitalsFor(Set<Id> surgeonIds) {
     Map<Id, List<String>> out = new Map<Id, List<String>>();
     if (surgeonIds.isEmpty()) {
       return out;
@@ -395,7 +395,7 @@ public with sharing class PipelineCampaignController {
   }
 
   /** "A, B and 3 more": at most two hospitals are written out. */
-  private static String hospitalText(List<String> names) {
+  public static String hospitalText(List<String> names) {
     if (names == null || names.isEmpty()) {
       return '';
     }
@@ -664,5 +664,76 @@ public with sharing class PipelineCampaignController {
       throw new AuraHandledException(e.getDmlMessage(0));
     }
     return memberIds.size();
+  }
+
+  // ---------- importing a list of names ----------
+
+  /** One line of the person's list and what it was matched to. status: exact, suggest, many, none or dup. */
+  public class ImportRow {
+    @AuraEnabled
+    public String text;
+    @AuraEnabled
+    public String status;
+    @AuraEnabled
+    public Id pickId;
+    @AuraEnabled
+    public List<SurgeonHit> cands;
+  }
+
+  public class ImportResult {
+    @AuraEnabled
+    public Integer added;
+    @AuraEnabled
+    public Integer alreadyMembers;
+    @AuraEnabled
+    public List<String> problems;
+  }
+
+  /** Matches each line of a pasted list or file to surgeons. Nothing is saved: the person confirms every row first. */
+  @AuraEnabled
+  public static List<ImportRow> matchNames(Id campaignId, List<String> lines) {
+    return PipelineCampaignImport.match(campaignId, lines);
+  }
+
+  /** Adds the confirmed surgeons as members in one go. A surgeon already in the campaign is counted, not an error. */
+  @AuraEnabled
+  public static ImportResult addMembers(Id campaignId, List<Id> surgeonIds) {
+    ImportResult r = new ImportResult();
+    r.added = 0;
+    r.alreadyMembers = 0;
+    r.problems = new List<String>();
+    Set<Id> wanted = new Set<Id>(
+      surgeonIds == null ? new List<Id>() : surgeonIds
+    );
+    wanted.remove(null);
+    for (Sales_Campaign_Member__c m : [
+      SELECT Surgeon__c
+      FROM Sales_Campaign_Member__c
+      WHERE Campaign__c = :campaignId AND Surgeon__c IN :wanted
+      WITH USER_MODE
+    ]) {
+      if (wanted.remove(m.Surgeon__c)) {
+        r.alreadyMembers++;
+      }
+    }
+    List<Sales_Campaign_Member__c> rows = new List<Sales_Campaign_Member__c>();
+    for (Id sid : wanted) {
+      rows.add(
+        new Sales_Campaign_Member__c(Campaign__c = campaignId, Surgeon__c = sid)
+      );
+    }
+    List<Database.SaveResult> saved = Database.insert(
+      rows,
+      false,
+      AccessLevel.USER_MODE
+    );
+    for (Database.SaveResult sr : saved) {
+      if (sr.isSuccess()) {
+        r.added++;
+      } else if (r.problems.size() < 5) {
+        r.problems.add(sr.getErrors()[0].getMessage());
+      }
+    }
+    return r;
   }
 }

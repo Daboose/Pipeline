@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <CustomTab xmlns="http://soap.sforce.com/2006/04/metadata">
   <description
-  >Pipeline: opens Campaign Management (Visualforce page PipelineCampaigns), where campaign managers create Sales Campaigns and manage their members, inside Salesforce. The Full screen button inside it opens it on its own page.</description>
-  <label>Campaigns</label>
+  >Pipeline: opens Sales Campaign Management (Visualforce page PipelineCampaigns), where campaign managers create Sales Campaigns and manage their members, inside Salesforce. The Full screen button inside it opens it on its own page.</description>
+  <label>Sales Campaigns</label>
   <motif>Custom5: Hospital</motif>
   <page>PipelineCampaigns</page>
 </CustomTab>
