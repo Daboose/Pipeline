@@ -53,7 +53,10 @@ private class PipelineCampaignControllerTest {
       PersonMailingCountryCode = country,
       RecordTypeId = rt(Account.SObjectType, type)
     );
-    insert a;
+    // an org's duplicate rule must not stop test surgeons being created
+    Database.DMLOptions opts = new Database.DMLOptions();
+    opts.duplicateRuleHeader.allowSave = true;
+    Database.insert(a, opts);
     return a;
   }
 

@@ -635,3 +635,7 @@ Robert: Edit campaign was grey (it should be the primary blue), Activate was red
 - Edit campaign is now the primary blue. Activate is a filled green; Deactivate and Delete campaign stay red.
 - The Active and Inactive marks (under the breadcrumb, and the Status column of the campaign list) are filled: white text on green for Active, on red for Inactive.
 - UAT deploy `0AfOg000007Ht5iKAC`, 26/26 Apex tests, Jest 19 (campaigns). Not in DEV; committed up to 0.20 only.
+
+### DEV aligned with UAT at Sales Campaign Management 0.25 (2026-11-07)
+
+Robert asked for DEV to be brought level after UAT was signed off ("creating a campaign and adding and removing members is done"). Same source as UAT (the whole campaign set: the three objects, rules and triggers, the controller and importer, the screens and the slider component, the page, tab and app, and the \`Pipeline_Campaign_Manager\` permission set), dry run first, then a separate real deploy: dry run \`0Af8s00000fLfRyCAK\`, deploy \`0Af8s00000fLiEXCA0\`, 54 components, 26/26 Apex tests. The \`Pipeline_Campaign_Manager\` permission set was assigned to Robert's DEV user. DEV has an active duplicate-physician rule that stopped a test creating two same-name surgeons; the three campaign test classes now insert their test surgeons with the duplicate rule allowed (also deployed to UAT, \`0AfOg000007HspcKAC\`). PROD is untouched.

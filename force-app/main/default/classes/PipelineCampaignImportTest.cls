@@ -46,7 +46,10 @@ private class PipelineCampaignImportTest {
       PersonMailingCountryCode = 'SG',
       RecordTypeId = rt(Account.SObjectType, type)
     );
-    insert a;
+    // test surgeons share names on purpose; an org's duplicate rule must not stop them being created
+    Database.DMLOptions opts = new Database.DMLOptions();
+    opts.duplicateRuleHeader.allowSave = true;
+    Database.insert(a, opts);
     return a;
   }
 
