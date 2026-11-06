@@ -1,0 +1,1453 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>
+      Mockup: the Campaigns button on the standard record page, version 2
+    </title>
+    <style>
+      :root,
+      [data-theme="dark"] {
+        --page: #141e2e;
+        --card: #1a2740;
+        --box: #1e2b47;
+        --line: #2f4163;
+        --edge: #5b6f93;
+        --text: #e8edf5;
+        --muted: #9fb0cc;
+        --pipe: #fdb827;
+        --indigo: #6366f1;
+        --indigo2: #a5b4fc;
+        --field: #11151c;
+        --ok: #4ee0b0;
+        --okbg: rgba(78, 224, 176, 0.14);
+        --warn: #fdb827;
+        --warnbg: rgba(253, 184, 39, 0.14);
+        --bad: #f87171;
+        --badbg: rgba(248, 113, 113, 0.14);
+        --panel: #171b24;
+        --pbox: #1e232e;
+        --pline: #2c3444;
+        --scrim: rgba(8, 12, 20, 0.6);
+      }
+      [data-theme="light"] {
+        --page: #e9edf4;
+        --card: #ffffff;
+        --box: #eef2fa;
+        --line: #d5dcea;
+        --edge: #b3bfd6;
+        --text: #1b2640;
+        --muted: #5d6b85;
+        --pipe: #b7791f;
+        --indigo: #4f46e5;
+        --indigo2: #4f46e5;
+        --field: #ffffff;
+        --ok: #0f9d74;
+        --okbg: rgba(15, 157, 116, 0.12);
+        --warn: #b7791f;
+        --warnbg: rgba(183, 121, 31, 0.13);
+        --bad: #dc2626;
+        --badbg: rgba(220, 38, 38, 0.1);
+        --panel: #ffffff;
+        --pbox: #eef2fa;
+        --pline: #d5dcea;
+        --scrim: rgba(30, 45, 80, 0.4);
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--page);
+        color: var(--text);
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-size: 16px;
+      }
+      button {
+        font-family: inherit;
+        font-size: inherit;
+      }
+      .sfnav {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        height: 44px;
+        padding: 0 16px;
+        background: #0b1220;
+        border-bottom: 1px solid #2f4163;
+        color: #cdd6e6;
+        font-size: 14px;
+      }
+      .sfnav .app {
+        font-weight: 800;
+        letter-spacing: 0.14em;
+      }
+      .sfnav .app b {
+        color: #fdb827;
+      }
+      .sfnav .tab {
+        color: #9fb0cc;
+      }
+      .sfnav .tab.on {
+        color: #fff;
+        border-bottom: 2px solid #6366f1;
+        padding-bottom: 2px;
+      }
+      .sp {
+        flex: 1;
+      }
+      .pill {
+        border: 1px solid var(--indigo);
+        background: transparent;
+        color: var(--text);
+        border-radius: 999px;
+        padding: 7px 18px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+      }
+      .pill.on {
+        background: var(--indigo);
+        color: #fff;
+      }
+      .sfnav .pill {
+        color: #e8edf5;
+      }
+      .about {
+        margin: 14px 16px;
+        padding: 12px 18px;
+        background: var(--card);
+        border: 1px solid var(--edge);
+        border-radius: 12px;
+        font-size: 15px;
+        line-height: 1.5;
+      }
+      .about summary {
+        cursor: pointer;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        color: var(--pipe);
+      }
+      .about ul {
+        margin: 4px 0 8px;
+        padding-left: 22px;
+      }
+      .about .hint {
+        color: var(--muted);
+        margin: 6px 0 0;
+      }
+      .tools {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+        padding: 0 16px 8px;
+      }
+      .tools .lab {
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        margin-left: 14px;
+      }
+      .tools .lab:first-child {
+        margin-left: 0;
+      }
+      .mocknote {
+        margin: 0 16px 10px;
+        padding: 8px 14px;
+        border: 1px dashed var(--edge);
+        border-radius: 10px;
+        color: var(--muted);
+        font-size: 14px;
+        font-style: italic;
+      }
+      .stagewrap {
+        padding: 0 16px 40px;
+      }
+      .btn {
+        border-radius: 999px;
+        padding: 9px 22px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+        border: 1px solid var(--indigo);
+        background: var(--indigo);
+        color: #fff;
+      }
+      .btn.sec {
+        background: transparent;
+        color: var(--text);
+        border-color: var(--edge);
+      }
+      .btn.camp {
+        background: transparent;
+        color: var(--text);
+        border-color: var(--pipe);
+      }
+      .btn .bdg {
+        display: inline-block;
+        min-width: 22px;
+        padding: 0 6px;
+        margin-left: 8px;
+        border-radius: 999px;
+        background: var(--pipe);
+        color: #1b2640;
+        text-align: center;
+      }
+      .muted {
+        color: var(--muted);
+      }
+
+      /* ---------- the deal flyout (as built) ---------- */
+      .flywrap {
+        position: relative;
+        overflow: hidden;
+        border-radius: 14px;
+        border: 1px solid var(--edge);
+        max-width: 1500px;
+      }
+      .fly {
+        background: var(--page);
+        border-left: 3px solid var(--indigo);
+        min-height: 840px;
+      }
+      .hd {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 12px 20px;
+        border-bottom: 1px solid var(--line);
+        background: var(--card);
+        flex-wrap: wrap;
+      }
+      .hd .name {
+        font-size: 20px;
+        font-weight: 700;
+      }
+      .hd .sub {
+        color: var(--muted);
+        font-size: 14px;
+      }
+      .path {
+        display: flex;
+      }
+      .ps {
+        padding: 7px 16px;
+        font-size: 13px;
+        font-weight: 700;
+        background: var(--line);
+        color: var(--muted);
+        margin-left: -4px;
+        clip-path: polygon(
+          0 0,
+          calc(100% - 12px) 0,
+          100% 50%,
+          calc(100% - 12px) 100%,
+          0 100%,
+          12px 50%
+        );
+      }
+      .ps.done {
+        background: #14b8a6;
+        color: #fff;
+      }
+      .ps.cur {
+        background: var(--indigo);
+        color: #fff;
+      }
+      .rbtn {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        border: 1px solid var(--edge);
+        background: transparent;
+        color: var(--text);
+      }
+      .kf {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 36px;
+        padding: 10px 20px;
+        border-bottom: 1px solid var(--line);
+      }
+      .kf div span {
+        display: block;
+        font-size: 11px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--muted);
+        font-weight: 800;
+      }
+      .kf div b {
+        font-size: 17px;
+      }
+      .deal {
+        display: grid;
+        grid-template-columns: 1.2fr 1fr;
+        gap: 18px;
+        padding: 16px 20px;
+        align-items: start;
+      }
+      .card {
+        background: var(--card);
+        border: 1px solid var(--edge);
+        border-radius: 14px;
+        padding: 14px 18px 18px;
+      }
+      .card h3 {
+        margin: 0 0 10px;
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--pipe);
+      }
+      .fgrid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px 16px;
+      }
+      .f.full {
+        grid-column: 1 / 3;
+      }
+      .f label {
+        display: block;
+        font-size: 11px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--muted);
+        font-weight: 800;
+        margin-bottom: 4px;
+      }
+      .f .ro {
+        background: var(--field);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 9px 11px;
+        font-size: 15px;
+        min-height: 41px;
+      }
+      .cchip {
+        display: inline-block;
+        border: 1px solid var(--pipe);
+        color: var(--pipe);
+        border-radius: 999px;
+        padding: 1px 12px;
+        font-size: 14px;
+        font-weight: 700;
+        margin: 1px 6px 1px 0;
+      }
+      .post {
+        border-top: 1px solid var(--line);
+        padding: 10px 0;
+        font-size: 15px;
+        line-height: 1.45;
+      }
+      .post span {
+        color: var(--muted);
+        font-size: 13px;
+        margin-left: 6px;
+      }
+      .actions {
+        display: flex;
+        gap: 10px;
+        padding: 12px 20px;
+        background: var(--card);
+        border-top: 1px solid var(--line);
+      }
+
+      /* ---------- the Campaigns panel (slides in from the right) ---------- */
+      .scrim {
+        position: absolute;
+        inset: 0;
+        background: var(--scrim);
+        backdrop-filter: blur(3px);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+        z-index: 5;
+      }
+      .scrim.in {
+        opacity: 1;
+        pointer-events: auto;
+      }
+      .cpanel {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: min(560px, 100%);
+        background: var(--panel);
+        border-left: 3px solid var(--indigo);
+        transform: translateX(105%);
+        transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+        z-index: 6;
+        overflow-y: auto;
+        padding: 18px 20px 24px;
+      }
+      .cpanel.in {
+        transform: translateX(0);
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .scrim,
+        .cpanel,
+        .foldb {
+          transition: none;
+        }
+      }
+      .ptitle {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 4px;
+      }
+      .ptitle h2 {
+        margin: 0;
+        font-size: 20px;
+        font-weight: 800;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        flex: 1;
+      }
+      .ptitle h2 b {
+        color: var(--pipe);
+      }
+      .xcirc {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        border: none;
+        background: var(--edge);
+        position: relative;
+        cursor: pointer;
+        flex: none;
+      }
+      .xcirc::before,
+      .xcirc::after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 14px;
+        height: 2px;
+        background: var(--panel);
+        transform: translate(-50%, -50%) rotate(45deg);
+      }
+      .xcirc::after {
+        transform: translate(-50%, -50%) rotate(-45deg);
+      }
+      .psub {
+        color: var(--muted);
+        font-size: 15px;
+        margin: 0 0 14px;
+      }
+      .lab2 {
+        font-size: 12px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--muted);
+        font-weight: 800;
+        margin: 16px 0 8px;
+        display: flex;
+        justify-content: space-between;
+      }
+      .crow {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        background: var(--pbox);
+        border: 1px solid var(--pline);
+        border-radius: 12px;
+        padding: 12px 14px;
+        margin-bottom: 10px;
+      }
+      .crow.on {
+        border-color: var(--indigo);
+      }
+      .crow .nm {
+        font-weight: 700;
+        font-size: 17px;
+      }
+      .crow .meta {
+        color: var(--muted);
+        font-size: 14px;
+        margin-top: 2px;
+      }
+      .crow .grow {
+        flex: 1;
+      }
+      .sw {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        border: none;
+        background: none;
+        color: var(--text);
+        cursor: pointer;
+        padding: 0;
+        font-weight: 700;
+        font-size: 14px;
+        white-space: nowrap;
+      }
+      .sw i {
+        width: 50px;
+        height: 28px;
+        border-radius: 999px;
+        background: var(--edge);
+        position: relative;
+        display: inline-block;
+      }
+      .sw i::after {
+        content: "";
+        position: absolute;
+        top: 3px;
+        left: 3px;
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        background: #fff;
+        transition: left 0.2s;
+      }
+      .sw.on i {
+        background: var(--indigo);
+      }
+      .sw.on i::after {
+        left: 25px;
+      }
+      .saved {
+        font-size: 13px;
+        color: var(--ok);
+        font-weight: 700;
+      }
+      .foldb {
+        display: grid;
+        grid-template-rows: 0fr;
+        transition: grid-template-rows 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .foldb.open {
+        grid-template-rows: 1fr;
+      }
+      .foldb > div {
+        overflow: hidden;
+        min-height: 0;
+      }
+      .fbtn {
+        width: 100%;
+        text-align: left;
+        background: none;
+        border: 1px solid var(--pline);
+        color: var(--text);
+        border-radius: 10px;
+        padding: 10px 14px;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 8px;
+      }
+      .why {
+        padding: 9px 4px;
+        border-bottom: 1px solid var(--pline);
+        font-size: 15px;
+      }
+      .why .r {
+        display: inline-block;
+        font-size: 13px;
+        font-weight: 700;
+        padding: 1px 10px;
+        border-radius: 999px;
+        margin-left: 6px;
+        color: var(--warn);
+        background: var(--warnbg);
+      }
+      .why small {
+        display: block;
+        color: var(--muted);
+        margin-top: 2px;
+      }
+      .note {
+        background: var(--pbox);
+        border-left: 3px solid var(--indigo);
+        border-radius: 6px;
+        padding: 10px 14px;
+        color: var(--muted);
+        font-size: 14px;
+        margin-top: 14px;
+      }
+      .warnbox {
+        background: var(--warnbg);
+        border: 1px solid var(--warn);
+        border-radius: 10px;
+        padding: 12px 14px;
+        font-size: 15px;
+      }
+
+      /* ---------- version 2: the standard Lightning record page and its quick action dialog ---------- */
+      .flywrap .cpanel {
+        top: 56px;
+        right: auto;
+        bottom: auto;
+        left: 50%;
+        max-height: calc(100% - 100px);
+        width: min(680px, 94%);
+        border: 1px solid var(--edge);
+        border-radius: 14px;
+        transform: translateX(-50%) scale(0.96);
+        opacity: 0;
+        pointer-events: none;
+        transition:
+          transform 0.25s ease,
+          opacity 0.25s ease;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+      }
+      .flywrap .cpanel.in {
+        transform: translateX(-50%) scale(1);
+        opacity: 1;
+        pointer-events: auto;
+      }
+      .cpanel .pbody {
+        padding: 18px 22px 8px;
+        overflow-y: auto;
+        flex: 1;
+      }
+      .cpanel .pfoot {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        padding: 12px 22px;
+        border-top: 1px solid var(--pline);
+        background: var(--pbox);
+      }
+      .phone .cpanel {
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+      }
+      .phone .cpanel .pbody {
+        padding: 18px 16px 8px;
+      }
+      .rp {
+        background: var(--page);
+        min-height: 840px;
+      }
+      .rphead {
+        background: var(--card);
+        border-bottom: 1px solid var(--line);
+        padding: 14px 22px 12px;
+      }
+      .rphead .obj {
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .rphead .rn {
+        font-size: 24px;
+        font-weight: 700;
+      }
+      .rphead .hl {
+        display: flex;
+        gap: 34px;
+        margin-top: 10px;
+        flex-wrap: wrap;
+      }
+      .rphead .hl span {
+        display: block;
+        font-size: 11px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+        font-weight: 800;
+      }
+      .rphead .rtop {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      .rpbody {
+        display: grid;
+        grid-template-columns: 1.6fr 1fr;
+        gap: 16px;
+        padding: 16px 22px;
+        align-items: start;
+      }
+      .rlist .ri {
+        padding: 8px 0;
+        border-top: 1px solid var(--line);
+        font-size: 15px;
+      }
+      .flywrap.pf .cpanel {
+        top: 0;
+        right: 0;
+        left: auto;
+        bottom: 0;
+        max-height: none;
+        width: min(560px, 100%);
+        border: 0;
+        border-left: 3px solid var(--indigo);
+        border-radius: 0;
+        opacity: 1;
+        transform: translateX(105%);
+        transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .flywrap.pf .cpanel.in {
+        transform: translateX(0);
+      }
+      /* ---------- the phone ---------- */
+      .phonewrap {
+        display: flex;
+        gap: 40px;
+        align-items: flex-start;
+        flex-wrap: wrap;
+      }
+      .phone {
+        position: relative;
+        width: 390px;
+        height: 800px;
+        border: 10px solid #0b1220;
+        border-radius: 38px;
+        overflow: hidden;
+        background: var(--page);
+        flex: none;
+      }
+      .phone .cpanel {
+        width: 100%;
+        border-left: none;
+        border-top: 3px solid var(--indigo);
+        transform: translateY(105%);
+        padding-top: 22px;
+      }
+      .phone .cpanel.in {
+        transform: translateY(0);
+      }
+      .phone .top {
+        padding: 44px 16px 12px;
+        background: var(--card);
+        border-bottom: 1px solid var(--line);
+      }
+      .phone .top .name {
+        font-size: 20px;
+        font-weight: 700;
+      }
+      .phone .btns {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        padding: 14px 16px;
+      }
+      .phone .btns .btn {
+        padding: 14px 18px;
+        font-size: 13px;
+        text-align: left;
+      }
+      .phone .crow {
+        flex-wrap: wrap;
+      }
+      .phone .sw i {
+        width: 56px;
+        height: 32px;
+      }
+      .phone .sw i::after {
+        width: 26px;
+        height: 26px;
+      }
+      .phone .sw.on i::after {
+        left: 27px;
+      }
+      .phone .info {
+        padding: 0 16px;
+        font-size: 15px;
+      }
+      .phone .info .f {
+        margin-bottom: 10px;
+      }
+      .phonenote {
+        max-width: 480px;
+        color: var(--muted);
+        line-height: 1.5;
+      }
+    </style>
+  </head>
+  <body data-theme="dark">
+    <div class="sfnav">
+      <span class="app"><b>PIPE</b>LINE</span>
+      <span class="tab on">Pipeline</span>
+      <span class="tab">Opportunities &amp; Risks</span>
+      <span class="tab">Accounts</span>
+      <span class="sp"></span>
+      <button type="button" class="pill" id="fullbtn">Full screen</button>
+    </div>
+
+    <details class="about" open>
+      <summary>ABOUT THIS MOCKUP</summary>
+      <p>
+        <b>Version 2, invented data only. It replaces version 1.</b> Robert
+        corrected the first version on 2026-11-06: sales reps do <b>not</b> use
+        the Pipeline screen, they use the standard Salesforce record page of the
+        deal on a desktop or a phone. So the Campaigns control is a
+        <b>button on that record page</b> (a quick action) that opens a small
+        screen where the rep adds the deal to campaigns. Pipeline users get the
+        same screen in <b>Pipeline's own deal flyout</b> (press “Pipeline deal
+        flyout” below): same component, a second place to open it.
+      </p>
+      <ul>
+        <li>
+          <b>Try it:</b> press <b>Campaigns</b> next to Edit in the top right of
+          the record. A dialog opens. Flick a switch to put the deal in that
+          campaign and back to take it out; it saves straight away. Close with
+          <b>Done</b> and look at the “Campaigns” list on the right of the page,
+          which now shows where the deal is.
+        </li>
+        <li>
+          <b>Only the right campaigns are offered:</b> active, covering the
+          country of the deal's owner, covering the deal's portfolio, and with
+          the deal's <b>Primary HCP (the surgeon) as a member</b>. “Campaigns
+          are not offered” lists each one left out and why.
+        </li>
+        <li>
+          <b>Switch the deal</b> below: an Opportunity, a Risk and a ROSA deal
+          all work the same way (all three have a Primary HCP); the fourth has
+          no Primary HCP yet, so there is nothing to match.
+        </li>
+        <li>
+          <b>Phone:</b> choose Phone for the Salesforce mobile app version: the
+          same screen, full screen, with big switches.
+        </li>
+      </ul>
+      <p class="hint">
+        How it would be set up (as APAC Events did it): two launchers for the
+        same screen, one for desktop and one for phones, shown by device on the
+        existing record page. Changing the record page and its layout changes
+        something that already exists, so it needs Robert's explicit sign-off at
+        the time. Not shown: the campaign manager's side (Campaign Management is
+        a separate mockup). The phone has not been tried in the Salesforce app.
+      </p>
+    </details>
+
+    <div class="tools">
+      <span class="lab">Show</span>
+      <button type="button" class="pill on" data-scene="desk">
+        Record page (reps)
+      </button>
+      <button type="button" class="pill" data-scene="fly">
+        Pipeline deal flyout
+      </button>
+      <button type="button" class="pill" data-scene="phone">Phone</button>
+      <span class="lab">Deal</span>
+      <button type="button" class="pill on" data-deal="opp">Opportunity</button>
+      <button type="button" class="pill" data-deal="risk">Risk</button>
+      <button type="button" class="pill" data-deal="rosa">ROSA deal</button>
+      <button type="button" class="pill" data-deal="none">
+        No Primary HCP
+      </button>
+      <span class="lab">Theme</span>
+      <button type="button" class="pill on" data-theme-btn="dark">Dark</button>
+      <button type="button" class="pill" data-theme-btn="light">Light</button>
+    </div>
+    <div class="mocknote" id="mocknote" hidden></div>
+    <div class="stagewrap" id="stage"></div>
+
+    <script>
+      var CAMPS = [
+        {
+          id: "A",
+          name: "Singapore Shoulder Symposium SG-MY-TH",
+          port: ["Extremities"],
+          countries: ["SG", "MY", "TH"],
+          active: true,
+          mgr: "Mei Tan",
+          members: [1, 3]
+        },
+        {
+          id: "B",
+          name: "Extremities Roadshow SG-HK",
+          port: ["Extremities"],
+          countries: ["SG", "HK"],
+          active: true,
+          mgr: "Priscilla Lau",
+          members: [1, 2]
+        },
+        {
+          id: "C",
+          name: "Knee Robotics Follow-up SG",
+          port: ["Knee"],
+          countries: ["SG"],
+          active: true,
+          mgr: "Hannah Brooks",
+          members: [2]
+        },
+        {
+          id: "D",
+          name: "Shoulder Masterclass SG",
+          port: ["Extremities"],
+          countries: ["SG"],
+          active: true,
+          mgr: "Mei Tan",
+          members: [3]
+        },
+        {
+          id: "E",
+          name: "Shoulder Symposium 2025 SG-MY",
+          port: ["Extremities"],
+          countries: ["SG", "MY"],
+          active: false,
+          mgr: "Mei Tan",
+          members: [1]
+        },
+        {
+          id: "F",
+          name: "Hip Masterclass AU-NZ",
+          port: ["Hip"],
+          countries: ["AU", "NZ"],
+          active: true,
+          mgr: "Hannah Brooks",
+          members: [1]
+        },
+        {
+          id: "G",
+          name: "Hip and Knee Update SG-MY",
+          port: ["Hip", "Knee"],
+          countries: ["SG", "MY"],
+          active: true,
+          mgr: "Priscilla Lau",
+          members: [2]
+        }
+      ];
+      var DEALS = {
+        opp: {
+          rec: "SR-004211",
+          kind: "Opportunity",
+          surgeon: "Dr Wei Ming Lim",
+          sid: 1,
+          port: "Extremities",
+          owner: "Daniel Ong",
+          country: "SG",
+          hosp: "Singapore General Hospital",
+          stage: 2,
+          value: "S$250,000",
+          q: "Q1 2027",
+          linked: ["A"]
+        },
+        risk: {
+          rec: "SR-004388",
+          kind: "Risk",
+          surgeon: "Dr Priya Nair",
+          sid: 2,
+          port: "Knee",
+          owner: "Priscilla Lau",
+          country: "SG",
+          hosp: "Mount Elizabeth Hospital",
+          stage: 1,
+          value: "S$180,000",
+          q: "Q4 2026",
+          linked: []
+        },
+        rosa: {
+          rec: "SR-004502",
+          kind: "ROSA opportunity",
+          surgeon: "Dr Jia Hao Chen",
+          sid: 3,
+          port: "Extremities",
+          owner: "Daniel Ong",
+          country: "SG",
+          hosp: "Tan Tock Seng Hospital",
+          stage: 3,
+          value: "S$420,000",
+          q: "Q2 2027",
+          linked: ["A"]
+        },
+        none: {
+          rec: "SR-004630",
+          kind: "Opportunity",
+          surgeon: "",
+          sid: null,
+          port: "Extremities",
+          owner: "Daniel Ong",
+          country: "SG",
+          hosp: "Raffles Hospital",
+          stage: 0,
+          value: "S$90,000",
+          q: "Q3 2027",
+          linked: []
+        }
+      };
+      var STAGES = [
+        "Plan",
+        "Action",
+        "Commit",
+        "1st Case",
+        "5th Case",
+        "Conversion"
+      ];
+      var S = {
+        theme: "dark",
+        scene: "desk",
+        deal: "opp",
+        open: false,
+        fold: false,
+        saved: "",
+        state: {}
+      };
+      function cur() {
+        if (!S.state[S.deal]) S.state[S.deal] = DEALS[S.deal].linked.slice();
+        return S.state[S.deal];
+      }
+      function esc(s) {
+        return String(s).replace(/[&<>"]/g, function (c) {
+          return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
+        });
+      }
+      /* the reasons, in the order a rep would care about them */
+      function judge(c, d) {
+        if (!c.active)
+          return {
+            ok: false,
+            why: "Inactive",
+            note: "This campaign has been switched off, so deals can no longer be linked to it."
+          };
+        if (c.countries.indexOf(d.country) < 0)
+          return {
+            ok: false,
+            why: "Not in your country",
+            note:
+              "It covers " +
+              c.countries.join(", ") +
+              "; this deal's owner is in " +
+              d.country +
+              "."
+          };
+        if (c.port.indexOf(d.port) < 0)
+          return {
+            ok: false,
+            why: "Different portfolio",
+            note:
+              "It is for " +
+              c.port.join(" and ") +
+              "; this deal is " +
+              d.port +
+              "."
+          };
+        if (c.members.indexOf(d.sid) < 0)
+          return {
+            ok: false,
+            why: "Surgeon is not a member",
+            note:
+              d.surgeon +
+              " is not on its member list. Ask " +
+              c.mgr +
+              " (campaign manager) to add them."
+          };
+        return { ok: true };
+      }
+      function panelHtml() {
+        var d = DEALS[S.deal];
+        var inn = cur();
+        var h =
+          '<div class="pbody"><div class="ptitle"><h2><b>CAMPAIGNS</b> FOR THIS DEAL</h2><button type="button" class="xcirc" data-act="close" aria-label="Close"></button></div>';
+        var FOOT =
+          '</div><div class="pfoot"><button type="button" class="btn" data-act="close">Done</button></div>';
+        if (!d.sid) {
+          h +=
+            '<p class="psub">' +
+            esc(d.kind) +
+            " · " +
+            d.port +
+            " · Owner " +
+            d.owner +
+            " (" +
+            d.country +
+            ')</p><div class="warnbox"><b>This deal has no Primary HCP yet.</b> Campaigns are matched through the surgeon, so choose a Primary HCP in the deal and save it first. Then the campaigns that surgeon is in will be offered here.</div>';
+          return h + FOOT;
+        }
+        h +=
+          '<p class="psub">' +
+          esc(d.surgeon) +
+          " · " +
+          d.port +
+          " · Owner " +
+          d.owner +
+          " (" +
+          d.country +
+          ")</p>";
+        var offered = [],
+          not = [];
+        CAMPS.forEach(function (c) {
+          var j = judge(c, d);
+          (j.ok ? offered : not).push({ c: c, j: j });
+        });
+        h +=
+          '<div class="lab2"><span>Offered for this deal (' +
+          offered.length +
+          ')</span><span class="saved">' +
+          esc(S.saved) +
+          "</span></div>";
+        if (!offered.length)
+          h +=
+            '<div class="note" style="margin-top:0">No campaign is open to this deal yet.</div>';
+        offered.forEach(function (o) {
+          var on = inn.indexOf(o.c.id) >= 0;
+          h +=
+            '<div class="crow ' +
+            (on ? "on" : "") +
+            '"><div class="grow"><div class="nm">' +
+            esc(o.c.name) +
+            '</div><div class="meta">' +
+            o.c.port.join(" · ") +
+            " · " +
+            o.c.countries.join(" ") +
+            " · Manager " +
+            esc(o.c.mgr) +
+            '</div></div><button type="button" class="sw ' +
+            (on ? "on" : "") +
+            '" data-act="sw" data-id="' +
+            o.c.id +
+            '"><span>' +
+            (on ? "In campaign" : "Not in") +
+            "</span><i></i></button></div>";
+        });
+        h +=
+          '<div class="lab2" style="margin-top:20px"><span>Left out</span></div>';
+        h +=
+          '<button type="button" class="fbtn" data-act="fold"><span><b>' +
+          not.length +
+          ' campaigns are not offered</b> <span class="muted">and why</span></span><span>' +
+          (S.fold ? "▴" : "▾") +
+          '</span></button><div class="foldb ' +
+          (S.fold ? "open" : "") +
+          '" id="fold"><div>';
+        not.forEach(function (o) {
+          h +=
+            '<div class="why">' +
+            esc(o.c.name) +
+            '<span class="r">' +
+            o.j.why +
+            "</span><small>" +
+            esc(o.j.note) +
+            "</small></div>";
+        });
+        h += "</div></div>";
+        h +=
+          "<div class=\"note\">Only active campaigns that cover this deal's country and portfolio, and that list the deal's Primary HCP as a member, are offered. Linking is always your choice: nothing is added automatically. Anyone who can edit the deal can do the same from here.</div>";
+        return h + FOOT;
+      }
+      function campBadge() {
+        var n = DEALS[S.deal].sid ? cur().length : 0;
+        return n ? '<span class="bdg">' + n + "</span>" : "";
+      }
+      function inCampaignsBox() {
+        var inn = cur();
+        if (!DEALS[S.deal].sid)
+          return '<span class="muted">Choose a Primary HCP to see campaigns</span>';
+        if (!inn.length)
+          return '<span class="muted">Not in any campaign</span>';
+        return inn
+          .map(function (id) {
+            return (
+              '<span class="cchip">' +
+              esc(
+                CAMPS.filter(function (c) {
+                  return c.id === id;
+                })[0].name
+              ) +
+              "</span>"
+            );
+          })
+          .join("");
+      }
+      function flyScene() {
+        var d = DEALS[S.deal];
+        var title = d.sid ? d.surgeon : "(no Primary HCP yet)";
+        var h =
+          '<div class="flywrap pf"><div class="fly"><div class="hd"><div><div class="name">' +
+          esc(title) +
+          '</div><div class="sub">' +
+          d.kind +
+          " · " +
+          esc(d.hosp) +
+          '</div></div><div class="path">' +
+          STAGES.map(function (s, i) {
+            return (
+              '<span class="ps ' +
+              (i < d.stage ? "done" : i === d.stage ? "cur" : "") +
+              '">' +
+              s +
+              "</span>"
+            );
+          }).join("") +
+          '</div><span class="sp"></span><button type="button" class="btn sec">Surgeon Usages</button><button type="button" class="btn sec">My Case Bookings</button><button type="button" class="btn camp" id="campbtn" data-act="open">Campaigns' +
+          campBadge() +
+          '</button><button type="button" class="rbtn">‹</button><span class="sub">3 of 14</span><button type="button" class="rbtn">›</button></div>';
+        h +=
+          '<div class="kf"><div><span>Owner</span><b>' +
+          d.owner +
+          " (" +
+          d.country +
+          ")</b></div><div><span>Value</span><b>" +
+          d.value +
+          "</b></div><div><span>Close quarter</span><b>" +
+          d.q +
+          "</b></div><div><span>Last posted</span><b>12 d</b></div><div><span>Last stage move</span><b>45 d</b></div></div>";
+        h +=
+          '<div class="deal"><div class="card"><h3>Details</h3><div class="fgrid"><div class="f"><label>Primary HCP</label><div class="ro">' +
+          (d.sid ? esc(d.surgeon) : "") +
+          '</div></div><div class="f"><label>Healthcare facility</label><div class="ro">' +
+          esc(d.hosp) +
+          '</div></div><div class="f"><label>Portfolio</label><div class="ro">' +
+          d.port +
+          '</div></div><div class="f"><label>Stage</label><div class="ro">' +
+          STAGES[d.stage] +
+          '</div></div><div class="f full"><label>In campaigns</label><div class="ro" id="cbox2">' +
+          inCampaignsBox() +
+          '</div></div></div></div><div class="card"><h3>Chatter</h3><div class="post"><b>' +
+          d.owner +
+          '</b><span>12 days ago</span><br />Surgeon keen, waiting on the theatre list for the new year.</div><div class="post"><b>Jo Lee</b><span>30 days ago</span><br />Quote sent. Follow-up booked.</div></div></div>';
+        h +=
+          '<div class="actions"><button type="button" class="btn sec">Open in Salesforce</button></div></div>';
+        h +=
+          '<div class="scrim' +
+          (S.open ? " in" : "") +
+          '" id="scrim" data-act="close"></div><aside class="cpanel' +
+          (S.open ? " in" : "") +
+          '" id="cpanel">' +
+          panelHtml() +
+          "</aside></div>";
+        return h;
+      }
+      function relList() {
+        var inn = cur();
+        if (!DEALS[S.deal].sid)
+          return '<span class="muted">Choose a Primary HCP first</span>';
+        if (!inn.length)
+          return '<span class="muted">Not in any campaign</span>';
+        return inn
+          .map(function (id) {
+            return (
+              '<div class="ri">' +
+              esc(
+                CAMPS.filter(function (c) {
+                  return c.id === id;
+                })[0].name
+              ) +
+              "</div>"
+            );
+          })
+          .join("");
+      }
+      function deskScene() {
+        var d = DEALS[S.deal];
+        var inn = cur();
+        var h =
+          '<div class="flywrap"><div class="rp"><div class="rphead"><div class="rtop"><div><div class="obj">' +
+          (d.kind === "ROSA opportunity" ? "ROSA deal" : d.kind) +
+          ' · Opportunities &amp; Risks</div><div class="rn">' +
+          esc(d.rec) +
+          '</div></div><span class="sp"></span><button type="button" class="btn sec">Edit</button><button type="button" class="btn camp" data-act="open">Campaigns</button><button type="button" class="btn sec">▾</button></div>';
+        h +=
+          '<div class="hl"><div><span>Primary HCP</span>' +
+          (d.sid ? esc(d.surgeon) : "—") +
+          "</div><div><span>Healthcare facility</span>" +
+          esc(d.hosp) +
+          "</div><div><span>Portfolio</span>" +
+          d.port +
+          "</div><div><span>Owner</span>" +
+          d.owner +
+          " (" +
+          d.country +
+          ")</div><div><span>Value</span>" +
+          d.value +
+          "</div></div></div>";
+        h +=
+          '<div style="padding:12px 22px 0"><div class="path">' +
+          STAGES.map(function (s, i) {
+            return (
+              '<span class="ps ' +
+              (i < d.stage ? "done" : i === d.stage ? "cur" : "") +
+              '">' +
+              s +
+              "</span>"
+            );
+          }).join("") +
+          "</div></div>";
+        h +=
+          '<div class="rpbody"><div class="card"><h3>Details</h3><div class="fgrid"><div class="f"><label>Primary HCP</label><div class="ro">' +
+          (d.sid ? esc(d.surgeon) : "") +
+          '</div></div><div class="f"><label>Healthcare facility</label><div class="ro">' +
+          esc(d.hosp) +
+          '</div></div><div class="f"><label>Stage</label><div class="ro">' +
+          STAGES[d.stage] +
+          '</div></div><div class="f"><label>Expected closing quarter</label><div class="ro">' +
+          d.q +
+          "</div></div></div></div>";
+        h +=
+          '<div><div class="card" style="margin-bottom:16px"><h3 id="ctitle">Campaigns (' +
+          (d.sid ? inn.length : 0) +
+          ')</h3><div class="rlist" id="cbox">' +
+          relList() +
+          '</div></div><div class="card"><h3>Chatter</h3><div class="post"><b>' +
+          d.owner +
+          "</b><span>12 days ago</span><br />Surgeon keen, waiting on the theatre list for the new year.</div></div></div></div></div>";
+        h +=
+          '<div class="scrim' +
+          (S.open ? " in" : "") +
+          '" id="scrim" data-act="close"></div><aside class="cpanel' +
+          (S.open ? " in" : "") +
+          '" id="cpanel">' +
+          panelHtml() +
+          "</aside></div>";
+        return h;
+      }
+      function phoneScene() {
+        var d = DEALS[S.deal];
+        var h =
+          '<div class="phonewrap"><div class="phone"><div class="top"><div class="muted" style="font-size:13px">' +
+          (d.kind === "ROSA opportunity" ? "ROSA deal" : d.kind) +
+          '</div><div class="name">' +
+          esc(d.rec) +
+          '</div><div class="muted">' +
+          esc(d.sid ? d.surgeon : "(no Primary HCP yet)") +
+          " · " +
+          STAGES[d.stage] +
+          '</div></div><div class="btns"><button type="button" class="btn sec">Edit</button><button type="button" class="btn camp" data-act="open">Campaigns</button></div><div class="info"><div class="f"><label class="muted">Campaigns</label><div class="rlist" id="cbox">' +
+          relList() +
+          "</div></div></div>";
+        h +=
+          '<div class="scrim' +
+          (S.open ? " in" : "") +
+          '" id="scrim" data-act="close"></div><aside class="cpanel' +
+          (S.open ? " in" : "") +
+          '" id="cpanel">' +
+          panelHtml() +
+          "</aside></div>";
+        h +=
+          '<div class="phonenote"><b>On a phone</b> the Salesforce app shows its own Campaigns action on the record, and it opens this screen full-screen, with big switches. A different launcher is used on phones than on desktop: a Lightning web component action does not run in the mobile app, so an Aura wrapper hosts the same component, as APAC Events does. It has to be tried on a real phone before it can be called working.</div></div>';
+        return h;
+      }
+      var NOTES = {
+        desk: "Mockup note: the standard Salesforce record page of the deal, which is what a sales rep uses (not Pipeline). The Campaigns button is a quick action in the highlights panel; it opens this dialog.",
+        fly: "Mockup note: the Pipeline deal flyout, for managers and other Pipeline users looking at a deal in Pipeline. The same Campaigns screen slides in from the right, like Surgeon Usages and My Case Bookings.",
+        phone:
+          "Mockup note: the Salesforce mobile app record, drawn at 390 pixels wide. Press Campaigns."
+      };
+      function draw() {
+        document.body.setAttribute("data-theme", S.theme);
+        document.getElementById("stage").innerHTML =
+          S.scene === "desk"
+            ? deskScene()
+            : S.scene === "fly"
+              ? flyScene()
+              : phoneScene();
+        var n = document.getElementById("mocknote");
+        n.textContent = NOTES[S.scene];
+        n.hidden = false;
+        Array.prototype.forEach.call(
+          document.querySelectorAll("[data-scene]"),
+          function (b) {
+            b.classList.toggle("on", b.dataset.scene === S.scene);
+          }
+        );
+        Array.prototype.forEach.call(
+          document.querySelectorAll("[data-deal]"),
+          function (b) {
+            b.classList.toggle("on", b.dataset.deal === S.deal);
+          }
+        );
+        Array.prototype.forEach.call(
+          document.querySelectorAll("[data-theme-btn]"),
+          function (b) {
+            b.classList.toggle("on", b.dataset.themeBtn === S.theme);
+          }
+        );
+      }
+      function refreshBits() {
+        var p = document.getElementById("cpanel");
+        if (p) p.innerHTML = panelHtml();
+        var b = document.getElementById("cbox");
+        if (b) b.innerHTML = relList();
+        var b2 = document.getElementById("cbox2");
+        if (b2) b2.innerHTML = inCampaignsBox();
+        var cb = document.getElementById("campbtn");
+        if (cb) cb.innerHTML = "Campaigns" + campBadge();
+        var ct = document.getElementById("ctitle");
+        if (ct)
+          ct.textContent =
+            "Campaigns (" + (DEALS[S.deal].sid ? cur().length : 0) + ")";
+      }
+      document.addEventListener("click", function (e) {
+        var t = e.target.closest(
+          "[data-scene],[data-deal],[data-theme-btn],[data-act]"
+        );
+        if (!t) return;
+        var d = t.dataset;
+        if (d.themeBtn) {
+          S.theme = d.themeBtn;
+          draw();
+          return;
+        }
+        if (d.scene) {
+          S.scene = d.scene;
+          S.open = false;
+          S.saved = "";
+          draw();
+          return;
+        }
+        if (d.deal) {
+          S.deal = d.deal;
+          S.open = false;
+          S.saved = "";
+          S.fold = false;
+          draw();
+          return;
+        }
+        if (d.act === "open") {
+          S.open = true;
+          S.saved = "";
+          var p = document.getElementById("cpanel");
+          p.innerHTML = panelHtml();
+          setTimeout(function () {
+            p.classList.add("in");
+            document.getElementById("scrim").classList.add("in");
+          }, 30);
+        } else if (d.act === "close") {
+          document.getElementById("cpanel").classList.remove("in");
+          document.getElementById("scrim").classList.remove("in");
+          S.open = false;
+        } else if (d.act === "fold") {
+          S.fold = !S.fold;
+          document.getElementById("fold").classList.toggle("open", S.fold);
+          t.lastElementChild.textContent = S.fold ? "▴" : "▾";
+        } else if (d.act === "sw") {
+          var inn = cur(),
+            i = inn.indexOf(d.id);
+          if (i >= 0) inn.splice(i, 1);
+          else inn.push(d.id);
+          S.saved = "Saved just now";
+          refreshBits();
+        }
+      });
+      document.getElementById("fullbtn").addEventListener("click", function () {
+        document.getElementById("mocknote").textContent =
+          "Mockup note: in Salesforce this opens Pipeline in a new full-screen tab without the Salesforce navigation.";
+      });
+      location.hash
+        .slice(1)
+        .split("&")
+        .forEach(function (p) {
+          var kv = p.split("=");
+          if (kv[0] === "scene") S.scene = kv[1];
+          if (kv[0] === "deal") S.deal = kv[1];
+          if (kv[0] === "theme") S.theme = kv[1];
+          if (kv[0] === "open") S.open = kv[1] === "yes";
+          if (kv[0] === "fold") S.fold = kv[1] === "yes";
+        });
+      draw();
+    </script>
+  </body>
+</html>

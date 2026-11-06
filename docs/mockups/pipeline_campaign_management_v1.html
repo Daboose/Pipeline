@@ -1,0 +1,1742 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Campaign Management mockup, version 1</title>
+    <style>
+      :root,
+      [data-theme="dark"] {
+        --page: #0e1623;
+        --panel: #171b24;
+        --card: #1a2740;
+        --box: #1e232e;
+        --line: #2c3444;
+        --line2: #2f4163;
+        --edge: #5b6f93;
+        --text: #e8edf5;
+        --muted: #9fb0cc;
+        --pipe: #fdb827;
+        --head: #f472b6;
+        --headbg: rgba(244, 114, 182, 0.14);
+        --indigo: #6366f1;
+        --indigo2: #a5b4fc;
+        --field: #11151c;
+        --ok: #4ee0b0;
+        --okbg: rgba(78, 224, 176, 0.13);
+        --warn: #fdb827;
+        --warnbg: rgba(253, 184, 39, 0.13);
+        --bad: #f87171;
+        --badbg: rgba(248, 113, 113, 0.13);
+        --scrim: rgba(8, 12, 20, 0.55);
+      }
+      [data-theme="light"] {
+        --page: #e9edf4;
+        --panel: #ffffff;
+        --card: #ffffff;
+        --box: #eef2fa;
+        --line: #d5dcea;
+        --line2: #d5dcea;
+        --edge: #b3bfd6;
+        --text: #1b2640;
+        --muted: #5d6b85;
+        --pipe: #b7791f;
+        --head: #db2777;
+        --headbg: rgba(219, 39, 119, 0.09);
+        --indigo: #4f46e5;
+        --indigo2: #4f46e5;
+        --field: #ffffff;
+        --ok: #0f9d74;
+        --okbg: rgba(15, 157, 116, 0.12);
+        --warn: #b7791f;
+        --warnbg: rgba(183, 121, 31, 0.13);
+        --bad: #dc2626;
+        --badbg: rgba(220, 38, 38, 0.1);
+        --scrim: rgba(30, 45, 80, 0.35);
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--page);
+        color: var(--text);
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-size: 16px;
+      }
+      button,
+      input,
+      select,
+      textarea {
+        font-family: inherit;
+        font-size: inherit;
+      }
+      .sfnav {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        height: 44px;
+        padding: 0 16px;
+        background: #0b1220;
+        border-bottom: 1px solid #2f4163;
+        color: #cdd6e6;
+        font-size: 14px;
+      }
+      .sfnav .app {
+        font-weight: 800;
+        letter-spacing: 0.14em;
+      }
+      .sfnav .app b {
+        color: #fdb827;
+      }
+      .sfnav .tab {
+        color: #9fb0cc;
+      }
+      .sfnav .tab.on {
+        color: #fff;
+        border-bottom: 2px solid #6366f1;
+        padding-bottom: 2px;
+      }
+      .sp {
+        flex: 1;
+      }
+      .pill {
+        border: 1px solid var(--indigo);
+        background: transparent;
+        color: var(--text);
+        border-radius: 999px;
+        padding: 7px 18px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+      }
+      .pill.on {
+        background: var(--indigo);
+        color: #fff;
+      }
+      .sfnav .pill {
+        color: #e8edf5;
+      }
+      .about {
+        margin: 14px 16px;
+        padding: 12px 18px;
+        background: var(--card);
+        border: 1px solid var(--edge);
+        border-radius: 12px;
+        font-size: 15px;
+        line-height: 1.5;
+      }
+      .about summary {
+        cursor: pointer;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        color: var(--pipe);
+      }
+      .about ul {
+        margin: 4px 0 8px;
+        padding-left: 22px;
+      }
+      .about .hint {
+        color: var(--muted);
+        margin: 6px 0 0;
+      }
+      .tools {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+        padding: 0 16px 8px;
+      }
+      .tools .lab {
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        margin-left: 14px;
+      }
+      .tools .lab:first-child {
+        margin-left: 0;
+      }
+      .mocknote {
+        margin: 0 16px 10px;
+        padding: 8px 14px;
+        border: 1px dashed var(--edge);
+        border-radius: 10px;
+        color: var(--muted);
+        font-size: 14px;
+        font-style: italic;
+      }
+      .stagewrap {
+        padding: 0 16px 40px;
+      }
+
+      /* ---------- app ---------- */
+      .title {
+        font-size: 26px;
+        font-weight: 800;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        margin: 6px 0 14px;
+      }
+      .title b {
+        color: var(--pipe);
+      }
+      .steps {
+        display: flex;
+        gap: 8px;
+        margin: 0 0 16px;
+        flex-wrap: wrap;
+      }
+      .step {
+        padding: 6px 16px;
+        border-radius: 999px;
+        border: 1px solid var(--line2);
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      .step.on {
+        background: var(--indigo);
+        border-color: var(--indigo);
+        color: #fff;
+      }
+      .step.done {
+        color: var(--ok);
+        border-color: var(--ok);
+      }
+      .card {
+        background: var(--card);
+        border: 1px solid var(--line2);
+        border-radius: 14px;
+        padding: 18px 20px 20px;
+        width: fit-content;
+        max-width: 100%;
+        margin-bottom: 18px;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+      }
+      .card h2 {
+        margin: 0 0 12px;
+        font-size: 15px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--head);
+      }
+      .btn {
+        border-radius: 999px;
+        padding: 9px 22px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+        border: 1px solid var(--indigo);
+        background: var(--indigo);
+        color: #fff;
+      }
+      .btn.sec {
+        background: transparent;
+        color: var(--text);
+        border-color: var(--edge);
+      }
+      .btn.ghost {
+        background: transparent;
+        border-color: transparent;
+        color: var(--indigo2);
+      }
+      .btn.danger {
+        background: transparent;
+        color: var(--bad);
+        border-color: var(--bad);
+      }
+      .btn[disabled] {
+        opacity: 0.4;
+        cursor: default;
+      }
+      .row {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      .in {
+        background: var(--field);
+        color: var(--text);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 9px 11px;
+        font-size: 16px;
+      }
+      .in:focus {
+        outline: 2px solid var(--indigo2);
+        outline-offset: 0;
+      }
+      .sbox {
+        position: relative;
+        display: inline-block;
+      }
+      .sbox .in {
+        border-radius: 999px;
+        padding-left: 16px;
+        padding-right: 40px;
+        width: 340px;
+      }
+      .xcirc {
+        position: absolute;
+        right: 9px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        border: none;
+        background: var(--edge);
+        cursor: pointer;
+        padding: 0;
+      }
+      .xcirc::before,
+      .xcirc::after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 10px;
+        height: 2px;
+        background: var(--panel);
+        transform: translate(-50%, -50%) rotate(45deg);
+      }
+      .xcirc::after {
+        transform: translate(-50%, -50%) rotate(-45deg);
+      }
+      .xcirc.inline {
+        position: relative;
+        right: auto;
+        top: auto;
+        transform: none;
+        display: inline-block;
+        vertical-align: middle;
+      }
+      table {
+        border-collapse: collapse;
+        font-size: 16px;
+      }
+      th {
+        text-align: left;
+        font-size: 12px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--head);
+        background: var(--headbg);
+        padding: 9px 14px;
+        white-space: nowrap;
+      }
+      td {
+        padding: 9px 14px;
+        border-top: 1px solid var(--line);
+        vertical-align: middle;
+      }
+      tr.click {
+        cursor: pointer;
+      }
+      tr.click:hover td {
+        background: rgba(99, 102, 241, 0.1);
+      }
+      .tag {
+        display: inline-block;
+        padding: 2px 10px;
+        border-radius: 999px;
+        font-size: 13px;
+        font-weight: 700;
+        border: 1px solid var(--line2);
+        color: var(--muted);
+        white-space: nowrap;
+      }
+      .tag.ok {
+        color: var(--ok);
+        background: var(--okbg);
+        border-color: transparent;
+      }
+      .tag.warn {
+        color: var(--warn);
+        background: var(--warnbg);
+        border-color: transparent;
+      }
+      .tag.bad {
+        color: var(--bad);
+        background: var(--badbg);
+        border-color: transparent;
+      }
+      .tag.off {
+        opacity: 0.7;
+      }
+      .muted {
+        color: var(--muted);
+      }
+      .lab {
+        display: block;
+        font-size: 12px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--muted);
+        font-weight: 800;
+        margin: 14px 0 6px;
+      }
+      .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .chip {
+        border-radius: 999px;
+        padding: 6px 16px;
+        border: 1px solid var(--edge);
+        background: transparent;
+        color: var(--text);
+        font-weight: 700;
+        cursor: pointer;
+      }
+      .chip.on {
+        background: var(--indigo);
+        border-color: var(--indigo);
+        color: #fff;
+      }
+      .nameprev {
+        background: var(--box);
+        border: 1px dashed var(--edge);
+        border-radius: 10px;
+        padding: 10px 14px;
+        font-size: 19px;
+        font-weight: 700;
+        min-width: 420px;
+      }
+      .nameprev .lock {
+        font-size: 12px;
+        color: var(--muted);
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        margin-left: 10px;
+      }
+      .count {
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .count.over {
+        color: var(--bad);
+      }
+      .switch {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        cursor: pointer;
+        border: none;
+        background: none;
+        color: var(--text);
+        padding: 0;
+      }
+      .switch i {
+        width: 46px;
+        height: 26px;
+        border-radius: 999px;
+        background: var(--edge);
+        position: relative;
+        display: inline-block;
+      }
+      .switch i::after {
+        content: "";
+        position: absolute;
+        top: 3px;
+        left: 3px;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: #fff;
+        transition: left 0.2s;
+      }
+      .switch.on i {
+        background: var(--indigo);
+      }
+      .switch.on i::after {
+        left: 23px;
+      }
+      .kpis {
+        display: flex;
+        gap: 14px;
+        flex-wrap: wrap;
+        margin-bottom: 18px;
+      }
+      .kpi {
+        background: var(--card);
+        border: 1px solid var(--line2);
+        border-radius: 12px;
+        padding: 10px 18px;
+        min-width: 150px;
+      }
+      .kpi b {
+        display: block;
+        font-size: 30px;
+      }
+      .kpi span {
+        font-size: 12px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--muted);
+        font-weight: 800;
+      }
+      .kpi.gap b {
+        color: var(--warn);
+      }
+      .pop {
+        position: absolute;
+        z-index: 5;
+        margin-top: 4px;
+        background: var(--panel);
+        border: 1px solid var(--edge);
+        border-radius: 10px;
+        box-shadow: 0 10px 26px rgba(0, 0, 0, 0.35);
+        min-width: 460px;
+        max-width: 640px;
+      }
+      .pop .opt {
+        display: block;
+        width: 100%;
+        text-align: left;
+        background: none;
+        border: none;
+        color: var(--text);
+        padding: 9px 14px;
+        cursor: pointer;
+        border-bottom: 1px solid var(--line);
+      }
+      .pop .opt:hover {
+        background: rgba(99, 102, 241, 0.16);
+      }
+      .pop .opt small {
+        display: block;
+        color: var(--muted);
+      }
+      .pop .foot {
+        padding: 8px 14px;
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .rel {
+        position: relative;
+        display: inline-block;
+      }
+      textarea.in {
+        width: 640px;
+        height: 230px;
+        resize: vertical;
+        line-height: 1.5;
+      }
+      .drop {
+        border: 2px dashed var(--edge);
+        border-radius: 12px;
+        padding: 16px 22px;
+        color: var(--muted);
+      }
+      .ok-line {
+        color: var(--ok);
+        font-weight: 700;
+      }
+      .sum {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-bottom: 12px;
+      }
+      tr.gone td {
+        opacity: 0.45;
+      }
+      .notice {
+        background: var(--box);
+        border-left: 3px solid var(--indigo);
+        padding: 9px 14px;
+        border-radius: 6px;
+        color: var(--muted);
+        max-width: 760px;
+        margin: 10px 0;
+      }
+      .big {
+        font-size: 22px;
+        font-weight: 800;
+      }
+    </style>
+  </head>
+  <body data-theme="dark">
+    <div class="sfnav">
+      <span class="app"><b>CAMPAIGN</b> MANAGEMENT</span>
+      <span class="tab on">Campaigns</span>
+      <span class="tab">Pipeline</span>
+      <span class="tab">Accounts</span>
+      <span class="sp"></span>
+      <button type="button" class="pill" id="fullbtn">Full screen</button>
+    </div>
+
+    <details class="about" open>
+      <summary>ABOUT THIS MOCKUP</summary>
+      <p>
+        <b>Version 1, invented data only.</b> It shows how a campaign manager
+        would set up a campaign, add members one at a time, and import a list
+        with a check screen before anything is saved. It is the “Campaign
+        Management” full-screen app Robert described on 2026-11-06. The Pipeline
+        campaign screen (members view, graphs) and the Campaigns button on a
+        deal are not in this mockup.
+      </p>
+      <ul>
+        <li>
+          <b>Try the whole flow:</b> press <b>New campaign</b>, type a friendly
+          name, pick countries (watch the name at the bottom grow its codes),
+          pick a portfolio, press <b>Save campaign</b>. On the campaign press
+          <b>Import members</b>, press <b>Check names</b>, then on the next
+          screen tick the exact matches, pick the right person for “Tan Ah Kow”,
+          look up “Jonathan Wu”, delete a row you do not want, and press
+          <b>Add members</b>.
+        </li>
+        <li>
+          <b>The name is never typed in.</b> The person gives a friendly name
+          (limited to 40 characters here) and the country codes are added after
+          it, like <i>Singapore Shoulder Symposium SG-MY-TH</i>.
+        </li>
+        <li>
+          <b>Only active campaigns can be linked to deals.</b> Switch a campaign
+          off with <b>Deactivate</b> and it drops out of the choices (and the
+          list hides it until you show inactive ones).
+        </li>
+        <li>
+          <b>Who can be a member:</b> only real Salesforce physicians (person
+          accounts of type physician) and emerging consultants. Staging accounts
+          and clinic contacts are never offered. Type “wei” in Add member to see
+          them held back.
+        </li>
+        <li>
+          <b>Searching for surgeons:</b> at least 2 characters are needed. It
+          looks in the name and in the English name (the surgeon shown as 陈家豪
+          is found by typing “jia”). It stays inside the campaign’s countries
+          until you press <b>Widen search</b>.
+        </li>
+        <li>
+          Use the Show buttons to jump to any screen. Light and dark both work.
+        </li>
+      </ul>
+      <p class="hint">
+        Questions this mockup raises: is a campaign one portfolio or can it be
+        several (shown as several here); the 40 character limit (assumed so the
+        full name stays inside the 80 characters Salesforce allows); what extra
+        details a campaign needs (a start and end date and a description are
+        shown as examples). The app name is a placeholder.
+        <b>Hospitals are shown here as an example only:</b> a surgeon can work
+        at many hospitals, so the real screen would list every current hospital
+        from the Account Relationship records, not one. The word is “Portfolio”
+        (the events module’s “business segment”).
+      </p>
+    </details>
+
+    <div class="tools">
+      <span class="lab">Show</span>
+      <button type="button" class="pill on" data-view="list">Campaigns</button>
+      <button type="button" class="pill" data-view="form">New campaign</button>
+      <button type="button" class="pill" data-view="detail">A campaign</button>
+      <button type="button" class="pill" data-view="paste">Import</button>
+      <button type="button" class="pill" data-view="reconcile">
+        Check names
+      </button>
+      <span class="lab">Theme</span>
+      <button type="button" class="pill on" data-theme-btn="dark">Dark</button>
+      <button type="button" class="pill" data-theme-btn="light">Light</button>
+    </div>
+    <div class="mocknote" id="mocknote" hidden></div>
+
+    <div class="stagewrap" id="stage"></div>
+
+    <script>
+      var COUNTRIES = ["AU", "NZ", "SG", "MY", "TH", "HK", "TW", "KR", "IN"];
+      var PORTFOLIOS = ["Hip", "Knee", "Extremities", "CMFT"];
+      var MANAGERS = [
+        "Mei Tan",
+        "Daniel Ong",
+        "Priscilla Lau",
+        "Aroon Wattana",
+        "Hannah Brooks"
+      ];
+      /* the account directory: staging accounts and clinic contacts exist but are never offered */
+      var DIR = [
+        {
+          id: 1,
+          name: "Dr Wei Ming Lim",
+          hosp: "Singapore General Hospital, Mount Elizabeth Hospital",
+          country: "SG",
+          type: "Physician"
+        },
+        {
+          id: 2,
+          name: "Dr Priya Nair",
+          hosp: "Mount Elizabeth Hospital",
+          country: "SG",
+          type: "Physician"
+        },
+        {
+          id: 3,
+          name: "Dr Tan Ah Kow",
+          hosp: "Mount Elizabeth Hospital",
+          country: "SG",
+          type: "Physician"
+        },
+        {
+          id: 4,
+          name: "Dr Tan Ah Kow",
+          hosp: "National University Hospital",
+          country: "SG",
+          type: "Physician"
+        },
+        {
+          id: 5,
+          name: "Dr Tan Ah Kow",
+          hosp: "Gleneagles Kuala Lumpur",
+          country: "MY",
+          type: "Physician"
+        },
+        {
+          id: 6,
+          name: "Dr Siti Nurhaliza Abdullah",
+          hosp: "Prince Court Medical Centre",
+          country: "MY",
+          type: "Physician"
+        },
+        {
+          id: 7,
+          name: "Dr Rajesh Kumar",
+          hosp: "Pantai Hospital KL, Sunway Medical Centre, Prince Court Medical Centre",
+          country: "MY",
+          type: "Physician"
+        },
+        {
+          id: 8,
+          name: "Dr Somchai Prasert",
+          hosp: "Bangkok Hospital",
+          country: "TH",
+          type: "Physician"
+        },
+        {
+          id: 9,
+          name: "Dr อนันยา ชัยสิทธิ์",
+          pref: "Ananya Chaiyasit",
+          hosp: "Samitivej Sukhumvit",
+          country: "TH",
+          type: "Emerging consultant"
+        },
+        {
+          id: 10,
+          name: "Dr 陈家豪",
+          pref: "Jia Hao Chen",
+          hosp: "Tan Tock Seng Hospital",
+          country: "SG",
+          type: "Emerging consultant"
+        },
+        {
+          id: 13,
+          name: "Dr Michael Tan",
+          hosp: "Raffles Hospital, Gleneagles Hospital",
+          country: "SG",
+          type: "Physician"
+        },
+        {
+          id: 14,
+          name: "Dr Kavitha Raman",
+          hosp: "Sunway Medical Centre",
+          country: "MY",
+          type: "Physician"
+        },
+        {
+          id: 15,
+          name: "Dr Jonathan Wu",
+          hosp: "Raffles Hospital",
+          country: "SG",
+          type: "Physician"
+        },
+        {
+          id: 11,
+          name: "Wei Ming Lim",
+          hosp: "",
+          country: "SG",
+          type: "Staging account",
+          hidden: true
+        },
+        {
+          id: 12,
+          name: "Wei Ming Lim (clinic)",
+          hosp: "SGH Clinic",
+          country: "SG",
+          type: "Surgeon clinic contact",
+          hidden: true
+        }
+      ];
+      function dir(id) {
+        for (var i = 0; i < DIR.length; i++)
+          if (DIR[i].id === id) return DIR[i];
+        return null;
+      }
+      var STAGES = [
+        "Plan",
+        "Action",
+        "Commit",
+        "1st Case",
+        "5th Case",
+        "Conversion"
+      ];
+      var S = {
+        wide: false,
+        theme: "dark",
+        view: "list",
+        showInactive: false,
+        q: "",
+        open: 0,
+        campaigns: [
+          {
+            name: "Singapore Shoulder Symposium SG-MY-TH",
+            countries: ["SG", "MY", "TH"],
+            port: ["Extremities"],
+            mgr: "Mei Tan",
+            active: true,
+            members: 50,
+            withDeal: 38
+          },
+          {
+            name: "Post Hip Masterclass AU-NZ",
+            countries: ["AU", "NZ"],
+            port: ["Hip"],
+            mgr: "Hannah Brooks",
+            active: true,
+            members: 42,
+            withDeal: 30
+          },
+          {
+            name: "Knee Robotics Follow-up AU",
+            countries: ["AU"],
+            port: ["Knee"],
+            mgr: "Daniel Ong",
+            active: true,
+            members: 25,
+            withDeal: 9
+          },
+          {
+            name: "CMFT Fixation Roadshow SG-MY",
+            countries: ["SG", "MY"],
+            port: ["CMFT"],
+            mgr: "Priscilla Lau",
+            active: false,
+            members: 18,
+            withDeal: 12
+          },
+          {
+            name: "Shoulder Symposium 2025 AU-NZ",
+            countries: ["AU", "NZ"],
+            port: ["Extremities"],
+            mgr: "Hannah Brooks",
+            active: false,
+            members: 60,
+            withDeal: 44
+          }
+        ],
+        form: {
+          friendly: "Singapore Shoulder Symposium",
+          countries: ["SG", "MY", "TH"],
+          port: ["Extremities"],
+          active: true,
+          mgr: "Mei Tan",
+          mgrQ: "",
+          start: "2026-11-20",
+          end: "2027-03-31",
+          desc: "Follow-up with everyone who attended the symposium and has shoulder cases."
+        },
+        saved: false,
+        mgrOpen: false,
+        members: [
+          { id: 8, deal: "Commit" },
+          { id: 9, deal: "Plan" },
+          { id: 10, deal: "" },
+          { id: 13, deal: "1st Case" },
+          { id: 14, deal: "" }
+        ],
+        memberQ: "",
+        pasteText:
+          "Wei Ming Lim, SGH\nPriya Nair - Mount Elizabeth\nSiti Nurhaliza Abdullah\nTan Ah Kow\nDr Raj K\nDr Jonathan Wu (Raffles)\nSomchai Prasert",
+        rows: null,
+        added: 0
+      };
+
+      function esc(s) {
+        return String(s).replace(/[&<>"]/g, function (c) {
+          return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
+        });
+      }
+      function fullName(f) {
+        var base = (f.friendly || "").trim();
+        var codes = f.countries
+          .slice()
+          .sort(function (a, b) {
+            return COUNTRIES.indexOf(a) - COUNTRIES.indexOf(b);
+          })
+          .join("-");
+        return (base || "…") + (codes ? " " + codes : "");
+      }
+      function isMember(id) {
+        return S.members.some(function (m) {
+          return m.id === id;
+        });
+      }
+      function curCountries() {
+        return (
+          S.saved ? S.campaigns[S.campaigns.length - 1] : S.campaigns[S.open]
+        ).countries;
+      }
+      function nm(a) {
+        return a.name + (a.pref ? " (English: " + a.pref + ")" : "");
+      }
+      /* a search needs at least 2 characters; it looks in the name AND the English name; it stays inside the campaign's countries unless widened */
+      function search(q) {
+        q = q.trim().toLowerCase();
+        if (q.length < 2) return { hits: [], held: 0, outside: 0, short: true };
+        var hits = [],
+          held = 0,
+          outside = 0,
+          cc = curCountries();
+        DIR.forEach(function (a) {
+          var hay = (
+            a.name +
+            " " +
+            (a.pref || "") +
+            " " +
+            a.hosp
+          ).toLowerCase();
+          if (hay.indexOf(q) < 0) return;
+          if (a.hidden) held++;
+          else if (!S.wide && cc.indexOf(a.country) < 0) outside++;
+          else hits.push(a);
+        });
+        return { hits: hits.slice(0, 6), held: held, outside: outside };
+      }
+      function scopeFoot(r) {
+        var cc = curCountries().join(", ");
+        var h = "";
+        if (r.short)
+          return '<div class="foot">Type at least 2 characters. The name or the English name both work.</div>';
+        h +=
+          '<div class="foot">' +
+          (S.wide ? "Searching every country." : "Searching " + cc + ".") +
+          ' <button type="button" class="btn ghost" data-act="widen">' +
+          (S.wide ? "Back to " + cc : "Widen search") +
+          "</button>" +
+          (r.outside && !S.wide
+            ? " (" + r.outside + " more match outside these countries)"
+            : "") +
+          "</div>";
+        return h;
+      }
+      function sbox(id, val, ph) {
+        return (
+          '<span class="sbox"><input class="in" id="' +
+          id +
+          '" value="' +
+          esc(val) +
+          '" placeholder="' +
+          esc(ph) +
+          '" autocomplete="off">' +
+          (val
+            ? '<button type="button" class="xcirc" data-act="clear" data-v="' +
+              id +
+              '" aria-label="Clear"></button>'
+            : "") +
+          "</span>"
+        );
+      }
+      function stepsBar() {
+        var order = ["form", "detail", "paste", "reconcile"];
+        var names = {
+          form: "1 Campaign",
+          detail: "2 Members",
+          paste: "3 Import",
+          reconcile: "4 Check names"
+        };
+        var cur = S.view === "done" ? 4 : order.indexOf(S.view);
+        return (
+          '<div class="steps">' +
+          order
+            .map(function (k, i) {
+              var cls =
+                i === cur ? "on" : i < cur || S.view === "done" ? "done" : "";
+              return '<span class="step ' + cls + '">' + names[k] + "</span>";
+            })
+            .join("") +
+          "</div>"
+        );
+      }
+
+      /* ---------- views ---------- */
+      function listView() {
+        var q = S.q.trim().toLowerCase();
+        var rows = S.campaigns.filter(function (c) {
+          return (
+            (S.showInactive || c.active) &&
+            (!q || c.name.toLowerCase().indexOf(q) >= 0)
+          );
+        });
+        var h = '<div class="title"><b>YOUR</b> CAMPAIGNS</div>';
+        h +=
+          '<div class="row" style="margin-bottom:14px">' +
+          sbox("q", S.q, "Search campaigns") +
+          '<button type="button" class="chip ' +
+          (S.showInactive ? "on" : "") +
+          '" data-act="inactive">Show inactive</button>' +
+          '<span class="sp"></span><button type="button" class="btn" data-view="form" data-act="newc">New campaign</button></div>';
+        h +=
+          '<div class="card"><table><tr><th>Campaign</th><th>Portfolio</th><th>Countries</th><th>Manager</th><th>Status</th><th>Members</th><th>With a deal</th><th>Missing</th></tr>';
+        rows.forEach(function (c) {
+          var i = S.campaigns.indexOf(c);
+          h +=
+            '<tr class="click" data-act="opencamp" data-i="' +
+            i +
+            '"><td><b>' +
+            esc(c.name) +
+            "</b></td><td>" +
+            esc(c.port.join(", ")) +
+            "</td><td>" +
+            c.countries.join(" ") +
+            "</td><td>" +
+            esc(c.mgr) +
+            "</td><td>" +
+            (c.active
+              ? '<span class="tag ok">Active</span>'
+              : '<span class="tag off">Inactive</span>') +
+            "</td><td>" +
+            c.members +
+            "</td><td>" +
+            c.withDeal +
+            "</td><td>" +
+            (c.members - c.withDeal
+              ? '<span class="tag warn">' + (c.members - c.withDeal) + "</span>"
+              : '<span class="tag ok">0</span>') +
+            "</td></tr>";
+        });
+        if (!rows.length)
+          h +=
+            '<tr><td colspan="8" class="muted">No campaigns match.</td></tr>';
+        h += "</table></div>";
+        h +=
+          '<div class="notice">Inactive campaigns are hidden by default and cannot be chosen when a deal is linked to a campaign. Clicking a campaign opens it.</div>';
+        return h;
+      }
+
+      function formView() {
+        var f = S.form;
+        var over = f.friendly.length > 40;
+        var h = stepsBar() + '<div class="title"><b>NEW</b> CAMPAIGN</div>';
+        h +=
+          '<div class="card" style="min-width:760px"><h2>Campaign details</h2>';
+        h +=
+          '<span class="lab" style="margin-top:0">Friendly name</span><div class="row"><input class="in" id="friendly" style="width:520px" maxlength="40" value="' +
+          esc(f.friendly) +
+          '" placeholder="For example: Singapore Shoulder Symposium">' +
+          '<span class="count ' +
+          (over ? "over" : "") +
+          '">' +
+          f.friendly.length +
+          " / 40</span></div>";
+        h +=
+          '<span class="lab">Countries (one or many)</span><div class="chips">' +
+          COUNTRIES.map(function (c) {
+            return (
+              '<button type="button" class="chip ' +
+              (f.countries.indexOf(c) >= 0 ? "on" : "") +
+              '" data-act="ctry" data-v="' +
+              c +
+              '">' +
+              c +
+              "</button>"
+            );
+          }).join("") +
+          "</div>";
+        h +=
+          '<span class="lab">Portfolio (decides which deals can be linked: an Extremities deal only sees Extremities campaigns)</span><div class="chips">' +
+          PORTFOLIOS.map(function (c) {
+            return (
+              '<button type="button" class="chip ' +
+              (f.port.indexOf(c) >= 0 ? "on" : "") +
+              '" data-act="port" data-v="' +
+              c +
+              '">' +
+              c +
+              "</button>"
+            );
+          }).join("") +
+          "</div>";
+        h +=
+          '<span class="lab">Campaign manager</span><div class="rel">' +
+          sbox("mgrq", S.mgrOpen ? f.mgrQ : f.mgr, "Search for a person");
+        if (S.mgrOpen) {
+          var m = MANAGERS.filter(function (n) {
+            return n.toLowerCase().indexOf(f.mgrQ.trim().toLowerCase()) >= 0;
+          });
+          h +=
+            '<div class="pop">' +
+            m
+              .map(function (n) {
+                return (
+                  '<button type="button" class="opt" data-act="mgr" data-v="' +
+                  esc(n) +
+                  '">' +
+                  esc(n) +
+                  "</button>"
+                );
+              })
+              .join("") +
+            '<div class="foot">Only active people who work for the company are offered.</div></div>';
+        }
+        h += "</div>";
+        h +=
+          '<span class="lab">Active</span><button type="button" class="switch ' +
+          (f.active ? "on" : "") +
+          '" data-act="active"><i></i><span>' +
+          (f.active
+            ? "Active: deals can be linked to it"
+            : "Inactive: hidden from the choices") +
+          "</span></button>";
+        h +=
+          '<span class="lab">Start and end (optional)</span><div class="row"><input class="in" type="date" id="start" value="' +
+          f.start +
+          '"><span class="muted">to</span><input class="in" type="date" id="end" value="' +
+          f.end +
+          '"></div>';
+        h +=
+          '<span class="lab">What is this campaign for? (optional)</span><textarea class="in" id="desc" style="width:640px;height:80px">' +
+          esc(f.desc) +
+          "</textarea>";
+        h +=
+          '<span class="lab">Campaign name (set automatically, cannot be typed)</span><div class="nameprev">' +
+          esc(fullName(f)) +
+          '<span class="lock">LOCKED</span></div>';
+        h +=
+          '<div class="row" style="margin-top:20px"><button type="button" class="btn" data-act="savecamp" ' +
+          (!f.friendly.trim() || !f.countries.length || !f.port.length || over
+            ? "disabled"
+            : "") +
+          '>Save campaign</button><button type="button" class="btn sec" data-view="list">Cancel</button>' +
+          (!f.friendly.trim() || !f.countries.length || !f.port.length
+            ? '<span class="muted">A name, at least one country and a portfolio are needed.</span>'
+            : "") +
+          "</div></div>";
+        return h;
+      }
+
+      function detailView() {
+        var c = S.saved
+          ? S.campaigns[S.campaigns.length - 1]
+          : S.campaigns[S.open];
+        var withDeal = S.members.filter(function (m) {
+          return m.deal;
+        }).length;
+        var h = stepsBar() + '<div class="title">' + esc(c.name) + "</div>";
+        h +=
+          '<div class="row" style="margin-bottom:14px">' +
+          (c.active
+            ? '<span class="tag ok">Active</span>'
+            : '<span class="tag off">Inactive</span>') +
+          '<span class="muted">' +
+          esc(c.port.join(", ")) +
+          " · " +
+          c.countries.join(" ") +
+          " · Manager " +
+          esc(c.mgr) +
+          '</span><span class="sp"></span>' +
+          '<button type="button" class="btn sec" data-view="form" data-act="editc">Edit campaign</button>' +
+          '<button type="button" class="btn danger" data-act="toggleactive">' +
+          (c.active ? "Deactivate" : "Activate") +
+          "</button></div>";
+        var total = S.saved ? S.members.length : c.members + S.added;
+        var wd = S.saved ? withDeal : c.withDeal + 0;
+        h +=
+          '<div class="kpis"><div class="kpi"><b>' +
+          total +
+          '</b><span>Members</span></div><div class="kpi"><b>' +
+          wd +
+          '</b><span>With a deal</span></div><div class="kpi gap"><b>' +
+          (total - wd) +
+          "</b><span>No deal yet</span></div></div>";
+        h +=
+          '<div class="row" style="margin-bottom:12px"><span class="rel">' +
+          sbox("memberq", S.memberQ, "Add a member: type a surgeon's name");
+        if (S.memberQ.trim()) {
+          var r = search(S.memberQ);
+          h +=
+            '<div class="pop">' +
+            r.hits
+              .map(function (a) {
+                var mem = isMember(a.id);
+                return (
+                  '<button type="button" class="opt" ' +
+                  (mem
+                    ? "disabled"
+                    : 'data-act="addm" data-id="' + a.id + '"') +
+                  ">" +
+                  esc(nm(a)) +
+                  (mem ? " (already a member)" : "") +
+                  "<small>Hospitals: " +
+                  esc(a.hosp) +
+                  " · " +
+                  a.country +
+                  " · " +
+                  a.type +
+                  "</small></button>"
+                );
+              })
+              .join("");
+          if (!r.hits.length && !r.short)
+            h +=
+              '<div class="foot">No physician or emerging consultant matches.</div>';
+          h += scopeFoot(r);
+          if (r.held)
+            h +=
+              '<div class="foot">' +
+              r.held +
+              " staging account or clinic contact with this name is not offered: only real physicians and emerging consultants can join a campaign.</div>";
+          h += "</div>";
+        }
+        h +=
+          '</span><button type="button" class="btn" data-view="paste">Import members</button><button type="button" class="btn danger" data-act="removesel">Remove ticked</button></div>';
+        h +=
+          '<div class="card"><table><tr><th></th><th>Surgeon</th><th>Current hospitals</th><th>Country</th><th>Type</th><th>Deal in this campaign</th></tr>';
+        S.members.forEach(function (m, i) {
+          var a = dir(m.id);
+          h +=
+            '<tr><td><input type="checkbox" data-act="tickm" data-i="' +
+            i +
+            '" ' +
+            (m.tick ? "checked" : "") +
+            "></td><td><b>" +
+            esc(a.name) +
+            "</b></td><td>" +
+            esc(a.hosp) +
+            "</td><td>" +
+            a.country +
+            "</td><td>" +
+            a.type +
+            "</td><td>" +
+            (m.deal
+              ? '<span class="tag ok">' + m.deal + "</span>"
+              : '<span class="tag warn">No deal yet</span>') +
+            "</td></tr>";
+        });
+        h += "</table></div>";
+        if (S.saved)
+          h +=
+            '<div class="notice">A brand-new campaign starts with no members and no deals. The deal counts fill in later, as reps link deals to it; the screen is most useful when you come back to it.</div>';
+        h +=
+          '<div class="notice">Only the first members are listed in this mockup (the campaign has ' +
+          total +
+          "). “Deal in this campaign” appears when a rep links a deal for that surgeon to the campaign. The full members view with ratings and activity lives in Pipeline.</div>";
+        return h;
+      }
+
+      function pasteView() {
+        var h = stepsBar() + '<div class="title"><b>IMPORT</b> MEMBERS</div>';
+        h += '<div class="card"><h2>Paste a list or drop a file</h2>';
+        h +=
+          '<div class="notice" style="margin-top:0">One surgeon per line, straight from Excel. Adding the hospital after the name (comma or dash) helps with common names. Nothing is saved on this step.</div>';
+        h +=
+          '<textarea class="in" id="paste">' + esc(S.pasteText) + "</textarea>";
+        h +=
+          '<div class="drop" style="margin-top:12px;width:640px">…or drop a CSV file here <span class="muted">(not wired up in the mockup)</span></div>';
+        h +=
+          '<div class="row" style="margin-top:16px"><button type="button" class="btn" data-act="check" ' +
+          (S.pasteText.trim() ? "" : "disabled") +
+          '>Check names</button><button type="button" class="btn sec" data-view="detail">Cancel</button><span class="muted">' +
+          S.pasteText.split("\n").filter(function (x) {
+            return x.trim();
+          }).length +
+          " names</span></div></div>";
+        return h;
+      }
+
+      function buildRows() {
+        S.rows = [
+          {
+            text: "Wei Ming Lim, SGH",
+            status: "exact",
+            cands: [1],
+            pick: 1,
+            ok: false
+          },
+          {
+            text: "Priya Nair - Mount Elizabeth",
+            status: "exact",
+            cands: [2],
+            pick: 2,
+            ok: false
+          },
+          {
+            text: "Siti Nurhaliza Abdullah",
+            status: "exact",
+            cands: [6],
+            pick: 6,
+            ok: false
+          },
+          {
+            text: "Tan Ah Kow",
+            status: "many",
+            cands: [3, 4, 5],
+            pick: null,
+            ok: false
+          },
+          {
+            text: "Dr Raj K",
+            status: "suggest",
+            cands: [7],
+            pick: 7,
+            ok: false
+          },
+          {
+            text: "Dr Jonathan Wu (Raffles)",
+            status: "none",
+            cands: [],
+            pick: null,
+            ok: false,
+            q: ""
+          },
+          {
+            text: "Somchai Prasert",
+            status: "dup",
+            cands: [8],
+            pick: 8,
+            ok: true
+          }
+        ];
+      }
+      function resolved(r) {
+        return r.del || r.status === "dup" || (r.pick && r.ok);
+      }
+      function reconcileView() {
+        if (!S.rows) buildRows();
+        var live = S.rows.filter(function (r) {
+          return !r.del;
+        });
+        var exact = live.filter(function (r) {
+          return r.status === "exact";
+        }).length;
+        var need = live.filter(function (r) {
+          return !resolved(r);
+        }).length;
+        var toAdd = live.filter(function (r) {
+          return r.status !== "dup" && r.pick && r.ok;
+        }).length;
+        var h = stepsBar() + '<div class="title"><b>CHECK</b> THE NAMES</div>';
+        h +=
+          '<div class="sum"><span class="tag ok">' +
+          exact +
+          ' exact matches to confirm</span><span class="tag warn">' +
+          live.filter(function (r) {
+            return r.status === "many" || r.status === "suggest";
+          }).length +
+          ' need a choice</span><span class="tag bad">' +
+          live.filter(function (r) {
+            return r.status === "none";
+          }).length +
+          ' not found</span><span class="tag">' +
+          live.filter(function (r) {
+            return r.status === "dup";
+          }).length +
+          " already members</span></div>";
+        h +=
+          '<div class="row" style="margin-bottom:12px"><button type="button" class="btn sec" data-act="tickexact">Tick all exact matches</button><span class="muted">You make the final call on every row. Nothing becomes a member until it is ticked.</span></div>';
+        h +=
+          '<div class="card"><table><tr><th>Confirm</th><th>In your file</th><th>Match in Salesforce</th><th>Current hospitals</th><th>What we found</th><th></th></tr>';
+        S.rows.forEach(function (r, i) {
+          var a = r.pick ? dir(r.pick) : null;
+          var tag = {
+            exact: '<span class="tag ok">Exact match</span>',
+            many: '<span class="tag warn">Several people share this name</span>',
+            suggest: '<span class="tag warn">Possible match</span>',
+            none: '<span class="tag bad">Not found</span>',
+            dup: '<span class="tag">Already a member: skipped</span>'
+          }[r.status];
+          h +=
+            '<tr class="' +
+            (r.del ? "gone" : "") +
+            '"><td>' +
+            (r.status === "dup"
+              ? ""
+              : '<input type="checkbox" data-act="okrow" data-i="' +
+                i +
+                '" ' +
+                (r.ok ? "checked" : "") +
+                (!r.pick || r.del ? " disabled" : "") +
+                ">") +
+            "</td><td>" +
+            esc(r.text) +
+            "</td><td>";
+          var lookMode = r.status === "none" || r.look;
+          if (r.status === "many" && !r.del && !r.look) {
+            h +=
+              '<select class="in" data-act="pickrow" data-i="' +
+              i +
+              '"><option value="">Choose who it is…</option>' +
+              r.cands
+                .map(function (id) {
+                  var c = dir(id);
+                  return (
+                    '<option value="' +
+                    id +
+                    '" ' +
+                    (r.pick === id ? "selected" : "") +
+                    ">" +
+                    esc(c.name + " · " + c.hosp + " · " + c.country) +
+                    "</option>"
+                  );
+                })
+                .join("") +
+              '</select> <button type="button" class="btn ghost" data-act="lookup" data-i="' +
+              i +
+              '">None of these? Look up</button>';
+          } else if (lookMode && !r.del) {
+            if (a)
+              h +=
+                "<b>" +
+                esc(a.name) +
+                '</b> <button type="button" class="xcirc inline" data-act="unpick" data-i="' +
+                i +
+                '" aria-label="Remove choice"></button>';
+            else {
+              h +=
+                '<span class="rel">' +
+                sbox("rq" + i, r.q || "", "Look the surgeon up");
+              if ((r.q || "").trim()) {
+                var s = search(r.q);
+                h +=
+                  '<div class="pop">' +
+                  s.hits
+                    .map(function (x) {
+                      return (
+                        '<button type="button" class="opt" data-act="pickfound" data-i="' +
+                        i +
+                        '" data-id="' +
+                        x.id +
+                        '">' +
+                        esc(nm(x)) +
+                        "<small>Hospitals: " +
+                        esc(x.hosp) +
+                        " · " +
+                        x.country +
+                        "</small></button>"
+                      );
+                    })
+                    .join("") +
+                  (!s.hits.length && !s.short
+                    ? '<div class="foot">Nobody found.</div>'
+                    : "") +
+                  scopeFoot(s) +
+                  '<div class="foot"><button type="button" class="btn ghost" data-act="createnew" data-i="' +
+                  i +
+                  '">Create this surgeon</button> (as you can today)</div></div>';
+              }
+              h += "</span>";
+            }
+          } else if (a)
+            h +=
+              "<b>" +
+              esc(a.name) +
+              "</b>" +
+              (r.status === "suggest"
+                ? ' <button type="button" class="btn ghost" data-act="lookup" data-i="' +
+                  i +
+                  '">Not right? Look up</button>'
+                : "");
+          else h += "";
+          h +=
+            "</td><td>" +
+            (a ? esc(a.hosp) + " · " + a.country : "") +
+            "</td><td>" +
+            tag +
+            (r.status === "many"
+              ? '<div class="muted" style="font-size:14px">Check who this is before you pick.</div>'
+              : "") +
+            "</td><td>" +
+            (r.del
+              ? '<button type="button" class="btn ghost" data-act="undel" data-i="' +
+                i +
+                '">Undo</button>'
+              : '<button type="button" class="xcirc inline" data-act="delrow" data-i="' +
+                i +
+                '" aria-label="Delete row"></button>') +
+            "</td></tr>";
+        });
+        h += "</table></div>";
+        h +=
+          '<div class="row"><button type="button" class="btn" data-act="addall" ' +
+          (need ? "disabled" : "") +
+          ">Add " +
+          toAdd +
+          ' members</button><button type="button" class="btn sec" data-view="paste">Back to the list</button>' +
+          (need
+            ? '<span class="muted">' +
+              need +
+              " row" +
+              (need > 1 ? "s" : "") +
+              " still need a decision: confirm, choose, or delete the row.</span>"
+            : '<span class="ok-line">Every row has a decision.</span>') +
+          "</div>";
+        return h;
+      }
+
+      function doneView() {
+        var h =
+          stepsBar() +
+          '<div class="title"><b>CAMPAIGN</b> SAVED</div><div class="card"><div class="big ok-line">' +
+          S.added +
+          " members added.</div><p>The campaign now has <b>" +
+          (S.saved ? S.members.length : S.campaigns[S.open].members + S.added) +
+          '</b> members. Reps can link their deals for these surgeons to this campaign, and the “no deal yet” list shows who is still missing.</p><div class="row"><button type="button" class="btn" data-view="detail">Open the campaign</button><button type="button" class="btn sec" data-view="list">All campaigns</button></div></div>';
+        return h;
+      }
+
+      var NOTES = {
+        list: "Mockup note: opens on active campaigns only. In Salesforce this is the first screen of the Campaign Management full-screen app.",
+        form: "Mockup note: the name at the bottom is built for the person from the friendly name and the country codes. They can never type it.",
+        detail:
+          "Mockup note: in Salesforce this lists every member with a way to filter and sort; the mockup shows a few.",
+        paste:
+          "Mockup note: a CSV can be dropped, or a list pasted from Excel. Either way the next screen checks the names.",
+        reconcile:
+          "Mockup note: this is the screen that stops bad data. Every row ends confirmed, chosen, created or deleted.",
+        done: "Mockup note: the new members count straight away in the campaign."
+      };
+      function draw() {
+        var active = document.activeElement && document.activeElement.id;
+        var pos =
+          document.activeElement && document.activeElement.selectionStart;
+        document.body.setAttribute("data-theme", S.theme);
+        var v = S.view;
+        document.getElementById("stage").innerHTML = {
+          list: listView,
+          form: formView,
+          detail: detailView,
+          paste: pasteView,
+          reconcile: reconcileView,
+          done: doneView
+        }[v]();
+        var n = document.getElementById("mocknote");
+        n.textContent = NOTES[v];
+        n.hidden = false;
+        Array.prototype.forEach.call(
+          document.querySelectorAll(".tools [data-view]"),
+          function (b) {
+            b.classList.toggle("on", b.dataset.view === v);
+          }
+        );
+        Array.prototype.forEach.call(
+          document.querySelectorAll("[data-theme-btn]"),
+          function (b) {
+            b.classList.toggle("on", b.dataset.themeBtn === S.theme);
+          }
+        );
+        if (active) {
+          var el = document.getElementById(active);
+          if (el && el.focus) {
+            el.focus();
+            if (pos != null && el.setSelectionRange && el.type !== "date")
+              el.setSelectionRange(pos, pos);
+          }
+        }
+      }
+
+      document.addEventListener("input", function (e) {
+        var id = e.target.id,
+          v = e.target.value;
+        if (id === "q") S.q = v;
+        else if (id === "friendly") S.form.friendly = v;
+        else if (id === "mgrq") {
+          S.form.mgrQ = v;
+          S.mgrOpen = true;
+        } else if (id === "start") S.form.start = v;
+        else if (id === "end") S.form.end = v;
+        else if (id === "desc") {
+          S.form.desc = v;
+          return;
+        } else if (id === "memberq") S.memberQ = v;
+        else if (id === "paste") {
+          S.pasteText = v;
+          S.rows = null;
+          return;
+        } else if (id && id.indexOf("rq") === 0) S.rows[+id.slice(2)].q = v;
+        else return;
+        draw();
+      });
+      document.addEventListener("change", function (e) {
+        var t = e.target,
+          a = t.dataset.act;
+        if (a === "tickm") S.members[+t.dataset.i].tick = t.checked;
+        else if (a === "okrow") S.rows[+t.dataset.i].ok = t.checked;
+        else if (a === "pickrow") {
+          var r = S.rows[+t.dataset.i];
+          r.pick = t.value ? +t.value : null;
+          r.ok = !!r.pick;
+        } else return;
+        draw();
+      });
+      document.addEventListener("click", function (e) {
+        var t = e.target.closest("[data-view],[data-theme-btn],[data-act]");
+        if (!t) return;
+        var d = t.dataset,
+          a = d.act,
+          f = S.form;
+        if (d.themeBtn) {
+          S.theme = d.themeBtn;
+          draw();
+          return;
+        }
+        if (a === "tickm" || a === "okrow" || a === "pickrow") return;
+        if (d.view) {
+          S.view = d.view;
+          if (d.view === "list") {
+            S.saved = false;
+            S.rows = null;
+          }
+          if (d.view === "reconcile" && !S.rows) buildRows();
+        }
+        if (a === "clear") {
+          var id = d.v;
+          if (id === "q") S.q = "";
+          else if (id === "mgrq") {
+            f.mgrQ = "";
+            S.mgrOpen = true;
+          } else if (id === "memberq") S.memberQ = "";
+          else if (id.indexOf("rq") === 0) S.rows[+id.slice(2)].q = "";
+        } else if (a === "inactive") S.showInactive = !S.showInactive;
+        else if (a === "widen") S.wide = !S.wide;
+        else if (a === "newc") {
+          S.form = {
+            friendly: "",
+            countries: [],
+            port: [],
+            active: true,
+            mgr: "Mei Tan",
+            mgrQ: "",
+            start: "",
+            end: "",
+            desc: ""
+          };
+          S.saved = false;
+        } else if (a === "opencamp") {
+          S.open = +d.i;
+          S.saved = false;
+          S.view = "detail";
+        } else if (a === "editc") S.saved = S.saved;
+        else if (a === "ctry") {
+          var ci = f.countries.indexOf(d.v);
+          if (ci >= 0) f.countries.splice(ci, 1);
+          else f.countries.push(d.v);
+        } else if (a === "port") {
+          var pi = f.port.indexOf(d.v);
+          if (pi >= 0) f.port.splice(pi, 1);
+          else f.port.push(d.v);
+        } else if (a === "mgr") {
+          f.mgr = d.v;
+          f.mgrQ = "";
+          S.mgrOpen = false;
+        } else if (a === "active") f.active = !f.active;
+        else if (a === "savecamp") {
+          S.campaigns.push({
+            name: fullName(f),
+            countries: f.countries.slice(),
+            port: f.port.slice(),
+            mgr: f.mgr,
+            active: f.active,
+            members: 0,
+            withDeal: 0
+          });
+          S.saved = true;
+          S.members = [];
+          S.view = "detail";
+        } else if (a === "toggleactive") {
+          var c = S.saved
+            ? S.campaigns[S.campaigns.length - 1]
+            : S.campaigns[S.open];
+          c.active = !c.active;
+        } else if (a === "addm") {
+          S.members.push({ id: +d.id, deal: "" });
+          S.memberQ = "";
+        } else if (a === "removesel")
+          S.members = S.members.filter(function (m) {
+            return !m.tick;
+          });
+        else if (a === "check") {
+          buildRows();
+          S.view = "reconcile";
+        } else if (a === "tickexact")
+          S.rows.forEach(function (r) {
+            if (r.status === "exact") r.ok = true;
+          });
+        else if (a === "delrow") S.rows[+d.i].del = true;
+        else if (a === "undel") S.rows[+d.i].del = false;
+        else if (a === "lookup") {
+          var r0 = S.rows[+d.i];
+          r0.look = true;
+          r0.pick = null;
+          r0.ok = false;
+          r0.q = "";
+        } else if (a === "unpick") {
+          var r1 = S.rows[+d.i];
+          r1.pick = null;
+          r1.ok = false;
+        } else if (a === "pickfound") {
+          var r2 = S.rows[+d.i];
+          r2.pick = +d.id;
+          r2.ok = true;
+          r2.q = "";
+        } else if (a === "createnew") {
+          var r3 = S.rows[+d.i];
+          r3.pick = 15;
+          r3.ok = true;
+          r3.q = "";
+        } else if (a === "addall") {
+          S.rows.forEach(function (r) {
+            if (
+              !r.del &&
+              r.status !== "dup" &&
+              r.pick &&
+              r.ok &&
+              !isMember(r.pick)
+            )
+              S.members.push({ id: r.pick, deal: "" });
+          });
+          S.added = S.rows.filter(function (r) {
+            return !r.del && r.status !== "dup" && r.pick && r.ok;
+          }).length;
+          S.rows = null;
+          S.view = "done";
+        }
+        if (d.view === "form" && a !== "newc" && a !== "editc") {
+          /* header button: keep whatever is in the form */
+        }
+        draw();
+      });
+      document.getElementById("fullbtn").addEventListener("click", function () {
+        document.getElementById("mocknote").textContent =
+          "Mockup note: in Salesforce this opens Campaign Management in a new full-screen tab without the Salesforce navigation.";
+      });
+      location.hash
+        .slice(1)
+        .split("&")
+        .forEach(function (p) {
+          var kv = p.split("=");
+          if (kv[0] === "view") S.view = kv[1];
+          if (kv[0] === "theme") S.theme = kv[1];
+        });
+      if (S.view === "reconcile") buildRows();
+      draw();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,1617 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Pipeline mockup: the Campaign view, version 1</title>
+    <style>
+      :root,
+      [data-theme="dark"] {
+        --page: #141e2e;
+        --panel: #1a2740;
+        --card: #1a2740;
+        --box: #1e2b47;
+        --line: #2f4163;
+        --edge: #5b6f93;
+        --text: #e8edf5;
+        --muted: #9fb0cc;
+        --pipe: #fdb827;
+        --head: #f472b6;
+        --headbg: rgba(244, 114, 182, 0.12);
+        --indigo: #6366f1;
+        --indigo2: #a5b4fc;
+        --field: #11151c;
+        --ok: #4ee0b0;
+        --okbg: rgba(78, 224, 176, 0.14);
+        --warn: #fdb827;
+        --warnbg: rgba(253, 184, 39, 0.14);
+        --bad: #f87171;
+        --badbg: rgba(248, 113, 113, 0.14);
+        --scrim: rgba(8, 12, 20, 0.55);
+        --topbg: #141e2e;
+      }
+      [data-theme="light"] {
+        --page: #e9edf4;
+        --panel: #ffffff;
+        --card: #ffffff;
+        --box: #eef2fa;
+        --line: #d5dcea;
+        --edge: #b3bfd6;
+        --text: #1b2640;
+        --muted: #5d6b85;
+        --pipe: #b7791f;
+        --head: #db2777;
+        --headbg: rgba(219, 39, 119, 0.08);
+        --indigo: #4f46e5;
+        --indigo2: #4f46e5;
+        --field: #ffffff;
+        --ok: #0f9d74;
+        --okbg: rgba(15, 157, 116, 0.12);
+        --warn: #b7791f;
+        --warnbg: rgba(183, 121, 31, 0.13);
+        --bad: #dc2626;
+        --badbg: rgba(220, 38, 38, 0.1);
+        --scrim: rgba(30, 45, 80, 0.35);
+        --topbg: #ffffff;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--page);
+        color: var(--text);
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-size: 16px;
+      }
+      button,
+      input,
+      select {
+        font-family: inherit;
+        font-size: inherit;
+      }
+      .sfnav {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        height: 44px;
+        padding: 0 16px;
+        background: #0b1220;
+        border-bottom: 1px solid #2f4163;
+        color: #cdd6e6;
+        font-size: 14px;
+      }
+      .sfnav .app {
+        font-weight: 800;
+        letter-spacing: 0.14em;
+      }
+      .sfnav .app b {
+        color: #fdb827;
+      }
+      .sfnav .tab {
+        color: #9fb0cc;
+      }
+      .sfnav .tab.on {
+        color: #fff;
+        border-bottom: 2px solid #6366f1;
+        padding-bottom: 2px;
+      }
+      .sp {
+        flex: 1;
+      }
+      .pill {
+        border: 1px solid var(--indigo);
+        background: transparent;
+        color: var(--text);
+        border-radius: 999px;
+        padding: 7px 18px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+      }
+      .pill.on {
+        background: var(--indigo);
+        color: #fff;
+      }
+      .sfnav .pill {
+        color: #e8edf5;
+      }
+      .about {
+        margin: 14px 16px;
+        padding: 12px 18px;
+        background: var(--card);
+        border: 1px solid var(--edge);
+        border-radius: 12px;
+        font-size: 15px;
+        line-height: 1.5;
+      }
+      .about summary {
+        cursor: pointer;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        color: var(--pipe);
+      }
+      .about ul {
+        margin: 4px 0 8px;
+        padding-left: 22px;
+      }
+      .about .hint {
+        color: var(--muted);
+        margin: 6px 0 0;
+      }
+      .tools {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+        padding: 0 16px 8px;
+      }
+      .tools .lab {
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        margin-left: 14px;
+      }
+      .tools .lab:first-child {
+        margin-left: 0;
+      }
+      .mocknote {
+        margin: 0 16px 10px;
+        padding: 8px 14px;
+        border: 1px dashed var(--edge);
+        border-radius: 10px;
+        color: var(--muted);
+        font-size: 14px;
+        font-style: italic;
+      }
+
+      /* ---------- the Pipeline app (as built) ---------- */
+      .app {
+        background: var(--page);
+        border-top: 1px solid var(--line);
+      }
+      .top {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 10px 18px;
+        background: var(--topbg);
+        border-bottom: 1px solid var(--line);
+        position: relative;
+      }
+      .icb {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        border: 1px solid var(--line);
+        background: var(--card);
+        color: var(--text);
+        display: grid;
+        place-items: center;
+        cursor: pointer;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        height: 40px;
+        border-radius: 6px;
+        background: #0c1220;
+        border-left: 14px solid #aeb6c2;
+        border-right: 44px solid #aeb6c2;
+        padding: 0 18px;
+        font-weight: 900;
+        letter-spacing: 0.02em;
+        font-size: 19px;
+        color: #fff;
+      }
+      .brand b {
+        color: #fdb827;
+      }
+      .ver2 {
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .viewtoggle {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        display: inline-flex;
+        border: 1px solid var(--indigo);
+        border-radius: 999px;
+        overflow: hidden;
+        background: var(--card);
+      }
+      .viewtoggle button {
+        border: none;
+        background: transparent;
+        color: var(--text);
+        padding: 10px 28px;
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        cursor: pointer;
+      }
+      .viewtoggle button.on {
+        background: var(--indigo);
+        color: #fff;
+      }
+      .viewtoggle button[disabled] {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
+      .btn {
+        border-radius: 999px;
+        padding: 9px 22px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+        border: 1px solid var(--indigo);
+        background: var(--indigo);
+        color: #fff;
+      }
+      .btn.sec {
+        background: transparent;
+        color: var(--text);
+        border-color: var(--edge);
+      }
+      .btn.ghost {
+        background: transparent;
+        border-color: transparent;
+        color: var(--indigo2);
+        padding: 6px 10px;
+      }
+      .btn.danger {
+        background: transparent;
+        color: var(--bad);
+        border-color: var(--bad);
+        padding: 6px 14px;
+      }
+      .fsel {
+        background: var(--card);
+        color: var(--text);
+        border: 1px solid var(--indigo);
+        border-radius: 999px;
+        padding: 9px 18px;
+        font-size: 14px;
+      }
+      .bar {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        padding: 12px 18px;
+        border-bottom: 1px solid var(--line);
+      }
+      .kind {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        border: 1px solid var(--indigo);
+        border-radius: 999px;
+        padding: 8px 14px 8px 18px;
+        background: transparent;
+        color: var(--text);
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        cursor: pointer;
+      }
+      .kind.on {
+        background: rgba(99, 102, 241, 0.22);
+      }
+      .kind i {
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        border: 2px solid var(--indigo);
+        display: inline-block;
+        position: relative;
+      }
+      .kind.on i {
+        background: var(--indigo);
+      }
+      .kind.on i::after {
+        content: "";
+        position: absolute;
+        left: 6px;
+        top: 2px;
+        width: 5px;
+        height: 10px;
+        border: solid #fff;
+        border-width: 0 2px 2px 0;
+        transform: rotate(45deg);
+      }
+      .seg {
+        display: inline-flex;
+        border: 1px solid var(--indigo);
+        border-radius: 999px;
+        overflow: hidden;
+      }
+      .seg span {
+        padding: 9px 18px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .seg span.on {
+        background: var(--indigo);
+        color: #fff;
+      }
+      .chipb {
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 6px 14px;
+        font-size: 14px;
+        background: var(--card);
+      }
+      .chipb.camp {
+        border-color: var(--pipe);
+        color: var(--pipe);
+        font-weight: 700;
+      }
+      .view {
+        overflow: hidden;
+        transition: height 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .track {
+        display: flex;
+        width: 200%;
+        transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+        align-items: flex-start;
+      }
+      .pane {
+        width: 50%;
+        padding: 18px 18px 40px;
+      }
+      .pane.off {
+        visibility: hidden;
+        transition: visibility 0s 0.45s;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .track,
+        .view {
+          transition: none;
+        }
+      }
+
+      /* ---------- shared pieces ---------- */
+      .card {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 16px 18px 18px;
+        margin-bottom: 16px;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.16);
+      }
+      .card h2 {
+        margin: 0 0 12px;
+        font-size: 14px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--pipe);
+      }
+      .card h2 small {
+        color: var(--muted);
+        margin-left: 10px;
+        letter-spacing: 0.1em;
+      }
+      .tiles {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 16px;
+      }
+      .tile {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 10px 18px 12px;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.14);
+      }
+      .tile span {
+        display: block;
+        font-size: 12px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--muted);
+        font-weight: 800;
+      }
+      .tile b {
+        font-size: 32px;
+        display: block;
+        line-height: 1.15;
+      }
+      .tile em {
+        font-style: normal;
+        color: var(--muted);
+        font-size: 14px;
+      }
+      .tile.gap b {
+        color: var(--warn);
+      }
+      .tile .cur {
+        font-size: 18px;
+        font-weight: 800;
+        line-height: 1.35;
+      }
+      .tile .cur i {
+        font-style: normal;
+        color: var(--muted);
+        font-size: 13px;
+        margin-left: 6px;
+      }
+      .cards {
+        display: flex;
+        gap: 16px;
+        flex-wrap: wrap;
+        align-items: flex-start;
+      }
+      .tag {
+        display: inline-block;
+        padding: 2px 10px;
+        border-radius: 999px;
+        font-size: 13px;
+        font-weight: 700;
+        border: 1px solid var(--line);
+        color: var(--muted);
+        white-space: nowrap;
+      }
+      .tag.ok {
+        color: var(--ok);
+        background: var(--okbg);
+        border-color: transparent;
+      }
+      .tag.warn {
+        color: var(--warn);
+        background: var(--warnbg);
+        border-color: transparent;
+      }
+      .tag.bad {
+        color: var(--bad);
+        background: var(--badbg);
+        border-color: transparent;
+      }
+      .age {
+        display: inline-block;
+        min-width: 56px;
+        text-align: center;
+        padding: 1px 10px;
+        border-radius: 999px;
+        font-size: 13px;
+        font-weight: 700;
+        border: 1px solid;
+      }
+      .age.g {
+        color: var(--ok);
+        border-color: var(--ok);
+      }
+      .age.a {
+        color: var(--warn);
+        border-color: var(--warn);
+      }
+      .age.r {
+        color: var(--bad);
+        border-color: var(--bad);
+      }
+      .rate {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        font-weight: 700;
+      }
+      .rate i {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        display: inline-block;
+      }
+      .r-platinum i {
+        background: #b7c7e6;
+        box-shadow: 0 0 0 2px rgba(183, 199, 230, 0.35);
+      }
+      .r-gold i {
+        background: #fdb827;
+      }
+      .r-silver i {
+        background: #94a3b8;
+      }
+      .r-bronze i {
+        background: #c2763a;
+      }
+      .r-none i {
+        background: transparent;
+        border: 2px dashed var(--edge);
+      }
+      .r-none {
+        color: var(--muted);
+        font-weight: 500;
+      }
+      table {
+        border-collapse: collapse;
+        font-size: 16px;
+        width: 100%;
+      }
+      th {
+        text-align: left;
+        font-size: 12px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--head);
+        padding: 9px 12px;
+        white-space: nowrap;
+        border-bottom: 2px solid var(--line);
+      }
+      th.num,
+      td.num {
+        text-align: right;
+      }
+      td {
+        padding: 8px 9px;
+        border-top: 1px solid var(--line);
+        vertical-align: middle;
+        white-space: nowrap;
+      }
+      tr.first td {
+        border-top: 2px solid var(--edge);
+      }
+      td.grp {
+        vertical-align: top;
+        border-right: 1px solid var(--line);
+        min-width: 165px;
+      }
+      td.grp small {
+        display: block;
+        color: var(--muted);
+      }
+      tr.nodeal td {
+        background: var(--warnbg);
+      }
+      tr.click {
+        cursor: pointer;
+      }
+      tr.click:hover td:not(.grp) {
+        background: rgba(99, 102, 241, 0.1);
+      }
+      .scroll {
+        overflow-x: auto;
+      }
+      .muted {
+        color: var(--muted);
+      }
+      .segf {
+        display: inline-flex;
+        border: 1px solid var(--indigo);
+        border-radius: 999px;
+        overflow: hidden;
+      }
+      .segf button {
+        border: none;
+        background: transparent;
+        color: var(--text);
+        padding: 8px 18px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+      }
+      .segf button.on {
+        background: var(--indigo);
+        color: #fff;
+      }
+      .row {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      .ratebar {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin: 7px 0;
+      }
+      .ratebar .rl {
+        width: 118px;
+      }
+      .ratebar .bar2 {
+        display: flex;
+        height: 22px;
+        border-radius: 6px;
+        overflow: hidden;
+        background: var(--box);
+      }
+      .ratebar .bar2 i {
+        display: block;
+      }
+      .ratebar .w {
+        background: var(--indigo);
+      }
+      .ratebar .n {
+        background: var(--warn);
+      }
+      .ratebar .num2 {
+        font-size: 14px;
+        color: var(--muted);
+        white-space: nowrap;
+      }
+      .legend {
+        display: flex;
+        gap: 16px;
+        font-size: 13px;
+        color: var(--muted);
+        margin-top: 6px;
+      }
+      .legend i {
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        border-radius: 3px;
+        margin-right: 6px;
+        vertical-align: -1px;
+      }
+      .stagechips {
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+      }
+      .sc {
+        display: flex;
+        justify-content: space-between;
+        gap: 30px;
+        padding: 6px 14px;
+        border-radius: 8px;
+        background: var(--box);
+        border-left: 4px solid var(--indigo);
+        min-width: 230px;
+      }
+      .cbar {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin: 7px 0;
+      }
+      .cbar b {
+        width: 36px;
+      }
+      .toast {
+        position: sticky;
+        bottom: 14px;
+        margin: 10px 0 0;
+        background: var(--panel);
+        border: 1px solid var(--edge);
+        border-radius: 10px;
+        padding: 10px 16px;
+        box-shadow: 0 10px 26px rgba(0, 0, 0, 0.35);
+        display: inline-flex;
+        gap: 14px;
+        align-items: center;
+      }
+      .newtag {
+        display: inline-block;
+        font-size: 10px;
+        letter-spacing: 0.1em;
+        background: var(--pipe);
+        color: #1b2640;
+        border-radius: 4px;
+        padding: 1px 6px;
+        margin-left: 6px;
+        vertical-align: 2px;
+      }
+      .callout {
+        margin: 0 0 14px;
+        padding: 9px 14px;
+        border-left: 3px solid var(--pipe);
+        background: var(--box);
+        border-radius: 6px;
+        color: var(--muted);
+        max-width: 900px;
+      }
+      .unl {
+        font-size: 14px;
+        color: var(--warn);
+      }
+    </style>
+  </head>
+  <body data-theme="dark">
+    <div class="sfnav">
+      <span class="app"><b>PIPE</b>LINE</span>
+      <span class="tab on">Pipeline</span>
+      <span class="tab">Opportunities &amp; Risks</span>
+      <span class="tab">Accounts</span>
+      <span class="sp"></span>
+      <button type="button" class="pill" id="fullbtn">Full screen</button>
+    </div>
+
+    <details class="about" open>
+      <summary>ABOUT THIS MOCKUP</summary>
+      <p>
+        <b>Version 1, invented data only.</b> It shows the
+        <b>Campaign view</b> Robert described on 2026-11-06: the extra screen
+        Pipeline gets when a campaign is chosen in Change selection. The
+        campaign is invented (<i>Singapore Shoulder Symposium SG-MY-TH</i>,
+        Extremities, 50 surgeons); the real screen reads it from Salesforce.
+      </p>
+      <ul>
+        <li>
+          <b>Try the toggle:</b> in the middle of the top bar press
+          <b>Pipeline</b> and <b>Campaign</b>. The Pipeline screen slides off to
+          the right and the Campaign screen comes in, and back again the other
+          way. Only the row of Opportunities / Risks / Rosa / Open / Closed /
+          Team stays still.
+        </li>
+        <li>
+          <b>The Campaign screen:</b> tiles at the top (surgeons, with a deal,
+          no deal yet, deals, value per currency), then how the surgeon ratings
+          split between those with and without a deal, where the deals are up
+          to, and each country, then the list of every surgeon in the campaign
+          with their deals.
+        </li>
+        <li>
+          <b>Find the gaps:</b> press <b>No deal yet</b> above the list. For a
+          surgeon who is not in the campaign you can <b>Remove</b> (take the
+          surgeon out of the campaign, with an Undo). Two of them already have a
+          deal that was not linked: press <b>Link it</b>.
+        </li>
+        <li>
+          <b>The Country column on the Pipeline screen:</b> switch
+          <b>Campaign chosen</b> to “No” below. The Country column disappears
+          because the team is all in one country, and comes back when the
+          selection spans several.
+        </li>
+        <li>
+          Click any deal row: in the real screen it opens the deal flyout (not
+          drawn here). Light and dark both work.
+        </li>
+      </ul>
+      <p class="hint">
+        My additions, for Robert to confirm: a <b>Sales rep</b> column (who to
+        chase), the value shown <b>per currency</b>
+        (SGD, MYR and THB are never added together), and the “Link it” shortcut.
+        The first 20 surgeons are shown; “Show all” lists every one. The deal
+        list on the Pipeline screen is simplified here.
+      </p>
+    </details>
+
+    <div class="tools">
+      <span class="lab">Campaign chosen</span>
+      <button type="button" class="pill on" data-camp="yes">Yes</button>
+      <button type="button" class="pill" data-camp="no">No</button>
+      <span class="lab">Theme</span>
+      <button type="button" class="pill on" data-theme-btn="dark">Dark</button>
+      <button type="button" class="pill" data-theme-btn="light">Light</button>
+    </div>
+    <div class="mocknote" id="mocknote" hidden></div>
+
+    <div class="app">
+      <header class="top">
+        <button
+          type="button"
+          class="icb"
+          aria-label="Your settings"
+          data-act="cog"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            width="22"
+            height="22"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <circle cx="12" cy="12" r="3.2"></circle>
+            <path
+              d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M18.7 5.3l-2.1 2.1M7.4 16.6l-2.1 2.1"
+            ></path>
+          </svg>
+        </button>
+        <span class="brand"><b>PIPE</b>LINE</span>
+        <span class="ver2">v0.61 mockup · As at 6 Nov 2026, 9:05 am</span>
+        <div class="viewtoggle" id="viewtoggle"></div>
+        <span class="sp"></span>
+        <select class="fsel">
+          <option>My filters…</option>
+          <option>Shoulder symposium follow-up</option>
+        </select>
+        <button type="button" class="btn sec" data-act="change">
+          Change selection ⌄
+        </button>
+        <button
+          type="button"
+          class="icb"
+          aria-label="Full screen"
+          data-act="full"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            width="22"
+            height="22"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"></path>
+          </svg>
+        </button>
+      </header>
+      <div class="bar" id="bar"></div>
+      <div class="view" id="view">
+        <div class="track" id="track">
+          <section class="pane" id="pane-camp"></section>
+          <section class="pane" id="pane-pipe"></section>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      /* ---------- invented data: a campaign of 50 surgeons ---------- */
+      var seed = 11;
+      function rnd() {
+        seed = (seed * 1664525 + 1013904223) % 4294967296;
+        return seed / 4294967296;
+      }
+      function pick(a) {
+        return a[Math.floor(rnd() * a.length)];
+      }
+      var FIRST = [
+        "Wei Ming",
+        "Priya",
+        "Jia Hao",
+        "Siti",
+        "Somchai",
+        "Ananya",
+        "Michael",
+        "Kavitha",
+        "Rajesh",
+        "Hui Min",
+        "Arun",
+        "Nurul",
+        "Prasit",
+        "Mei Ling",
+        "Daniel",
+        "Farah",
+        "Kittipong",
+        "Li Wei",
+        "Suresh",
+        "Aisha",
+        "Thanawat",
+        "Grace",
+        "Hafiz",
+        "Yvonne",
+        "Chaiwat"
+      ];
+      var LAST = [
+        "Lim",
+        "Tan",
+        "Nair",
+        "Chen",
+        "Abdullah",
+        "Prasert",
+        "Chaiyasit",
+        "Raman",
+        "Kumar",
+        "Wong",
+        "Ong",
+        "Rahman",
+        "Wattana",
+        "Menon",
+        "Goh",
+        "Ibrahim",
+        "Suwan",
+        "Teo",
+        "Ng",
+        "Pillai",
+        "Lee",
+        "Sharma",
+        "Yusof"
+      ];
+      var REPS = {
+        SG: ["Daniel Ong", "Priscilla Lau"],
+        MY: ["Hafiz Rahman", "Lim Mei Ling"],
+        TH: ["Aroon Wattana", "Nattaya Sook"]
+      };
+      var CUR = {
+        SG: { sym: "S$", code: "SGD", lo: 40000, hi: 320000 },
+        MY: { sym: "RM", code: "MYR", lo: 120000, hi: 900000 },
+        TH: { sym: "฿", code: "THB", lo: 1000000, hi: 8000000 }
+      };
+      var BRANDS = ["Comprehensive", "Sidus", "Identity", "Other"];
+      var STAGES = ["Plan", "Action", "Commit", "1st Case", "5th Case"];
+      var QUARTERS = ["Q4 2026", "Q1 2027", "Q2 2027", "Q3 2027"];
+      var HOSP = {
+        SG: [
+          "Singapore General Hospital",
+          "Mount Elizabeth Hospital",
+          "Raffles Hospital",
+          "Tan Tock Seng Hospital"
+        ],
+        MY: [
+          "Prince Court Medical Centre",
+          "Sunway Medical Centre",
+          "Gleneagles KL"
+        ],
+        TH: [
+          "Bangkok Hospital",
+          "Samitivej Sukhumvit",
+          "Bumrungrad International"
+        ]
+      };
+      var RATINGS = ["platinum", "gold", "silver", "bronze", "none"];
+      var RLAB = {
+        platinum: "Platinum",
+        gold: "Gold",
+        silver: "Silver",
+        bronze: "Bronze",
+        none: "Unrated"
+      };
+      var ctry = [];
+      for (var c = 0; c < 22; c++) ctry.push("SG");
+      for (c = 0; c < 16; c++) ctry.push("MY");
+      for (c = 0; c < 12; c++) ctry.push("TH");
+      var rat = [];
+      [
+        ["platinum", 6],
+        ["gold", 12],
+        ["silver", 15],
+        ["bronze", 12],
+        ["none", 5]
+      ].forEach(function (p) {
+        for (var k = 0; k < p[1]; k++) rat.push(p[0]);
+      });
+      function shuffle(a) {
+        for (var i = a.length - 1; i > 0; i--) {
+          var j = Math.floor(rnd() * (i + 1));
+          var t = a[i];
+          a[i] = a[j];
+          a[j] = t;
+        }
+        return a;
+      }
+      shuffle(ctry);
+      shuffle(rat);
+      var used = {};
+      var SURG = [];
+      for (var i = 0; i < 50; i++) {
+        var nm;
+        do {
+          nm = "Dr " + pick(FIRST) + " " + pick(LAST);
+        } while (used[nm]);
+        used[nm] = 1;
+        SURG.push({
+          id: i,
+          name: nm,
+          country: ctry[i],
+          rating: rat[i],
+          deals: [],
+          unlinked: null
+        });
+      }
+      function makeDeal(sg) {
+        var cu = CUR[sg.country];
+        return {
+          kind: "opp",
+          rep: pick(REPS[sg.country]),
+          repCountry: sg.country,
+          hosp: pick(HOSP[sg.country]),
+          brand: pick(BRANDS),
+          stage: pick(STAGES),
+          value: Math.round((cu.lo + rnd() * (cu.hi - cu.lo)) / 1000) * 1000,
+          quarter: pick(QUARTERS),
+          posted: Math.floor(rnd() * 130),
+          moved: Math.floor(rnd() * 180)
+        };
+      }
+      /* ten surgeons with no deal: one Platinum and three Gold among them */
+      var noDeal = [];
+      function take(r, n) {
+        SURG.forEach(function (s) {
+          if (s.rating === r && n > 0 && noDeal.indexOf(s.id) < 0) {
+            noDeal.push(s.id);
+            n--;
+          }
+        });
+      }
+      take("platinum", 1);
+      take("gold", 3);
+      take("silver", 3);
+      take("bronze", 2);
+      take("none", 1);
+      SURG.forEach(function (s) {
+        if (noDeal.indexOf(s.id) < 0) s.deals.push(makeDeal(s));
+      });
+      SURG.filter(function (s) {
+        return s.deals.length;
+      })
+        .slice(3, 7)
+        .forEach(function (s) {
+          s.deals.push(makeDeal(s));
+        });
+      noDeal.slice(0, 2).forEach(function (id) {
+        var s = SURG[id];
+        var d = makeDeal(s);
+        d.stage = "Plan";
+        d.unlinkedNote = true;
+        s.unlinked = d;
+      });
+      SURG.sort(function (a, b) {
+        return a.name < b.name ? -1 : 1;
+      });
+
+      var S = {
+        theme: "dark",
+        camp: true,
+        view: "camp",
+        kinds: { opp: true, risk: false, rosa: false },
+        filter: "all",
+        all: false,
+        removed: {},
+        last: null,
+        toast: ""
+      };
+
+      /* ---------- helpers ---------- */
+      function esc(s) {
+        return String(s).replace(/[&<>"]/g, function (c) {
+          return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
+        });
+      }
+      function money(country, n) {
+        var cu = CUR[country];
+        return (
+          cu.sym +
+          (n >= 1000000
+            ? (n / 1000000).toFixed(2) + "m"
+            : Math.round(n / 1000) + "k")
+        );
+      }
+      function ageCls(d) {
+        return d > 90 ? "r" : d >= 30 ? "a" : "g";
+      }
+      function age(d) {
+        return '<span class="age ' + ageCls(d) + '">' + d + " d</span>";
+      }
+      function rate(r) {
+        return '<span class="rate r-' + r + '"><i></i>' + RLAB[r] + "</span>";
+      }
+      function visDeals(s) {
+        return s.deals.filter(function (d) {
+          return S.kinds[d.kind];
+        });
+      }
+      function members() {
+        return SURG.filter(function (s) {
+          return !S.removed[s.id];
+        });
+      }
+      function allDeals() {
+        var out = [];
+        members().forEach(function (s) {
+          visDeals(s).forEach(function (d) {
+            out.push({ s: s, d: d });
+          });
+        });
+        return out;
+      }
+
+      /* ---------- the bar (stays put in both views) ---------- */
+      function barHtml() {
+        var k = S.kinds;
+        function kb(key, label) {
+          return (
+            '<button type="button" class="kind ' +
+            (k[key] ? "on" : "") +
+            '" data-act="kind" data-k="' +
+            key +
+            '">' +
+            label +
+            "<i></i></button>"
+          );
+        }
+        return (
+          kb("opp", "Opportunities") +
+          kb("risk", "Risks") +
+          kb("rosa", "Rosa") +
+          '<span class="seg"><span class="on">Open</span><span>Closed</span><span>Both</span><span>Custom</span></span>' +
+          '<span class="chipb">Team Harbour (Jordan Blake) + below</span>' +
+          (S.camp
+            ? '<span class="chipb camp">Campaign: Singapore Shoulder Symposium SG-MY-TH</span>'
+            : "")
+        );
+      }
+      function toggleHtml() {
+        return (
+          '<button type="button" ' +
+          (S.camp
+            ? ""
+            : 'disabled title="Choose a campaign in Change selection to use this view"') +
+          ' class="' +
+          (S.view === "camp" && S.camp ? "on" : "") +
+          '" data-view="camp">Campaign</button><button type="button" class="' +
+          (S.view === "pipe" || !S.camp ? "on" : "") +
+          '" data-view="pipe">Pipeline</button>'
+        );
+      }
+
+      /* ---------- the Campaign pane ---------- */
+      function campPane() {
+        var ms = members();
+        var deals = allDeals();
+        var withDeal = ms.filter(function (s) {
+          return visDeals(s).length;
+        });
+        var none = ms.length - withDeal.length;
+        var h = '<div class="tiles">';
+        h +=
+          '<div class="tile"><span>Surgeons in the campaign</span><b>' +
+          ms.length +
+          "</b></div>";
+        h +=
+          '<div class="tile"><span>With a deal</span><b>' +
+          withDeal.length +
+          "</b><em>" +
+          (ms.length ? Math.round((withDeal.length / ms.length) * 100) : 0) +
+          "% of the surgeons</em></div>";
+        h +=
+          '<div class="tile gap"><span>No deal yet</span><b>' +
+          none +
+          "</b><em>to chase or remove</em></div>";
+        h +=
+          '<div class="tile"><span>Deals</span><b>' +
+          deals.length +
+          "</b><em>a surgeon can have more than one</em></div>";
+        var tot = {};
+        deals.forEach(function (x) {
+          tot[x.d.repCountry] = (tot[x.d.repCountry] || 0) + x.d.value;
+        });
+        h +=
+          '<div class="tile"><span>Expected annual value</span>' +
+          ["SG", "MY", "TH"]
+            .filter(function (c) {
+              return tot[c];
+            })
+            .map(function (c) {
+              return (
+                '<div class="cur">' +
+                money(c, tot[c]) +
+                "<i>" +
+                CUR[c].code +
+                "</i></div>"
+              );
+            })
+            .join("") +
+          (deals.length ? "" : "<b>0</b>") +
+          "</div>";
+        h += "</div>";
+
+        /* graphs */
+        h += '<div class="cards">';
+        h +=
+          '<div class="card"><h2>Extremities rating <small>surgeons, with and without a deal</small></h2>';
+        var max = 1;
+        RATINGS.forEach(function (r) {
+          max = Math.max(
+            max,
+            ms.filter(function (s) {
+              return s.rating === r;
+            }).length
+          );
+        });
+        RATINGS.forEach(function (r) {
+          var all = ms.filter(function (s) {
+            return s.rating === r;
+          });
+          var w = all.filter(function (s) {
+            return visDeals(s).length;
+          }).length;
+          h +=
+            '<div class="ratebar"><span class="rl">' +
+            rate(r) +
+            '</span><span class="bar2" style="width:' +
+            (all.length / max) * 300 +
+            'px"><i class="w" style="width:' +
+            (all.length ? (w / all.length) * 100 : 0) +
+            '%"></i><i class="n" style="width:' +
+            (all.length ? ((all.length - w) / all.length) * 100 : 0) +
+            '%"></i></span><span class="num2">' +
+            all.length +
+            " · " +
+            w +
+            " with a deal</span></div>";
+        });
+        h +=
+          '<div class="legend"><span><i style="background:var(--indigo)"></i>With a deal</span><span><i style="background:var(--warn)"></i>No deal yet</span></div></div>';
+
+        var sc = {};
+        deals.forEach(function (x) {
+          sc[x.d.stage] = (sc[x.d.stage] || 0) + 1;
+        });
+        h +=
+          '<div class="card"><h2>Where the deals are up to</h2><div class="stagechips">' +
+          STAGES.map(function (st) {
+            return (
+              '<div class="sc"><span>' +
+              st +
+              "</span><b>" +
+              (sc[st] || 0) +
+              "</b></div>"
+            );
+          }).join("") +
+          "</div></div>";
+
+        h +=
+          '<div class="card"><h2>By country <small>surgeon\'s own country</small></h2>';
+        ["SG", "MY", "TH"].forEach(function (c) {
+          var all = ms.filter(function (s) {
+            return s.country === c;
+          });
+          var w = all.filter(function (s) {
+            return visDeals(s).length;
+          }).length;
+          h +=
+            '<div class="cbar"><b>' +
+            c +
+            '</b><span class="bar2" style="display:flex;height:22px;border-radius:6px;overflow:hidden;background:var(--box);width:' +
+            all.length * 11 +
+            'px"><i style="display:block;background:var(--indigo);width:' +
+            (all.length ? (w / all.length) * 100 : 0) +
+            '%"></i><i style="display:block;background:var(--warn);width:' +
+            (all.length ? ((all.length - w) / all.length) * 100 : 0) +
+            '%"></i></span><span class="num2" style="color:var(--muted)">' +
+            all.length +
+            " surgeons · " +
+            w +
+            " with a deal</span></div>";
+        });
+        h += "</div></div>";
+
+        /* list */
+        var list = ms.filter(function (s) {
+          var has = visDeals(s).length > 0;
+          return S.filter === "all" || (S.filter === "with" ? has : !has);
+        });
+        var shown = S.all ? list : list.slice(0, 20);
+        h +=
+          '<div class="card"><h2>Campaign members <small>' +
+          list.length +
+          " surgeons</small></h2>";
+        h +=
+          '<div class="row" style="margin-bottom:12px"><span class="segf"><button type="button" class="' +
+          (S.filter === "all" ? "on" : "") +
+          '" data-filter="all">All ' +
+          ms.length +
+          '</button><button type="button" class="' +
+          (S.filter === "with" ? "on" : "") +
+          '" data-filter="with">With a deal ' +
+          withDeal.length +
+          '</button><button type="button" class="' +
+          (S.filter === "none" ? "on" : "") +
+          '" data-filter="none">No deal yet ' +
+          none +
+          "</button></span>" +
+          '<span class="muted">Whichever deals you see here are the ones linked to this campaign. Sorted by surgeon name.</span></div>';
+        h +=
+          '<div class="scroll"><table><tr><th>Surgeon</th><th>Country</th><th>Extremities rating</th><th>Sales rep</th><th>Brand</th><th>Stage</th><th class="num">Revenue / year</th><th>Close quarter</th><th>Last posted</th><th>Last stage move</th><th></th></tr>';
+        shown.forEach(function (s) {
+          var dv = visDeals(s);
+          if (!dv.length) {
+            h +=
+              '<tr class="first nodeal"><td class="grp"><b>' +
+              esc(s.name) +
+              "</b>" +
+              (s.unlinked
+                ? '<small class="unl">Has an open Extremities deal that is not in this campaign (' +
+                  esc(s.unlinked.rep) +
+                  ", " +
+                  s.unlinked.stage +
+                  ")</small>"
+                : "") +
+              "</td><td>" +
+              s.country +
+              "</td><td>" +
+              rate(s.rating) +
+              '</td><td colspan="6"><span class="tag warn">No deal yet</span></td><td>' +
+              (s.unlinked
+                ? '<button type="button" class="btn ghost" data-act="link" data-id="' +
+                  s.id +
+                  '">Link it</button>'
+                : "") +
+              '<button type="button" class="btn danger" data-act="remove" title="Remove this surgeon from the campaign" data-id="' +
+              s.id +
+              '">Remove</button></td></tr>';
+            return;
+          }
+          dv.forEach(function (d, i) {
+            h +=
+              '<tr class="click ' +
+              (i === 0 ? "first" : "") +
+              '" data-act="deal">' +
+              (i === 0
+                ? '<td class="grp" rowspan="' +
+                  dv.length +
+                  '"><b>' +
+                  esc(s.name) +
+                  "</b><small>" +
+                  dv.length +
+                  " deal" +
+                  (dv.length > 1 ? "s" : "") +
+                  '</small></td><td rowspan="' +
+                  dv.length +
+                  '">' +
+                  s.country +
+                  '</td><td rowspan="' +
+                  dv.length +
+                  '">' +
+                  rate(s.rating) +
+                  "</td>"
+                : "") +
+              "<td>" +
+              esc(d.rep) +
+              "</td><td>" +
+              d.brand +
+              "</td><td>" +
+              d.stage +
+              '</td><td class="num">' +
+              money(d.repCountry, d.value) +
+              "</td><td>" +
+              d.quarter +
+              "</td><td>" +
+              age(d.posted) +
+              "</td><td>" +
+              age(d.moved) +
+              "</td><td></td></tr>";
+          });
+        });
+        h += "</table></div>";
+        if (list.length > 20)
+          h +=
+            '<div style="margin-top:12px"><button type="button" class="btn sec" data-act="showall">' +
+            (S.all ? "Show the first 20" : "Show all " + list.length) +
+            "</button></div>";
+        h += "</div>";
+        if (S.toast)
+          h +=
+            '<div class="toast"><span>' +
+            esc(S.toast) +
+            '</span><button type="button" class="btn ghost" data-act="undo">Undo</button></div>';
+        return h;
+      }
+
+      /* ---------- the Pipeline pane (the screen as it is, plus the Country column when it is needed) ---------- */
+      function pipePane() {
+        var rows = allDeals();
+        if (!S.camp)
+          rows = rows.filter(function (x) {
+            return x.d.repCountry === "SG";
+          });
+        var countries = {};
+        rows.forEach(function (x) {
+          countries[x.d.repCountry] = 1;
+        });
+        var multi = Object.keys(countries).length > 1;
+        var byRep = {};
+        rows.forEach(function (x) {
+          (byRep[x.d.rep] = byRep[x.d.rep] || []).push(x);
+        });
+        var reps = Object.keys(byRep).sort();
+        var tot = {};
+        rows.forEach(function (x) {
+          tot[x.d.repCountry] = (tot[x.d.repCountry] || 0) + x.d.value;
+        });
+        var h =
+          '<div class="card" style="width:fit-content"><h2>Opportunities <small>' +
+          rows.length +
+          ' deals</small></h2><div class="tiles" style="margin:0"><div class="tile"><span>Open deals</span><b>' +
+          rows.length +
+          '</b></div><div class="tile"><span>Revenue</span>' +
+          ["SG", "MY", "TH"]
+            .filter(function (c) {
+              return tot[c];
+            })
+            .map(function (c) {
+              return (
+                '<div class="cur">' +
+                money(c, tot[c]) +
+                "<i>" +
+                CUR[c].code +
+                "</i></div>"
+              );
+            })
+            .join("") +
+          "</div></div></div>";
+        if (multi)
+          h +=
+            '<div class="callout"><b>New rule:</b> this selection spans ' +
+            Object.keys(countries).sort().join(", ") +
+            ", so each list gets a <b>Country</b> column (the country of the sales rep who owns the deal). With one country it is left out.</div>";
+        h +=
+          '<div class="card"><h2>Opportunities <small>' +
+          rows.length +
+          '</small></h2><div class="scroll"><table><tr><th>Sales rep</th>' +
+          (multi ? '<th>Country<span class="newtag">NEW</span></th>' : "") +
+          '<th>Surgeon</th><th>Hospital</th><th>Brand</th><th>Stage</th><th class="num">Revenue / year</th><th>Close quarter</th><th>Last posted</th><th>Last stage move</th></tr>';
+        reps.forEach(function (r) {
+          var list = byRep[r];
+          var sum = list.reduce(function (a, x) {
+            return a + x.d.value;
+          }, 0);
+          list.forEach(function (x, i) {
+            h +=
+              '<tr class="click ' +
+              (i === 0 ? "first" : "") +
+              '" data-act="deal">' +
+              (i === 0
+                ? '<td class="grp" rowspan="' +
+                  list.length +
+                  '"><b>' +
+                  esc(r) +
+                  "</b><small>" +
+                  list.length +
+                  " deal" +
+                  (list.length > 1 ? "s" : "") +
+                  " · " +
+                  money(list[0].d.repCountry, sum) +
+                  "</small></td>"
+                : "") +
+              (multi ? "<td>" + x.d.repCountry + "</td>" : "") +
+              "<td>" +
+              esc(x.s.name) +
+              "</td><td>" +
+              esc(x.d.hosp) +
+              "</td><td>" +
+              x.d.brand +
+              "</td><td>" +
+              x.d.stage +
+              '</td><td class="num">' +
+              money(x.d.repCountry, x.d.value) +
+              "</td><td>" +
+              x.d.quarter +
+              "</td><td>" +
+              age(x.d.posted) +
+              "</td><td>" +
+              age(x.d.moved) +
+              "</td></tr>";
+          });
+        });
+        h += "</table></div></div>";
+        return h;
+      }
+
+      /* ---------- drawing ---------- */
+      function sizeView() {
+        var v = document.getElementById("view");
+        var p = document.getElementById(
+          S.view === "camp" && S.camp ? "pane-camp" : "pane-pipe"
+        );
+        v.style.height = p.offsetHeight + "px";
+      }
+      var NOTES = {
+        camp: "Mockup note: this screen exists only while a campaign is chosen in Change selection. The bar above it stays; everything below changes.",
+        pipe: "Mockup note: the Pipeline screen as it is today (simplified), with the new Country column when the selection spans several countries."
+      };
+      function draw() {
+        if (!S.camp) S.view = "pipe";
+        document.body.setAttribute("data-theme", S.theme);
+        document.getElementById("bar").innerHTML = barHtml();
+        document.getElementById("viewtoggle").innerHTML = toggleHtml();
+        document.getElementById("pane-camp").innerHTML = S.camp
+          ? campPane()
+          : "";
+        document.getElementById("pane-pipe").innerHTML = pipePane();
+        var showCamp = S.view === "camp" && S.camp;
+        document.getElementById("track").style.transform = showCamp
+          ? "translateX(0)"
+          : "translateX(-50%)";
+        document.getElementById("pane-camp").classList.toggle("off", !showCamp);
+        document.getElementById("pane-pipe").classList.toggle("off", showCamp);
+        sizeView();
+        var n = document.getElementById("mocknote");
+        n.textContent =
+          NOTES[showCamp ? "camp" : "pipe"] +
+          (S.camp
+            ? ""
+            : " No campaign is chosen, so the Campaign side of the toggle is switched off.");
+        n.hidden = false;
+        Array.prototype.forEach.call(
+          document.querySelectorAll("[data-camp]"),
+          function (b) {
+            b.classList.toggle("on", (b.dataset.camp === "yes") === S.camp);
+          }
+        );
+        Array.prototype.forEach.call(
+          document.querySelectorAll("[data-theme-btn]"),
+          function (b) {
+            b.classList.toggle("on", b.dataset.themeBtn === S.theme);
+          }
+        );
+      }
+      document.addEventListener("click", function (e) {
+        var t = e.target.closest(
+          "[data-view],[data-camp],[data-theme-btn],[data-filter],[data-act]"
+        );
+        if (!t) return;
+        var d = t.dataset;
+        if (d.themeBtn) S.theme = d.themeBtn;
+        else if (d.camp) {
+          S.camp = d.camp === "yes";
+          if (S.camp && S.view !== "pipe") S.view = "camp";
+        } else if (d.view) S.view = d.view;
+        else if (d.filter) {
+          S.filter = d.filter;
+          S.all = false;
+        } else if (d.act === "kind") S.kinds[d.k] = !S.kinds[d.k];
+        else if (d.act === "showall") S.all = !S.all;
+        else if (d.act === "remove") {
+          var s =
+            SURG[
+              SURG.findIndex(function (x) {
+                return x.id === +d.id;
+              })
+            ];
+          S.removed[s.id] = 1;
+          S.last = s.id;
+          S.toast = "Removed " + s.name + " from the campaign.";
+        } else if (d.act === "undo") {
+          if (S.last != null) delete S.removed[S.last];
+          S.last = null;
+          S.toast = "";
+        } else if (d.act === "link") {
+          var sg =
+            SURG[
+              SURG.findIndex(function (x) {
+                return x.id === +d.id;
+              })
+            ];
+          sg.deals.push(sg.unlinked);
+          sg.unlinked = null;
+          S.toast = "Linked " + sg.name + "'s deal to the campaign.";
+          S.last = null;
+        } else if (d.act === "deal") {
+          document.getElementById("mocknote").textContent =
+            "Mockup note: in the real screen this opens the deal flyout, as it does today.";
+          return;
+        } else if (d.act === "full" || d.act === "cog" || d.act === "change") {
+          document.getElementById("mocknote").textContent =
+            d.act === "full"
+              ? "Mockup note: opens Pipeline in a new full-screen tab without the Salesforce navigation."
+              : d.act === "cog"
+                ? "Mockup note: opens the settings flyout from the left, as it does today."
+                : "Mockup note: Change selection opens as it does today; the Campaign choice sits in it (it replaces the Event choice).";
+          return;
+        }
+        draw();
+      });
+      document.getElementById("fullbtn").addEventListener("click", function () {
+        document.getElementById("mocknote").textContent =
+          "Mockup note: in Salesforce this opens Pipeline in a new full-screen tab without the Salesforce navigation.";
+      });
+      window.addEventListener("resize", sizeView);
+      location.hash
+        .slice(1)
+        .split("&")
+        .forEach(function (p) {
+          var kv = p.split("=");
+          if (kv[0] === "view") S.view = kv[1];
+          if (kv[0] === "theme") S.theme = kv[1];
+          if (kv[0] === "camp") S.camp = kv[1] !== "no";
+          if (kv[0] === "filter") S.filter = kv[1];
+        });
+      draw();
+    </script>
+  </body>
+</html>
