@@ -14,5 +14,6 @@
     <label>Pipeline</label>
     <navType>Standard</navType>
     <tabs>Pipeline_Home</tabs>
+    <tabs>Pipeline_Campaigns</tabs>
     <uiType>Lightning</uiType>
 </CustomApplication>
