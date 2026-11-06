@@ -982,3 +982,157 @@ textarea.in {
 textarea.in::placeholder {
   color: var(--muted);
 }
+
+/* the one-pill look (Robert, 2026-11-07, as in My Case Plan): colours for the slider component, which reads them from here */
+.root {
+  --seg-track: #243452;
+  --seg-line: #3a4e75;
+  --seg-lab: #1a2740;
+  --seg-optx: #a9b8d0;
+  --seg-indigo: #6366f1;
+  --seg-shadow: rgba(8, 12, 40, 0.55);
+  --seg-muted: #9fb0cc;
+}
+.root[data-theme="light"] {
+  --seg-track: #e3e8f4;
+  --seg-line: #c4cde2;
+  --seg-lab: #ffffff;
+  --seg-optx: #5d6b85;
+  --seg-indigo: #4f46e5;
+  --seg-shadow: rgba(79, 70, 229, 0.35);
+  --seg-muted: #5d6b85;
+}
+.fwrap {
+  display: flex;
+  align-items: stretch;
+  width: fit-content;
+  flex: none;
+  border-radius: 999px;
+  background: var(--seg-lab);
+  border: 1px solid var(--seg-line);
+}
+.fslbl {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 16px 0 18px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--seg-muted);
+  white-space: nowrap;
+}
+.ffield {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin: -1px -1px -1px 0;
+  padding: 3px;
+  border-radius: 999px;
+  background: var(--seg-track);
+  border: 1px solid var(--seg-line);
+}
+.ffield:focus-within {
+  box-shadow: 0 0 0 2px var(--seg-indigo);
+}
+.ffield select {
+  appearance: none;
+  height: 28px;
+  min-width: 120px;
+  padding: 0 32px 0 14px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  outline: none;
+}
+.ffield select option {
+  text-transform: none;
+  letter-spacing: 0;
+  color: #1b2640;
+}
+.ffield:has(select)::after {
+  content: "";
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  width: 7px;
+  height: 7px;
+  border-right: 2px solid var(--seg-indigo);
+  border-bottom: 2px solid var(--seg-indigo);
+  transform: translateY(-70%) rotate(45deg);
+  pointer-events: none;
+}
+.fsrch .ffield {
+  width: 230px;
+}
+.fin {
+  flex: 1;
+  min-width: 0;
+  height: 28px;
+  padding: 0 8px 0 16px;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+  outline: none;
+}
+.fin::placeholder {
+  color: var(--seg-optx);
+  opacity: 0.85;
+}
+.fclear {
+  margin-right: 2px;
+}
+/* the delete gate sits just under the top bar and stays there while the page scrolls */
+.askbar {
+  position: sticky;
+  top: var(--topbar, 55px);
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 12px;
+  padding: 10px 16px;
+  background: #4a1d1d;
+  color: #ffe0e0;
+  border: 2px solid var(--bad);
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+}
+.root[data-theme="light"] .askbar {
+  background: #fde2e2;
+  color: #5a1111;
+}
+.askbar .sp {
+  flex: 1 1 0;
+}
+.askbar .btn {
+  flex: none;
+}
+
+/* Activate is green and Edit is the primary blue; red stays for destructive actions (Robert, 2026-11-07) */
+.btn.good {
+  background: #0b8a63;
+  border-color: #0b8a63;
+  color: #fff;
+}
+/* the Active and Inactive marks are filled, green and red, so the state is seen at once */
+.tag.fill {
+  color: #fff;
+  border-color: transparent;
+  padding: 2px 12px;
+}
+.tag.fill.good {
+  background: #0b8a63;
+}
+.tag.fill.bad {
+  background: #dc2626;
+}

@@ -9,6 +9,7 @@ import addMember from "@salesforce/apex/PipelineCampaignController.addMember";
 import matchNames from "@salesforce/apex/PipelineCampaignController.matchNames";
 import addMembers from "@salesforce/apex/PipelineCampaignController.addMembers";
 import removeMembers from "@salesforce/apex/PipelineCampaignController.removeMembers";
+import deleteCampaign from "@salesforce/apex/PipelineCampaignController.deleteCampaign";
 
 jest.mock(
   "@salesforce/apex/PipelineCampaignController.getContext",
@@ -57,6 +58,11 @@ jest.mock(
 );
 jest.mock(
   "@salesforce/apex/PipelineCampaignController.addMembers",
+  () => ({ default: jest.fn() }),
+  { virtual: true }
+);
+jest.mock(
+  "@salesforce/apex/PipelineCampaignController.deleteCampaign",
   () => ({ default: jest.fn() }),
   { virtual: true }
 );
@@ -156,14 +162,64 @@ describe("c-pipeline-campaigns", () => {
     expect(q(el, "tr.click")).not.toBeNull();
   });
 
+  it("narrows the list by manager, country and portfolio and clears the filters", async () => {
+    const el = make();
+    await flush();
+    expect(text(el)).toContain("1 campaign");
+    const pick = async (label, value) => {
+      const sel = q(el, `select[aria-label="${label}"]`);
+      sel.value = value;
+      sel.dispatchEvent(new CustomEvent("change"));
+      await flush();
+    };
+    await pick("Country", "AU"); // the campaign covers SG and MY only
+    expect(text(el)).toContain("0 of 1 campaigns");
+    expect(text(el)).not.toContain(CAMP.name);
+    click(el, "Clear filters");
+    await flush();
+    expect(text(el)).toContain(CAMP.name);
+    await pick("Country", "SG");
+    await pick("Portfolio", "Extremities");
+    await pick("Manager", "005A");
+    expect(text(el)).toContain(CAMP.name);
+    await pick("Portfolio", "Hip");
+    expect(text(el)).not.toContain(CAMP.name);
+  });
+
   it("hides inactive campaigns until asked", async () => {
     listCampaigns.mockResolvedValue([{ ...CAMP, active: false }]);
     const el = make();
     await flush();
     expect(text(el)).toContain("No campaigns to show");
-    q(el, ".chip").click();
+    q(el, "c-pipeline-segmented.showseg").dispatchEvent(
+      new CustomEvent("change", { detail: { value: "all" } })
+    );
     await flush();
     expect(text(el)).toContain("Inactive");
+  });
+
+  it("asks before deleting a campaign, then deletes it and returns to the list", async () => {
+    deleteCampaign.mockResolvedValue(undefined);
+    const el = make();
+    await flush();
+    q(el, "tr.click").click();
+    await flush();
+    click(el, "Delete campaign");
+    await flush();
+    expect(deleteCampaign).not.toHaveBeenCalled();
+    expect(text(el)).toContain("Delete Shoulder Symposium SG-MY for good?");
+    expect(text(el)).toContain("2 members and 1 linked deal");
+    click(el, "Keep it");
+    await flush();
+    expect(text(el)).not.toContain("for good?");
+    click(el, "Delete campaign");
+    await flush();
+    listCampaigns.mockResolvedValue([]);
+    click(el, "Yes, delete it");
+    await flush();
+    expect(deleteCampaign).toHaveBeenCalledWith({ campaignId: "a01" });
+    expect(text(el)).toContain("Deleted Shoulder Symposium SG-MY.");
+    expect(text(el)).toContain("No campaigns to show");
   });
 
   it("builds the campaign name on the form and saves the form", async () => {
@@ -327,9 +383,9 @@ describe("c-pipeline-campaigns", () => {
     let el = make();
     await flush();
     expect(q(el, ".root").dataset.theme).toBe("light");
-    [...el.shadowRoot.querySelectorAll(".seg button")]
-      .find((b) => b.textContent.trim() === "Dark")
-      .click();
+    q(el, "c-pipeline-segmented.themeseg").dispatchEvent(
+      new CustomEvent("change", { detail: { value: "dark" } })
+    );
     await flush();
     expect(q(el, ".root").dataset.theme).toBe("dark");
     document.body.removeChild(el);
@@ -352,7 +408,7 @@ describe("c-pipeline-campaigns", () => {
     q(el, ".crumblink").click();
     await flush();
     expect(q(el, ".trail")).toBeNull();
-    expect(text(el)).toContain("Show inactive");
+    expect(q(el, "c-pipeline-segmented.showseg")).not.toBeNull();
   });
 
   it("sorts a table by a heading and flips the order on a second click", async () => {

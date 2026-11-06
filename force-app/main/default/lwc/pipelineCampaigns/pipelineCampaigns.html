@@ -21,7 +21,7 @@
         <template lwc:elseif={isDetail}>
           <button
             type="button"
-            class="btn sec"
+            class="btn"
             lwc:if={canManage}
             onclick={handleEdit}
           >
@@ -29,32 +29,30 @@
           </button>
           <button
             type="button"
-            class="btn danger"
+            class={toggleActiveCls}
             lwc:if={canManage}
             onclick={handleToggleActive}
           >
             {toggleActiveText}
           </button>
+          <button
+            type="button"
+            class="btn danger"
+            lwc:if={canManage}
+            onclick={handleDelete}
+          >
+            Delete campaign
+          </button>
         </template>
       </div>
-      <span class="seg">
-        <button
-          type="button"
-          class={darkCls}
-          data-theme="dark"
-          onclick={handleTheme}
-        >
-          Dark
-        </button>
-        <button
-          type="button"
-          class={lightCls}
-          data-theme="light"
-          onclick={handleTheme}
-        >
-          Light
-        </button>
-      </span>
+      <c-pipeline-segmented
+        class="themeseg"
+        heading="Theme"
+        label="Theme"
+        options={themeOptions}
+        value={theme}
+        onchange={handleThemePick}
+      ></c-pipeline-segmented>
       <button
         type="button"
         class="icb"
@@ -84,32 +82,88 @@
       <!-- ============ the list ============ -->
       <template lwc:if={isList}>
         <div class="toolrow">
-          <span class="sbox big">
-            <input
-              class="in search"
-              type="text"
-              placeholder="Search campaigns"
-              value={q}
-              oninput={handleQ}
-            />
-            <button
-              type="button"
-              class="xcirc sclear"
-              lwc:if={hasQ}
-              aria-label="Clear"
-              onclick={handleQClear}
-            ></button>
-          </span>
-          <button type="button" class={inactiveCls} onclick={handleInactive}>
-            Show inactive
+          <div class="fwrap fsrch">
+            <span class="fslbl">Search</span>
+            <span class="ffield">
+              <input
+                class="fin"
+                type="text"
+                placeholder="Campaign name"
+                aria-label="Search campaigns"
+                value={q}
+                oninput={handleQ}
+              />
+              <button
+                type="button"
+                class="xcirc fclear"
+                lwc:if={hasQ}
+                aria-label="Clear"
+                onclick={handleQClear}
+              ></button>
+            </span>
+          </div>
+          <div class="fwrap">
+            <span class="fslbl">Manager</span>
+            <span class="ffield">
+              <select aria-label="Manager" onchange={handleFManager}>
+                <template for:each={managerOptions} for:item="o">
+                  <option key={o.value} value={o.value} selected={o.selected}>
+                    {o.label}
+                  </option>
+                </template>
+              </select>
+            </span>
+          </div>
+          <div class="fwrap">
+            <span class="fslbl">Country</span>
+            <span class="ffield">
+              <select aria-label="Country" onchange={handleFCountry}>
+                <template for:each={countryOptions} for:item="o">
+                  <option key={o.value} value={o.value} selected={o.selected}>
+                    {o.label}
+                  </option>
+                </template>
+              </select>
+            </span>
+          </div>
+          <div class="fwrap">
+            <span class="fslbl">Portfolio</span>
+            <span class="ffield">
+              <select aria-label="Portfolio" onchange={handleFPortfolio}>
+                <template for:each={portfolioOptions} for:item="o">
+                  <option key={o.value} value={o.value} selected={o.selected}>
+                    {o.label}
+                  </option>
+                </template>
+              </select>
+            </span>
+          </div>
+          <c-pipeline-segmented
+            class="showseg"
+            heading="Show"
+            label="Show"
+            options={showOptions}
+            value={showValue}
+            onchange={handleShowPick}
+          ></c-pipeline-segmented>
+          <button
+            type="button"
+            class="btn sec"
+            lwc:if={filtersOn}
+            onclick={handleClearFilters}
+          >
+            Clear filters
           </button>
+          <span class="sp"></span>
+          <span class="muted">{listCountText}</span>
         </div>
+        <p class="ok" lwc:if={hasToast}>{toast}</p>
         <p class="note" lwc:if={cannotManage}>
           You can look at the campaigns here. Creating and changing them needs
           the Campaign Manager permission.
         </p>
         <div class="card full tablecard">
-          <div class="tscroll">
+          <div class="tscroll stick">
             <table class="tbl" style={listTableStyle}>
               <colgroup lwc:if={listHasWidths}>
                 <template for:each={listCols} for:item="c">
@@ -294,14 +348,17 @@
                   </div>
                 </div>
               </div>
-              <span class="lab">Active</span>
-              <button
-                type="button"
-                class={activeSwitchCls}
-                onclick={handleActiveSwitch}
-              >
-                <i></i><span>{activeText}</span>
-              </button>
+              <span class="lab">Status</span>
+              <div class="row">
+                <c-pipeline-segmented
+                  heading="Status"
+                  label="Status"
+                  options={statusOptions}
+                  value={statusValue}
+                  onchange={handleStatusPick}
+                ></c-pipeline-segmented>
+                <span class="muted">{activeText}</span>
+              </div>
               <span class="lab">Start and end (optional)</span>
               <div class="row">
                 <input
@@ -338,6 +395,16 @@
 
       <!-- ============ one campaign ============ -->
       <template lwc:elseif={isDetail}>
+        <div class="askbar" lwc:if={deleteAsking}>
+          <span>{deleteAskText}</span>
+          <span class="sp"></span>
+          <button type="button" class="btn sec" onclick={handleDeleteNo}>
+            Keep it
+          </button>
+          <button type="button" class="btn danger" onclick={handleDeleteYes}>
+            Yes, delete it
+          </button>
+        </div>
         <div class="topband">
           <div class="tl">
             <h1 class="head1 trail">
@@ -455,7 +522,7 @@
             </button>
           </div>
           <p class="ok pad" lwc:if={hasToast}>{toast}</p>
-          <div class="tscroll">
+          <div class="tscroll stick">
             <table class="tbl" style={memberTableStyle}>
               <colgroup lwc:if={memberHasWidths}>
                 <template for:each={memberCols} for:item="c">

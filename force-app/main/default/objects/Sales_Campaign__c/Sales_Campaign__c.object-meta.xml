@@ -25,6 +25,6 @@
     <type>Text</type>
   </nameField>
   <pluralLabel>Sales Campaigns</pluralLabel>
-  <sharingModel>Read</sharingModel>
+  <sharingModel>ReadWrite</sharingModel>
   <visibility>Public</visibility>
 </CustomObject>

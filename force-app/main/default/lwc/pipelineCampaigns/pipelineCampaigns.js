@@ -8,6 +8,7 @@ import setActive from "@salesforce/apex/PipelineCampaignController.setActive";
 import searchPeople from "@salesforce/apex/PipelineCampaignController.searchPeople";
 import searchSurgeons from "@salesforce/apex/PipelineCampaignController.searchSurgeons";
 import addMember from "@salesforce/apex/PipelineCampaignController.addMember";
+import deleteCampaign from "@salesforce/apex/PipelineCampaignController.deleteCampaign";
 import removeMembers from "@salesforce/apex/PipelineCampaignController.removeMembers";
 import matchNames from "@salesforce/apex/PipelineCampaignController.matchNames";
 import addMembers from "@salesforce/apex/PipelineCampaignController.addMembers";
@@ -27,7 +28,7 @@ import {
 } from "c/pipelineCampaignModel";
 
 /** Shown on the screen; raise it with each change that goes out. */
-export const CAMPAIGN_VERSION = "0.20";
+export const CAMPAIGN_VERSION = "0.25";
 const THEME_KEY = "pipelineCampaignTheme";
 const WIDTHS_KEY = "pipelineCampaignWidths";
 
@@ -89,6 +90,9 @@ export default class PipelineCampaigns extends LightningElement {
   view = "list"; // list, form or detail
   q = "";
   showInactive = false;
+  fManager = ""; // list filters (Robert, 2026-11-07): a manager's id, a country code, a portfolio; empty means all
+  fCountry = "";
+  fPortfolio = "";
   busyCount = 0;
   error = "";
   detail = null;
@@ -113,6 +117,7 @@ export default class PipelineCampaigns extends LightningElement {
   };
   widths = { list: null, members: null, recon: null }; // null: the table finds its own widths; otherwise {column: pixels}
   live = null;
+  deleteAsking = false; // the campaign screen is asking "are you sure?" before deleting
   removeAsking = false; // the members card is asking "are you sure?" before removing
   leaveAsking = false; // the check screen is asking "leave without adding?"
   leaveThen = null; // what to do if the person confirms they want to leave
@@ -179,11 +184,35 @@ export default class PipelineCampaigns extends LightningElement {
   get version() {
     return "v" + CAMPAIGN_VERSION;
   }
-  get darkCls() {
-    return this.theme === "dark" ? "pill on" : "pill";
+  get themeOptions() {
+    return [
+      { value: "light", label: "Light", icon: "sun" },
+      { value: "dark", label: "Dark", icon: "moon" }
+    ];
   }
-  get lightCls() {
-    return this.theme === "light" ? "pill on" : "pill";
+  get showOptions() {
+    return [
+      { value: "active", label: "Active" },
+      { value: "all", label: "All" }
+    ];
+  }
+  get showValue() {
+    return this.showInactive ? "all" : "active";
+  }
+  handleShowPick(event) {
+    this.showInactive = event.detail.value === "all";
+  }
+  get statusOptions() {
+    return [
+      { value: "active", label: "Active" },
+      { value: "inactive", label: "Inactive" }
+    ];
+  }
+  get statusValue() {
+    return this.form.active ? "active" : "inactive";
+  }
+  handleStatusPick(event) {
+    this.form = { ...this.form, active: event.detail.value === "active" };
   }
   get isList() {
     return this.view === "list";
@@ -210,8 +239,8 @@ export default class PipelineCampaigns extends LightningElement {
     return !!this.ctx && !this.ctx.canManage;
   }
 
-  handleTheme(event) {
-    this.themeChoice = event.currentTarget.dataset.theme;
+  handleThemePick(event) {
+    this.themeChoice = event.detail.value;
     try {
       window.localStorage.setItem(THEME_KEY, this.themeChoice);
     } catch {
@@ -313,7 +342,10 @@ export default class PipelineCampaigns extends LightningElement {
     const keep = this.campaigns.filter(
       (c) =>
         (this.showInactive || c.active) &&
-        (!q || c.name.toLowerCase().includes(q))
+        (!q || c.name.toLowerCase().includes(q)) &&
+        (!this.fManager || c.managerId === this.fManager) &&
+        (!this.fCountry || c.countries.includes(this.fCountry)) &&
+        (!this.fPortfolio || c.portfolios.includes(this.fPortfolio))
     );
     const by = {
       name: (c) => c.name,
@@ -329,15 +361,78 @@ export default class PipelineCampaigns extends LightningElement {
       countriesText: c.countries.join(" "),
       portfoliosText: c.portfolios.join(", "),
       statusText: c.active ? "Active" : "Inactive",
-      statusCls: c.active ? "tag ok" : "tag off",
+      statusCls: c.active ? "tag fill good" : "tag fill bad",
       gap: Math.max(0, c.memberCount - c.dealCount)
     }));
   }
+  /** The choices of a filter dropdown, the first being "all". */
+  filterOptions(all, items, chosen) {
+    return [{ value: "", label: all, selected: !chosen }, ...items].map(
+      (o) => ({ ...o, selected: o.value === chosen })
+    );
+  }
+  get managerOptions() {
+    const me = this.ctx ? this.ctx.userId : "";
+    const seen = new Map();
+    this.campaigns.forEach((c) => {
+      if (c.managerId && !seen.has(c.managerId))
+        seen.set(c.managerId, c.managerName);
+    });
+    const items = [...seen.entries()]
+      .map(([value, label]) => ({
+        value,
+        label: value === me ? "Me: " + label : label
+      }))
+      .sort((a, b) => {
+        if (a.value === me) return -1;
+        if (b.value === me) return 1;
+        return a.label.localeCompare(b.label);
+      });
+    return this.filterOptions("All managers", items, this.fManager);
+  }
+  get countryOptions() {
+    const items = (this.ctx ? this.ctx.countries : []).map((o) => ({
+      value: o.value,
+      label: o.label
+    }));
+    return this.filterOptions("All countries", items, this.fCountry);
+  }
+  get portfolioOptions() {
+    const items = (this.ctx ? this.ctx.portfolios : []).map((o) => ({
+      value: o.value,
+      label: o.label
+    }));
+    return this.filterOptions("All portfolios", items, this.fPortfolio);
+  }
+  get filtersOn() {
+    return !!(this.q || this.fManager || this.fCountry || this.fPortfolio);
+  }
+  get listCountText() {
+    const n = this.listRows.length;
+    const total = this.campaigns.filter(
+      (c) => this.showInactive || c.active
+    ).length;
+    return n === total
+      ? `${n} campaign${n === 1 ? "" : "s"}`
+      : `${n} of ${total} campaigns`;
+  }
+  handleFManager(event) {
+    this.fManager = event.target.value;
+  }
+  handleFCountry(event) {
+    this.fCountry = event.target.value;
+  }
+  handleFPortfolio(event) {
+    this.fPortfolio = event.target.value;
+  }
+  handleClearFilters() {
+    this.q = "";
+    this.fManager = "";
+    this.fCountry = "";
+    this.fPortfolio = "";
+  }
   get noRows() {
     return this.listRows.length === 0;
-  }
-  get inactiveCls() {
-    return this.showInactive ? "chip on" : "chip";
   }
   get hasQ() {
     return this.q.length > 0;
@@ -347,9 +442,6 @@ export default class PipelineCampaigns extends LightningElement {
   }
   handleQClear() {
     this.q = "";
-  }
-  handleInactive() {
-    this.showInactive = !this.showInactive;
   }
   handleOpen(event) {
     this.openCampaign(event.currentTarget.dataset.id);
@@ -361,6 +453,7 @@ export default class PipelineCampaigns extends LightningElement {
     });
   }
   handleBackToList() {
+    this.toast = "";
     this.run(async () => {
       this.campaigns = await listCampaigns();
       this.view = "list";
@@ -396,9 +489,6 @@ export default class PipelineCampaigns extends LightningElement {
       this.form.countries,
       this.ctx ? this.ctx.countries : []
     );
-  }
-  get activeSwitchCls() {
-    return this.form.active ? "switch on" : "switch";
   }
   get activeText() {
     return this.form.active
@@ -439,8 +529,8 @@ export default class PipelineCampaigns extends LightningElement {
         this.descPending = false;
       }
     }
-    // the check screen's banner and column headings stay in view while the list scrolls: measure the top bar and the banner so the headings stick just under them
-    if (this.isReconcile) {
+    // the column headings (and, on the check screen, the banner) stay in view while the list scrolls: measure the top bar and the banner so the headings stick just under them
+    if (this.isReconcile || this.isDetail || this.isList) {
       const root = this.template.querySelector(".root");
       const bar = this.template.querySelector(".top");
       const banner = this.template.querySelector(".unsaved");
@@ -496,9 +586,6 @@ export default class PipelineCampaigns extends LightningElement {
       portfolios: toggled(this.form.portfolios, event.currentTarget.dataset.v)
     };
   }
-  handleActiveSwitch() {
-    this.form = { ...this.form, active: !this.form.active };
-  }
   handleStart(event) {
     this.form = { ...this.form, startDate: event.target.value };
   }
@@ -551,6 +638,7 @@ export default class PipelineCampaigns extends LightningElement {
   async loadDetail(id) {
     this.detail = await getCampaign({ campaignId: id });
     this.view = "detail";
+    this.deleteAsking = false;
     this.removeAsking = false;
     this.memberQ = "";
     this.search = null;
@@ -565,7 +653,9 @@ export default class PipelineCampaigns extends LightningElement {
     return this.campaign ? this.campaign.name : "";
   }
   get statusTag() {
-    return this.campaign && this.campaign.active ? "tag ok" : "tag off";
+    return this.campaign && this.campaign.active
+      ? "tag fill good"
+      : "tag fill bad";
   }
   get statusText() {
     return this.campaign && this.campaign.active ? "Active" : "Inactive";
@@ -578,6 +668,10 @@ export default class PipelineCampaigns extends LightningElement {
     if (c.startDate || c.endDate)
       bits.push((c.startDate || "…") + " to " + (c.endDate || "…"));
     return bits.join(" · ");
+  }
+  /** Deactivate is red (it switches something off); Activate is green (Robert, 2026-11-07: red is for destructive actions). */
+  get toggleActiveCls() {
+    return this.campaign && this.campaign.active ? "btn danger" : "btn good";
   }
   get toggleActiveText() {
     return this.campaign && this.campaign.active ? "Deactivate" : "Activate";
@@ -667,6 +761,33 @@ export default class PipelineCampaigns extends LightningElement {
         return m.memberId === id ? { ...m, ticked: event.target.checked } : m;
       })
     };
+  }
+  // Delete campaign only asks "Are you sure?" under the top bar; the second button does the deleting (Robert, 2026-11-07)
+  get deleteAskText() {
+    const c = this.campaign;
+    if (!c) return "";
+    const m = c.memberCount;
+    const d = c.dealCount;
+    const has = `${m} member${m === 1 ? "" : "s"} and ${d} linked deal${d === 1 ? "" : "s"}`;
+    return `Delete ${c.name} for good? It has ${has}. The members and the links are removed; the surgeons and the deals are not. Deactivate hides it instead.`;
+  }
+  handleDelete() {
+    this.deleteAsking = true;
+  }
+  handleDeleteNo() {
+    this.deleteAsking = false;
+  }
+  handleDeleteYes() {
+    const c = this.campaign;
+    this.deleteAsking = false;
+    if (!c) return;
+    this.run(async () => {
+      await deleteCampaign({ campaignId: c.id });
+      this.campaigns = await listCampaigns();
+      this.detail = null;
+      this.view = "list";
+      this.toast = `Deleted ${c.name}.`;
+    });
   }
   handleToggleActive() {
     const next = !this.campaign.active;

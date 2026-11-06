@@ -602,3 +602,36 @@ Robert's list had "Stephen Andrews (NZ)", and in Salesforce the surgeon's family
 ### Sales Campaign Management 0.20 (UAT only, 2026-11-07): dark mode text areas
 
 The "What is this campaign for?" box (and the pasted-list box on the import page) stayed white in dark mode because the shared field style only covers inputs and dropdowns. They now take the same field colours (near-black with light text, a muted placeholder). UAT deploy `0AfOg000007HrTjKAK`, 25/25 Apex tests, Jest 17. Not in DEV, not committed.
+
+### Sales Campaign Management 0.21 (UAT only, 2026-11-07): sticky headings on the members table
+
+The members table of a campaign keeps its column headings (including Select all) locked under the top bar while a long list of surgeons scrolls, the same treatment as the check screen. Same method (the wrapper clips instead of scrolling sideways; the top bar height is measured into `--stick`). The campaign list on the home screen is not changed. UAT deploy `0AfOg000007HvibKAC`, 25/25 Apex tests, Jest 17. Not in DEV; committed up to 0.20 only.
+
+### Sales Campaign Management 0.22 (UAT only, 2026-11-07): any Campaign Manager can edit any campaign, and the list can be filtered
+
+Robert asked how a second campaign manager (Laura) sees and covers for another's campaigns. Until now the campaign object was Public Read Only (only the owner, someone above them in the role hierarchy, or an admin could edit; members follow the campaign) and the Campaign Manager field is only a name, not access. Agreed (Robert: "anybody who is a campaign manager could edit any campaign"):
+
+- **Sharing:** `Sales_Campaign__c` internal sharing changed from Public Read Only to **Public Read/Write** (external stays Private). Editing is still gated by the `Pipeline_Campaign_Manager` permission set (reps will only have read, through their profiles). Members and deals stay Controlled by Parent. Checked in UAT after the deploy. Note for the PROD release: changing the sharing model of an object triggers a sharing recalculation (fast here, there are no records in PROD yet).
+- **List filters** on the home screen (all in the browser, over the up to 500 campaigns loaded): search by name, Manager (the signed-in person first as "Me: ..."), Country, Portfolio, Show inactive, Clear filters (shown when any filter is on) and a count ("12 of 500 campaigns").
+- UAT deploy ``, 25/25 Apex tests, Jest 18. Not in DEV; committed up to 0.20 only.
+
+### Sales Campaign Management 0.23 (UAT only, 2026-11-07): sticky headings on the campaign list too
+
+The campaign list on the home screen now keeps its column headings locked under the top bar while a long list scrolls, the same as the members table and the check screen (all three tables now do). UAT deploy `0AfOg000007HlcqKAC`, 25/25 Apex tests, Jest 18. Not in DEV; committed up to 0.20 only.
+
+### Sales Campaign Management 0.24 (UAT only, 2026-11-07): the one-pill sliders, and Delete campaign
+
+Robert approved the mockup `docs/mockups/pipeline_campaign_sliders_v1.html` (the look of My Case Plan's `mycpSegmented`: a label on a white end, a shaded track, one highlight that slides with a small spring and squash, all in one outer pill) and asked for a way to delete a campaign set up in error, behind an "Are you sure?".
+
+- **New component `pipelineSegmented`** (Pipeline's own copy of the pattern; colours come from the parent's `--seg-*` variables, so dark and light both work; 2 Jest tests). Used for: the **Theme** (a sun and a moon, replacing the Dark and Light buttons), **Show: Active | All** on the list (replacing the Show inactive chip) and **Status: Active | Inactive** on the campaign form (replacing the switch).
+- **List filter row in the same one-pill look:** Search, Manager, Country and Portfolio each have a label on a white end; the dropdown is the coloured track itself.
+- **Delete campaign:** a red button beside Deactivate on the campaign screen. It opens an "Are you sure?" bar under the top bar (stays in view while scrolling): "Delete <name> for good? It has N members and N linked deals. The members and the links are removed; the surgeons and the deals are not. Deactivate hides it instead." with Keep it / Yes, delete it. Apex `PipelineCampaignController.deleteCampaign` (as the user, so only people with the Campaign Manager permission set can; members and deal links go with the campaign because they belong to it; the record goes to the Recycle Bin, where an admin can restore it). After deleting you return to the list with "Deleted <name>."
+- Apex 26/26 (new test deletes a campaign with a member and checks the surgeon is untouched), Jest 21 for the two components. UAT deploy `0AfOg000007HuPyKAK`. Not in DEV; committed up to 0.20 only.
+
+### Sales Campaign Management 0.25 (UAT only, 2026-11-07): button colours and filled status marks
+
+Robert: Edit campaign was grey (it should be the primary blue), Activate was red (red is for destructive actions; it should be green), and the Active / Inactive marks were too weak.
+
+- Edit campaign is now the primary blue. Activate is a filled green; Deactivate and Delete campaign stay red.
+- The Active and Inactive marks (under the breadcrumb, and the Status column of the campaign list) are filled: white text on green for Active, on red for Inactive.
+- UAT deploy `0AfOg000007Ht5iKAC`, 26/26 Apex tests, Jest 19 (campaigns). Not in DEV; committed up to 0.20 only.

@@ -1,0 +1,118 @@
+/* the one-pill look: a label end, a shaded track, one highlight that slides to the chosen option */
+:host {
+  display: inline-block;
+}
+.wrap {
+  display: flex;
+  align-items: stretch;
+  width: fit-content;
+  border-radius: 999px;
+  background: var(--seg-lab, #fff);
+  border: 1px solid var(--seg-line, #c4cde2);
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+}
+.slbl {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 16px 0 18px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--seg-muted, #5d6b85);
+  white-space: nowrap;
+}
+.choices {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin: -1px -1px -1px 0;
+  padding: 3px;
+  border-radius: 999px;
+  background: var(--seg-track, #e3e8f4);
+  border: 1px solid var(--seg-line, #c4cde2);
+}
+.pill {
+  position: absolute;
+  top: 3px;
+  left: 0;
+  width: 0;
+  height: 28px;
+  border-radius: 999px;
+  background: var(--seg-indigo, #4f46e5);
+  box-shadow: 0 4px 14px var(--seg-shadow, rgba(79, 70, 229, 0.35));
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0;
+}
+.choices.placed .pill {
+  opacity: 1;
+}
+.choices.animated .pill {
+  transition:
+    left 0.55s cubic-bezier(0.3, 1.35, 0.5, 1),
+    width 0.55s cubic-bezier(0.3, 1.35, 0.5, 1);
+}
+.pill.squish {
+  animation: squish 0.55s ease-out;
+}
+@keyframes squish {
+  0% {
+    scale: 1 1;
+  }
+  35% {
+    scale: 1.12 0.92;
+  }
+  100% {
+    scale: 1 1;
+  }
+}
+.opt {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 28px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--seg-optx, #5d6b85);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 0.25s;
+}
+.opt.icon {
+  width: 40px;
+  padding: 0;
+}
+.opt.on {
+  color: #fff;
+}
+/* until the highlight has been placed, the chosen option carries its own colour so it never looks unselected */
+.choices:not(.placed) .opt.on {
+  background: var(--seg-indigo, #4f46e5);
+}
+.opt:hover:not(.on) {
+  background: rgba(127, 140, 180, 0.16);
+}
+.opt:focus-visible {
+  outline: 2px solid var(--seg-indigo, #4f46e5);
+  outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .choices.animated .pill {
+    transition: none;
+  }
+  .pill.squish {
+    animation: none;
+  }
+}

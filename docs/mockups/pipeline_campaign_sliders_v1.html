@@ -1,0 +1,861 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>
+      Sales Campaign Management: mockup of the one-pill sliders (theme and
+      filters)
+    </title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: #d9dee8;
+        font:
+          14px/1.45 -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          Roboto,
+          Arial,
+          sans-serif;
+        color: #1b2640;
+      }
+      .page {
+        max-width: 1500px;
+        margin: 0 auto;
+        padding: 18px 22px 50px;
+      }
+      h1.mock {
+        margin: 0 0 12px;
+        font-size: 13px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: #5d6b85;
+      }
+      .about {
+        max-width: 1050px;
+        background: #fff;
+        border: 1px solid #b3bfd6;
+        border-radius: 12px;
+        padding: 14px 18px;
+        margin-bottom: 16px;
+      }
+      .about h2 {
+        margin: 0 0 6px;
+        font-size: 12px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: #b7791f;
+      }
+      .about p,
+      .about li {
+        margin: 3px 0;
+      }
+      .about ul,
+      .about ol {
+        margin: 4px 0 8px 18px;
+        padding: 0;
+      }
+
+      /* the simulated Salesforce navigation bar */
+      .sfnav {
+        display: flex;
+        align-items: center;
+        gap: 22px;
+        background: #0b2239;
+        color: #fff;
+        padding: 0 16px;
+        height: 44px;
+        border-radius: 10px 10px 0 0;
+        font-size: 13px;
+      }
+      .sfnav b {
+        font-weight: 700;
+      }
+      .sfnav .tab {
+        padding: 13px 0;
+        color: #b8c4d6;
+      }
+      .sfnav .tab.on {
+        color: #fff;
+        border-bottom: 3px solid #1b96ff;
+      }
+      .sfnav .grow {
+        flex: 1;
+      }
+      .sfnav button {
+        background: #3a4a63;
+        color: #fff;
+        border: 0;
+        border-radius: 999px;
+        padding: 6px 14px;
+        font-weight: 700;
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+      }
+
+      /* the screen: its own scroll box so the sticky bar and table headings can be seen working */
+      .screen {
+        height: 600px;
+        overflow: auto;
+        position: relative;
+        border-radius: 0 0 10px 10px;
+      }
+      .screen[data-theme="light"] {
+        --bg: #f4f6fa;
+        --panel: #ffffff;
+        --line: #d5dcea;
+        --text: #1b2640;
+        --muted: #5d6b85;
+        --head: #db2777;
+        --pipe: #b7791f;
+        --indigo: #4f46e5;
+        --track: #e3e8f4;
+        --trackline: #c4cde2;
+        --lab: #ffffff;
+        --optx: #5d6b85;
+        --strong: #1b2640;
+        --sh: rgba(79, 70, 229, 0.35);
+        --fill2: #475569;
+        --ok: #0f9d74;
+        --warn: #b7791f;
+        --chev: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%234f46e5' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      }
+      .screen[data-theme="dark"] {
+        --bg: #141e2e;
+        --panel: #1a2740;
+        --line: #2f4163;
+        --text: #e8edf5;
+        --muted: #9fb0cc;
+        --head: #f472b6;
+        --pipe: #fdb827;
+        --indigo: #6366f1;
+        --track: #243452;
+        --trackline: #3a4e75;
+        --lab: #1a2740;
+        --optx: #a9b8d0;
+        --strong: #f3f6fb;
+        --sh: rgba(8, 12, 40, 0.55);
+        --fill2: #475569;
+        --ok: #4ee0b0;
+        --warn: #fdb827;
+        --chev: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23a5b4fc' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      }
+      .screen {
+        background: var(--bg);
+        color: var(--text);
+        font-size: 15px;
+      }
+
+      .top {
+        position: sticky;
+        top: 0;
+        z-index: 6;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 8px 20px;
+        min-height: 54px;
+        background: var(--bg);
+        border-bottom: 1px solid var(--line);
+      }
+      .word {
+        font-weight: 800;
+        letter-spacing: 0.16em;
+        font-size: 17px;
+      }
+      .word .p {
+        color: var(--pipe);
+      }
+      .word .l {
+        color: var(--text);
+        margin-left: 8px;
+      }
+      .ver {
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .sp {
+        flex: 1;
+      }
+      .btn {
+        border: 1px solid var(--indigo);
+        background: var(--indigo);
+        color: #fff;
+        border-radius: 999px;
+        padding: 8px 18px;
+        min-height: 36px;
+        font-weight: 700;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+      }
+      .btn.sec {
+        background: var(--fill2);
+        border-color: var(--fill2);
+      }
+      .icb {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        border: 1px solid var(--line);
+        background: var(--panel);
+        color: var(--text);
+        display: grid;
+        place-items: center;
+        cursor: pointer;
+      }
+
+      /* the one-pill look, as in My Case Plan: a label end, a shaded track, one highlight that slides (with a little spring) */
+      .wrap {
+        display: flex;
+        align-items: stretch;
+        width: fit-content;
+        border-radius: 999px;
+        background: var(--lab);
+        border: 1px solid var(--trackline);
+        flex: none;
+      }
+      .slbl {
+        display: inline-flex;
+        align-items: center;
+        padding: 0 16px 0 18px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+        white-space: nowrap;
+      }
+      .choices,
+      .field {
+        position: relative;
+        display: flex;
+        align-items: center;
+        margin: -1px -1px -1px 0;
+        padding: 3px;
+        border-radius: 999px;
+        background: var(--track);
+        border: 1px solid var(--trackline);
+      }
+      .pill {
+        position: absolute;
+        top: 3px;
+        left: 0;
+        width: 0;
+        height: 28px;
+        border-radius: 999px;
+        background: var(--indigo);
+        box-shadow: 0 4px 14px var(--sh);
+        z-index: 0;
+        pointer-events: none;
+        opacity: 0;
+      }
+      .choices.placed .pill {
+        opacity: 1;
+      }
+      .choices.animated .pill {
+        transition:
+          left 0.55s cubic-bezier(0.3, 1.35, 0.5, 1),
+          width 0.55s cubic-bezier(0.3, 1.35, 0.5, 1);
+      }
+      .pill.squish {
+        animation: squish 0.55s ease-out;
+      }
+      @keyframes squish {
+        0% {
+          scale: 1 1;
+        }
+        35% {
+          scale: 1.12 0.92;
+        }
+        100% {
+          scale: 1 1;
+        }
+      }
+      .opt {
+        position: relative;
+        z-index: 1;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        height: 28px;
+        padding: 0 16px;
+        border: 0;
+        border-radius: 999px;
+        background: transparent;
+        color: var(--optx);
+        font: inherit;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        white-space: nowrap;
+        cursor: pointer;
+        transition: color 0.25s;
+      }
+      .opt.on {
+        color: #fff;
+      }
+      .opt:hover:not(.on) {
+        background: rgba(127, 140, 180, 0.16);
+      }
+      .opt svg {
+        display: block;
+      }
+      .choices.icons .opt {
+        width: 40px;
+        padding: 0;
+      }
+
+      .field select {
+        appearance: none;
+        -webkit-appearance: none;
+        height: 28px;
+        min-width: 120px;
+        padding: 0 32px 0 14px;
+        border: 0;
+        border-radius: 999px;
+        background: transparent var(--chev) no-repeat right 14px center;
+        color: var(--strong);
+        font: inherit;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        cursor: pointer;
+        outline: none;
+      }
+      .field select option {
+        text-transform: none;
+        color: #1b2640;
+        letter-spacing: 0;
+      }
+      .field:focus-within {
+        box-shadow: 0 0 0 2px var(--indigo);
+      }
+      .srch .field {
+        width: 230px;
+      }
+      .field input {
+        flex: 1;
+        min-width: 0;
+        height: 28px;
+        padding: 0 8px 0 16px;
+        border: 0;
+        background: transparent;
+        color: var(--strong);
+        font: inherit;
+        font-size: 14px;
+        outline: none;
+      }
+      .field input::placeholder {
+        color: var(--optx);
+        opacity: 0.85;
+      }
+      .clr {
+        flex: none;
+        width: 22px;
+        height: 22px;
+        margin-right: 2px;
+        border: 0;
+        border-radius: 50%;
+        background: var(--indigo);
+        color: #fff;
+        font-size: 15px;
+        line-height: 1;
+        cursor: pointer;
+        visibility: hidden;
+      }
+      .srch.has .clr {
+        visibility: visible;
+      }
+
+      .main {
+        padding: 16px 20px 40px;
+      }
+      .toolrow {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 12px;
+      }
+      .count {
+        color: var(--muted);
+      }
+      .card {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+      }
+      .tscroll {
+        overflow-x: clip;
+        border-radius: 12px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      th {
+        position: sticky;
+        top: 54px;
+        z-index: 4;
+        background: var(--panel);
+        text-align: left;
+        font-size: 12px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--head);
+        padding: 9px 14px;
+        white-space: nowrap;
+        border-bottom: 1px solid var(--line);
+      }
+      td {
+        padding: 8px 14px;
+        border-top: 1px solid var(--line);
+      }
+      td.name {
+        font-weight: 700;
+      }
+      th.num,
+      td.num {
+        text-align: right;
+      }
+      .tag {
+        font-size: 13px;
+        padding: 1px 10px;
+        border-radius: 999px;
+        border: 1px solid;
+        line-height: 1.4;
+      }
+      .tag.ok {
+        color: var(--ok);
+      }
+      .tag.off {
+        color: var(--muted);
+      }
+      .empty {
+        text-align: center;
+        color: var(--muted);
+        padding: 28px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <h1 class="mock">
+        Sales Campaign Management &middot; Mockup: the one-pill sliders
+        (invented data, nothing built)
+      </h1>
+      <div class="about">
+        <h2>About this mockup</h2>
+        <p>
+          <b>Is this what you meant?</b> It copies the look from My Case Plan
+          (<i>mycpSegmented</i> and the filter bar mockup): a
+          <b>label on a white end</b>, the <b>shaded track</b>, and
+          <b>one highlight that slides</b> to the chosen side with a small
+          spring and squash, all inside <b>one outer pill</b>.
+        </p>
+        <ol>
+          <li>
+            <b>Theme (top right):</b> the Dark and Light buttons become one
+            slider with a <b>sun</b> (light) and a <b>moon</b> (dark) and the
+            label THEME on the white end. Click it: the highlight slides across
+            and the whole screen changes.
+          </li>
+          <li>
+            <b>Filters on the campaign list:</b> Search, Manager, Country and
+            Portfolio each get a label on a white end. The dropdowns are the
+            coloured track itself. <b>Show inactive</b> becomes a slider: SHOW
+            <i>Active | All</i>. Try them: pick "Me: Robert Reeves", a country,
+            a portfolio, or type in the search box and use the round X.
+          </li>
+          <li>
+            <b>Scroll the list:</b> the top bar and the column headings stay
+            locked at the top (this part is already built in UAT as v0.23).
+          </li>
+        </ol>
+        <p>
+          <b>Not shown / decide:</b> in dark mode the white label end takes the
+          panel colour (as in My Case Plan's Navy). If you want the theme slider
+          to carry words (LIGHT / DARK) as well as the icons, or the sun and
+          moon without the THEME label, say so. If you like this, the same look
+          would replace the other two-way choices on the form and the import
+          screens too (for example the Active switch on the form).
+        </p>
+      </div>
+
+      <div class="sfnav">
+        <b>Sales</b><span class="tab">Home</span
+        ><span class="tab on">Sales Campaigns</span
+        ><span class="tab">Opportunities &amp; Risks</span
+        ><span class="grow"></span
+        ><button id="fs" type="button">Full screen</button>
+      </div>
+      <div class="screen" id="screen" data-theme="light">
+        <header class="top">
+          <span class="word"
+            ><span class="p">SALES</span
+            ><span class="l">CAMPAIGN MANAGEMENT</span></span
+          >
+          <span class="ver">v0.24 (mockup)</span>
+          <span class="sp"></span>
+          <button type="button" class="btn">New campaign</button>
+          <div class="wrap">
+            <span class="slbl">Theme</span>
+            <div
+              class="choices icons"
+              id="theme"
+              role="group"
+              aria-label="Theme"
+            >
+              <div class="pill"></div>
+              <button
+                type="button"
+                class="opt on"
+                data-v="light"
+                title="Light"
+                aria-label="Light"
+              >
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                >
+                  <circle cx="12" cy="12" r="4.2" />
+                  <path
+                    d="M12 2.5v2.4M12 19.1v2.4M2.5 12h2.4M19.1 12h2.4M5.3 5.3l1.7 1.7M17 17l1.7 1.7M5.3 18.7L7 17M17 7l1.7-1.7"
+                  />
+                </svg>
+              </button>
+              <button
+                type="button"
+                class="opt"
+                data-v="dark"
+                title="Dark"
+                aria-label="Dark"
+              >
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path
+                    d="M20.5 14.2A8.5 8.5 0 1 1 9.8 3.5a6.8 6.8 0 0 0 10.7 10.7z"
+                  />
+                </svg>
+              </button>
+            </div>
+          </div>
+          <button
+            type="button"
+            class="icb"
+            title="Full screen"
+            aria-label="Full screen"
+          >
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" />
+            </svg>
+          </button>
+        </header>
+
+        <main class="main">
+          <div class="toolrow">
+            <div class="wrap srch" id="srch">
+              <span class="slbl">Search</span>
+              <div class="field">
+                <input
+                  id="q"
+                  type="text"
+                  placeholder="Campaign name"
+                  aria-label="Search"
+                /><button
+                  type="button"
+                  class="clr"
+                  id="qx"
+                  aria-label="Clear search"
+                >
+                  &times;
+                </button>
+              </div>
+            </div>
+            <div class="wrap">
+              <span class="slbl">Manager</span>
+              <div class="field">
+                <select id="fm" aria-label="Manager"></select>
+              </div>
+            </div>
+            <div class="wrap">
+              <span class="slbl">Country</span>
+              <div class="field">
+                <select id="fc" aria-label="Country"></select>
+              </div>
+            </div>
+            <div class="wrap">
+              <span class="slbl">Portfolio</span>
+              <div class="field">
+                <select id="fp" aria-label="Portfolio"></select>
+              </div>
+            </div>
+            <div class="wrap">
+              <span class="slbl">Show</span>
+              <div class="choices" id="show" role="group" aria-label="Show">
+                <div class="pill"></div>
+                <button type="button" class="opt on" data-v="active">
+                  Active
+                </button>
+                <button type="button" class="opt" data-v="all">All</button>
+              </div>
+            </div>
+            <button type="button" class="btn sec" id="clear" hidden>
+              Clear filters
+            </button>
+            <span class="sp"></span>
+            <span class="count" id="count"></span>
+          </div>
+          <div class="card">
+            <div class="tscroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Campaign</th>
+                    <th>Portfolio</th>
+                    <th>Countries</th>
+                    <th>Manager</th>
+                    <th>Status</th>
+                    <th class="num">Members</th>
+                    <th class="num">Deals linked</th>
+                  </tr>
+                </thead>
+                <tbody id="rows"></tbody>
+              </table>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <script>
+      // invented campaigns only
+      var managers = ["Robert Reeves", "Laura Chen", "Mei Tan", "Sam Okafor"];
+      var ME = "Robert Reeves";
+      var COUNTRIES = ["AU", "NZ", "SG", "MY", "TH", "HK", "TW", "KR", "IN"];
+      var PORTFOLIOS = ["Hip", "Knee", "Extremities", "CMFT"];
+      var topics = [
+        "Shoulder Sydney Meeting",
+        "Knee Cadaver Lab",
+        "Hip Revision Course",
+        "CMFT Masterclass",
+        "Extremities Roadshow",
+        "Fellows Dinner",
+        "Robotics Showcase",
+        "Trauma Update"
+      ];
+      var data = [];
+      for (var i = 0; i < 60; i++) {
+        var cs = [COUNTRIES[i % 9], COUNTRIES[(i * 4 + 1) % 9]].filter(
+          function (c, k, a) {
+            return a.indexOf(c) === k;
+          }
+        );
+        cs.sort(function (a, b) {
+          return COUNTRIES.indexOf(a) - COUNTRIES.indexOf(b);
+        });
+        var ps = [PORTFOLIOS[i % 4]];
+        data.push({
+          name: topics[i % 8] + " " + cs.join("-"),
+          portfolios: ps,
+          countries: cs,
+          manager: managers[(i * 7 + 2) % 4],
+          active: i % 6 !== 5,
+          members: 8 + ((i * 13) % 90),
+          deals: (i * 5) % 17
+        });
+      }
+      var $ = function (s) {
+        return document.querySelector(s);
+      };
+      var state = { q: "", m: "", c: "", p: "", show: "active" };
+
+      function fill(sel, all, items, withMe) {
+        sel.innerHTML = "";
+        [["", all]].concat(items).forEach(function (o) {
+          var e = document.createElement("option");
+          e.value = o[0];
+          e.textContent = o[1];
+          sel.appendChild(e);
+        });
+      }
+      fill(
+        $("#fm"),
+        "All managers",
+        [[ME, "Me: " + ME]].concat(
+          managers
+            .filter(function (m) {
+              return m !== ME;
+            })
+            .sort()
+            .map(function (m) {
+              return [m, m];
+            })
+        )
+      );
+      fill(
+        $("#fc"),
+        "All countries",
+        COUNTRIES.map(function (c) {
+          return [c, c];
+        })
+      );
+      fill(
+        $("#fp"),
+        "All portfolios",
+        PORTFOLIOS.map(function (p) {
+          return [p, p];
+        })
+      );
+
+      function render() {
+        var q = state.q.trim().toLowerCase();
+        var base = data.filter(function (d) {
+          return state.show === "all" || d.active;
+        });
+        var keep = base.filter(function (d) {
+          return (
+            (!q || d.name.toLowerCase().indexOf(q) >= 0) &&
+            (!state.m || d.manager === state.m) &&
+            (!state.c || d.countries.indexOf(state.c) >= 0) &&
+            (!state.p || d.portfolios.indexOf(state.p) >= 0)
+          );
+        });
+        $("#rows").innerHTML = keep.length
+          ? keep
+              .map(function (d) {
+                return (
+                  "<tr><td class='name'>" +
+                  d.name +
+                  "</td><td>" +
+                  d.portfolios.join(", ").toUpperCase() +
+                  "</td><td>" +
+                  d.countries.join(" ") +
+                  "</td><td>" +
+                  d.manager +
+                  "</td><td><span class='tag " +
+                  (d.active ? "ok'>Active" : "off'>Inactive") +
+                  "</span></td><td class='num'>" +
+                  d.members +
+                  "</td><td class='num'>" +
+                  d.deals +
+                  "</td></tr>"
+                );
+              })
+              .join("")
+          : "<tr><td colspan='7' class='empty'>No campaign matches these filters. Press Clear filters.</td></tr>";
+        $("#count").textContent =
+          keep.length === base.length
+            ? keep.length + " campaigns"
+            : keep.length + " of " + base.length + " campaigns";
+        var on = state.q || state.m || state.c || state.p;
+        $("#clear").hidden = !on;
+        $("#srch").classList.toggle("has", !!state.q);
+      }
+      $("#q").addEventListener("input", function (e) {
+        state.q = e.target.value;
+        render();
+      });
+      $("#qx").addEventListener("click", function () {
+        $("#q").value = "";
+        state.q = "";
+        render();
+      });
+      $("#fm").addEventListener("change", function (e) {
+        state.m = e.target.value;
+        render();
+      });
+      $("#fc").addEventListener("change", function (e) {
+        state.c = e.target.value;
+        render();
+      });
+      $("#fp").addEventListener("change", function (e) {
+        state.p = e.target.value;
+        render();
+      });
+      $("#clear").addEventListener("click", function () {
+        state.q = state.m = state.c = state.p = "";
+        $("#q").value = "";
+        $("#fm").value = $("#fc").value = $("#fp").value = "";
+        render();
+      });
+
+      // the sliders: one highlight that slides to the chosen side, with a little spring and squash
+      function slider(box, onPick) {
+        var pill = box.querySelector(".pill");
+        function place(animate) {
+          var on = box.querySelector(".opt.on");
+          if (!on || !on.offsetWidth) return;
+          if (animate) {
+            box.classList.add("animated");
+            pill.classList.remove("squish");
+            void pill.offsetWidth;
+            pill.classList.add("squish");
+          }
+          pill.style.left = on.offsetLeft + "px";
+          pill.style.width = on.offsetWidth + "px";
+          box.classList.add("placed");
+        }
+        box.querySelectorAll(".opt").forEach(function (b) {
+          b.addEventListener("click", function () {
+            box.querySelectorAll(".opt").forEach(function (o) {
+              o.classList.toggle("on", o === b);
+            });
+            place(true);
+            onPick(b.dataset.v);
+          });
+        });
+        place(false);
+        window.addEventListener("resize", function () {
+          place(false);
+        });
+      }
+      slider($("#theme"), function (v) {
+        $("#screen").dataset.theme = v;
+      });
+      slider($("#show"), function (v) {
+        state.show = v;
+        render();
+      });
+      $("#fs").addEventListener("click", function () {
+        var e = document.documentElement;
+        if (document.fullscreenElement) document.exitFullscreen();
+        else if (e.requestFullscreen) e.requestFullscreen();
+      });
+      render();
+    </script>
+  </body>
+</html>

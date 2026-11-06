@@ -296,4 +296,30 @@ private class PipelineCampaignControllerTest {
       System.assert(hits.size() >= 1);
     }
   }
+
+  @IsTest
+  static void aCampaignSetUpInErrorCanBeDeletedWithItsMembers() {
+    System.runAs(manager()) {
+      Id id = PipelineCampaignController.saveCampaign(
+        payload('By mistake', new List<String>{ 'SG' })
+      );
+      Account a = surgeon('Delete', 'Me', 'SG', 'Physician');
+      PipelineCampaignController.addMember(id, a.Id);
+      System.assertEquals(
+        1,
+        [SELECT COUNT() FROM Sales_Campaign_Member__c WHERE Campaign__c = :id]
+      );
+      PipelineCampaignController.deleteCampaign(id);
+      System.assertEquals(
+        0,
+        [SELECT COUNT() FROM Sales_Campaign__c WHERE Id = :id]
+      );
+      System.assertEquals(
+        0,
+        [SELECT COUNT() FROM Sales_Campaign_Member__c WHERE Campaign__c = :id]
+      );
+      System.assertEquals(1, [SELECT COUNT() FROM Account WHERE Id = :a.Id]); // the surgeon is untouched
+      PipelineCampaignController.deleteCampaign(null); // nothing to do
+    }
+  }
 }

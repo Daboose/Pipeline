@@ -666,6 +666,24 @@ public with sharing class PipelineCampaignController {
     return memberIds.size();
   }
 
+  /** Deletes a campaign set up in error. Its members and deal links go with it (they belong to it); surgeons and deals are untouched. */
+  @AuraEnabled
+  public static void deleteCampaign(Id campaignId) {
+    if (campaignId == null) {
+      return;
+    }
+    try {
+      delete as user [
+        SELECT Id
+        FROM Sales_Campaign__c
+        WHERE Id = :campaignId
+        WITH USER_MODE
+      ];
+    } catch (DmlException e) {
+      throw new AuraHandledException(e.getDmlMessage(0));
+    }
+  }
+
   // ---------- importing a list of names ----------
 
   /** One line of the person's list and what it was matched to. status: exact, suggest, many, none or dup. */
