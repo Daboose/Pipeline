@@ -213,4 +213,61 @@ describe("c-pipeline-type-list", () => {
       open: false
     });
   });
+  const heads = (el) =>
+    [...el.shadowRoot.querySelectorAll("thead th")].map((t) =>
+      t.textContent.trim()
+    );
+
+  it("leaves the Country column out when every deal is from one country", async () => {
+    const el = make({
+      kind: "opp",
+      deals: [
+        deal("1", "Ann", { ownerCountry: "AU" }),
+        deal("2", "Bob", { ownerCountry: "AU" })
+      ]
+    });
+    await Promise.resolve();
+    expect(heads(el).join("|")).not.toContain("Country");
+  });
+
+  it("shows the Country column by itself when the deals come from more than one country", async () => {
+    const el = make({
+      kind: "opp",
+      deals: [
+        deal("1", "Ann", { ownerCountry: "AU" }),
+        deal("2", "Bob", { ownerCountry: "NZ" })
+      ]
+    });
+    await Promise.resolve();
+    expect(heads(el).join("|")).toContain("Country");
+    // a layout saved before Country existed gets it too
+    el.columns = ["hcp", "stage"];
+    await Promise.resolve();
+    expect(heads(el).join("|")).toContain("Country");
+  });
+
+  it("lets the person switch Country off, and remembers that", async () => {
+    const el = make({
+      kind: "opp",
+      deals: [
+        deal("1", "Ann", { ownerCountry: "AU" }),
+        deal("2", "Bob", { ownerCountry: "NZ" })
+      ]
+    });
+    await Promise.resolve();
+    const saved = [];
+    el.addEventListener("columnschange", (e) => saved.push(e.detail));
+    el.shadowRoot.querySelector(".colwrap button").click();
+    await Promise.resolve();
+    const box = el.shadowRoot.querySelector('input[data-id="country"]');
+    expect(box).not.toBeNull();
+    box.checked = false;
+    box.dispatchEvent(new CustomEvent("change", { bubbles: true }));
+    expect(saved.length).toBe(1);
+    expect(saved[0].columns).not.toContain("country");
+    expect(saved[0].columns).toContain("nocountry");
+    el.columns = saved[0].columns;
+    await Promise.resolve();
+    expect(heads(el).join("|")).not.toContain("Country");
+  });
 });

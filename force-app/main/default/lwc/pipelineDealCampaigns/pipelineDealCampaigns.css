@@ -35,10 +35,11 @@
   background: var(--panel);
 }
 .row {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 16px;
-  padding: 12px 16px;
+  padding: 12px 16px 18px;
   border-top: 1px solid var(--line);
 }
 .row:first-child {
@@ -67,28 +68,34 @@
   gap: 12px;
   flex: none;
 }
+/* "Saving…" floats in the bottom edge of the row so it never takes space beside the slider or moves it */
 .saving {
+  position: absolute;
+  right: 18px;
+  bottom: 3px;
   color: var(--muted);
-  font-size: 13px;
-}
-.left {
-  margin-top: 22px;
-}
-h4 {
-  margin: 0 0 6px;
   font-size: 12px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--muted);
+  line-height: 1;
+  pointer-events: none;
 }
-.plain {
-  display: grid;
-  grid-template-columns: max-content 1fr;
-  gap: 8px 28px;
-  list-style: none;
-  margin: 0 0 12px;
-  padding: 0;
-}
-.plain li {
-  display: contents;
+
+/* on a phone the name sits on top and the slider underneath, as wide as the row, so it is easy to hit */
+@media (max-width: 767px) {
+  .row {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .what {
+    flex: 1 1 100%;
+  }
+  .ctl {
+    flex: 1 1 100%;
+    --seg-width: 100%;
+    --seg-opt-flex: 1 1 0;
+    --seg-opt-height: 37px; /* phone only: 33% taller than the 28px on desktop, easier for a finger (Robert, 2026-11-07) */
+  }
+  .seg {
+    display: block;
+    width: 100%;
+  }
 }

@@ -1,0 +1,559 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>
+      Mockup: the stage slider in solid colours, dimmer stages to come (version
+      2)
+    </title>
+    <style>
+      :root,
+      [data-theme="light"] {
+        --page: #e9edf4;
+        --card: #ffffff;
+        --bg: #f4f6fa;
+        --box: #eef2fa;
+        --line: #d5dcea;
+        --edge: #b3bfd6;
+        --text: #1b2640;
+        --muted: #5d6b85;
+        --pipe: #b7791f;
+        --indigo: #4f46e5;
+        --slate: #64748b;
+        --head: #db2777;
+        --hold: #f59e0b;
+      }
+      [data-theme="dark"] {
+        --page: #141e2e;
+        --card: #1a2740;
+        --bg: #141e2e;
+        --box: #20304f;
+        --line: #2f4163;
+        --edge: #5b6f93;
+        --text: #e8edf5;
+        --muted: #9fb0cc;
+        --pipe: #fdb827;
+        --indigo: #6366f1;
+        --slate: #475569;
+        --head: #f472b6;
+        --hold: #f59e0b;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--page);
+        color: var(--text);
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-size: 15px;
+      }
+      button {
+        font-family: inherit;
+        font-size: inherit;
+        color: inherit;
+      }
+      .sp {
+        flex: 1;
+      }
+      .muted {
+        color: var(--muted);
+      }
+      .sfnav {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        height: 44px;
+        padding: 0 16px;
+        background: #0b1220;
+        color: #cdd6e6;
+        font-size: 14px;
+      }
+      .sfnav .app {
+        font-weight: 800;
+        letter-spacing: 0.14em;
+      }
+      .sfnav .app b {
+        color: #fdb827;
+      }
+      .sfnav .tab {
+        color: #9fb0cc;
+      }
+      .sfnav .tab.on {
+        color: #fff;
+        border-bottom: 2px solid #6366f1;
+        padding-bottom: 2px;
+      }
+      .btn,
+      .pill {
+        border: 0;
+        border-radius: 999px;
+        padding: 7px 16px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+        background: var(--slate);
+        color: #fff;
+      }
+      .pill.on {
+        background: var(--indigo);
+      }
+      .about {
+        margin: 14px 16px;
+        padding: 12px 18px;
+        background: var(--card);
+        border: 1px solid var(--edge);
+        border-radius: 12px;
+        line-height: 1.5;
+        max-width: 1100px;
+      }
+      .about summary {
+        cursor: pointer;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        color: var(--pipe);
+      }
+      .about ul {
+        margin: 4px 0 8px;
+        padding-left: 22px;
+      }
+      .tools {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+        padding: 0 16px 10px;
+      }
+      .tools .lab {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        margin-left: 14px;
+      }
+      .tools .lab:first-child {
+        margin-left: 0;
+      }
+      .mocknote {
+        margin: 0 16px 12px;
+        padding: 8px 14px;
+        border: 1px dashed var(--edge);
+        border-radius: 10px;
+        color: var(--muted);
+        font-size: 14px;
+        font-style: italic;
+        max-width: 1100px;
+      }
+      .opts {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+        padding: 0 16px 40px;
+        max-width: 1280px;
+      }
+      .opt h2 {
+        margin: 0 0 6px;
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--head);
+      }
+      .opt p {
+        margin: 0 0 8px;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .opts {
+        display: flex;
+        flex-direction: column;
+        gap: 22px;
+        padding: 0 16px 40px;
+        max-width: 1280px;
+      }
+      .opt {
+        background: var(--card);
+        border: 1px solid var(--edge);
+        border-radius: 14px;
+        padding: 14px 18px 18px;
+      }
+      .opt h2 {
+        margin: 0 0 2px;
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--head);
+      }
+      .opt p {
+        margin: 0 0 10px;
+        color: var(--muted);
+        font-size: 14px;
+      }
+      .band {
+        display: flex;
+        justify-content: center;
+        padding: 14px 20px;
+        background: var(--box);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        margin-bottom: 14px;
+      }
+      .list {
+        display: grid;
+        grid-template-columns: 150px 1fr;
+        gap: 10px 14px;
+        align-items: center;
+      }
+      .list .tag {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+
+      /* the stage slider with a solid colour: blue while working, green at Conversion, red at Unsuccessful Conversion.
+         The whole pill is that colour; the chosen stage is a white pill carrying the colour as its text. */
+      .stg {
+        --c: var(--blue);
+        position: relative;
+        display: inline-flex;
+        align-items: stretch;
+        height: 38px;
+        background: var(--c);
+        border: 1px solid var(--c);
+        border-radius: 999px;
+        transition:
+          background 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+          border-color 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .stg.good {
+        --c: var(--win);
+      }
+      .stg.bad {
+        --c: var(--lose);
+      }
+      .stg.lock {
+        opacity: 0.55;
+      }
+      .stg .lb {
+        display: inline-flex;
+        align-items: center;
+        padding: 0 14px 0 18px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: #fff;
+      }
+      .stg .trk {
+        position: relative;
+        display: flex;
+        margin: -1px;
+        padding: 3px;
+        background: color-mix(in srgb, var(--c) 82%, #000);
+        border: 1px solid var(--c);
+        border-radius: 999px;
+        transition:
+          background 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+          border-color 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .stg .hl {
+        position: absolute;
+        z-index: 1;
+        top: 3px;
+        left: 0;
+        width: 0;
+        height: 28px;
+        border-radius: 999px;
+        background: #fff;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+        transition:
+          left 0.55s cubic-bezier(0.3, 1.35, 0.5, 1),
+          width 0.55s cubic-bezier(0.3, 1.35, 0.5, 1);
+      }
+      .stg .st {
+        position: relative;
+        z-index: 2;
+        display: inline-flex;
+        align-items: center;
+        height: 28px;
+        padding: 0 16px;
+        border: 0;
+        background: none;
+        font-family: inherit;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        white-space: nowrap;
+        color: #fff;
+        cursor: pointer;
+        transition: color 0.3s;
+      }
+      .stg.lock .st {
+        cursor: default;
+      }
+      .stg .st.on {
+        color: var(--c);
+      }
+      /* version B: the stages already passed stay bright and the ones still to come are dimmer, so progress still shows */
+      .opt .stg .st.ahead {
+        color: rgba(255, 255, 255, var(--dim, 0.62));
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .stg,
+        .stg .trk,
+        .stg .hl,
+        .stg .st {
+          transition: none;
+        }
+      }
+      :root {
+        --blue: #4f46e5;
+        --win: #16a34a;
+        --lose: #dc2626;
+      }
+      [data-theme="dark"] {
+        --blue: #6366f1;
+      }
+    </style>
+  </head>
+  <body data-theme="light">
+    <div class="sfnav">
+      <span class="app"><b>PIPE</b>LINE</span>
+      <span class="tab on">Pipeline</span>
+      <span class="tab">Opportunities &amp; Risks</span>
+      <span class="sp"></span>
+      <button type="button" class="btn" id="fullbtn">Full screen</button>
+    </div>
+
+    <details class="about" open>
+      <summary>ABOUT THIS MOCKUP</summary>
+      <p>
+        <b>Version 2, invented data only.</b> Robert chose B from version 1: the
+        stage slider is always a solid colour (blue, green at Conversion, red at
+        Unsuccessful Conversion), the current stage a white pill with coloured
+        text, and the stages <b>still to come</b> dimmer so progress shows. He
+        asked for those dimmer names to be <b>a little less bright</b> than
+        version 1. Three levels, so you can choose:
+      </p>
+      <ul>
+        <li><b>As version 1:</b> the stages to come at 62% white.</li>
+        <li><b>A little dimmer:</b> 50% white.</li>
+        <li><b>Dimmer still:</b> 40% white (still readable, but fainter).</li>
+        <li>
+          <b>Try it:</b> click a stage on the big slider; the colour fades over
+          0.4 s as the white pill slides, and the stages to come dim. All seven
+          states are shown underneath. <b>Person</b> for greyed, <b>Theme</b>
+          for dark. The Conversion and Unsuccessful Conversion states have
+          nothing after them to dim, so only the working stages show the
+          difference most.
+        </li>
+      </ul>
+      <p class="muted">
+        Unsuccessful Conversion comes after Conversion, so when a deal is at
+        Conversion that last name is dimmed, and when it is at Unsuccessful
+        Conversion nothing is dimmed.
+      </p>
+    </details>
+
+    <div class="tools">
+      <span class="lab" style="margin-left: 0">Person</span>
+      <button type="button" class="pill on" data-edit="yes">Can edit</button>
+      <button type="button" class="pill" data-edit="no">Cannot edit</button>
+      <span class="lab">Theme</span>
+      <button type="button" class="pill on" data-theme-btn="light">
+        Light
+      </button>
+      <button type="button" class="pill" data-theme-btn="dark">Dark</button>
+    </div>
+    <div class="mocknote" id="mocknote">
+      Mockup note: compare where the summary line and the stage slider sit in
+      each version.
+    </div>
+    <div class="opts" id="opts"></div>
+
+    <script>
+      var STAGES = [
+        "Plan",
+        "Action",
+        "Commit",
+        "1st Case",
+        "5th Case",
+        "Conversion",
+        "Unsuccessful Conversion"
+      ];
+      var S = { theme: "light", edit: "yes", stage: "1st Case" };
+      function tone(stage) {
+        return stage === "Conversion"
+          ? "good"
+          : stage === "Unsuccessful Conversion"
+            ? "bad"
+            : "";
+      }
+      function slider(stage, live) {
+        var idx = STAGES.indexOf(stage);
+        return (
+          '<div class="stg ' +
+          tone(stage) +
+          (S.edit === "no" ? " lock" : "") +
+          '" data-live="' +
+          (live ? "1" : "") +
+          '"><span class="lb">Stage</span><div class="trk"><div class="hl"></div>' +
+          STAGES.map(function (x, i) {
+            return (
+              '<button type="button" class="st' +
+              (x === stage ? " on" : i > idx ? " ahead" : "") +
+              '" data-stage="' +
+              x +
+              '"' +
+              (live ? ' data-live-st="1"' : "") +
+              ">" +
+              x +
+              "</button>"
+            );
+          }).join("") +
+          "</div></div>"
+        );
+      }
+      function panel(cls, title, why, dim) {
+        var list = STAGES.map(function (x) {
+          return (
+            '<div class="tag">' +
+            x +
+            "</div>" +
+            "<div>" +
+            slider(x, false) +
+            "</div>"
+          );
+        }).join("");
+        return (
+          '<div class="opt ' +
+          cls +
+          '" style="--dim:' +
+          dim +
+          '"><h2>' +
+          title +
+          "</h2><p>" +
+          why +
+          '</p><div class="band">' +
+          slider(S.stage, true) +
+          '</div><div class="list">' +
+          list +
+          "</div></div>"
+        );
+      }
+      function place(root) {
+        Array.prototype.forEach.call(
+          root.querySelectorAll(".stg"),
+          function (stg) {
+            var hl = stg.querySelector(".hl"),
+              on = stg.querySelector(".st.on");
+            if (!on) return;
+            hl.style.left = on.offsetLeft + "px";
+            hl.style.width = on.offsetWidth + "px";
+          }
+        );
+      }
+      function draw() {
+        document.body.setAttribute("data-theme", S.theme);
+        var o = document.getElementById("opts");
+        o.innerHTML =
+          panel(
+            "vb",
+            "As version 1 (62%)",
+            "The stages still to come at 62% white.",
+            0.62
+          ) +
+          panel(
+            "vb",
+            "A little dimmer (50%)",
+            "The stages still to come at 50% white.",
+            0.5
+          ) +
+          panel(
+            "vb",
+            "Dimmer still (40%)",
+            "The stages still to come at 40% white.",
+            0.4
+          );
+        place(o);
+        Array.prototype.forEach.call(
+          document.querySelectorAll("[data-edit]"),
+          function (x) {
+            x.classList.toggle("on", x.dataset.edit === S.edit);
+          }
+        );
+        Array.prototype.forEach.call(
+          document.querySelectorAll("[data-theme-btn]"),
+          function (x) {
+            x.classList.toggle("on", x.dataset.themeBtn === S.theme);
+          }
+        );
+        document.getElementById("mocknote").textContent =
+          S.edit === "no"
+            ? "Mockup note: a person who cannot edit the deal sees the slider greyed; clicking does nothing."
+            : "Mockup note: click a stage on the big slider in each version.";
+      }
+      document.addEventListener("click", function (e) {
+        var t = e.target.closest("[data-edit],[data-theme-btn],[data-live-st]");
+        if (!t) return;
+        var d = t.dataset;
+        if (d.themeBtn) {
+          S.theme = d.themeBtn;
+          draw();
+          return;
+        }
+        if (d.edit) {
+          S.edit = d.edit;
+          draw();
+          return;
+        }
+        if (S.edit === "no") return;
+        S.stage = d.stage;
+        var idx = STAGES.indexOf(S.stage);
+        /* update the big sliders in place so the colour fades and the pill slides */
+        Array.prototype.forEach.call(
+          document.querySelectorAll('.stg[data-live="1"]'),
+          function (stg) {
+            stg.classList.remove("good", "bad");
+            if (tone(S.stage)) stg.classList.add(tone(S.stage));
+            Array.prototype.forEach.call(
+              stg.querySelectorAll(".st"),
+              function (b, i) {
+                b.classList.toggle("on", STAGES[i] === S.stage);
+                b.classList.toggle("ahead", i > idx);
+              }
+            );
+            place(stg.parentNode);
+          }
+        );
+      });
+      window.addEventListener("resize", function () {
+        place(document);
+      });
+      document.getElementById("fullbtn").addEventListener("click", function () {
+        document.getElementById("mocknote").textContent =
+          "Mockup note: in Salesforce this opens Pipeline in a new full-screen tab without the Salesforce navigation.";
+      });
+      location.hash
+        .slice(1)
+        .split("&")
+        .forEach(function (p) {
+          var kv = p.split("=");
+          if (kv[0] === "theme") S.theme = kv[1];
+          if (kv[0] === "edit") S.edit = kv[1];
+          if (kv[0] === "stage") S.stage = decodeURIComponent(kv[1]);
+        });
+      draw();
+    </script>
+  </body>
+</html>

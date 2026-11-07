@@ -44,7 +44,7 @@ function stableJson(value) {
  * Usages, Surgeries and Chatter, saved filters); 0.10 follows the final mockup: a filter bar with chips and a Change
  * selection panel with Apply, in place of the always-visible Choose Your Data panel.
  */
-const PIPELINE_VERSION = "0.83";
+const PIPELINE_VERSION = "0.92";
 
 /** The colours a person can choose for the headings (Robert, 2026-11-02); the look of each is in pipelineApp.css. */
 const HEAD_COLOURS = [
@@ -125,6 +125,9 @@ export default class PipelineApp extends LightningElement {
   campaignError = "";
   screen = "pipeline"; // which screen is showing when a campaign is linked: pipeline or campaign
   screenIn = ""; // the way the screen coming in slides from: left or right
+  leaving = ""; // the screen sliding out right now: pipeline or campaign (it stays on the page for the slide, then goes)
+  leaveTo = ""; // the side it slides out to: left or right
+  leaveTimer;
   choices = {
     opp: { open: [], closed: [] },
     risk: { open: [], closed: [] },
@@ -251,6 +254,7 @@ export default class PipelineApp extends LightningElement {
     clearTimeout(this.panelTimer);
     clearTimeout(this.flyTimer);
     clearTimeout(this.filtersTimer);
+    clearTimeout(this.leaveTimer);
   }
 
   /* ----- sliding panels: each is put on the page first, slid in a moment later, and taken off once it has slid away ----- */
@@ -263,11 +267,15 @@ export default class PipelineApp extends LightningElement {
     return setTimeout(remove, SLIDE_OUT_MS);
   }
 
-  /** Starts once the person and the stage choices are both known: their default filter, else My team (a manager), else everything they own. */
+  /** Starts once the person and the stage choices are both known: their default filter, else the filter they last used, else My team (a manager) or everything they own, with opportunities, risks and ROSA deals all on (Robert, 2026-11-07). */
   tryStart() {
     if (this.started || !this.ctxReady || !this.choicesReady) return;
     this.started = true;
-    let f = defaultFilter(["opp"], this.choices, this.startTeam);
+    let f = defaultFilter(
+      ["opp", "risk", "rosa"],
+      this.choices,
+      this.startTeam
+    );
     const first = this.savedFilters.find((x) => x.isDefault);
     if (first) {
       const parsed = this.parse(first);
@@ -427,6 +435,7 @@ export default class PipelineApp extends LightningElement {
   }
   /** The Pipeline screen stays on the page while the campaign screen shows (hidden, not removed), so what the person opened is still open when they come back. */
   get pipelineMainCls() {
+    if (this.leaving === "pipeline") return "main out-" + this.leaveTo;
     const away = !this.showPipelineScreen;
     return (
       "main" +
@@ -435,17 +444,30 @@ export default class PipelineApp extends LightningElement {
     );
   }
   get showCampaignScreen() {
-    return this.ready && !!this.linkedCampaignId && this.screen === "campaign";
+    return (
+      this.ready &&
+      !!this.linkedCampaignId &&
+      (this.screen === "campaign" || this.leaving === "campaign")
+    );
   }
   get screenCls() {
+    if (this.leaving === "campaign") return "main cscreen out-" + this.leaveTo;
     return "main cscreen" + (this.screenIn ? " slide-" + this.screenIn : "");
   }
+  /** Both screens move: the one going away slides out as the other slides in (the motion standard, 0.4 s). */
   handleViewPick(event) {
     const next = event.detail.value;
     if (next === this.screen) return;
     // Pipeline flies off to the right as the campaign comes in from the left, and back again the other way
     this.screenIn = next === "campaign" ? "left" : "right";
+    this.leaveTo = next === "campaign" ? "right" : "left";
+    this.leaving = this.screen;
     this.screen = next;
+    clearTimeout(this.leaveTimer);
+    // eslint-disable-next-line @lwc/lwc/no-async-operation
+    this.leaveTimer = setTimeout(() => {
+      this.leaving = "";
+    }, SLIDE_OUT_MS);
   }
   /** Reads the linked campaign when the choice changes, and goes back to the deals when the campaign is unlinked. */
   syncCampaign() {
@@ -455,11 +477,13 @@ export default class PipelineApp extends LightningElement {
       this.campaignLoadedFor = "";
       this.screen = "pipeline";
       this.screenIn = "";
+      this.leaving = "";
       return;
     }
     if (id !== this.campaignLoadedFor) {
       this.screen = "pipeline"; // after Apply the person is back on the deals
       this.screenIn = "";
+      this.leaving = "";
       this.loadCampaign();
     }
   }

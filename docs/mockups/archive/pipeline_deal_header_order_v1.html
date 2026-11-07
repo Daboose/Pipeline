@@ -1,0 +1,594 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Mockup: the order of the deal panel header (version 1)</title>
+    <style>
+      :root,
+      [data-theme="light"] {
+        --page: #e9edf4;
+        --card: #ffffff;
+        --bg: #f4f6fa;
+        --box: #eef2fa;
+        --line: #d5dcea;
+        --edge: #b3bfd6;
+        --text: #1b2640;
+        --muted: #5d6b85;
+        --pipe: #b7791f;
+        --indigo: #4f46e5;
+        --slate: #64748b;
+        --head: #db2777;
+        --hold: #f59e0b;
+      }
+      [data-theme="dark"] {
+        --page: #141e2e;
+        --card: #1a2740;
+        --bg: #141e2e;
+        --box: #20304f;
+        --line: #2f4163;
+        --edge: #5b6f93;
+        --text: #e8edf5;
+        --muted: #9fb0cc;
+        --pipe: #fdb827;
+        --indigo: #6366f1;
+        --slate: #475569;
+        --head: #f472b6;
+        --hold: #f59e0b;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--page);
+        color: var(--text);
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-size: 15px;
+      }
+      button {
+        font-family: inherit;
+        font-size: inherit;
+        color: inherit;
+      }
+      .sp {
+        flex: 1;
+      }
+      .muted {
+        color: var(--muted);
+      }
+      .sfnav {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        height: 44px;
+        padding: 0 16px;
+        background: #0b1220;
+        color: #cdd6e6;
+        font-size: 14px;
+      }
+      .sfnav .app {
+        font-weight: 800;
+        letter-spacing: 0.14em;
+      }
+      .sfnav .app b {
+        color: #fdb827;
+      }
+      .sfnav .tab {
+        color: #9fb0cc;
+      }
+      .sfnav .tab.on {
+        color: #fff;
+        border-bottom: 2px solid #6366f1;
+        padding-bottom: 2px;
+      }
+      .btn,
+      .pill {
+        border: 0;
+        border-radius: 999px;
+        padding: 7px 16px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+        background: var(--slate);
+        color: #fff;
+      }
+      .pill.on {
+        background: var(--indigo);
+      }
+      .about {
+        margin: 14px 16px;
+        padding: 12px 18px;
+        background: var(--card);
+        border: 1px solid var(--edge);
+        border-radius: 12px;
+        line-height: 1.5;
+        max-width: 1100px;
+      }
+      .about summary {
+        cursor: pointer;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        color: var(--pipe);
+      }
+      .about ul {
+        margin: 4px 0 8px;
+        padding-left: 22px;
+      }
+      .tools {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+        padding: 0 16px 10px;
+      }
+      .tools .lab {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        margin-left: 14px;
+      }
+      .tools .lab:first-child {
+        margin-left: 0;
+      }
+      .mocknote {
+        margin: 0 16px 12px;
+        padding: 8px 14px;
+        border: 1px dashed var(--edge);
+        border-radius: 10px;
+        color: var(--muted);
+        font-size: 14px;
+        font-style: italic;
+        max-width: 1100px;
+      }
+      .opts {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+        padding: 0 16px 40px;
+        max-width: 1280px;
+      }
+      .opt h2 {
+        margin: 0 0 6px;
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--head);
+      }
+      .opt p {
+        margin: 0 0 8px;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      /* the deal panel's header as it is today: name and buttons on one row, the stage slider under it */
+      .fhead {
+        background: var(--bg);
+        border: 1px solid var(--edge);
+        border-radius: 14px;
+        overflow: hidden;
+      }
+      .h1 {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 14px 20px 8px;
+      }
+      .name {
+        font-size: 21px;
+        font-weight: 700;
+        white-space: nowrap;
+      }
+      .h2 {
+        padding: 6px 20px 14px;
+      }
+      .nav {
+        background: var(--slate);
+        color: #fff;
+        border: 0;
+        border-radius: 999px;
+        padding: 9px 18px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        white-space: nowrap;
+      }
+      .rbtn {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        border: 1.5px solid var(--edge);
+        background: transparent;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .pos {
+        color: var(--muted);
+        font-size: 14px;
+      }
+      .stage {
+        display: inline-flex;
+        align-items: stretch;
+        height: 38px;
+        background: var(--card);
+        border: 1px solid var(--edge);
+        border-radius: 999px;
+      }
+      .stage .lb {
+        display: inline-flex;
+        align-items: center;
+        padding: 0 14px 0 18px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .stage .trk {
+        display: flex;
+        align-items: center;
+        gap: 2px;
+        margin: -1px;
+        padding: 3px;
+        background: var(--box);
+        border: 1px solid var(--edge);
+        border-radius: 999px;
+      }
+      .stage .st {
+        height: 28px;
+        padding: 0 16px;
+        display: inline-flex;
+        align-items: center;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .stage .st.on {
+        background: var(--indigo);
+        color: #fff;
+        border-radius: 999px;
+      }
+
+      /* the marker beside the surgeon's name: three ways to show "On hold" in amber */
+      .hold {
+        flex: none;
+        display: inline-flex;
+        align-items: center;
+        height: 28px;
+        padding: 0 14px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        white-space: nowrap;
+        max-width: 160px;
+        overflow: hidden;
+        transition:
+          opacity 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+          max-width 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+          padding 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+          margin 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .hold.off {
+        opacity: 0;
+        max-width: 0;
+        padding-left: 0;
+        padding-right: 0;
+        margin-left: -12px;
+        pointer-events: none;
+      }
+      /* A: solid amber, dark text (matches the solid amber On hold slider) */
+      .hold.a {
+        background: var(--hold);
+        color: #1b2640;
+      }
+      /* B: light amber fill, amber edge, amber text (the Conversion bar's light-fill look) */
+      .hold.b {
+        background: color-mix(in srgb, var(--hold) 22%, var(--card));
+        border: 1px solid color-mix(in srgb, var(--hold) 60%, var(--card));
+        color: color-mix(in srgb, var(--hold) 55%, var(--text));
+      }
+      /* C: amber words only, no pill */
+      .hold.c {
+        padding: 0;
+        height: auto;
+        color: var(--hold);
+        font-size: 14px;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .hold {
+          transition: none;
+        }
+      }
+
+      .strip {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px 36px;
+        padding: 10px 20px 12px;
+      }
+      .strip .l {
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .strip .v {
+        font-size: 18px;
+        font-weight: 800;
+        margin-top: 2px;
+      }
+      .rule {
+        border-bottom: 1px solid var(--line);
+      }
+      .band {
+        background: var(--box);
+        border-top: 1px solid var(--line);
+        border-bottom: 1px solid var(--line);
+      }
+      .h2.tight {
+        padding-top: 10px;
+      }
+      .fbody {
+        display: grid;
+        grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+        gap: 18px;
+        padding: 16px 20px 20px;
+        background: var(--bg);
+      }
+      .card {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 12px 16px 16px;
+      }
+      .card h3 {
+        margin: 0 0 10px;
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--head);
+      }
+      .fgrid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px 16px;
+      }
+      .fgrid label {
+        display: block;
+        font-size: 11px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--muted);
+        font-weight: 800;
+        margin-bottom: 4px;
+      }
+      .fgrid .ro {
+        height: 38px;
+        display: flex;
+        align-items: center;
+        padding: 0 12px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--bg);
+      }
+      .post {
+        font-size: 14px;
+        line-height: 1.45;
+        padding: 6px 0;
+      }
+    </style>
+  </head>
+  <body data-theme="light">
+    <div class="sfnav">
+      <span class="app"><b>PIPE</b>LINE</span>
+      <span class="tab on">Pipeline</span>
+      <span class="tab">Opportunities &amp; Risks</span>
+      <span class="sp"></span>
+      <button type="button" class="btn" id="fullbtn">Full screen</button>
+    </div>
+
+    <details class="about" open>
+      <summary>ABOUT THIS MOCKUP</summary>
+      <p>
+        <b>Version 1, invented data only.</b> Robert sent a rough sketch of the
+        order he wants at the top of the deal panel:
+        <b>swap the stage slider and the summary line</b>. The summary (Owner,
+        Opportunity, Expected annual value and so on) moves up under the name,
+        and the stage slider moves down, next to the deal's fields it relates
+        to. Three versions, top to bottom:
+      </p>
+      <ul>
+        <li>
+          <b>Today:</b> name, then the stage slider, then the summary line, then
+          the deal.
+        </li>
+        <li>
+          <b>A. As sketched:</b> name, then the summary line, then the stage
+          slider, then the deal. A thin line under the slider, as in the sketch.
+        </li>
+        <li>
+          <b>B. As sketched, slider in its own band:</b> the same order, but the
+          stage slider sits in a tinted band, so it reads as the control for the
+          deal below it.
+        </li>
+        <li>
+          <b>Try it:</b> the <b>On hold</b> buttons show the amber pill beside
+          the name (built last); <b>Theme</b> for dark. Every version shows the
+          same data.
+        </li>
+      </ul>
+      <p class="muted">
+        Not shown: the deal's other cards and the Save and Cancel bar. Only the
+        header and the top of the body are drawn. Nothing changes in what each
+        item does, only where it sits.
+      </p>
+    </details>
+
+    <div class="tools">
+      <span class="lab" style="margin-left: 0">On hold</span>
+      <button type="button" class="pill on" data-hold="no">No</button>
+      <button type="button" class="pill" data-hold="yes">Yes</button>
+      <span class="lab">Theme</span>
+      <button type="button" class="pill on" data-theme-btn="light">
+        Light
+      </button>
+      <button type="button" class="pill" data-theme-btn="dark">Dark</button>
+    </div>
+    <div class="mocknote" id="mocknote">
+      Mockup note: compare where the summary line and the stage slider sit in
+      each version.
+    </div>
+    <div class="opts" id="opts"></div>
+
+    <script>
+      var S = { theme: "light", hold: "yes" };
+      function esc(s) {
+        return String(s).replace(/[&<>"]/g, function (c) {
+          return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
+        });
+      }
+      function h1() {
+        return (
+          '<div class="h1"><div class="name">Taro Okamoto</div><span class="hold a' +
+          (S.hold === "yes" ? "" : " off") +
+          '">On hold</span><span class="sp"></span><button type="button" class="nav">Surgeon Usages</button><button type="button" class="nav">MyCase Bookings</button><button type="button" class="nav">Campaigns</button><button type="button" class="rbtn">‹</button><span class="pos">6 of 12</span><button type="button" class="rbtn">›</button><button type="button" class="rbtn">✕</button></div>'
+        );
+      }
+      function slider(cls) {
+        return (
+          '<div class="h2 ' +
+          (cls || "") +
+          '"><div class="stage"><span class="lb">Stage</span><div class="trk"><span class="st">Plan</span><span class="st">Action</span><span class="st">Commit</span><span class="st on">1st Case</span><span class="st">5th Case</span><span class="st">Conversion</span><span class="st">Unsuccessful Conversion</span></div></div></div>'
+        );
+      }
+      var STRIP = [
+        ["Owner", "Lewis Dawson"],
+        ["Opportunity", "Extremities"],
+        ["Expected annual value", "A$150k"],
+        ["Close quarter", "Q2 2027"],
+        ["Last posted", "–"],
+        ["Last stage move", "–"],
+        ["Deal age", "516 d"],
+        ["Status", "On Hold"]
+      ];
+      function strip() {
+        return (
+          '<div class="strip">' +
+          STRIP.map(function (x) {
+            return (
+              '<div><div class="l">' +
+              x[0] +
+              '</div><div class="v">' +
+              esc(x[1]) +
+              "</div></div>"
+            );
+          }).join("") +
+          "</div>"
+        );
+      }
+      function body() {
+        return '<div class="fbody"><div class="card"><h3>The deal</h3><div class="fgrid"><div><label>Primary HCP</label><div class="ro">Taro Okamoto</div></div><div><label>Healthcare facility</label><div class="ro">Mater Hospital</div></div><div><label>Expected closing quarter and year</label><div class="ro">Q2 2027</div></div><div><label>Expected annual value</label><div class="ro">AUD 150,000</div></div></div></div><div class="card"><h3>Chatter</h3><div class="post"><b>Lewis Dawson</b> · 516 days ago<br />Surgeon keen, waiting on the theatre list.</div></div></div>';
+      }
+      function opt(title, why, inner) {
+        return (
+          '<div class="opt"><h2>' +
+          title +
+          "</h2><p>" +
+          why +
+          '</p><div class="fhead">' +
+          inner +
+          body() +
+          "</div></div>"
+        );
+      }
+      function draw() {
+        document.body.setAttribute("data-theme", S.theme);
+        document.getElementById("opts").innerHTML =
+          opt(
+            "Today",
+            "Name, stage slider, summary line, then the deal.",
+            h1() +
+              slider() +
+              '<div class="rule"></div>' +
+              strip() +
+              '<div class="rule"></div>'
+          ) +
+          opt(
+            "A. As sketched",
+            "Name, summary line, stage slider, then the deal.",
+            h1() + strip() + slider("tight") + '<div class="rule"></div>'
+          ) +
+          opt(
+            "B. As sketched, slider in its own band",
+            "The same order; the stage slider sits in a tinted band above the deal.",
+            h1() + strip() + '<div class="band">' + slider("tight") + "</div>"
+          );
+        Array.prototype.forEach.call(
+          document.querySelectorAll("[data-hold]"),
+          function (x) {
+            x.classList.toggle("on", x.dataset.hold === S.hold);
+          }
+        );
+        Array.prototype.forEach.call(
+          document.querySelectorAll("[data-theme-btn]"),
+          function (x) {
+            x.classList.toggle("on", x.dataset.themeBtn === S.theme);
+          }
+        );
+      }
+      document.addEventListener("click", function (e) {
+        var t = e.target.closest("[data-hold],[data-theme-btn]");
+        if (!t) return;
+        var d = t.dataset;
+        if (d.themeBtn) {
+          S.theme = d.themeBtn;
+          draw();
+          return;
+        }
+        if (d.hold) {
+          S.hold = d.hold;
+          /* fade the marker in or out without redrawing, so the motion runs */
+          Array.prototype.forEach.call(
+            document.querySelectorAll(".hold"),
+            function (h) {
+              h.classList.toggle("off", S.hold !== "yes");
+            }
+          );
+          Array.prototype.forEach.call(
+            document.querySelectorAll("[data-hold]"),
+            function (x) {
+              x.classList.toggle("on", x.dataset.hold === S.hold);
+            }
+          );
+        }
+      });
+      document.getElementById("fullbtn").addEventListener("click", function () {
+        document.getElementById("mocknote").textContent =
+          "Mockup note: in Salesforce this opens Pipeline in a new full-screen tab without the Salesforce navigation.";
+      });
+      location.hash
+        .slice(1)
+        .split("&")
+        .forEach(function (p) {
+          var kv = p.split("=");
+          if (kv[0] === "hold") S.hold = kv[1];
+          if (kv[0] === "theme") S.theme = kv[1];
+        });
+      draw();
+    </script>
+  </body>
+</html>

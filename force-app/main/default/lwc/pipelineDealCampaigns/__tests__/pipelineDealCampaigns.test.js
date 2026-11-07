@@ -38,16 +38,6 @@ const DATA = {
       linked: true,
       note: "Not active"
     }
-  ],
-  notOffered: [
-    {
-      id: "a3",
-      name: "Hip Forum SG",
-      managerName: "Sam",
-      portfolios: "Hip",
-      linked: false,
-      note: "Dr Tan is not a member"
-    }
   ]
 };
 const make = async (data = DATA) => {
@@ -69,18 +59,18 @@ describe("c-pipeline-deal-campaigns", () => {
     jest.clearAllMocks();
   });
 
-  it("shows the facts, the offered campaigns, the ones left out and why", async () => {
+  it("shows the facts and the offered campaigns, and nothing about the others", async () => {
     const el = await make();
     const t = text(el);
     expect(t).toContain(
       "Primary HCP Dr Tan · owner's country SG · portfolio Hip"
     );
     expect(t).toContain("Hip Roadshow SG");
+    expect(t).toContain("Campaign Manager Mei");
     expect(t).toContain(
       "No longer fits: Not active. You can still take it out."
     );
-    expect(t).toContain("Not offered, because Dr Tan is not a member");
-    expect(t).toContain("Hip Forum SG");
+    expect(t).not.toContain("Not offered");
     expect(el.shadowRoot.querySelectorAll("c-pipeline-segmented").length).toBe(
       2
     );
@@ -108,8 +98,7 @@ describe("c-pipeline-deal-campaigns", () => {
   it("says plainly when the deal has no Primary HCP", async () => {
     const el = await make({
       hasHcp: false,
-      offered: [],
-      notOffered: []
+      offered: []
     });
     expect(text(el)).toContain("no Primary HCP yet");
   });

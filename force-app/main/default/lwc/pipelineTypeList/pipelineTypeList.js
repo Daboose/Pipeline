@@ -24,6 +24,7 @@ function implantColumns(valueHeading) {
   return [
     ["hcp", "Surgeon", (d) => d.hcp || "", false, true],
     ["facility", "Hospital", (d) => d.facility || "", false, true],
+    ["country", "Country", (d) => d.ownerCountry || "", false, true],
     ["segment", "Portfolio", (d) => d.segment || "", false, true],
     ["brands", "Brand", (d) => d.brands || "", false, true],
     ["stage", "Stage", (d) => d.stage || "", false, true],
@@ -47,6 +48,7 @@ const COLUMNS = {
   risk: implantColumns("Value at risk / year"),
   rosa: [
     ["facility", "Healthcare facility", (d) => d.facility || "", false, true],
+    ["country", "Country", (d) => d.ownerCountry || "", false, true],
     ["dealtype", "Deal type", (d) => d.rosaDealType || "", false, true],
     ["stage", "Stage", (d) => d.stage || "", false, true],
     ["value", "ROSA value / year", (d) => Number(d.value) || 0, true, true],
@@ -66,6 +68,8 @@ const COLUMNS = {
     ["state", "State", (d) => d.ownerState || "", false, false]
   ]
 };
+
+const NO_COUNTRY = "nocountry"; // saved with the column choices when the person has hidden the Country column
 
 const FOLD_IN_DELAY_MS = 30; // lets the closed state be drawn first, so the unfolding runs
 const FOLD_MS = 450; // a little longer than the fold itself (0.4 s in the style sheet)
@@ -172,15 +176,32 @@ export default class PipelineTypeList extends LightningElement {
     }
   }
 
-  get defs() {
-    return COLUMNS[this.kind];
+  /** More than one country among the deals in this list (the country of each deal's owner). */
+  get multiCountry() {
+    return (
+      new Set((this.deals || []).map((d) => d.ownerCountry).filter(Boolean))
+        .size > 1
+    );
   }
+  /** The columns this list can show: Country only when the deals come from more than one country (Robert, 2026-11-07). */
+  get defs() {
+    return COLUMNS[this.kind].filter(
+      (c) => c[0] !== "country" || this.multiCountry
+    );
+  }
+  /**
+   * The columns on show. Country comes on by itself when there is more than one country, unless the person has switched it off:
+   * that is saved as the marker "nocountry" beside their other choices (a layout saved before Country existed has neither).
+   */
   get chosenIds() {
-    const ids =
-      this.columns && this.columns.length
-        ? this.columns
-        : this.defs.filter((c) => c[4]).map((c) => c[0]);
-    return ids;
+    if (!(this.columns && this.columns.length))
+      return this.defs.filter((c) => c[4]).map((c) => c[0]);
+    const ids = this.columns;
+    return this.multiCountry &&
+      !ids.includes("country") &&
+      !ids.includes(NO_COUNTRY)
+      ? [...ids, "country"]
+      : ids;
   }
   get visibleDefs() {
     return this.defs.filter((c) => this.chosenIds.includes(c[0]));
@@ -471,6 +492,8 @@ export default class PipelineTypeList extends LightningElement {
         return { ...base, text: d.stage || "–" };
       case "quarter":
         return { ...base, text: d.quarter || "–" };
+      case "country":
+        return { ...base, text: d.ownerCountry || "–" };
       case "state":
         return { ...base, text: d.ownerState || "–" };
       default:
@@ -585,6 +608,8 @@ export default class PipelineTypeList extends LightningElement {
     let next = event.target.checked ? [...on, id] : on.filter((x) => x !== id);
     next = this.defs.map((c) => c[0]).filter((x) => next.includes(x));
     if (!next.length) return;
+    // switching Country off is remembered, or it would come straight back on while there is more than one country
+    if (this.multiCountry && !next.includes("country")) next.push(NO_COUNTRY);
     this.dispatchEvent(
       new CustomEvent("columnschange", {
         detail: { kind: this.kind, columns: next }

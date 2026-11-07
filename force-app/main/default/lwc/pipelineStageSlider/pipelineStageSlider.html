@@ -2,7 +2,6 @@
   <div class={wrapCls} role="group" aria-label="Stage">
     <span class="slbl">Stage</span>
     <div class={trackCls}>
-      <div class="trail" lwc:ref="trail"></div>
       <div class="pill" lwc:ref="pill" aria-hidden="true"></div>
       <template for:each={items} for:item="item">
         <button
@@ -14,6 +13,18 @@
           onclick={handleClick}
         >
           {item.value}
+          <span class="tick" lwc:if={item.done} aria-label="finished">
+            <svg viewBox="0 0 12 12" aria-hidden="true">
+              <path
+                d="M2.4 6.6l2.5 2.5 4.7-5.4"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              ></path>
+            </svg>
+          </span>
         </button>
       </template>
     </div>

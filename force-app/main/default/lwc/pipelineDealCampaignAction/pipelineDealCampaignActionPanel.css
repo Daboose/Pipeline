@@ -1,0 +1,22 @@
+/* Desktop pop-up (Salesforce supplies the frame). Kept in step with pipelineDealCampaignAction.css (the phone). */
+@import "c/pipelineStyles";
+
+:host {
+  display: block;
+  /* Pipeline colours for a standard Salesforce page (light): the Campaigns list inside takes them from here */
+  --panel: #ffffff;
+  --panel2: #eef2fa;
+  --bg: #f3f3f3;
+  --line: #d5dcea;
+  --edge: #b3bfd6;
+  --text: #1b2640;
+  --muted: #5d6b85;
+  --indigo: #4f46e5;
+  --indigo2: #4338ca;
+  --ok: #0f9d74;
+  --warn: #c2570c;
+  --bad: #dc2626;
+  --pline: #d5dcea;
+  --pfield: #ffffff;
+  color: var(--text);
+}

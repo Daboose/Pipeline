@@ -42,7 +42,6 @@ const FIELDS = {
   opp: [
     ["Account__c", "Primary HCP", "lookup", true],
     ["Healthcare_Facility__c", "Healthcare facility", "lookup"],
-    ["Stage__c", "Stage", "picklist", true],
     ["Expected_Closure_Quarter__c", "Expected closing quarter", "picklist"],
     ["Expected_Closing_Year__c", "Expected closing year", "picklist"],
     ["AmountPerYear__c", "Expected annual value", "number"],
@@ -60,7 +59,6 @@ const FIELDS = {
   risk: [
     ["Account__c", "Primary HCP", "lookup", true],
     ["Healthcare_Facility__c", "Healthcare facility", "lookup"],
-    ["Stage__c", "Stage", "picklist", true],
     ["Expected_Closure_Quarter__c", "Expected closing quarter", "picklist"],
     ["Expected_Closing_Year__c", "Expected closing year", "picklist"],
     ["AmountPerYear__c", "Annual value at risk", "number"],
@@ -78,7 +76,6 @@ const FIELDS = {
     ["ROSA_Sales_Type__c", "ROSA sales type", "multi", false, true],
     ["ROSAGrowthDollar__c", "ROSA growth $", "number"],
     ["CurrencyIsoCode", "Currency", "picklist"],
-    ["Stage__c", "Stage", "picklist", true],
     ["Expected_Closure_Quarter__c", "Expected closing quarter", "picklist"],
     ["Expected_Closing_Year__c", "Expected closing year", "picklist"],
     ["Install_Date__c", "Install date", "date"],
@@ -95,6 +92,18 @@ const FIELDS = {
     ["Objective__c", "Background information", "textarea", false, true]
   ]
 };
+const MYMO_FIELD = "myMo__c";
+const MYMO_STAGE_FIELD = "myMo_Stage__c"; // shown only while MyMo is Yes
+/** Yes turns the whole slider solid green; for On hold, a warning rather than good news, solid amber (Robert, 2026-11-07). */
+const YES_NO_GOOD = [
+  { value: "no", label: "No" },
+  { value: "yes", label: "Yes", tone: "good" }
+];
+const YES_NO_WARN = [
+  { value: "no", label: "No" },
+  { value: "yes", label: "Yes", tone: "warn" }
+];
+const ON_HOLD_FIELD = "OnHold__c";
 const VALUE_LABEL = {
   opp: "Expected annual value",
   risk: "Annual value at risk",
@@ -413,7 +422,9 @@ export default class PipelineDeal extends LightningElement {
     return this._deal ? this._deal.kind : "opp";
   }
   get optionalFields() {
-    const out = FIELDS[this.kind].map((f) => `SalesRisks__c.${f[0]}`);
+    // the stage is not a field of the form (the slider sets it) but it is still read, so the slider shows the saved stage
+    const out = ["SalesRisks__c.Stage__c"];
+    FIELDS[this.kind].forEach((f) => out.push(`SalesRisks__c.${f[0]}`));
     FIELDS[this.kind]
       .filter((f) => f[2] === "lookup")
       .forEach((f) =>
@@ -469,6 +480,22 @@ export default class PipelineDeal extends LightningElement {
   }
 
   /* ----- header ----- */
+  /** Only an opportunity has an On hold field (a risk and a ROSA deal have none), so only an opportunity can carry the marker. */
+  get hasHoldTag() {
+    return this.kind === "opp";
+  }
+  /** On hold now: what is on the slider (so it follows a change before it is saved), or, before the record has loaded, what the list said. */
+  get isOnHold() {
+    return this.fieldsLoaded
+      ? !!this.valueOf(ON_HOLD_FIELD)
+      : !!(this._deal && this._deal.onHold);
+  }
+  get holdTagCls() {
+    return this.isOnHold ? "hold" : "hold off";
+  }
+  get holdTagHidden() {
+    return this.isOnHold ? "false" : "true";
+  }
   get title() {
     const d = this._deal || {};
     return (this.kind === "rosa" ? d.facility : d.hcp) || d.name || "";
@@ -562,19 +589,59 @@ export default class PipelineDeal extends LightningElement {
    * stays a row of its own, read only.
    */
   get fieldRows() {
-    const rows = this.rawFieldRows;
+    let rows = this.flagged(this.rawFieldRows);
     const quarter = rows.find((r) => r.api === QUARTER_FIELD);
     const year = rows.find((r) => r.api === YEAR_FIELD);
-    if (!(quarter && year && quarter.isSelect && year.isSelect)) return rows;
-    quarter.pair = year;
-    quarter.label = "Expected closing quarter and year";
-    quarter.cls =
-      "field paired" +
-      (QUARTER_FIELD in this.draft || YEAR_FIELD in this.draft
-        ? " changed"
-        : "");
-    return rows.filter((r) => r !== year);
+    if (quarter && year && quarter.isSelect && year.isSelect) {
+      quarter.pair = year;
+      quarter.label = "Expected closing quarter and year";
+      quarter.cls =
+        "field paired" +
+        (QUARTER_FIELD in this.draft || YEAR_FIELD in this.draft
+          ? " changed"
+          : "");
+      rows = rows.filter((r) => r !== year);
+    }
+    return rows.map((r) => {
+      const fold = r.api === MYMO_STAGE_FIELD;
+      return {
+        ...r,
+        wrapCls:
+          "cell" +
+          (r.cls.includes(" wide") || r.isFlags || fold ? " wide" : "") +
+          (fold ? " fold" + (this.valueOf(MYMO_FIELD) ? " open" : "") : "")
+      };
+    });
   }
+  /**
+   * The Yes / No fields (On hold, Rep priority, State priority, MyMo) come together as one row of one-pill sliders, each
+   * with its label as the left end of the pill (Robert, 2026-11-07; mockup pipeline_deal_toggles_v1.html, option B).
+   */
+  flagged(rows) {
+    const bools = rows.filter((r) => r.isBool);
+    if (!bools.length) return rows;
+    const flagRow = {
+      api: "__flags",
+      cls: "field",
+      hasLabel: false,
+      isFlags: true,
+      flags: bools.map((r) => ({
+        api: r.api,
+        label: r.label,
+        value: r.on ? "yes" : "no",
+        options: r.api === ON_HOLD_FIELD ? YES_NO_WARN : YES_NO_GOOD,
+        locked: !r.canEdit,
+        cls: "flag"
+      }))
+    };
+    const out = [];
+    rows.forEach((r) => {
+      if (!r.isBool) out.push(r);
+      else if (r === bools[0]) out.push(flagRow);
+    });
+    return out;
+  }
+
   get rawFieldRows() {
     if (!this.fieldsLoaded) return [];
     return FIELDS[this.kind]
@@ -586,6 +653,7 @@ export default class PipelineDeal extends LightningElement {
         const row = {
           api: fieldName,
           label,
+          hasLabel: true,
           req: !!req,
           value: value === null || value === undefined ? "" : value,
           cls:
@@ -594,6 +662,7 @@ export default class PipelineDeal extends LightningElement {
             (fieldName in this.draft ? " changed" : "")
         };
         let control = editable ? type : "readonly";
+        if (type === "bool") control = "bool"; // shown as a slider even when the person cannot change it (greyed)
         if ((control === "picklist" || control === "multi") && !choices)
           control = "readonly";
         if (control === "picklist") {
@@ -623,8 +692,8 @@ export default class PipelineDeal extends LightningElement {
           row.isDate = true;
         } else if (control === "bool") {
           row.isBool = true;
-          row.text = value ? "Yes" : "No";
-          row.togCls = "tog" + (value ? " on" : "");
+          row.canEdit = editable;
+          row.on = !!value;
         } else if (control === "textarea") {
           row.isTextarea = true;
         } else {
@@ -709,9 +778,11 @@ export default class PipelineDeal extends LightningElement {
     const v = event.target.value;
     this.setDraft(event.target.dataset.api, v === "" ? "" : Number(v));
   }
-  handleBool(event) {
-    const fieldName = event.currentTarget.dataset.api;
-    this.setDraft(fieldName, !this.valueOf(fieldName));
+  handleFlag(event) {
+    this.setDraft(
+      event.currentTarget.dataset.api,
+      event.detail.value === "yes"
+    );
   }
   handleMulti(event) {
     const { api: fieldName, value } = event.currentTarget.dataset;

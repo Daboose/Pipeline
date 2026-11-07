@@ -1,15 +1,17 @@
 import { LightningElement, api } from "lwc";
 
 /**
- * pipelineStageSlider: the stage slider in the deal panel's header (Robert, 2026-11-07; mockup pipeline_deal_header_v2.html,
- * the fading trail). It replaces the old arrow path. One pill: a label end, a shaded track holding every stage, and one highlight
- * that slides, with a small spring and squash, to the stage the deal is at.
- * - A working stage: a blue trail fades in from the start of the track up to the highlight.
- * - The won stage: a flat green fill from the start up to the won stage, and the lost stage after it stays plain.
- * - The lost stage: the whole pill fills light red and the lost stage is a solid red.
- * - No stage set: every stage on the plain track, nothing highlighted.
- * Used by pipelineDeal. The parent owns the stage: a click only fires "change" with { value }, and nothing happens when readonly.
- * Colours come from the parent's CSS variables (--seg-*, --indigo) so dark and light both work.
+ * pipelineStageSlider: the stage slider in the deal panel's header (Robert, 2026-11-07; mockup pipeline_stage_slider_solid_v3.html,
+ * option B). One pill that is always a solid colour, like the Yes / No sliders: a label end, a darker track holding every stage, and
+ * one white highlight that slides, with a small spring and squash, to the stage the deal is at, carrying the colour as its text.
+ * - A working stage (Plan to 5th Case): solid blue (Pipeline's indigo).
+ * - The won stage (Conversion): solid green. The lost stage (Unsuccessful Conversion): solid red.
+ * - The stages still to come are dimmer (40% white), so progress shows; a stage the deal has moved past (not the won or lost stage)
+ *   carries a small tick in a little white circle after its name.
+ * - No stage set: every stage on the plain blue track, nothing highlighted.
+ * - Read only (the person may not change the stage): the whole slider is greyed and a click does nothing.
+ * Used by pipelineDeal. The parent owns the stage: a click only fires "change" with { value }.
+ * Colours: blue from the parent's --indigo; green and red are set here.
  */
 export default class PipelineStageSlider extends LightningElement {
   /** The stages in order, as plain words. */
@@ -36,7 +38,12 @@ export default class PipelineStageSlider extends LightningElement {
     return !!this.value && this.value === this.lost;
   }
   get wrapCls() {
-    return "wrap" + (this.isWon ? " good" : "") + (this.isLost ? " bad" : "");
+    return (
+      "wrap" +
+      (this.isWon ? " good" : "") +
+      (this.isLost ? " bad" : "") +
+      (this.readonly ? " lock" : "")
+    );
   }
   get trackCls() {
     return (
@@ -48,12 +55,17 @@ export default class PipelineStageSlider extends LightningElement {
   }
   get items() {
     const at = this.index;
-    const workingStage = at >= 0 && !this.isWon && !this.isLost;
     return (this.steps || []).map((value, i) => {
+      const finished =
+        at >= 0 && i < at && value !== this.won && value !== this.lost;
       let cls = i === at ? "opt on" : "opt";
-      if (workingStage && i < at) cls += " done";
-      if (this.isWon && i < at) cls += " in";
-      return { value, cls, pressed: i === at ? "true" : "false" };
+      if (at >= 0 && i > at) cls += " ahead";
+      return {
+        value,
+        cls,
+        done: finished,
+        pressed: i === at ? "true" : "false"
+      };
     });
   }
 
@@ -68,27 +80,23 @@ export default class PipelineStageSlider extends LightningElement {
     this.place(this.pillKey !== "");
   }
 
-  /** Puts the highlight and the trail under the chosen stage; after the first time they slide there. */
+  /** Puts the highlight under the chosen stage; after the first time it slides there. */
   place(animate) {
     const on = this.template.querySelector(".opt.on");
     const pill = this.refs.pill;
-    const trail = this.refs.trail;
-    if (!pill || !trail) return;
+    if (!pill) return;
     if (!on) {
       this.pillKey = "";
       this.placed = false;
       return;
     }
     if (!on.offsetWidth) return;
-    const key = `${on.offsetLeft}:${on.offsetWidth}:${this.isWon}`;
+    const key = `${on.offsetLeft}:${on.offsetWidth}`;
     if (key === this.pillKey) return;
     const first = this.pillKey === "";
     this.pillKey = key;
     pill.style.left = `${on.offsetLeft}px`;
     pill.style.width = `${on.offsetWidth}px`;
-    const end = on.offsetLeft + on.offsetWidth - 3;
-    // the won stage: a flat fill from the very start to just past the stage; a working stage: the trail inside the track
-    trail.style.width = `${this.isWon ? end + 7 : end}px`;
     if (first) {
       this.placed = true;
       // the first placing does not slide; sliding is switched on a moment later

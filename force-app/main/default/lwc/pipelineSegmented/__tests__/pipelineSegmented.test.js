@@ -50,4 +50,41 @@ describe("c-pipeline-segmented", () => {
     opts[1].click();
     expect(picked).toEqual(["dark"]);
   });
+  it("turns the whole pill green or amber while the chosen option has a tone, and not otherwise", async () => {
+    const options = [
+      { value: "no", label: "No" },
+      { value: "yes", label: "Yes", tone: "good" }
+    ];
+    const el = make({ heading: "Rep priority", value: "no", options });
+    await flush();
+    const wrap = () => el.shadowRoot.querySelector(".wrap");
+    expect(wrap().className).toBe("wrap");
+    el.value = "yes";
+    await flush();
+    expect(wrap().classList.contains("t-good")).toBe(true);
+    el.options = [
+      { value: "no", label: "No" },
+      { value: "yes", label: "Yes", tone: "warn" }
+    ];
+    await flush();
+    expect(wrap().classList.contains("t-warn")).toBe(true);
+    expect(wrap().classList.contains("t-good")).toBe(false);
+  });
+
+  it("ignores a press when it is disabled", async () => {
+    const el = make({
+      value: "no",
+      disabled: true,
+      options: [
+        { value: "no", label: "No" },
+        { value: "yes", label: "Yes" }
+      ]
+    });
+    await flush();
+    const changed = jest.fn();
+    el.addEventListener("change", changed);
+    el.shadowRoot.querySelector('button[data-value="yes"]').click();
+    expect(changed).not.toHaveBeenCalled();
+    expect(el.shadowRoot.querySelector(".wrap.off")).not.toBeNull();
+  });
 });

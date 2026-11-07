@@ -8,7 +8,8 @@ import { LightningElement, api } from "lwc";
  * --seg-muted) so dark and light both work.
  */
 export default class PipelineSegmented extends LightningElement {
-  /** The choices: [{ value, label, icon? }]. icon "sun" or "moon" shows a picture instead of the words. */
+  /** The choices: [{ value, label, icon?, tone? }]. icon "sun" or "moon" shows a picture instead of the words. tone "good" (green) or
+   *  "warn" (amber) makes the whole pill go that solid colour while that option is the chosen one (Robert, 2026-11-07: Yes in the deal panel). */
   @api options = [];
   /** The value of the chosen option. */
   @api value = "";
@@ -16,6 +17,8 @@ export default class PipelineSegmented extends LightningElement {
   @api heading = "";
   /** What the group is called for screen readers. */
   @api label = "Choose one";
+  /** True when the person may look but not change (greyed, and a press does nothing). */
+  @api disabled = false;
 
   placed = false;
   animated = false;
@@ -76,7 +79,17 @@ export default class PipelineSegmented extends LightningElement {
     }
   }
 
+  get wrapCls() {
+    const chosen = (this.options || []).find((o) => o.value === this.value);
+    return (
+      "wrap" +
+      (this.disabled ? " off" : "") +
+      (chosen && chosen.tone ? ` t-${chosen.tone}` : "")
+    );
+  }
+
   handleClick(event) {
+    if (this.disabled) return;
     const value = event.currentTarget.dataset.value;
     if (value === this.value) return;
     this.dispatchEvent(new CustomEvent("change", { detail: { value } }));

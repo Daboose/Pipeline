@@ -1,0 +1,10 @@
+<aura:component
+  implements="force:lightningQuickAction,force:hasRecordId"
+  description="Phone-capable quick action wrapper for the pipelineDealCampaignAction LWC. LWC quick actions are desktop-only."
+>
+  <c:pipelineDealCampaignAction
+    recordId="{!v.recordId}"
+    isEmbedded="true"
+    ondone="{!c.handleDone}"
+  />
+</aura:component>

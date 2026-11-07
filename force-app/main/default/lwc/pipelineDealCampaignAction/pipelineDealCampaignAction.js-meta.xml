@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+  <apiVersion>68.0</apiVersion>
+  <description
+  >Pipeline: the Campaigns button on a deal's record page. Puts one deal in or out of sales campaigns (Yes / No, saved at once). Runs as the desktop quick action; the Aura wrapper pipelineDealCampaignActionPhone hosts it on phones.</description>
+  <isExposed>true</isExposed>
+  <masterLabel>Pipeline Campaigns</masterLabel>
+  <targets>
+    <target>lightning__RecordAction</target>
+  </targets>
+  <targetConfigs>
+    <targetConfig targets="lightning__RecordAction">
+      <actionType>ScreenAction</actionType>
+      <objects>
+        <object>SalesRisks__c</object>
+      </objects>
+    </targetConfig>
+  </targetConfigs>
+</LightningComponentBundle>

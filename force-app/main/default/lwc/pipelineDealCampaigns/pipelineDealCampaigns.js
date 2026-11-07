@@ -83,9 +83,8 @@ export default class PipelineDealCampaigns extends LightningElement {
     return ((this.data && this.data.offered) || []).map((c) => ({
       id: c.id,
       name: c.name,
-      meta: [c.portfolios, c.managerName ? "Manager " + c.managerName : ""]
-        .filter(Boolean)
-        .join(" · "),
+      meta: c.portfolios,
+      manager: c.managerName,
       note: c.note
         ? "No longer fits: " + c.note + ". You can still take it out."
         : "",
@@ -99,18 +98,6 @@ export default class PipelineDealCampaigns extends LightningElement {
   }
   get noOffered() {
     return this.hasHcp && this.rows.length === 0;
-  }
-  get notOffered() {
-    return ((this.data && this.data.notOffered) || []).map((c) => ({
-      id: c.id,
-      name: c.name,
-      meta: [c.portfolios, c.managerName ? "Manager " + c.managerName : ""]
-        .filter(Boolean)
-        .join(" · ")
-    }));
-  }
-  get hasNotOffered() {
-    return this.notOffered.length > 0;
   }
   async handlePick(event) {
     const campaignId = event.currentTarget.dataset.id;

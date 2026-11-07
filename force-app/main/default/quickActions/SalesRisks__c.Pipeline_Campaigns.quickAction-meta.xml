@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<QuickAction xmlns="http://soap.sforce.com/2006/04/metadata">
+    <description
+  >Pipeline: put this deal in or out of sales campaigns. Desktop version (the phone has Pipeline_Campaigns_Phone). Show it by device in App Builder.</description>
+    <label>Campaigns</label>
+    <lightningWebComponent>pipelineDealCampaignAction</lightningWebComponent>
+    <optionsCreateFeedItem>false</optionsCreateFeedItem>
+    <type>LightningWebComponent</type>
+</QuickAction>

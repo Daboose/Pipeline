@@ -1,25 +1,33 @@
 :host {
   display: inline-block;
-  /* colours: from Pipeline's own variables */
-  --seg-lab: var(--panel);
-  --seg-track: var(--panel2);
-  --seg-line: var(--edge);
-  --seg-optx: var(--muted);
-  --seg-muted: var(--muted);
-  --seg-shadow: rgba(0, 0, 0, 0.35);
   --win: #16a34a;
   --lose: #dc2626;
 }
+/* always a solid colour (--c): blue while working, green at the won stage, red at the lost stage; the chosen stage is a white
+   pill carrying that colour as its text (Robert, 2026-11-07; mockup pipeline_stage_slider_solid_v3.html, option B) */
 .wrap {
+  --c: var(--indigo);
   display: flex;
   align-items: stretch;
   width: fit-content;
   border-radius: 999px;
-  background: var(--seg-lab);
-  border: 1px solid var(--seg-line);
+  background: var(--c);
+  border: 1px solid var(--c);
   font-family:
     -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-  transition: border-color 0.4s;
+  transition:
+    background 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+    border-color 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+    opacity 0.4s;
+}
+.wrap.good {
+  --c: var(--win);
+}
+.wrap.bad {
+  --c: var(--lose);
+}
+.wrap.lock {
+  opacity: 0.55;
 }
 .slbl {
   display: inline-flex;
@@ -29,7 +37,7 @@
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--seg-muted);
+  color: #fff;
   white-space: nowrap;
 }
 .choices {
@@ -39,27 +47,11 @@
   margin: -1px -1px -1px 0;
   padding: 3px;
   border-radius: 999px;
-  background: var(--seg-track);
-  border: 1px solid var(--seg-line);
+  background: color-mix(in srgb, var(--c) 82%, #000);
+  border: 1px solid var(--c);
   transition:
-    background 0.4s,
-    border-color 0.4s;
-}
-.trail {
-  position: absolute;
-  top: 3px;
-  left: 3px;
-  height: 28px;
-  width: 0;
-  border-radius: 999px;
-  z-index: 0;
-  pointer-events: none;
-  opacity: 0;
-  background: linear-gradient(
-    90deg,
-    color-mix(in srgb, var(--indigo) 8%, transparent),
-    color-mix(in srgb, var(--indigo) 55%, transparent)
-  );
+    background 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+    border-color 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 .pill {
   position: absolute;
@@ -68,28 +60,19 @@
   width: 0;
   height: 28px;
   border-radius: 999px;
-  background: var(--indigo);
-  box-shadow: 0 4px 14px var(--seg-shadow);
+  background: #fff;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
   z-index: 0;
   pointer-events: none;
   opacity: 0;
-  transition:
-    background 0.4s,
-    box-shadow 0.4s;
 }
-.choices.placed .pill,
-.choices.placed .trail {
+.choices.placed .pill {
   opacity: 1;
 }
 .choices.animated .pill {
   transition:
     left 0.55s cubic-bezier(0.3, 1.35, 0.5, 1),
-    width 0.55s cubic-bezier(0.3, 1.35, 0.5, 1),
-    background 0.4s,
-    box-shadow 0.4s;
-}
-.choices.animated .trail {
-  transition: width 0.55s cubic-bezier(0.3, 1.35, 0.5, 1);
+    width 0.55s cubic-bezier(0.3, 1.35, 0.5, 1);
 }
 .pill.squish {
   animation: squish 0.55s ease-out;
@@ -108,12 +91,14 @@
 .opt {
   position: relative;
   z-index: 1;
+  display: inline-flex;
+  align-items: center;
   height: 28px;
   padding: 0 15px;
   border: 0;
   border-radius: 999px;
   background: transparent;
-  color: var(--seg-optx);
+  color: #fff;
   font: inherit;
   font-size: 12px;
   font-weight: 700;
@@ -126,66 +111,51 @@
 .choices.ro .opt {
   cursor: default;
 }
-.opt.on {
-  color: #fff;
+/* the stages still to come are dimmer (40% white), so progress shows */
+.opt.ahead {
+  color: rgba(255, 255, 255, 0.4);
 }
-.opt.done {
-  color: var(--text);
+.opt.on {
+  color: var(--c);
 }
 .opt:hover:not(.on) {
-  background: rgba(127, 140, 180, 0.16);
+  background: rgba(255, 255, 255, 0.14);
 }
 .choices.ro .opt:hover:not(.on) {
   background: transparent;
 }
-/* a not yet drawn highlight: the chosen stage carries its own colour so it never looks unselected */
+.opt:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 1px;
+}
+/* a not yet drawn highlight: the chosen stage carries its own white so it never looks unselected */
 .choices:not(.placed) .opt.on {
-  background: var(--indigo);
+  background: #fff;
 }
-
-/* won: a flat green fill from the start up to the won stage (it stops there) */
-.wrap.good .pill {
-  background: var(--win);
-  box-shadow: 0 4px 14px rgba(22, 163, 74, 0.45);
+/* a stage the deal has moved past: a small white circle with a tick in the slider's colour, after the name */
+.tick {
+  display: inline-flex;
+  flex: none;
+  width: 16px;
+  height: 16px;
+  margin-left: 7px;
+  padding: 2px;
+  border-radius: 50%;
+  background: #fff;
+  color: var(--c);
+  transition: color 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
-.wrap.good .trail {
-  top: -1px;
-  bottom: -1px;
-  left: -1px;
-  height: auto;
-  background: color-mix(in srgb, var(--win) 20%, var(--seg-lab));
-  border: 1px solid color-mix(in srgb, var(--win) 55%, var(--seg-lab));
-}
-.wrap.good .opt.in {
-  color: color-mix(in srgb, var(--win) 75%, var(--text));
-}
-.wrap.good .choices:not(.placed) .opt.on {
-  background: var(--win);
-}
-/* lost: the whole pill fills light red, the lost stage solid red */
-.wrap.bad {
-  border-color: color-mix(in srgb, var(--lose) 45%, var(--seg-lab));
-}
-.wrap.bad .choices {
-  background: color-mix(in srgb, var(--lose) 18%, var(--seg-lab));
-  border-color: color-mix(in srgb, var(--lose) 45%, var(--seg-lab));
-}
-.wrap.bad .pill {
-  background: var(--lose);
-  box-shadow: 0 4px 14px rgba(220, 38, 38, 0.45);
-}
-.wrap.bad .trail {
-  display: none;
-}
-.wrap.bad .opt:not(.on) {
-  color: color-mix(in srgb, var(--lose) 75%, var(--text));
-}
-.wrap.bad .choices:not(.placed) .opt.on {
-  background: var(--lose);
+.tick svg {
+  width: 100%;
+  height: 100%;
 }
 @media (prefers-reduced-motion: reduce) {
-  .choices.animated .pill,
-  .choices.animated .trail {
+  .wrap,
+  .choices,
+  .tick {
+    transition: none;
+  }
+  .choices.animated .pill {
     transition: none;
   }
   .pill.squish {

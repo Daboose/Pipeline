@@ -168,8 +168,7 @@ private class PipelineDealCampaignControllerTest {
       System.assertEquals(1, dc.offered.size());
       System.assertEquals(fits, dc.offered[0].id);
       System.assertEquals(false, dc.offered[0].linked);
-      System.assertEquals(1, dc.notOffered.size()); // fits except that the surgeon is not a member
-      System.assertEquals(noSurgeon, dc.notOffered[0].id);
+      // the campaign whose members do not include the surgeon is never listed
 
       PipelineDealCampaignController.setLink(d.Id, fits, true);
       PipelineDealCampaignController.setLink(d.Id, fits, true); // twice is the same as once

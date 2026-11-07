@@ -1,0 +1,45 @@
+/* Phone (hosted by the Aura wrapper). Kept in step with pipelineDealCampaignActionPanel.css (desktop). */
+@import "c/pipelineStyles";
+
+:host {
+  display: block;
+  /* Pipeline colours for a standard Salesforce page (light): the Campaigns list inside takes them from here */
+  --panel: #ffffff;
+  --panel2: #eef2fa;
+  --bg: #f3f3f3;
+  --line: #d5dcea;
+  --edge: #b3bfd6;
+  --text: #1b2640;
+  --muted: #5d6b85;
+  --indigo: #4f46e5;
+  --indigo2: #4338ca;
+  --ok: #0f9d74;
+  --warn: #c2570c;
+  --bad: #dc2626;
+  --pline: #d5dcea;
+  --pfield: #ffffff;
+  color: var(--text);
+}
+/* one layer per rule; the phone fills the screen under Salesforce's own Cancel and title, measured in the component's fit() */
+.shell {
+  display: flex;
+  flex-direction: column;
+  height: var(--fit-height, 70vh);
+  background: var(--bg);
+}
+.body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 12px;
+}
+.bar {
+  flex: none;
+  padding: 10px 12px 8px;
+  background: #fff;
+  border-top: 1px solid var(--line);
+}
+.done {
+  width: 100%;
+  padding: 14px;
+}

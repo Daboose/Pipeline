@@ -1,5 +1,5 @@
 <template>
-  <div class="wrap" role="group" aria-label={label}>
+  <div class={wrapCls} role="group" aria-label={label} aria-disabled={disabled}>
     <span class="slbl" lwc:if={heading}>{heading}</span>
     <div class={trackCls}>
       <div class="pill" lwc:ref="pill" aria-hidden="true"></div>

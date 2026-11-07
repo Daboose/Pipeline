@@ -1,0 +1,724 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Mockup: green and amber, light fill or solid (version 4)</title>
+    <style>
+      :root,
+      [data-theme="light"] {
+        --page: #e9edf4;
+        --card: #ffffff;
+        --box: #eef2fa;
+        --line: #d5dcea;
+        --edge: #b3bfd6;
+        --text: #1b2640;
+        --muted: #5d6b85;
+        --pipe: #b7791f;
+        --indigo: #4f46e5;
+        --field: #ffffff;
+        --slate: #64748b;
+        --head: #db2777;
+        --shadow: rgba(79, 70, 229, 0.35);
+      }
+      [data-theme="dark"] {
+        --page: #141e2e;
+        --card: #1a2740;
+        --box: #20304f;
+        --line: #2f4163;
+        --edge: #5b6f93;
+        --text: #e8edf5;
+        --muted: #9fb0cc;
+        --pipe: #fdb827;
+        --indigo: #6366f1;
+        --field: #11151c;
+        --slate: #475569;
+        --head: #f472b6;
+        --shadow: rgba(0, 0, 0, 0.35);
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--page);
+        color: var(--text);
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-size: 15px;
+      }
+      button {
+        font-family: inherit;
+        font-size: inherit;
+        color: inherit;
+      }
+      .sp {
+        flex: 1;
+      }
+      .muted {
+        color: var(--muted);
+      }
+      .sfnav {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        height: 44px;
+        padding: 0 16px;
+        background: #0b1220;
+        color: #cdd6e6;
+        font-size: 14px;
+      }
+      .sfnav .app {
+        font-weight: 800;
+        letter-spacing: 0.14em;
+      }
+      .sfnav .app b {
+        color: #fdb827;
+      }
+      .sfnav .tab {
+        color: #9fb0cc;
+      }
+      .sfnav .tab.on {
+        color: #fff;
+        border-bottom: 2px solid #6366f1;
+        padding-bottom: 2px;
+      }
+      .btn,
+      .pill {
+        border: 0;
+        border-radius: 999px;
+        padding: 7px 16px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+        background: var(--slate);
+        color: #fff;
+      }
+      .pill.on {
+        background: var(--indigo);
+      }
+      .about {
+        margin: 14px 16px;
+        padding: 12px 18px;
+        background: var(--card);
+        border: 1px solid var(--edge);
+        border-radius: 12px;
+        line-height: 1.5;
+        max-width: 1100px;
+      }
+      .about summary {
+        cursor: pointer;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        color: var(--pipe);
+      }
+      .about ul {
+        margin: 4px 0 8px;
+        padding-left: 22px;
+      }
+      .tools {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+        padding: 0 16px 10px;
+      }
+      .tools .lab {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        margin-left: 14px;
+      }
+      .tools .lab:first-child {
+        margin-left: 0;
+      }
+      .mocknote {
+        margin: 0 16px 12px;
+        padding: 8px 14px;
+        border: 1px dashed var(--edge);
+        border-radius: 10px;
+        color: var(--muted);
+        font-size: 14px;
+        font-style: italic;
+        max-width: 1100px;
+      }
+      .cols {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(440px, 1fr));
+        gap: 16px;
+        padding: 0 16px 40px;
+        align-items: start;
+      }
+      .opt {
+        background: var(--card);
+        border: 1px solid var(--edge);
+        border-radius: 14px;
+        padding: 14px 18px 18px;
+      }
+      .opt h2 {
+        margin: 0 0 2px;
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--head);
+      }
+      .opt .why {
+        color: var(--muted);
+        font-size: 14px;
+        margin: 0 0 12px;
+        min-height: 40px;
+      }
+      .fgrid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px 16px;
+        align-items: end;
+      }
+      .f label {
+        display: block;
+        font-size: 11px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--muted);
+        font-weight: 800;
+        margin-bottom: 4px;
+      }
+      .f .ro,
+      .f select {
+        width: 100%;
+        background: var(--field);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 0 11px;
+        height: 38px;
+        display: flex;
+        align-items: center;
+        color: var(--text);
+        font-size: 15px;
+      }
+      .f.full {
+        grid-column: 1 / 3;
+      }
+
+      /* the toggle button as it is today */
+      .tog {
+        height: 38px;
+        min-width: 70px;
+        padding: 0 16px;
+        border-radius: 999px;
+        border: 1px solid var(--edge);
+        background: var(--box);
+        color: var(--muted);
+        font-weight: 700;
+        cursor: pointer;
+      }
+      .tog.on {
+        background: var(--indigo);
+        border-color: var(--indigo);
+        color: #fff;
+      }
+
+      /* the one-pill slider (as in the Campaigns list and the stage path): label end, shaded track, one sliding highlight */
+      .yn {
+        display: inline-flex;
+        align-items: stretch;
+        height: 38px;
+        background: var(--card);
+        border: 1px solid var(--edge);
+        border-radius: 999px;
+      }
+      .yn .lb {
+        display: inline-flex;
+        align-items: center;
+        padding: 0 14px 0 18px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+        white-space: nowrap;
+      }
+      .yn .trk {
+        position: relative;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        margin: -1px;
+        padding: 3px;
+        background: var(--box);
+        border: 1px solid var(--edge);
+        border-radius: 999px;
+        min-width: 132px;
+      }
+      .yn.nolabel .trk {
+        margin: -1px;
+      }
+      .yn button {
+        position: relative;
+        z-index: 2;
+        height: 28px;
+        border: 0;
+        background: none;
+        padding: 0 16px;
+        font-weight: 700;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+        cursor: pointer;
+        transition: color 0.25s;
+      }
+      .yn i {
+        position: absolute;
+        z-index: 1;
+        top: 3px;
+        left: 3px;
+        height: 28px;
+        width: calc(50% - 3px);
+        border-radius: 999px;
+        background: var(--indigo);
+        box-shadow: 0 4px 14px var(--shadow);
+        transition: transform 0.45s cubic-bezier(0.3, 1.35, 0.5, 1);
+      }
+      .yn.yes i {
+        transform: translateX(100%);
+      }
+      .yn.no button.n,
+      .yn.yes button.y {
+        color: #fff;
+      }
+      .yn.lock {
+        opacity: 0.55;
+      }
+      .yn.lock button,
+      .tog.lock {
+        cursor: default;
+      }
+      .tog.lock {
+        opacity: 0.55;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .yn i,
+        .yn button {
+          transition: none;
+        }
+      }
+      /* MyMo stage folds open only while MyMo is Yes (the motion standard: 0.4 s, the same easing) */
+      .foldf {
+        grid-column: 1 / 3;
+        display: grid;
+        grid-template-rows: 0fr;
+        margin-top: -12px;
+        transition:
+          grid-template-rows 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+          margin-top 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .foldf.open {
+        grid-template-rows: 1fr;
+        margin-top: 0;
+      }
+      .foldf > div {
+        overflow: hidden;
+        min-height: 0;
+      }
+      .foldf .f {
+        max-width: calc(50% - 8px);
+        padding-bottom: 2px;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .foldf {
+          transition: none;
+        }
+      }
+      /* option B: the label lives in the pill, so the four sit as a tidy row of pills and the grid label is dropped */
+      .row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px 14px;
+        grid-column: 1 / 3;
+        padding-top: 4px;
+      }
+
+      :root,
+      [data-theme="light"],
+      [data-theme="dark"] {
+        --win: #16a34a; /* the Conversion bar's green (pipelineStageSlider) */
+        --hold: #f59e0b; /* the amber for On hold: a warning, not a good thing */
+      }
+      .cols {
+        grid-template-columns: repeat(auto-fit, minmax(520px, 1fr));
+        max-width: 1300px;
+      }
+      .stack {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        gap: 12px 14px;
+        padding-top: 6px;
+      }
+      .yn,
+      .yn .trk,
+      .yn .lb {
+        transition:
+          background 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+          border-color 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+          color 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .yn i {
+        transition:
+          transform 0.45s cubic-bezier(0.3, 1.35, 0.5, 1),
+          background 0.4s;
+      }
+      /* C1: exactly the Conversion bar's treatment: solid green highlight, a light green fill behind it with a green edge, green text */
+      .c1 .yn.yes {
+        border-color: color-mix(in srgb, var(--win) 55%, var(--card));
+      }
+      .c1 .yn.yes .trk {
+        background: color-mix(in srgb, var(--win) 20%, var(--card));
+        border-color: color-mix(in srgb, var(--win) 55%, var(--card));
+      }
+      .c1 .yn.yes .lb {
+        color: color-mix(in srgb, var(--win) 75%, var(--text));
+      }
+      .c1 .yn.yes i {
+        background: var(--win);
+        box-shadow: 0 4px 14px rgba(22, 163, 74, 0.45);
+      }
+      .c1 .yn.yes button.n {
+        color: color-mix(in srgb, var(--win) 75%, var(--text));
+      }
+      /* C2: the whole pill solid green, white text, a white highlight carrying a green YES */
+      .c2 .yn.yes {
+        background: var(--win);
+        border-color: var(--win);
+      }
+      .c2 .yn.yes .trk {
+        background: color-mix(in srgb, var(--win) 82%, #000);
+        border-color: var(--win);
+      }
+      .c2 .yn.yes .lb,
+      .c2 .yn.yes button.n {
+        color: #fff;
+      }
+      .c2 .yn.yes i {
+        background: #fff;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+      }
+      .c2 .yn.yes button.y {
+        color: var(--win);
+      }
+
+      /* On hold: the same C1 treatment in amber (a warning), not green */
+      .amber .yn.yes[data-key="hold"] {
+        border-color: color-mix(in srgb, var(--hold) 60%, var(--card));
+      }
+      .amber .yn.yes[data-key="hold"] .trk {
+        background: color-mix(in srgb, var(--hold) 22%, var(--card));
+        border-color: color-mix(in srgb, var(--hold) 60%, var(--card));
+      }
+      .amber .yn.yes[data-key="hold"] .lb,
+      .amber .yn.yes[data-key="hold"] button.n {
+        color: color-mix(in srgb, var(--hold) 55%, var(--text));
+      }
+      .amber .yn.yes[data-key="hold"] i {
+        background: var(--hold);
+        box-shadow: 0 4px 14px rgba(245, 158, 11, 0.45);
+      }
+      .amber .yn.yes[data-key="hold"] button.y {
+        color: #1b2640;
+      }
+
+      /* C2 with On hold amber: the whole pill solid amber, dark text for contrast, a white highlight carrying an amber YES */
+      .c2.amber .yn.yes[data-key="hold"] {
+        background: var(--hold);
+        border-color: var(--hold);
+      }
+      .c2.amber .yn.yes[data-key="hold"] .trk {
+        background: color-mix(in srgb, var(--hold) 78%, #92400e);
+        border-color: var(--hold);
+      }
+      .c2.amber .yn.yes[data-key="hold"] .lb,
+      .c2.amber .yn.yes[data-key="hold"] button.n {
+        color: #1b2640;
+      }
+      .c2.amber .yn.yes[data-key="hold"] i {
+        background: #fff;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+      }
+      .c2.amber .yn.yes[data-key="hold"] button.y {
+        color: #b45309;
+      }
+    </style>
+  </head>
+  <body data-theme="light">
+    <div class="sfnav">
+      <span class="app"><b>PIPE</b>LINE</span>
+      <span class="tab on">Pipeline</span>
+      <span class="tab">Opportunities &amp; Risks</span>
+      <span class="sp"></span>
+      <button type="button" class="btn" id="fullbtn">Full screen</button>
+    </div>
+
+    <details class="about" open>
+      <summary>ABOUT THIS MOCKUP</summary>
+      <p>
+        <b>Version 4, invented data only.</b> The deal panel's four Yes / No
+        sliders with <b>green</b> for Yes (Rep priority, State priority, MyMo)
+        and <b>amber</b> for On hold, shown two ways side by side so you can
+        compare them:
+      </p>
+      <ul>
+        <li>
+          <b>C1. Light fill (version 3):</b> on Yes a solid highlight, a light
+          fill behind it across the pill with a coloured edge, and coloured
+          text. This is the Conversion bar's own look.
+        </li>
+        <li>
+          <b>C2. Solid colour (from version 2):</b> on Yes the whole pill fills
+          solid green (solid amber for On hold) with a white highlight. The text
+          is white on green and dark navy on amber, because white on amber is
+          hard to read.
+        </li>
+        <li>
+          <b>Try it:</b> press No or Yes on any slider; the colour fades over
+          0.4 s as the highlight slides. <b>Person</b> shows a person who cannot
+          edit (greyed). <b>Theme</b> for dark.
+        </li>
+      </ul>
+      <p class="muted">
+        Not shown: the MyMo stage field, and Save and Cancel (unchanged).
+      </p>
+    </details>
+
+    <div class="tools">
+      <span class="lab" style="margin-left: 0">Person</span>
+      <button type="button" class="pill on" data-edit="yes">Can edit</button>
+      <button type="button" class="pill" data-edit="no">Cannot edit</button>
+      <span class="lab">Theme</span>
+      <button type="button" class="pill on" data-theme-btn="light">
+        Light
+      </button>
+      <button type="button" class="pill" data-theme-btn="dark">Dark</button>
+    </div>
+    <div class="mocknote" id="mocknote"></div>
+    <div class="cols" id="cols"></div>
+
+    <script>
+      var S = {
+        theme: "light",
+        deal: "opp",
+        edit: "yes",
+        v: { hold: false, rep: true, state: false, mymo: true }
+      };
+      var DEALS = {
+        opp: {
+          hcp: "Dr Lewis Chen",
+          fac: "Mater Hospital",
+          stage: "Commit",
+          q: "Q1 2027",
+          flags: [
+            ["hold", "On hold"],
+            ["rep", "Rep priority"],
+            ["state", "State priority"],
+            ["mymo", "MyMo"]
+          ],
+          extra: true
+        },
+        risk: {
+          hcp: "Dr Anna Ward",
+          fac: "Royal Perth Hospital",
+          stage: "Action",
+          q: "Q4 2026",
+          flags: [
+            ["rep", "Rep priority"],
+            ["state", "State priority"]
+          ]
+        },
+        rosa: {
+          hcp: "",
+          fac: "St Vincent's Private",
+          stage: "Plan",
+          q: "Q2 2027",
+          flags: [
+            ["rep", "Rep priority"],
+            ["state", "State priority"]
+          ]
+        }
+      };
+      function esc(s) {
+        return String(s).replace(/[&<>"]/g, function (c) {
+          return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
+        });
+      }
+      function lock() {
+        return S.edit === "no";
+      }
+      function slider(key, label, withLabel) {
+        var on = S.v[key];
+        return (
+          '<div class="yn ' +
+          (on ? "yes" : "no") +
+          (lock() ? " lock" : "") +
+          '" data-key="' +
+          key +
+          '">' +
+          (withLabel ? '<span class="lb">' + esc(label) + "</span>" : "") +
+          '<div class="trk"><i></i><button type="button" class="n" data-set="no" data-key="' +
+          key +
+          '">No</button><button type="button" class="y" data-set="yes" data-key="' +
+          key +
+          '">Yes</button></div></div>'
+        );
+      }
+      function toggle(key) {
+        var on = S.v[key];
+        return (
+          '<button type="button" class="tog' +
+          (on ? " on" : "") +
+          (lock() ? " lock" : "") +
+          '" data-flip="' +
+          key +
+          '">' +
+          (on ? "Yes" : "No") +
+          "</button>"
+        );
+      }
+      function topFields(d) {
+        return (
+          '<div class="f"><label>Primary HCP</label><div class="ro">' +
+          (d.hcp ? esc(d.hcp) : "–") +
+          '</div></div><div class="f"><label>Healthcare facility</label><div class="ro">' +
+          esc(d.fac) +
+          '</div></div><div class="f"><label>Stage</label><div class="ro">' +
+          d.stage +
+          '</div></div><div class="f"><label>Expected closing quarter</label><div class="ro">' +
+          d.q +
+          "</div></div>"
+        );
+      }
+      function mymoStage(d) {
+        return d.extra
+          ? '<div class="foldf' +
+              (S.v.mymo ? " open" : "") +
+              '"><div><div class="f"><label>MyMo stage</label><div class="ro">Evaluation</div></div></div></div>'
+          : "";
+      }
+      function panel(title, why, body) {
+        return (
+          '<div class="opt"><h2>' +
+          title +
+          '</h2><p class="why">' +
+          why +
+          '</p><div class="fgrid">' +
+          body +
+          "</div></div>"
+        );
+      }
+      var FLAGS = [
+        ["hold", "On hold"],
+        ["rep", "Rep priority"],
+        ["state", "State priority"],
+        ["mymo", "MyMo"]
+      ];
+      function row() {
+        return (
+          '<div class="stack">' +
+          FLAGS.map(function (f) {
+            return slider(f[0], f[1], true);
+          }).join("") +
+          "</div>"
+        );
+      }
+      function panel(cls, title, why) {
+        return (
+          '<div class="opt ' +
+          cls +
+          '"><h2>' +
+          title +
+          '</h2><p class="why">' +
+          why +
+          "</p>" +
+          row() +
+          "</div>"
+        );
+      }
+      function draw() {
+        document.body.setAttribute("data-theme", S.theme);
+        document.getElementById("cols").innerHTML =
+          panel(
+            "c1 amber",
+            "C1. Light fill, On hold amber",
+            "The Conversion bar's look: solid highlight, light fill across the pill, coloured text."
+          ) +
+          panel(
+            "c2 amber",
+            "C2. Solid colour, On hold amber",
+            "The whole pill solid green (amber for On hold), a white highlight with a coloured YES."
+          );
+        Array.prototype.forEach.call(
+          document.querySelectorAll("[data-edit]"),
+          function (x) {
+            x.classList.toggle("on", x.dataset.edit === S.edit);
+          }
+        );
+        Array.prototype.forEach.call(
+          document.querySelectorAll("[data-theme-btn]"),
+          function (x) {
+            x.classList.toggle("on", x.dataset.themeBtn === S.theme);
+          }
+        );
+        document.getElementById("mocknote").textContent =
+          S.edit === "no"
+            ? "Mockup note: a person who cannot edit the deal sees the sliders greyed and untouchable."
+            : "Mockup note: press No or Yes on any slider. The same four fields are shown two ways; they stay in step.";
+      }
+      document.addEventListener("click", function (e) {
+        var t = e.target.closest("[data-edit],[data-theme-btn],[data-set]");
+        if (!t) return;
+        var d = t.dataset;
+        if (d.themeBtn) {
+          S.theme = d.themeBtn;
+          draw();
+          return;
+        }
+        if (d.edit) {
+          S.edit = d.edit;
+          draw();
+          return;
+        }
+        if (lock()) return;
+        if (d.set) {
+          /* every version follows: move each slider for this field so the highlight and the colour animate together */
+          S.v[d.key] = d.set === "yes";
+          Array.prototype.forEach.call(
+            document.querySelectorAll('.yn[data-key="' + d.key + '"]'),
+            function (yn) {
+              yn.classList.toggle("yes", S.v[d.key]);
+              yn.classList.toggle("no", !S.v[d.key]);
+            }
+          );
+        }
+      });
+      document.getElementById("fullbtn").addEventListener("click", function () {
+        document.getElementById("mocknote").textContent =
+          "Mockup note: in Salesforce this opens Pipeline in a new full-screen tab without the Salesforce navigation.";
+      });
+      location.hash
+        .slice(1)
+        .split("&")
+        .forEach(function (p) {
+          var kv = p.split("=");
+          if (kv[0] === "edit") S.edit = kv[1];
+          if (kv[0] === "theme") S.theme = kv[1];
+          if (kv[0] === "mymo") S.v.mymo = kv[1] === "yes";
+          if (kv[0] === "hold") S.v.hold = kv[1] === "yes";
+          if (kv[0] === "state") S.v.state = kv[1] === "yes";
+        });
+      draw();
+    </script>
+  </body>
+</html>

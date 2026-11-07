@@ -9,17 +9,16 @@
         campaign. Add the Primary HCP to the deal first.
       </p>
       <template lwc:if={hasHcp}>
-        <p class="none" lwc:if={noOffered}>
-          No campaign fits this deal at the moment. A campaign is offered when
-          it is active, covers the country of the deal's owner and the deal's
-          portfolio, and has {hcpName} as a member.
-        </p>
+        <p class="none" lwc:if={noOffered}>No campaign is open to this deal.</p>
         <ul class="list" lwc:if={hasOffered}>
           <template for:each={rows} for:item="r">
             <li key={r.id} class="row">
               <div class="what">
                 <div class="nm">{r.name}</div>
                 <div class="meta">{r.meta}</div>
+                <div class="meta" lwc:if={r.manager}>
+                  Campaign Manager {r.manager}
+                </div>
                 <div class="warn" lwc:if={r.note}>{r.note}</div>
               </div>
               <div class="ctl">
@@ -37,20 +36,6 @@
             </li>
           </template>
         </ul>
-        <div class="left" lwc:if={hasNotOffered}>
-          <h4>Not offered, because {hcpName} is not a member</h4>
-          <ul class="plain">
-            <template for:each={notOffered} for:item="n">
-              <li key={n.id}>
-                <b>{n.name}</b> <span class="meta">{n.meta}</span>
-              </li>
-            </template>
-          </ul>
-          <p class="meta">
-            A campaign manager can add the surgeon to a campaign in Sales
-            Campaign Management.
-          </p>
-        </div>
       </template>
     </template>
   </div>

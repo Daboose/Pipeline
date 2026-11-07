@@ -26,7 +26,7 @@ public with sharing class PipelineDealCampaignController {
     @AuraEnabled
     public Boolean linked;
     @AuraEnabled
-    public String note; // why a campaign that the deal is in no longer fits, or why a campaign is not offered
+    public String note; // why a campaign that the deal is in no longer fits
   }
 
   /** Everything the control needs for one deal. */
@@ -43,8 +43,6 @@ public with sharing class PipelineDealCampaignController {
     public String portfolios;
     @AuraEnabled
     public List<Choice> offered = new List<Choice>();
-    @AuraEnabled
-    public List<Choice> notOffered = new List<Choice>(); // active campaigns that fit except for the surgeon
   }
 
   /** The portfolios of a deal: a risk or a ROSA deal carries them in Portfolio__c; an opportunity takes its from its record type. */
@@ -195,11 +193,7 @@ public with sharing class PipelineDealCampaignController {
       );
       Boolean linked = linkedTo.contains(c.Id);
       if (!linked && !why.isEmpty()) {
-        // only "active and fits except that the surgeon is not a member" is worth listing; the rest are left out
-        if (why.size() == 1 && why[0].endsWith('is not a member')) {
-          out.notOffered.add(choice(c, false, why[0]));
-        }
-        continue;
+        continue; // a campaign the deal cannot go into is never shown (Robert, 2026-11-07)
       }
       out.offered.add(
         choice(c, linked, why.isEmpty() ? null : String.join(why, '; '))

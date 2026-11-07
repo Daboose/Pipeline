@@ -40,8 +40,50 @@ describe("c-pipeline-stage-slider", () => {
       false,
       false
     ]);
-    expect(opts(el)[0].classList.contains("done")).toBe(true); // passed, so the trail covers it
     expect(el.shadowRoot.querySelector(".wrap").className).toBe("wrap");
+  });
+
+  it("dims the stages still to come and puts a tick after each stage already passed, none after the current one", async () => {
+    const el = make({ value: "Commit" });
+    await flush();
+    expect(opts(el).map((o) => o.classList.contains("ahead"))).toEqual([
+      false,
+      false,
+      false,
+      true,
+      true
+    ]);
+    expect(opts(el).map((o) => !!o.querySelector(".tick"))).toEqual([
+      true,
+      true,
+      false,
+      false,
+      false
+    ]);
+  });
+
+  it("ticks the working stages at the won stage, but never the won stage itself", async () => {
+    const el = make({ value: "Conversion" });
+    await flush();
+    expect(opts(el).map((o) => !!o.querySelector(".tick"))).toEqual([
+      true,
+      true,
+      true,
+      false,
+      false
+    ]);
+    const lost = make({ value: "Unsuccessful Conversion" });
+    await flush();
+    const ticks = [...lost.shadowRoot.querySelectorAll(".opt")].map(
+      (o) => !!o.querySelector(".tick")
+    );
+    expect(ticks).toEqual([true, true, true, false, false]);
+  });
+
+  it("greys the whole slider when read only", async () => {
+    const el = make({ value: "Plan", readonly: true });
+    await flush();
+    expect(el.shadowRoot.querySelector(".wrap").className).toContain("lock");
   });
 
   it("highlights nothing when no stage is set", async () => {
@@ -54,7 +96,6 @@ describe("c-pipeline-stage-slider", () => {
     const won = make({ value: "Conversion" });
     await flush();
     expect(won.shadowRoot.querySelector(".wrap").className).toContain("good");
-    expect(opts(won)[4].classList.contains("in")).toBe(false); // the lost stage after it stays plain
     const lost = make({ value: "Unsuccessful Conversion" });
     await flush();
     expect(lost.shadowRoot.querySelector(".wrap").className).toContain("bad");

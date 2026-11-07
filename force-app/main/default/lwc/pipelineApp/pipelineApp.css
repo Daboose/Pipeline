@@ -515,10 +515,48 @@
     transform: none;
   }
 }
+/* the screen going away slides out the other way at the same time, lifted out of the flow so the incoming one sits where it was */
+.main.out-left,
+.main.out-right {
+  position: absolute;
+  left: 0;
+  right: 0;
+  pointer-events: none;
+}
+.main.out-left {
+  animation: slideOutLeft 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+.main.out-right {
+  animation: slideOutRight 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+@keyframes slideOutLeft {
+  from {
+    opacity: 1;
+    transform: none;
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-6%);
+  }
+}
+@keyframes slideOutRight {
+  from {
+    opacity: 1;
+    transform: none;
+  }
+  to {
+    opacity: 0;
+    transform: translateX(6%);
+  }
+}
 @media (prefers-reduced-motion: reduce) {
   .main.slide-left,
   .main.slide-right {
     animation: none;
+  }
+  .main.out-left,
+  .main.out-right {
+    display: none;
   }
 }
 

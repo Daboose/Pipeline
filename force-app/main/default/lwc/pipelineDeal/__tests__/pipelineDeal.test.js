@@ -130,6 +130,173 @@ describe("c-pipeline-deal", () => {
     );
   });
 
+  describe("the header order and the stage", () => {
+    it("puts the summary line under the name and the stage slider in a band of its own under that, both in the header", async () => {
+      const el = createElement("c-pipeline-deal", { is: PipelineDeal });
+      el.deal = { ...deal, kind: "opp", stage: "Commit" };
+      document.body.appendChild(el);
+      await Promise.resolve();
+      const kids = [...el.shadowRoot.querySelector(".fhead").children].map(
+        (c) => c.className
+      );
+      expect(kids).toEqual(["h1", "strip", "band"]);
+      expect(
+        el.shadowRoot.querySelector(".band c-pipeline-stage-slider")
+      ).not.toBeNull();
+      expect(el.shadowRoot.querySelector(".under .strip")).toBeNull();
+    });
+
+    it("has no Stage field in the form, and still reads the stage so the slider shows what is saved", async () => {
+      const el = createElement("c-pipeline-deal", { is: PipelineDeal });
+      el.deal = { ...deal, kind: "opp" };
+      document.body.appendChild(el);
+      infoAdapter.emit({
+        fields: {
+          Stage__c: { updateable: true },
+          Priority__c: { updateable: true }
+        }
+      });
+      recordAdapter.emit({
+        recordTypeId: "012000000000001",
+        fields: { Stage__c: { value: "Commit" }, Priority__c: { value: false } }
+      });
+      await Promise.resolve();
+      await Promise.resolve();
+      const labels = [...el.shadowRoot.querySelectorAll(".grid .fl")].map((x) =>
+        x.textContent.replace(/[\s*]/g, "")
+      );
+      expect(labels).not.toContain("Stage");
+      expect(el.shadowRoot.querySelector("c-pipeline-stage-slider").value).toBe(
+        "Commit"
+      );
+    });
+  });
+
+  describe("the Yes / No fields", () => {
+    async function mount(kind, editable, values) {
+      const el = createElement("c-pipeline-deal", { is: PipelineDeal });
+      el.deal = { ...deal, kind };
+      el.index = 0;
+      el.total = 1;
+      document.body.appendChild(el);
+      const names = [
+        "OnHold__c",
+        "Priority__c",
+        "State_Priority__c",
+        "myMo__c",
+        "myMo_Stage__c"
+      ];
+      infoAdapter.emit({
+        fields: Object.fromEntries(
+          names.map((n) => [n, { updateable: editable }])
+        )
+      });
+      recordAdapter.emit({
+        recordTypeId: "012000000000001",
+        fields: Object.fromEntries(
+          names.map((n) => [n, { value: values[n] ?? null }])
+        )
+      });
+      await Promise.resolve();
+      await Promise.resolve();
+      return el;
+    }
+    const sliders = (el) => [
+      ...el.shadowRoot.querySelectorAll("c-pipeline-segmented")
+    ];
+    const press = (el, api, value) =>
+      el.shadowRoot
+        .querySelector(`c-pipeline-segmented[data-api="${api}"]`)
+        .dispatchEvent(new CustomEvent("change", { detail: { value } }));
+
+    it("shows an opportunity's four as one row of sliders, each label the left end of its pill", async () => {
+      const el = await mount("opp", true, { Priority__c: true });
+      expect(el.shadowRoot.querySelectorAll(".flags").length).toBe(1);
+      expect(sliders(el).map((x) => x.heading)).toEqual([
+        "On hold",
+        "Rep priority",
+        "State priority",
+        "MyMo"
+      ]);
+      expect(sliders(el).map((x) => x.value)).toEqual([
+        "no",
+        "yes",
+        "no",
+        "no"
+      ]);
+      expect(el.shadowRoot.querySelector(".tog")).toBeNull();
+    });
+
+    it("makes Yes green, and amber for On hold, a warning", async () => {
+      const el = await mount("opp", true, {});
+      const tone = (api) =>
+        el.shadowRoot.querySelector(`c-pipeline-segmented[data-api="${api}"]`)
+          .options[1].tone;
+      expect(tone("OnHold__c")).toBe("warn");
+      ["Priority__c", "State_Priority__c", "myMo__c"].forEach((api) =>
+        expect(tone(api)).toBe("good")
+      );
+    });
+
+    it("shows On hold in amber beside the name while the deal is on hold, following the slider", async () => {
+      const el = await mount("opp", true, { OnHold__c: false });
+      const tag = () => el.shadowRoot.querySelector(".fhead .hold");
+      expect(tag()).not.toBeNull();
+      expect(tag().classList.contains("off")).toBe(true);
+      press(el, "OnHold__c", "yes");
+      await Promise.resolve();
+      expect(tag().classList.contains("off")).toBe(false);
+      expect(tag().textContent).toBe("On hold");
+      press(el, "OnHold__c", "no");
+      await Promise.resolve();
+      expect(tag().classList.contains("off")).toBe(true);
+    });
+
+    it("has no On hold marker on a risk", async () => {
+      const el = await mount("risk", true, {});
+      expect(el.shadowRoot.querySelector(".fhead .hold")).toBeNull();
+    });
+
+    it("gives a risk only the two priorities", async () => {
+      const el = await mount("risk", true, {});
+      expect(sliders(el).map((x) => x.heading)).toEqual([
+        "Rep priority",
+        "State priority"
+      ]);
+    });
+
+    it("changes the value when a slider is pressed, with no outline added", async () => {
+      const el = await mount("opp", true, {});
+      press(el, "Priority__c", "yes");
+      await Promise.resolve();
+      expect(el.shadowRoot.querySelector(".flag.chg")).toBeNull();
+      expect(
+        el.shadowRoot.querySelector(
+          'c-pipeline-segmented[data-api="Priority__c"]'
+        ).value
+      ).toBe("yes");
+    });
+
+    it("greys the sliders when the person cannot change the deal", async () => {
+      const el = await mount("opp", false, { OnHold__c: true });
+      expect(sliders(el).length).toBe(4);
+      expect(sliders(el).every((x) => x.disabled === true)).toBe(true);
+    });
+
+    it("keeps the MyMo stage folded away while MyMo is No and opens it when MyMo is Yes", async () => {
+      const el = await mount("opp", true, {});
+      const fold = () => el.shadowRoot.querySelector(".cell.fold");
+      expect(fold()).not.toBeNull();
+      expect(fold().classList.contains("open")).toBe(false);
+      press(el, "myMo__c", "yes");
+      await Promise.resolve();
+      expect(fold().classList.contains("open")).toBe(true);
+      press(el, "myMo__c", "no");
+      await Promise.resolve();
+      expect(fold().classList.contains("open")).toBe(false);
+    });
+  });
+
   describe("surgeon usages and case bookings panels", () => {
     async function mount(kind = "opp") {
       const el = createElement("c-pipeline-deal", { is: PipelineDeal });

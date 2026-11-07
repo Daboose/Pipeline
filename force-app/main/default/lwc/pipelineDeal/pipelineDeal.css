@@ -58,8 +58,17 @@
   gap: 10px;
   padding: 10px 20px 6px;
 }
-.h2 {
-  padding: 4px 20px 10px;
+/* the stage slider sits centred in a tinted band of its own under the summary line: the overall stage of the deal (Robert, 2026-11-07;
+   mockup pipeline_deal_header_order_v2.html). Clicking a step changes the stage, so the form has no Stage field. */
+.band {
+  display: flex;
+  padding: 12px 20px;
+  background: var(--panel2);
+  border-top: 1px solid var(--line);
+  overflow-x: auto;
+}
+.band > c-pipeline-stage-slider {
+  margin: 0 auto;
 }
 .name {
   font-size: 22px;
@@ -68,6 +77,43 @@
 }
 .sp {
   flex: 1;
+}
+/* "On hold" in a solid amber pill beside the surgeon's name while the deal is on hold (Robert, 2026-11-07; mockup
+   pipeline_deal_onhold_tag_v1.html, option A). It fades in and out over 0.4 s and gives its room back when it is not shown. */
+.hold {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  height: 28px;
+  padding: 0 14px;
+  border-radius: 999px;
+  background: var(--seg-warn, #f59e0b);
+  color: #1b2640;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  max-width: 160px;
+  overflow: hidden;
+  transition:
+    opacity 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+    max-width 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+    padding 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+    margin 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.hold.off {
+  opacity: 0;
+  max-width: 0;
+  padding-left: 0;
+  padding-right: 0;
+  margin-left: -10px; /* takes back the gap of the header row, so the name sits where it always did */
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hold {
+    transition: none;
+  }
 }
 .pos {
   color: var(--muted);
@@ -101,7 +147,6 @@
   flex-wrap: wrap;
   gap: 8px 36px;
   padding: 10px 20px 12px;
-  border-bottom: 1px solid var(--line);
 }
 .strip .l,
 .fl {
@@ -174,8 +219,48 @@ h3 {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px 16px;
 }
-.field.wide {
+.cell.wide {
   grid-column: 1 / -1;
+}
+/* the MyMo stage folds open only while MyMo is Yes (the motion standard: 0.4 s, the same easing); it sits in a full-width row
+   with the field at half width, so the cells after it never move sideways, and the row gap is taken back while it is closed */
+.cell.fold {
+  display: grid;
+  grid-template-rows: 0fr;
+  margin-top: -12px;
+  transition:
+    grid-template-rows 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+    margin-top 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.cell.fold.open {
+  grid-template-rows: 1fr;
+  margin-top: 0;
+}
+.cell.fold > .field {
+  overflow: hidden;
+  min-height: 0;
+  width: calc(50% - 8px);
+}
+@media (prefers-reduced-motion: reduce) {
+  .cell.fold {
+    transition: none;
+  }
+}
+/* the Yes / No fields: one row of one-pill sliders, each label the left end of its pill */
+.flags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 14px;
+  --seg-track: var(--panel2);
+  --seg-line: var(--edge);
+  --seg-lab: var(--panel);
+  --seg-optx: var(--muted);
+  --seg-indigo: var(--indigo);
+  --seg-muted: var(--muted);
+  --seg-shadow: rgba(0, 0, 0, 0.35);
+}
+.flag {
+  border-radius: 999px;
 }
 .field.paired {
   display: grid;
@@ -228,21 +313,6 @@ input.in {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-}
-.tog {
-  border: 1px solid var(--pline);
-  background: var(--pfield);
-  color: var(--muted);
-  border-radius: 999px;
-  padding: 6px 18px;
-  font-size: 14px;
-  font-weight: 700;
-  cursor: pointer;
-}
-.tog.on {
-  background: var(--indigo);
-  border-color: var(--indigo);
-  color: #fff;
 }
 /* the bottom row: action buttons only, and an empty row when a screen has none */
 .foot {
