@@ -467,6 +467,37 @@ describe("c-pipeline-mobile", () => {
         expect(root(el).querySelector(".lk .lv").textContent).toBe("Dr Chen");
       });
 
+      it("keeps the Brand box out of the sections: one section above it, one below, the box as wide as the Stage", async () => {
+        const el = await openChen();
+        picklistAdapter.emit({
+          picklistFieldValues: {
+            Stage__c: { values: [{ value: "Plan" }] },
+            Brand__c: {
+              values: [
+                { value: "Persona", label: "Persona" },
+                { value: "Arcos", label: "Arcos" }
+              ]
+            }
+          }
+        });
+        await flush();
+        const cards = [...root(el).querySelectorAll("section.card")];
+        expect(cards.length).toBe(2);
+        const brand = root(el).querySelector("c-pipeline-mobile-choices");
+        expect(brand).not.toBeNull();
+        expect(
+          root(el).querySelector(".card c-pipeline-mobile-choices")
+        ).toBeNull();
+        // the order on the screen: section, Brand box, section
+        expect(cards[0].nextElementSibling).toBe(brand);
+        expect(brand.nextElementSibling).toBe(cards[1]);
+        // only the first section carries the heading
+        expect(cards[0].querySelector("h3")).not.toBeNull();
+        expect(cards[1].querySelector("h3")).toBeNull();
+        // sorted A to Z
+        expect(brand.options.map((o) => o.label)).toEqual(["Arcos", "Persona"]);
+      });
+
       it("folds the Save bar up on the first change, and Cancel puts everything back", async () => {
         const el = await openChen();
         hold(el).dispatchEvent(

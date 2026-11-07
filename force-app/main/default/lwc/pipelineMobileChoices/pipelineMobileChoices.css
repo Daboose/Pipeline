@@ -1,14 +1,17 @@
-/* the stage control's look (Robert, 2026-11-08): an indigo joined row with a round chevron button; open it folds down to the chips.
+/* the opening box in the pale pink of the home headings (Robert, 2026-11-08; mockup pipeline_mobile_choices_v2.html): a pale pink row with dark
+   words and a round chevron button (the same chevron as the stage and the home headings), a chosen chip solid pink. Closed it names the chosen
+   words; open it folds down to the chips, which scroll inside the box when the list is long (a risk's brands) while the row stays put.
    Colours come from the Pipeline Mobile screen (inherited); the fallbacks are the same light palette. */
 :host {
   display: block;
+  --c: var(--head, #db2777);
 }
 .bc {
-  border: 2px solid var(--indigo, #4f46e5);
+  border: 2px solid color-mix(in srgb, var(--c) 45%, var(--panel, #fff));
   border-radius: 14px;
   overflow: hidden;
   background: var(--panel, #fff);
-  margin: 2px 0 4px;
+  margin: 2px 0 12px; /* the same gap as under the Stage box, between two sections */
 }
 .hd {
   display: flex;
@@ -19,8 +22,8 @@
   padding: 8px 12px 8px 16px;
   border: 0;
   border-radius: 0;
-  background: var(--indigo, #4f46e5);
-  color: #fff;
+  background: color-mix(in srgb, var(--c) 16%, var(--panel, #fff));
+  color: var(--text, #1b2640);
   text-align: left;
   cursor: pointer;
   font-family: inherit;
@@ -36,9 +39,9 @@
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  opacity: 0.85;
+  color: var(--c);
 }
-/* the chosen words read exactly as the stage name does on the stage row: the same bold 19 px white words, separated by commas */
+/* the chosen words read exactly as the stage name does on the stage row: the same bold 19 px dark words, separated by commas */
 .chosen {
   display: block;
   font-size: 19px;
@@ -48,14 +51,15 @@
 }
 .chosen.none {
   font-weight: 500;
-  opacity: 0.8;
+  opacity: 0.7;
 }
 .rd {
   flex: none;
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.22);
+  background: color-mix(in srgb, var(--c) 22%, var(--panel, #fff));
+  color: var(--c);
   position: relative;
   transform: rotate(180deg);
   transition: transform var(--slide, 0.48s) cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -67,8 +71,8 @@
   top: 50%;
   width: 14px;
   height: 14px;
-  border-right: 4px solid #fff;
-  border-bottom: 4px solid #fff;
+  border-right: 4px solid currentColor;
+  border-bottom: 4px solid currentColor;
   border-radius: 2px;
   transform: translate(-50%, -70%) rotate(45deg);
 }
@@ -93,9 +97,16 @@
   flex-wrap: wrap;
   gap: 8px;
   padding: 14px 14px 16px;
+  /* a long list scrolls inside the box and the row above stays put: the height is what is left of the screen's fitted page height
+     (set by the phone screen) after the locked bars and the row, never a fixed guess */
+  max-height: max(160px, calc(var(--fit-height, 520px) - 230px));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
 }
 .chip {
   height: 40px;
+  flex: none;
   padding: 0 16px;
   border: 1px solid var(--edge, #b3bfd6);
   border-radius: 999px;
@@ -110,8 +121,8 @@
     color var(--quick, 0.36s);
 }
 .chip.on {
-  background: var(--indigo, #4f46e5);
-  border-color: var(--indigo, #4f46e5);
+  background: var(--c);
+  border-color: var(--c);
   color: #fff;
 }
 @media (prefers-reduced-motion: reduce) {

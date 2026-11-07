@@ -125,8 +125,10 @@
    are joined inside one outline in the row's colour (blue, green at the won stage, red at the lost stage). The list folds open and shut
    over 0.4 s (the motion standard) and the chevron turns over with it. The stage the deal is on has a bar of the colour down its left edge. */
 .stsec {
-  --c: var(--indigo);
-  border: 2px solid var(--c);
+  --c: var(
+    --head
+  ); /* the pale pink of the home headings, so it is not mistaken for the Back and Create buttons (Robert, 2026-11-08) */
+  border: 2px solid color-mix(in srgb, var(--c) 45%, var(--panel));
   border-radius: 14px;
   overflow: hidden;
   background: var(--panel);
@@ -134,7 +136,7 @@
   transition: border-color var(--slide, 0.48s) cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 .stsec.good {
-  --c: #16a34a;
+  --c: #16a34a; /* the won stage keeps a pale green, the lost stage a pale red */
 }
 .stsec.bad {
   --c: #dc2626;
@@ -148,8 +150,8 @@
   padding: 6px 12px 6px 16px;
   border: 0;
   border-radius: 0;
-  background: var(--c);
-  color: #fff;
+  background: color-mix(in srgb, var(--c) 16%, var(--panel));
+  color: var(--text);
   font-family: inherit;
   text-align: left;
   cursor: pointer;
@@ -165,7 +167,7 @@
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  opacity: 0.85;
+  color: var(--c);
 }
 .stgC .sv {
   font-size: 19px;
@@ -179,7 +181,8 @@
   height: 36px;
   position: relative;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.22);
+  background: color-mix(in srgb, var(--c) 22%, var(--panel));
+  color: var(--c);
   transform: rotate(180deg);
   transition: transform var(--slide, 0.48s) cubic-bezier(0.2, 0.8, 0.2, 1);
 }
@@ -190,8 +193,8 @@
   top: 50%;
   width: 14px;
   height: 14px;
-  border-right: 4px solid #fff;
-  border-bottom: 4px solid #fff;
+  border-right: 4px solid currentColor;
+  border-bottom: 4px solid currentColor;
   border-radius: 2px;
   transform: translate(-50%, -70%) rotate(45deg);
 }
@@ -355,7 +358,7 @@ select.in {
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 16px; /* double the old 8 px (Robert, 2026-11-08) */
 }
 .flags {
   padding: 9px 0;

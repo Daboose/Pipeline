@@ -180,6 +180,14 @@ describe("c-pipeline-mobile-new", () => {
     await set(el, 'input[data-api="AmountPerYear__c"]', "250000");
     await set(el, 'input[data-api="UnitsCasesPerYear__c"]', "40");
     root(el).querySelector(".lockbar .save").click();
+    // while Salesforce works the saving screen is up, and it is NOT inside the page that scrolls (or it would scroll away with the form)
+    await Promise.resolve();
+    const saving = root(el).querySelector("c-pipeline-mobile-saving");
+    expect(saving.phase).toBe("working");
+    expect(saving.word).toBe("Creating…");
+    expect(
+      root(el).querySelector(".newpage c-pipeline-mobile-saving")
+    ).toBeNull();
     await wait();
     const call = createRecord.mock.calls[0][0];
     expect(call.apiName).toBe("SalesRisks__c");

@@ -30,6 +30,7 @@ import {
   missingRequired,
   createFields,
   cardType,
+  formSections,
   withSavingScreen,
   SAVING_TIMING,
   SAVING_WORDS
@@ -310,6 +311,26 @@ describe("pipelineMobileModel", () => {
       expect(brand.options.map((o) => o.on)).toEqual([true, true, false]);
       const q = rows.find((r) => r.api === "Expected_Closure_Quarter__c");
       expect(q.options.find((o) => o.selected).value).toBe("Q1");
+    });
+
+    it("lists the brands A to Z whatever order Salesforce sends them in, and leaves other multi-choices in Salesforce's order", () => {
+      const jumbled = ["Triathlon", "Arcos", "persona", "NexGen"];
+      const rows = make(
+        "risk",
+        {},
+        {
+          choices: (api) => {
+            if (!["Brand__c", "Portfolio__c"].includes(api)) return null;
+            return jumbled.map((v) => ({ value: v, label: v }));
+          }
+        }
+      );
+      expect(
+        rows.find((r) => r.api === "Brand__c").options.map((o) => o.label)
+      ).toEqual(["Arcos", "NexGen", "persona", "Triathlon"]);
+      expect(
+        rows.find((r) => r.api === "Portfolio__c").options.map((o) => o.label)
+      ).toEqual(jumbled);
     });
 
     it("folds the MyMo stage open only while MyMo is Yes", () => {
@@ -699,6 +720,46 @@ describe("pipelineMobileModel", () => {
       expect(rows.find((r) => r.api === "Healthcare_Facility__c").req).toBe(
         false
       );
+    });
+  });
+
+  describe("the form's sections (0.38)", () => {
+    const r = (api, extra = {}) => ({ key: api, api, ...extra });
+    it("puts the opening boxes between sections, never inside one", () => {
+      const out = formSections([
+        r("a"),
+        r("b"),
+        r("Brand__c", { isMulti: true }),
+        r("c"),
+        r("d")
+      ]);
+      expect(out.map((s) => (s.isBox ? "box" : "card"))).toEqual([
+        "card",
+        "box",
+        "card"
+      ]);
+      expect(out[0].rows.map((x) => x.api)).toEqual(["a", "b"]);
+      expect(out[1].row.api).toBe("Brand__c");
+      expect(out[2].rows.map((x) => x.api)).toEqual(["c", "d"]);
+      expect(out.map((s) => !!s.first)).toEqual([true, false, false]);
+    });
+    it("handles a risk (two boxes in a row) and a form with no box or no rows", () => {
+      const risk = formSections([
+        r("a"),
+        r("Portfolio__c", { isMulti: true }),
+        r("Brand__c", { isMulti: true }),
+        r("c")
+      ]);
+      expect(risk.map((s) => (s.isBox ? "box" : "card"))).toEqual([
+        "card",
+        "box",
+        "box",
+        "card"
+      ]);
+      expect(formSections([r("a")]).length).toBe(1);
+      expect(formSections([])).toEqual([
+        { key: "card-0", isCard: true, first: true, cardCls: "card", rows: [] }
+      ]);
     });
   });
 

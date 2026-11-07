@@ -51,7 +51,7 @@
             >
               <h2>Charts</h2>
               <span class="sp"></span>
-              <span class="chev"></span>
+              <span class="rchev"></span>
             </button>
             <div class="fold">
               <div class="foldin">
@@ -118,7 +118,7 @@
                 <h2>{s.label}</h2>
                 <span class="n">{s.count}</span>
                 <span class="sp"></span>
-                <span class="chev"></span>
+                <span class="rchev"></span>
               </button>
               <div class="fold">
                 <div class="foldin">
@@ -233,149 +233,154 @@
             </div>
           </div>
 
-          <section class="card">
-            <h3>The deal</h3>
-            <div class="errs" lwc:if={hasErrors}>
-              <template for:each={errors} for:item="e">
-                <div key={e.key}>{e.text}</div>
+          <template for:each={formSections} for:item="s">
+            <section lwc:if={s.isCard} key={s.key} class={s.cardCls}>
+              <template lwc:if={s.first}>
+                <h3>The deal</h3>
+                <div class="errs" lwc:if={hasErrors}>
+                  <template for:each={errors} for:item="e">
+                    <div key={e.key}>{e.text}</div>
+                  </template>
+                </div>
+                <div class={savedCls}>Saved.</div>
               </template>
-            </div>
-            <div class={savedCls}>Saved.</div>
-            <template for:each={formRows} for:item="f">
-              <div key={f.key} class={f.wrapCls}>
-                <div class="rowin">
-                  <div class={f.cls}>
-                    <div class="fl" lwc:if={f.showLabel}>
-                      {f.label}<span class="rq" lwc:if={f.req}> *</span>
-                    </div>
-                    <div class="flagbox" lwc:if={f.isFlags}>
-                      <template for:each={f.flags} for:item="g">
-                        <c-pipeline-segmented
-                          key={g.api}
-                          class="flagseg"
-                          tone-thumb
-                          heading={g.label}
-                          label={g.label}
-                          options={g.options}
-                          value={g.value}
-                          disabled={g.locked}
-                          data-api={g.api}
-                          onchange={handleFlag}
-                        ></c-pipeline-segmented>
-                      </template>
-                    </div>
-                    <div class="lkrow" lwc:if={f.isLookup}>
-                      <button
-                        type="button"
-                        class={f.lookupCls}
-                        data-api={f.api}
-                        onclick={handleLookupOpen}
-                      >
-                        <span class="lv" lwc:if={f.lookupName}
-                          >{f.lookupName}</span
+              <template for:each={s.rows} for:item="f">
+                <div key={f.key} class={f.wrapCls}>
+                  <div class="rowin">
+                    <div class={f.cls}>
+                      <div class="fl" lwc:if={f.showLabel}>
+                        {f.label}<span class="rq" lwc:if={f.req}> *</span>
+                      </div>
+                      <div class="flagbox" lwc:if={f.isFlags}>
+                        <template for:each={f.flags} for:item="g">
+                          <c-pipeline-segmented
+                            key={g.api}
+                            class="flagseg"
+                            tone-thumb
+                            heading={g.label}
+                            label={g.label}
+                            options={g.options}
+                            value={g.value}
+                            disabled={g.locked}
+                            data-api={g.api}
+                            onchange={handleFlag}
+                          ></c-pipeline-segmented>
+                        </template>
+                      </div>
+                      <div class="lkrow" lwc:if={f.isLookup}>
+                        <button
+                          type="button"
+                          class={f.lookupCls}
+                          data-api={f.api}
+                          onclick={handleLookupOpen}
                         >
-                        <span class="lv ph" lwc:else>Search by name…</span>
-                        <span class="lkx"></span>
-                      </button>
-                      <button
-                        type="button"
-                        class="xcirc lkclear"
-                        lwc:if={f.canClear}
-                        data-api={f.api}
-                        aria-label="Clear"
-                        onclick={handleLookupClear}
-                      ></button>
-                    </div>
-                    <div class={f.pairCls} lwc:if={f.isSelect}>
-                      <select
-                        class="in"
-                        data-api={f.api}
-                        onchange={handleSelect}
-                      >
-                        <template for:each={f.options} for:item="o">
-                          <option
-                            key={o.value}
-                            value={o.value}
-                            selected={o.selected}
+                          <span class="lv" lwc:if={f.lookupName}
+                            >{f.lookupName}</span
                           >
-                            {o.label}
-                          </option>
-                        </template>
-                      </select>
-                      <select
-                        lwc:if={f.pair}
-                        class="in"
-                        data-api={f.pair.api}
-                        aria-label={f.pair.label}
-                        onchange={handleSelect}
-                      >
-                        <template for:each={f.pair.options} for:item="o">
-                          <option
-                            key={o.value}
-                            value={o.value}
-                            selected={o.selected}
-                          >
-                            {o.label}
-                          </option>
-                        </template>
-                      </select>
-                    </div>
-                    <div class={f.pairCls} lwc:if={f.isNumber}>
+                          <span class="lv ph" lwc:else>Search by name…</span>
+                          <span class="lkx"></span>
+                        </button>
+                        <button
+                          type="button"
+                          class="xcirc lkclear"
+                          lwc:if={f.canClear}
+                          data-api={f.api}
+                          aria-label="Clear"
+                          onclick={handleLookupClear}
+                        ></button>
+                      </div>
+                      <div class={f.pairCls} lwc:if={f.isSelect}>
+                        <select
+                          class="in"
+                          data-api={f.api}
+                          onchange={handleSelect}
+                        >
+                          <template for:each={f.options} for:item="o">
+                            <option
+                              key={o.value}
+                              value={o.value}
+                              selected={o.selected}
+                            >
+                              {o.label}
+                            </option>
+                          </template>
+                        </select>
+                        <select
+                          lwc:if={f.pair}
+                          class="in"
+                          data-api={f.pair.api}
+                          aria-label={f.pair.label}
+                          onchange={handleSelect}
+                        >
+                          <template for:each={f.pair.options} for:item="o">
+                            <option
+                              key={o.value}
+                              value={o.value}
+                              selected={o.selected}
+                            >
+                              {o.label}
+                            </option>
+                          </template>
+                        </select>
+                      </div>
+                      <div class={f.pairCls} lwc:if={f.isNumber}>
+                        <input
+                          class="in"
+                          type="number"
+                          inputmode="decimal"
+                          step="any"
+                          data-api={f.api}
+                          value={f.value}
+                          onchange={handleNumber}
+                        />
+                        <select
+                          lwc:if={f.pair}
+                          class="in"
+                          data-api={f.pair.api}
+                          aria-label={f.pair.label}
+                          onchange={handleSelect}
+                        >
+                          <template for:each={f.pair.options} for:item="o">
+                            <option
+                              key={o.value}
+                              value={o.value}
+                              selected={o.selected}
+                            >
+                              {o.label}
+                            </option>
+                          </template>
+                        </select>
+                      </div>
                       <input
+                        lwc:if={f.isDate}
                         class="in"
-                        type="number"
-                        inputmode="decimal"
-                        step="any"
+                        type="date"
                         data-api={f.api}
                         value={f.value}
-                        onchange={handleNumber}
+                        onchange={handleText}
                       />
-                      <select
-                        lwc:if={f.pair}
-                        class="in"
-                        data-api={f.pair.api}
-                        aria-label={f.pair.label}
-                        onchange={handleSelect}
-                      >
-                        <template for:each={f.pair.options} for:item="o">
-                          <option
-                            key={o.value}
-                            value={o.value}
-                            selected={o.selected}
-                          >
-                            {o.label}
-                          </option>
-                        </template>
-                      </select>
+                      <textarea
+                        lwc:if={f.isTextarea}
+                        class="in ta"
+                        data-api={f.api}
+                        oninput={handleText}
+                      ></textarea>
+                      <div class="ro" lwc:if={f.isReadOnly}>{f.text}</div>
                     </div>
-                    <input
-                      lwc:if={f.isDate}
-                      class="in"
-                      type="date"
-                      data-api={f.api}
-                      value={f.value}
-                      onchange={handleText}
-                    />
-                    <c-pipeline-mobile-choices
-                      lwc:if={f.isMulti}
-                      label={f.label}
-                      required={f.req}
-                      options={f.options}
-                      data-api={f.api}
-                      ontoggle={handleChoice}
-                    ></c-pipeline-mobile-choices>
-                    <textarea
-                      lwc:if={f.isTextarea}
-                      class="in ta"
-                      data-api={f.api}
-                      oninput={handleText}
-                    ></textarea>
-                    <div class="ro" lwc:if={f.isReadOnly}>{f.text}</div>
                   </div>
                 </div>
-              </div>
-            </template>
-          </section>
+              </template>
+            </section>
+            <c-pipeline-mobile-choices
+              lwc:else
+              key={s.key}
+              label={s.row.label}
+              required={s.row.req}
+              options={s.row.options}
+              data-api={s.row.api}
+              ontoggle={handleChoice}
+            ></c-pipeline-mobile-choices>
+          </template>
 
           <button type="button" class="go live" onclick={handleChatOpen}>
             <span>Chatter</span>

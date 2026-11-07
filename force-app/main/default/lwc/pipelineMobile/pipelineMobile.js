@@ -28,6 +28,7 @@ import {
   liveDeal,
   dealArea,
   formRows,
+  formSections,
   formFieldNames,
   QUARTER_FIELD,
   YEAR_FIELD,
@@ -36,7 +37,7 @@ import {
 } from "c/pipelineMobileModel";
 import { formatMoney, suggestYear, quarterIsPast } from "c/pipelineFormat";
 
-const MOBILE_VERSION = "0.33"; // shown at the foot of the screen; raised with each change that goes out
+const MOBILE_VERSION = "0.39"; // shown at the foot of the screen; raised with each change that goes out
 
 const SLIDE_OUT_MS = 540; // a little longer than the slide itself (0.48 s in the style sheet)
 const LOOKUP_MIN = 2; // letters before a search is made, as on the desktop
@@ -688,6 +689,10 @@ export default class PipelineMobile extends LightningElement {
       updateable: (api) => this.updateable(api),
       lookupName: (api) => this.lookupName(api)
     });
+  }
+  /** The form's rows grouped into sections with the opening boxes between them. */
+  get formSections() {
+    return formSections(this.formRows);
   }
   get clean() {
     return Object.keys(this.draft).length === 0;

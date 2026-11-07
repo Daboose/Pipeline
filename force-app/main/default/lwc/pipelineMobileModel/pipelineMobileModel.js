@@ -456,7 +456,14 @@ export function formRows(kind, ctx) {
       row.isSelect = true;
     } else if (control === "multi") {
       const on = value ? String(value).split(";") : [];
-      row.options = choices.map((c) => ({
+      // the brands are in A to Z order (Robert, 2026-11-08: a risk has a long list that was too hard to pick from in Salesforce's order)
+      const shown =
+        api === "Brand__c"
+          ? [...choices].sort((a, b) =>
+              String(a.label).localeCompare(String(b.label))
+            )
+          : choices;
+      row.options = shown.map((c) => ({
         value: c.value,
         label: c.label,
         on: on.includes(c.value)
@@ -549,6 +556,46 @@ export function formRows(kind, ctx) {
     });
   });
   return out;
+}
+
+/**
+ * The form's rows grouped into blocks for the deal screen (Robert, 2026-11-08; mockup pipeline_mobile_sections_v1.html): the plain fields sit in
+ * sections (cards); a box that opens (Brand, a risk's Portfolio, the ROSA sales type) is never inside a section, it sits between two so it is as
+ * wide as the Stage box. Returns [{ key, isCard, first, rows }, { key, isBox, row }, ...]; "first" marks the section that carries the heading
+ * "The deal" and the messages (the second section has no heading). With no rows yet there is one empty first section.
+ */
+export function formSections(rows) {
+  const out = [];
+  let card = null;
+  (rows || []).forEach((r) => {
+    if (r.isMulti) {
+      card = null;
+      out.push({ key: `box-${r.key}`, isBox: true, row: r });
+      return;
+    }
+    if (!card) {
+      card = {
+        key: `card-${out.length}`,
+        isCard: true,
+        first: !out.some((s) => s.isCard),
+        rows: []
+      };
+      card.cardCls = card.first ? "card" : "card plain";
+      out.push(card);
+    }
+    card.rows.push(r);
+  });
+  return out.length
+    ? out
+    : [
+        {
+          key: "card-0",
+          isCard: true,
+          first: true,
+          cardCls: "card",
+          rows: []
+        }
+      ];
 }
 
 /* ----- Chatter on the phone (Robert, 2026-11-07; mockup pipeline_mobile_chatter_v1.html, option C) ----- */

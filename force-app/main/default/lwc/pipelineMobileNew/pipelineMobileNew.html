@@ -272,9 +272,11 @@
       </p>
       <p class="none" lwc:if={sheetNone}>Nothing found.</p>
     </div>
-    <c-pipeline-mobile-saving
-      phase={savePhase}
-      word={savingWord}
-    ></c-pipeline-mobile-saving>
   </div>
+
+  <!-- outside the page on purpose: the page scrolls inside itself, so a screen inside it would scroll away with the form and not cover it -->
+  <c-pipeline-mobile-saving
+    phase={savePhase}
+    word={savingWord}
+  ></c-pipeline-mobile-saving>
 </template>

@@ -1,0 +1,978 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>
+      Mockup: the opening boxes in pink, and a scrolling brand list (version 2)
+    </title>
+    <style>
+      :root,
+      [data-theme="light"] {
+        --page: #e9edf4;
+        --card: #ffffff;
+        --bg: #f3f3f3;
+        --box: #eef2fa;
+        --line: #d5dcea;
+        --edge: #b3bfd6;
+        --text: #1b2640;
+        --muted: #5d6b85;
+        --pipe: #b7791f;
+        --indigo: #4f46e5;
+        --slate: #64748b;
+        --head: #db2777;
+        --good: #16a34a;
+        --bad: #dc2626;
+      }
+      [data-theme="dark"] {
+        --page: #141e2e;
+        --card: #1a2740;
+        --bg: #141e2e;
+        --box: #20304f;
+        --line: #2f4163;
+        --edge: #5b6f93;
+        --text: #e8edf5;
+        --muted: #9fb0cc;
+        --pipe: #fdb827;
+        --indigo: #6366f1;
+        --slate: #475569;
+        --head: #f472b6;
+        --good: #4ee0b0;
+        --bad: #f87171;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--page);
+        color: var(--text);
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-size: 16px;
+      }
+      button {
+        font-family: inherit;
+        font-size: inherit;
+        color: inherit;
+      }
+      .sfnav {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        height: 44px;
+        padding: 0 16px;
+        background: #0b1220;
+        color: #cdd6e6;
+        font-size: 14px;
+      }
+      .sfnav .app {
+        font-weight: 800;
+        letter-spacing: 0.14em;
+      }
+      .sfnav .app b {
+        color: #fdb827;
+      }
+      .sfnav .tab {
+        color: #9fb0cc;
+      }
+      .sfnav .tab.on {
+        color: #fff;
+        border-bottom: 2px solid #6366f1;
+        padding-bottom: 2px;
+      }
+      .sp {
+        flex: 1;
+      }
+      .btn,
+      .pill {
+        border: 0;
+        border-radius: 999px;
+        padding: 7px 16px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+        background: var(--slate);
+        color: #fff;
+      }
+      .pill.on {
+        background: var(--indigo);
+      }
+      .about {
+        margin: 14px 16px;
+        padding: 12px 18px;
+        background: var(--card);
+        border: 1px solid var(--edge);
+        border-radius: 12px;
+        line-height: 1.5;
+        max-width: 1100px;
+        font-size: 15px;
+      }
+      .about summary {
+        cursor: pointer;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        color: var(--pipe);
+      }
+      .about ul {
+        margin: 4px 0 8px;
+        padding-left: 22px;
+      }
+      .tools {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+        padding: 0 16px 10px;
+      }
+      .tools .lab {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        margin-left: 14px;
+      }
+      .tools .lab:first-child {
+        margin-left: 0;
+      }
+      .mocknote {
+        margin: 0 16px 12px;
+        padding: 8px 14px;
+        border: 1px dashed var(--edge);
+        border-radius: 10px;
+        color: var(--muted);
+        font-size: 14px;
+        font-style: italic;
+        max-width: 1100px;
+      }
+      .grp {
+        padding: 0 16px;
+      }
+      .grp > h1 {
+        margin: 18px 0 10px;
+        font-size: 14px;
+        font-weight: 800;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        border-bottom: 2px solid var(--edge);
+        padding-bottom: 6px;
+      }
+      .phones {
+        display: flex;
+        gap: 40px;
+        flex-wrap: wrap;
+        padding: 0 0 30px;
+        align-items: flex-start;
+      }
+      .opt h2 {
+        margin: 0 0 2px;
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--head);
+      }
+      .opt p {
+        margin: 0 0 10px;
+        color: var(--muted);
+        font-size: 14px;
+        max-width: 390px;
+      }
+      .phone {
+        position: relative;
+        width: 390px;
+        height: 800px;
+        border: 10px solid #0b1220;
+        border-radius: 38px;
+        overflow: hidden;
+        background: var(--bg);
+        display: flex;
+        flex-direction: column;
+      }
+      .sfstatus {
+        height: 40px;
+        flex: none;
+        padding: 12px 0 0 28px;
+        font-size: 14px;
+        font-weight: 600;
+        background: var(--card);
+      }
+      .sfbar {
+        flex: none;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        height: 46px;
+        padding: 0 14px;
+        background: var(--card);
+        border-bottom: 1px solid var(--line);
+        font-weight: 700;
+      }
+      .scroll {
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+        padding: 12px 12px 16px;
+      }
+      .sftabs {
+        flex: none;
+        display: flex;
+        height: 58px;
+        background: var(--card);
+        border-top: 1px solid var(--line);
+      }
+      .sftabs span {
+        flex: 1;
+        text-align: center;
+        padding-top: 9px;
+        font-size: 11px;
+        color: var(--muted);
+      }
+      .sftabs span.on {
+        color: var(--indigo);
+        font-weight: 700;
+      }
+      .lock {
+        position: sticky;
+        top: -12px;
+        z-index: 5;
+        margin: -12px -12px 10px;
+        padding: 10px 12px 8px;
+        background: var(--bg);
+        box-shadow: 0 1px 0 var(--line);
+      }
+      .lockbtn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        width: 100%;
+        height: 44px;
+        border: 0;
+        border-radius: 999px;
+        background: var(--indigo);
+        color: #fff;
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      .lockbtn span {
+        font-size: 22px;
+        line-height: 1;
+        margin-top: -2px;
+      }
+      .nm2 {
+        margin: 2px 2px;
+        font-size: 24px;
+        font-weight: 800;
+        line-height: 1.15;
+      }
+      .sub1 {
+        margin: 2px 2px 14px;
+        color: var(--muted);
+        font-size: 14px;
+      }
+      .fl {
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin: 12px 0 7px;
+      }
+      .fld {
+        height: 44px;
+        border: 1px solid var(--edge);
+        border-radius: 10px;
+        background: var(--card);
+        padding: 0 14px;
+        display: flex;
+        align-items: center;
+        color: var(--muted);
+      }
+      .lockbar {
+        position: sticky;
+        bottom: -16px;
+        z-index: 6;
+        display: flex;
+        gap: 10px;
+        margin: 12px -12px -16px;
+        padding: 10px 12px 12px;
+        background: var(--bg);
+        box-shadow: 0 -1px 0 var(--line);
+      }
+      .lockbar button {
+        flex: 1;
+        height: 44px;
+        border: 0;
+        border-radius: 999px;
+        color: #fff;
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      .lockbar .c {
+        background: #64748b;
+      }
+      .lockbar .s {
+        background: var(--indigo);
+      }
+
+      /* ---- the opening box, shared shape ---- */
+      .cc {
+        border-radius: 14px;
+        overflow: hidden;
+        margin: 2px 0 12px;
+        background: var(--card);
+      }
+      .cc .hd {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+        min-height: 60px;
+        padding: 8px 12px 8px 16px;
+        border: 0;
+        text-align: left;
+        cursor: pointer;
+      }
+      .cc .hd .tx {
+        flex: 1;
+        min-width: 0;
+      }
+      .cc .hd small {
+        display: block;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+      .cc .val {
+        display: block;
+        font-size: 19px;
+        font-weight: 800;
+        line-height: 1.25;
+        overflow-wrap: anywhere;
+      }
+      .cc .val.none {
+        font-weight: 500;
+        opacity: 0.8;
+      }
+      .cc .rd {
+        flex: none;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        position: relative;
+        transform: rotate(180deg);
+        transition: transform 0.48s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .cc .rd::before {
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 14px;
+        height: 14px;
+        border-right: 4px solid currentColor;
+        border-bottom: 4px solid currentColor;
+        border-radius: 2px;
+        transform: translate(-50%, -70%) rotate(45deg);
+      }
+      .cc.shut .rd {
+        transform: none;
+      }
+      .cc .bd {
+        display: grid;
+        grid-template-rows: 1fr;
+        transition: grid-template-rows 0.48s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .cc.shut .bd {
+        grid-template-rows: 0fr;
+      }
+      .cc .bd > div {
+        overflow: hidden;
+        min-height: 0;
+      }
+      .cc .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        padding: 14px 14px 16px;
+      }
+      .cc .chip {
+        height: 40px;
+        padding: 0 16px;
+        border: 1px solid var(--edge);
+        border-radius: 999px;
+        background: var(--box);
+        color: var(--muted);
+        font-weight: 700;
+        font-size: 14px;
+        cursor: pointer;
+        transition:
+          background 0.36s,
+          color 0.36s;
+      }
+      .cc .li {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 16px;
+        border-top: 1px solid var(--line);
+        font-size: 16px;
+        cursor: pointer;
+      }
+      /* a long list (a risk's brands): the chips scroll inside the box, the header stays where it is */
+      .cc .chips.scrolls {
+        max-height: 300px;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+      }
+
+      /* ---- the home screen's headings ---- */
+      .hh {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        width: 100%;
+        border-radius: 12px;
+        background: color-mix(in srgb, var(--head) 16%, var(--card));
+        border: 1px solid color-mix(in srgb, var(--head) 38%, var(--card));
+        margin-bottom: 8px;
+        cursor: pointer;
+      }
+      .hh h3 {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--head);
+      }
+      .hh .n {
+        color: var(--muted);
+        font-size: 14px;
+      }
+      .hh.old {
+        padding: 15px 14px;
+      }
+      .hh.old .oc {
+        margin-left: auto;
+        width: 9px;
+        height: 9px;
+        border-right: 2.5px solid var(--muted);
+        border-bottom: 2.5px solid var(--muted);
+        transform: rotate(-45deg);
+        transition: transform 0.48s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .hh.old:not(.shut) .oc {
+        transform: rotate(45deg);
+        margin-top: -4px;
+      }
+      .hh.new {
+        padding: 5px 8px 5px 14px;
+      }
+      .hh.new .rd {
+        margin-left: auto;
+        flex: none;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        position: relative;
+        background: color-mix(in srgb, var(--head) 22%, var(--card));
+        color: var(--head);
+        transform: rotate(180deg);
+        transition: transform 0.48s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .hh.new .rd::before {
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 14px;
+        height: 14px;
+        border-right: 4px solid currentColor;
+        border-bottom: 4px solid currentColor;
+        border-radius: 2px;
+        transform: translate(-50%, -70%) rotate(45deg);
+      }
+      .hh.new.shut .rd {
+        transform: none;
+      }
+      .dl {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 12px 14px;
+        margin-bottom: 8px;
+      }
+      .dl b {
+        font-size: 17px;
+      }
+      .dl .s {
+        color: var(--muted);
+        font-size: 14px;
+        margin-top: 2px;
+      }
+
+      /* ---- today: the blue treatment ---- */
+      .ind {
+        border: 2px solid var(--indigo);
+      }
+      .ind .hd {
+        background: var(--indigo);
+        color: #fff;
+      }
+      .ind .hd small {
+        opacity: 0.85;
+      }
+      .ind .rd {
+        background: rgba(255, 255, 255, 0.22);
+        color: #fff;
+      }
+      .ind .chip.on {
+        background: var(--indigo);
+        border-color: var(--indigo);
+        color: #fff;
+      }
+      .ind .li.here {
+        background: color-mix(in srgb, var(--indigo) 12%, var(--card));
+        font-weight: 800;
+        box-shadow: inset 5px 0 0 var(--indigo);
+        padding-left: 20px;
+      }
+      .ind .li.here b {
+        color: var(--indigo);
+      }
+
+      /* ---- proposed: the same pale pink as the Opportunities, Risks and ROSA headings on the home screen ---- */
+      .pnk {
+        --c: var(--head);
+        border: 2px solid color-mix(in srgb, var(--c) 45%, var(--card));
+      }
+      .pnk.good {
+        --c: var(--good);
+      }
+      .pnk.bad {
+        --c: var(--bad);
+      }
+      .pnk .hd {
+        background: color-mix(in srgb, var(--c) 16%, var(--card));
+        color: var(--text);
+      }
+      .pnk .hd small {
+        color: var(--c);
+      }
+      .pnk .rd {
+        background: color-mix(in srgb, var(--c) 22%, var(--card));
+        color: var(--c);
+      }
+      .pnk .chip.on {
+        background: var(--c);
+        border-color: var(--c);
+        color: #fff;
+      }
+      .pnk .li.here {
+        background: color-mix(in srgb, var(--c) 12%, var(--card));
+        font-weight: 800;
+        box-shadow: inset 5px 0 0 var(--c);
+        padding-left: 20px;
+      }
+      .pnk .li.here b {
+        color: var(--c);
+      }
+    </style>
+  </head>
+  <body data-theme="light">
+    <div class="sfnav">
+      <span class="app"><b>PIPE</b>LINE</span>
+      <span class="tab on">Pipeline</span>
+      <span class="tab">Opportunities &amp; Risks</span>
+      <span class="sp"></span>
+      <button type="button" class="btn" id="fullbtn">Full screen</button>
+    </div>
+
+    <details class="about" open>
+      <summary>ABOUT THIS MOCKUP</summary>
+      <p>
+        <b>Version 2, invented data only.</b> Robert's decisions on version 1
+        (2026-11-08) are in: the chosen words in a pink row are <b>dark</b>; and
+        <b>one chevron everywhere</b>, the big one in a round button that the
+        Stage, Brand and Portfolio boxes have. Each pair shows
+        <b>today</b> (left) and <b>proposed</b> (right).
+      </p>
+      <ul>
+        <li>
+          <b
+            >1. The home screen's headings (Charts, Opportunities, Risks,
+            ROSA)</b
+          >
+          get the same round chevron instead of their small plain one, pointing
+          <b>up when open and down when shut</b>, like the boxes (today they
+          point down when open and right when shut). The headings stay the 49 px
+          high you approved, so the round button sits with about 6 px round it.
+          They stay pink; the chevron button is a deeper pink.
+        </li>
+        <li>
+          <b>2. Stage and Brand on the Create New page</b> in the pale pink,
+          dark words, solid pink for a chosen brand.
+        </li>
+        <li>
+          <b>3. A risk's long brand list:</b> A to Z, scrolling inside its own
+          box with the Brand row staying put above it (300 px here; the real box
+          is measured to fit the screen).
+        </li>
+        <li><b>4. The Portfolio on a risk</b> (short list, same treatment).</li>
+        <li>
+          <b>5. The stage when won or lost:</b> the row, and its chevron button,
+          take a pale green (Conversion) or red (Unsuccessful Conversion);
+          otherwise pink. The same would apply to the stage row on the deal
+          screen.
+        </li>
+        <li>
+          <b>Try it:</b> tap any row or heading to fold it; tap chips (the
+          closed row's words change); tap a stage (the row folds with its name,
+          green or red at the ends); scroll the long brand list; switch light
+          and dark above.
+        </li>
+        <li>
+          <b>Not shown / for Robert to confirm:</b> nothing is built. A chosen
+          chip is solid pink as drawn (not yet answered). This is meant to be
+          the final design to build from.
+        </li>
+      </ul>
+    </details>
+    <div class="tools">
+      <span class="lab">Theme</span>
+      <button type="button" class="pill on" data-theme-btn="light">
+        Light
+      </button>
+      <button type="button" class="pill" data-theme-btn="dark">Dark</button>
+    </div>
+    <div class="mocknote" id="note">
+      Mockup note: the left phone of each pair is how it is today, the right one
+      is the proposal.
+    </div>
+
+    <div class="grp" id="app"></div>
+
+    <script>
+      var BRANDS = [
+        "Persona",
+        "NexGen",
+        "Vivacit-E",
+        "Oxford",
+        "Triathlon",
+        "Anatomical Shoulder",
+        "Comprehensive Shoulder",
+        "Arcos",
+        "Taperloc",
+        "Taperloc Complete",
+        "G7",
+        "Allofit",
+        "Avenir",
+        "Mini Anterior",
+        "CPT",
+        "Biomet Ligament",
+        "Signature",
+        "Regenerex",
+        "OsseoTi",
+        "Echo",
+        "Exactech Equinoxe",
+        "Vanguard",
+        "Maxim",
+        "Natural Knee",
+        "Alloclassic",
+        "Zimmer Trabecular",
+        "Bone Cement",
+        "Rosa Knee"
+      ];
+      var STAGES = [
+        "Plan",
+        "Action",
+        "Commit",
+        "1st Case",
+        "5th Case",
+        "Conversion",
+        "Unsuccessful Conversion"
+      ];
+      var PORTS = ["Hip", "Knee", "Extremities", "CMFT"];
+      var BRANDS_SORTED = BRANDS.slice().sort(function (a, b) {
+        return a.localeCompare(b);
+      });
+      var UNIQ = 0;
+
+      function chev() {
+        return '<span class="rd"></span>';
+      }
+      /* kind: ind | pnk ; tone: "", good, bad */
+      function choiceBox(kind, label, list, chosen, opts) {
+        opts = opts || {};
+        var id = "c" + ++UNIQ;
+        var words = chosen.length ? chosen.join(", ") : "None selected";
+        var chips = list
+          .map(function (w) {
+            return (
+              '<button type="button" class="chip' +
+              (chosen.indexOf(w) > -1 ? " on" : "") +
+              '" data-w="' +
+              w +
+              '">' +
+              w +
+              "</button>"
+            );
+          })
+          .join("");
+        return (
+          '<div class="cc ' +
+          kind +
+          (opts.shut === false ? "" : " shut") +
+          '" data-id="' +
+          id +
+          '" data-label="' +
+          label +
+          '"><button type="button" class="hd" data-fold="1"><span class="tx"><small>' +
+          label +
+          '</small><span class="val' +
+          (chosen.length ? "" : " none") +
+          '">' +
+          words +
+          "</span></span>" +
+          chev() +
+          '</button><div class="bd"><div><div class="chips' +
+          (opts.scrolls ? " scrolls" : "") +
+          '">' +
+          chips +
+          "</div></div></div></div>"
+        );
+      }
+      function stageBox(kind, current, shut) {
+        var tone =
+          kind === "pnk"
+            ? current === "Conversion"
+              ? " good"
+              : current === "Unsuccessful Conversion"
+                ? " bad"
+                : ""
+            : "";
+        var list = STAGES.map(function (s) {
+          return (
+            '<div class="li' +
+            (s === current ? " here" : "") +
+            '" data-stage="' +
+            s +
+            '"><span>' +
+            s +
+            "</span>" +
+            (s === current ? "<b>✓</b>" : "") +
+            "</div>"
+          );
+        }).join("");
+        return (
+          '<div class="cc ' +
+          kind +
+          tone +
+          (shut ? " shut" : "") +
+          '" data-stagebox="1"><button type="button" class="hd" data-fold="1"><span class="tx"><small>Stage</small><span class="val">' +
+          current +
+          "</span></span>" +
+          chev() +
+          '</button><div class="bd"><div>' +
+          list +
+          "</div></div></div>"
+        );
+      }
+      function phone(body, bar) {
+        return (
+          '<div class="phone"><div class="sfstatus">8:45</div><div class="sfbar">☰ Pipeline Mobile</div><div class="scroll"><div class="lock"><button type="button" class="lockbtn"><span>‹</span> Back to My Pipeline</button></div>' +
+          body +
+          '</div><div class="sftabs"><span>Accounts</span><span>myCase</span><span>Cases</span><span class="on">Menu</span></div></div>'
+        );
+      }
+      function pair(title, left, right, ln, rn) {
+        return (
+          '<div class="grp"><h1>' +
+          title +
+          '</h1><div class="phones"><div class="opt"><h2>' +
+          (ln || "Today") +
+          "</h2><p>" +
+          (title.indexOf("home screen") > -1
+            ? "The small plain chevron, right when shut, down when open."
+            : "The blue treatment.") +
+          "</p>" +
+          left +
+          '</div><div class="opt"><h2>' +
+          (rn || "Proposed") +
+          "</h2><p>" +
+          (title.indexOf("home screen") > -1
+            ? "The round chevron, down when shut, up when open."
+            : "The pink treatment.") +
+          "</p>" +
+          right +
+          "</div></div></div>"
+        );
+      }
+      function head(kind, name, n, shut) {
+        var cls = "hh " + kind + (shut ? " shut" : "");
+        return (
+          '<div class="' +
+          cls +
+          '" data-hfold="1"><h3>' +
+          name +
+          "</h3>" +
+          (n !== "" ? '<span class="n">' + n + "</span>" : "") +
+          (kind === "old"
+            ? '<span class="oc"></span>'
+            : '<span class="rd"></span>') +
+          "</div>"
+        );
+      }
+      function pageHome(kind) {
+        var d =
+          '<div class="dl"><b>Ben Treffene</b><div class="s">Knee · Commit · Q1</div></div><div class="dl"><b>Richard Verheul</b><div class="s">Hip · 1st Case · Q2</div></div>';
+        return (
+          head(kind, "Charts", "", true) +
+          head(kind, "Opportunities", 2, false) +
+          d +
+          head(kind, "Risks", 1, true) +
+          head(kind, "ROSA", 0, true)
+        );
+      }
+      function page1(kind) {
+        return (
+          '<div class="nm2">Create New</div><div class="sub1">Choose the kind, then fill it in.</div>' +
+          stageBox(kind, "Commit", false) +
+          '<div class="fl">Primary HCP *</div><div class="fld">Search…</div>' +
+          choiceBox(
+            kind,
+            "Brand",
+            BRANDS_SORTED.slice(0, 8),
+            ["Persona", "NexGen"].filter(function (x) {
+              return BRANDS_SORTED.indexOf(x) > -1;
+            })
+          ) +
+          '<div class="fl">Background information</div><div class="fld" style="height:96px;align-items:flex-start;padding-top:12px">…</div><div class="lockbar"><button type="button" class="c">Cancel</button><button type="button" class="s">Create</button></div>'
+        );
+      }
+      function page2(kind) {
+        return (
+          '<div class="nm2">Create New</div><div class="sub1">Risk · AU RISK</div>' +
+          choiceBox(kind, "Portfolio *", PORTS, ["Extremities"]) +
+          choiceBox(kind, "Brand", BRANDS_SORTED, ["Comprehensive Shoulder"], {
+            shut: false,
+            scrolls: kind === "pnk"
+          }) +
+          '<div class="fl">Rep priority</div><div class="fld">Yes</div><div class="lockbar"><button type="button" class="c">Cancel</button><button type="button" class="s">Create</button></div>'
+        );
+      }
+      function page3(kind) {
+        return (
+          '<div class="nm2">Create New</div><div class="sub1">Risk · AU RISK</div>' +
+          choiceBox(kind, "Portfolio *", PORTS, ["Hip", "Knee"], {
+            shut: false
+          }) +
+          '<div class="fl">Expected closing quarter and year</div><div class="fld">Q1 · 2027</div>'
+        );
+      }
+      function page4(kind) {
+        return (
+          '<div class="nm2">Kieran Hirpara</div><div class="sub1">Won and lost deals</div>' +
+          stageBox(kind, "Plan", true) +
+          stageBox(kind, "Conversion", true) +
+          stageBox(kind, "Unsuccessful Conversion", true)
+        );
+      }
+      function draw() {
+        document.getElementById("app").innerHTML =
+          pair(
+            "1. The home screen's headings with the same chevron",
+            phone(pageHome("old")),
+            phone(pageHome("new"))
+          ) +
+          pair(
+            "2. Stage and Brand on the Create New page",
+            phone(page1("ind")),
+            phone(page1("pnk"))
+          ) +
+          pair(
+            "3. A risk's long brand list: A to Z, scrolling inside its own box",
+            phone(page2("ind")),
+            phone(page2("pnk")),
+            "Today (also not sorted)",
+            "Proposed: sorted, scrolls in its box, the row stays"
+          ) +
+          pair(
+            "4. The Portfolio on a risk",
+            phone(page3("ind")),
+            phone(page3("pnk"))
+          ) +
+          pair(
+            "5. The stage when won or lost",
+            phone(page4("ind")),
+            phone(page4("pnk"))
+          );
+      }
+      document.addEventListener("click", function (e) {
+        var b = e.target.closest("[data-theme-btn]");
+        if (b) {
+          if (b.dataset.themeBtn) {
+            document.body.setAttribute("data-theme", b.dataset.themeBtn);
+            document.querySelectorAll("[data-theme-btn]").forEach(function (x) {
+              x.classList.toggle("on", x === b);
+            });
+          }
+          return;
+        }
+        var hf = e.target.closest("[data-hfold]");
+        if (hf) {
+          hf.classList.toggle("shut");
+          return;
+        }
+        var cc = e.target.closest(".cc");
+        if (!cc) return;
+        var st = e.target.closest("[data-stage]");
+        if (st) {
+          cc.querySelector(".val").textContent = st.dataset.stage;
+          cc.querySelectorAll(".li").forEach(function (l) {
+            var on = l === st;
+            l.classList.toggle("here", on);
+            l.querySelector("b") && l.querySelector("b").remove();
+            if (on) l.insertAdjacentHTML("beforeend", "<b>✓</b>");
+          });
+          if (cc.classList.contains("pnk")) {
+            cc.classList.toggle("good", st.dataset.stage === "Conversion");
+            cc.classList.toggle(
+              "bad",
+              st.dataset.stage === "Unsuccessful Conversion"
+            );
+          }
+          cc.classList.add("shut");
+          return;
+        }
+        var ch = e.target.closest(".chip");
+        if (ch) {
+          ch.classList.toggle("on");
+          var on = [].map.call(cc.querySelectorAll(".chip.on"), function (c) {
+            return c.dataset.w;
+          });
+          var v = cc.querySelector(".val");
+          v.textContent = on.length ? on.join(", ") : "None selected";
+          v.classList.toggle("none", !on.length);
+          return;
+        }
+        if (e.target.closest("[data-fold]")) cc.classList.toggle("shut");
+      });
+      document.getElementById("fullbtn").addEventListener("click", function () {
+        document.getElementById("note").textContent =
+          "Mockup note: in Salesforce this opens in a new full-screen tab without the Salesforce navigation.";
+      });
+      draw();
+    </script>
+  </body>
+</html>
