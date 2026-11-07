@@ -4,10 +4,9 @@
  * A "filter" is: kinds (opp, risk, rosa), stages (every stage chosen, open and closed, across the kinds), closedMonths
  * (how far back closed deals go; 999 is all), teamId ("MINE", a team's Id, or blank for no team), below (include the teams
  * below), countries, states, segments (portfolios), brands, ownerId and ownerName, qFrom and qTo (a range of expected
- * close quarters), prio, sprio, onHold, stale (only deals that need attention), and evMode ("any", "has" or "none": the deal's
- * Link to APAC Event) with evId and evName (one chosen event, with "has"; blank means any event). The event choice applies to
- * opportunities and ROSA deals only (a risk has no event, so risks are left as they are) and is offered only to people who can
- * see the field; for anyone else it is put back to "any" when a filter is read.
+ * close quarters), prio, sprio, onHold, stale (only deals that need attention), and campId and campName (one sales campaign:
+ * only the deals in that campaign are shown; blank means no campaign; ROSA deals are never in a campaign). This replaces the old
+ * Link to APAC Event choice (Robert, 2026-11-07); an old saved event choice is simply ignored.
  *
  * Open, Closed, Both and Custom are not stored: they are worked out from the stages chosen, exactly as in mockup v37.
  */
@@ -121,9 +120,8 @@ export function defaultFilter(kinds, choices, startTeam) {
     sprio: false,
     onHold: false,
     stale: false,
-    evMode: "any",
-    evId: "",
-    evName: ""
+    campId: "",
+    campName: ""
   };
 }
 
@@ -161,11 +159,6 @@ export function fromSaved(saved, choices, isManager, startTeam) {
   }
   if (!isManager) next.teamId = "";
   return next;
-}
-
-/** A person who cannot see the Link to APAC Event field has no event choice: put any saved one back to "any". */
-export function withoutEvent(f) {
-  return { ...f, evMode: "any", evId: "", evName: "" };
 }
 
 /** What the server needs to read the deals. */
@@ -222,12 +215,7 @@ export function clientMatch(d, f, now = Date.now()) {
     return false;
   if (f.qTo && quarterRank(d.quarter, today) > boundRank(f.qTo, "to", today))
     return false;
-  if (d.kind !== "risk") {
-    if (f.evMode === "has") {
-      if (!d.eventId) return false;
-      if (f.evId && d.eventId !== f.evId) return false;
-    } else if (f.evMode === "none" && d.eventId) return false;
-  }
+  if (f.campId && !(d.campaignIds || []).includes(f.campId)) return false;
   if (f.prio && !d.repPriority) return false;
   if (f.sprio && !d.statePriority) return false;
   if (f.onHold && !d.onHold) return false;
@@ -254,8 +242,6 @@ export function chipList(f, choices, teams, isRep) {
     add("Stage", f.stages.join(", ") || "none");
   if (f.qFrom || f.qTo)
     add("Close", `${f.qFrom || "any"} to ${f.qTo || "any"}`);
-  if (f.evMode === "has") add("Event", f.evName || "any event");
-  else if (f.evMode === "none") add("Event", "none");
   const only = [
     f.prio ? "rep priority" : "",
     f.sprio ? "state priority" : "",

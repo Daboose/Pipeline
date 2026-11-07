@@ -56,7 +56,7 @@ export default class PipelineSelection extends LightningElement {
   @api teams = [];
   @api options = {};
   @api isManager = false;
-  @api canEvent = false; // the person can see the Link to APAC Event field, so the Event choice is offered
+  @api campaigns = []; // the active sales campaigns the person may link the view to
   @api startTeam = "";
   @api recordTypes = {}; // record type name to Id, to read the brands that apply
 
@@ -153,45 +153,35 @@ export default class PipelineSelection extends LightningElement {
       this.choices
     );
   }
-  /* ----- event (only for a person who can see the Link to APAC Event field) ----- */
-  /** Events apply to opportunities and ROSA deals; with only risks chosen the group is greyed out. */
-  get eventEligible() {
-    return (
-      this.draft.kinds.includes("opp") || this.draft.kinds.includes("rosa")
-    );
-  }
-  get eventCls() {
-    return "group" + (this.eventEligible ? "" : " off");
-  }
-  get eventButtons() {
-    return [
-      ["any", "Any"],
-      ["has", "Has an event"],
-      ["none", "No event"]
-    ].map(([value, label]) => ({
-      value,
-      label,
-      cls: (this.draft.evMode || "any") === value ? "on" : ""
+  /* ----- campaign (Robert, 2026-11-07): the view can be linked to one sales campaign; it replaces the old Event choice ----- */
+  get campaignOptions() {
+    const chosen = this.draft.campId || "";
+    const list = (this.campaigns || []).map((c) => ({
+      value: c.id,
+      label: c.name
+    }));
+    // a saved campaign that is no longer in the list (made inactive) stays visible so it can be seen and changed
+    if (chosen && !list.some((o) => o.value === chosen))
+      list.unshift({
+        value: chosen,
+        label: this.draft.campName || "Chosen campaign"
+      });
+    return [{ value: "", label: "No campaign" }, ...list].map((o) => ({
+      ...o,
+      selected: o.value === chosen
     }));
   }
-  get showEventPicker() {
-    return this.draft.evMode === "has";
+  get campaignHint() {
+    return this.draft.campId
+      ? "Only the deals in this campaign are shown. After Apply you can switch to the campaign's members."
+      : "Choose a campaign to show only its deals. Not for ROSA deals.";
   }
-  get eventHint() {
-    const mode = this.draft.evMode || "any";
-    if (mode === "has")
-      return this.draft.evId
-        ? "Only deals linked to this event."
-        : "Leave the search empty to see every deal that has any event.";
-    if (mode === "none") return "Only deals that are not linked to an event.";
-    return "Deals are shown whether or not they have an event.";
-  }
-  handleEventMode(event) {
-    const evMode = event.currentTarget.dataset.value;
-    this.set(evMode === "has" ? { evMode } : { evMode, evId: "", evName: "" });
-  }
-  handleEventPick(event) {
-    this.set({ evId: event.detail.id, evName: event.detail.name });
+  handleCampaignPick(event) {
+    const id = event.target.value;
+    const label = id
+      ? event.target.options[event.target.selectedIndex].textContent.trim()
+      : "";
+    this.set({ campId: id, campName: label });
   }
 
   handleReset() {
@@ -446,7 +436,7 @@ export default class PipelineSelection extends LightningElement {
     return this.draft.kinds.includes("opp");
   }
   get hasRisk() {
-    return this.draft.kinds.includes("risk") && this.eventEligible;
+    return this.draft.kinds.includes("risk");
   }
   get hasRosa() {
     return this.draft.kinds.includes("rosa");

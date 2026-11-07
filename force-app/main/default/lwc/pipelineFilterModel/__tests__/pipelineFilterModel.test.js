@@ -10,7 +10,6 @@ import {
   serverChanged,
   clientMatch,
   chipList,
-  withoutEvent,
   teamRows,
   MINE
 } from "c/pipelineFilterModel";
@@ -260,65 +259,51 @@ describe("c-pipeline-filter-model", () => {
     ]);
   });
 
-  describe("Link to APAC Event", () => {
+  describe("Campaign", () => {
     const f = defaultFilter(["opp", "risk", "rosa"], CHOICES, "");
-    const linked = {
-      id: "x",
-      kind: "opp",
-      eventId: "e1",
-      eventName: "Masterclass"
-    };
-    const other = { id: "y", kind: "rosa", eventId: "e2", eventName: "Summit" };
-    const bare = { id: "z", kind: "opp", eventId: null };
-    const risk = { id: "r", kind: "risk", eventId: null };
+    const inCamp = { id: "x", kind: "opp", campaignIds: ["c1", "c2"] };
+    const other = { id: "y", kind: "risk", campaignIds: ["c2"] };
+    const bare = { id: "z", kind: "opp", campaignIds: [] };
+    const rosa = { id: "r", kind: "rosa" }; // a ROSA deal has no campaigns
 
-    it("starts as any event and shows every deal", () => {
-      expect(f.evMode).toBe("any");
-      [linked, other, bare, risk].forEach((d) =>
+    it("starts with no campaign and shows every deal", () => {
+      expect(f.campId).toBe("");
+      [inCamp, other, bare, rosa].forEach((d) =>
         expect(clientMatch(d, f, NOW)).toBe(true)
       );
     });
-    it("'has an event' keeps deals with any event, or with the one chosen", () => {
-      const has = { ...f, evMode: "has" };
-      expect(clientMatch(linked, has, NOW)).toBe(true);
-      expect(clientMatch(bare, has, NOW)).toBe(false);
-      const one = { ...has, evId: "e1", evName: "Masterclass" };
-      expect(clientMatch(linked, one, NOW)).toBe(true);
+    it("shows only the deals in the chosen campaign", () => {
+      const one = { ...f, campId: "c1", campName: "Hip Roadshow" };
+      expect(clientMatch(inCamp, one, NOW)).toBe(true);
       expect(clientMatch(other, one, NOW)).toBe(false);
+      expect(clientMatch(bare, one, NOW)).toBe(false);
+      expect(clientMatch(rosa, one, NOW)).toBe(false);
     });
-    it("'no event' keeps only deals with none", () => {
-      const none = { ...f, evMode: "none" };
-      expect(clientMatch(bare, none, NOW)).toBe(true);
-      expect(clientMatch(linked, none, NOW)).toBe(false);
-    });
-    it("leaves risks alone, because a risk can never be linked", () => {
-      expect(clientMatch(risk, { ...f, evMode: "has" }, NOW)).toBe(true);
-      expect(clientMatch(risk, { ...f, evMode: "none" }, NOW)).toBe(true);
-    });
-    it("says it in a chip, and is read back from a saved filter", () => {
-      const one = { ...f, evMode: "has", evId: "e1", evName: "Masterclass" };
-      expect(chipList(one, CHOICES, [], false).map((c) => c.text)).toContain(
-        "Masterclass"
-      );
+    it("has no chip of its own (the Campaign switch and the campaign's title say it), and is read back from a saved filter", () => {
+      const one = { ...f, campId: "c1", campName: "Hip Roadshow" };
+      expect(
+        chipList(one, CHOICES, [], false).map((c) => c.text)
+      ).not.toContain("Hip Roadshow");
       const back = fromSaved(
         JSON.parse(JSON.stringify(one)),
         CHOICES,
         true,
         ""
       );
-      expect(back.evMode).toBe("has");
-      expect(back.evId).toBe("e1");
+      expect(back.campId).toBe("c1");
+      expect(back.campName).toBe("Hip Roadshow");
     });
-    it("is put back to any for a person who cannot see the field", () => {
-      const one = { ...f, evMode: "has", evId: "e1", evName: "Masterclass" };
-      expect(withoutEvent(one)).toMatchObject({
-        evMode: "any",
-        evId: "",
-        evName: ""
-      });
+    it("ignores an old saved event choice", () => {
+      const back = fromSaved(
+        { ...f, evMode: "has", evId: "e1" },
+        CHOICES,
+        true,
+        ""
+      );
+      expect(back.campId).toBe("");
     });
     it("is not part of what makes the server read again", () => {
-      expect(serverChanged(f, { ...f, evMode: "has" })).toBe(false);
+      expect(serverChanged(f, { ...f, campId: "c1" })).toBe(false);
     });
   });
 });

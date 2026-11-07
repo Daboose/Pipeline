@@ -1,18 +1,5 @@
 import { createElement } from "lwc";
 import PipelineCampaignMembers from "c/pipelineCampaignMembers";
-import linkableDeals from "@salesforce/apex/PipelineCampaignController.linkableDeals";
-import setLink from "@salesforce/apex/PipelineDealCampaignController.setLink";
-
-jest.mock(
-  "@salesforce/apex/PipelineCampaignController.linkableDeals",
-  () => ({ default: jest.fn() }),
-  { virtual: true }
-);
-jest.mock(
-  "@salesforce/apex/PipelineDealCampaignController.setLink",
-  () => ({ default: jest.fn() }),
-  { virtual: true }
-);
 
 // eslint-disable-next-line @lwc/lwc/no-async-operation
 const flush = () => new Promise((r) => setTimeout(r, 0));
@@ -43,6 +30,8 @@ const MEMBERS = [
     city: "Singapore",
     type: "Physician",
     hospitals: "Mount Elizabeth",
+    y1Rep: "Pat Recon",
+    y6Rep: "Sam Upper",
     ratings: [
       { portfolio: "Hip", rating: "GOLD" },
       { portfolio: "Knee", rating: null }
@@ -113,7 +102,9 @@ describe("c-pipeline-campaign-members", () => {
       "Close Quarter",
       "Last Posted",
       "Last Stage Move",
-      "Sales Rep"
+      "Sales Rep",
+      "Y1 Recon Rep",
+      "Y6 Extremities Rep"
     ]);
     const one = make({ campaign: { id: "c1", portfolios: ["Extremities"] } });
     await flush();
@@ -133,6 +124,18 @@ describe("c-pipeline-campaign-members", () => {
     expect(t).toContain("Not rated");
     expect(el.shadowRoot.querySelectorAll("tr.deal2").length).toBe(1);
     expect(t).toContain("No deal yet");
+  });
+
+  it("shows the surgeon's Y1 Recon Rep and Y6 Extremities Rep as the last two columns", async () => {
+    const el = make();
+    await flush();
+    const h = heads(el);
+    expect(h.slice(-2)).toEqual(["Y1 Recon Rep", "Y6 Extremities Rep"]);
+    const first = el.shadowRoot.querySelector("tbody tr");
+    const cells = [...first.querySelectorAll("td")].map((c) =>
+      c.textContent.trim()
+    );
+    expect(cells.slice(-2)).toEqual(["Pat Recon", "Sam Upper"]);
   });
 
   it("filters to surgeons with or without a deal and searches by name", async () => {
@@ -171,45 +174,6 @@ describe("c-pipeline-campaign-members", () => {
     expect(seen[0]).toEqual(["m1", "m2"]);
   });
 
-  it("offers Link a deal only when allowed, then links the chosen deal", async () => {
-    const without = make();
-    await flush();
-    expect(without.shadowRoot.querySelector(".linkbtn")).toBeNull();
-    linkableDeals.mockResolvedValue([
-      {
-        id: "d9",
-        name: "000900",
-        kind: "risk",
-        portfolio: "Knee",
-        stage: "Unhappy",
-        value: 50000,
-        currencyCode: "SGD",
-        ownerName: "Mei"
-      }
-    ]);
-    setLink.mockResolvedValue(undefined);
-    const el = make({ canLink: true });
-    const linked = [];
-    el.addEventListener("dealslinked", () => linked.push(1));
-    await flush();
-    el.shadowRoot.querySelector(".linkbtn").click();
-    await flush();
-    expect(linkableDeals).toHaveBeenCalledWith({
-      campaignId: "c1",
-      surgeonId: "a2"
-    });
-    expect(text(el)).toContain("Link a deal for Dr Priya Nair");
-    expect(text(el)).toContain("000900 · Risk");
-    el.shadowRoot.querySelector(".lplist .btn").click();
-    await flush();
-    expect(setLink).toHaveBeenCalledWith({
-      dealId: "d9",
-      campaignId: "c1",
-      linked: true
-    });
-    expect(linked.length).toBe(1);
-  });
-
   it("lets the person turn columns off and on again with the Columns button, everything on to start with", async () => {
     window.localStorage.removeItem("pipelineCampaignMembersHidden");
     const el = make();
@@ -242,7 +206,9 @@ describe("c-pipeline-campaign-members", () => {
       "Revenue / Year",
       "Close Quarter",
       "Last Posted",
-      "Last Stage Move"
+      "Last Stage Move",
+      "Y1 Recon Rep",
+      "Y6 Extremities Rep"
     ]);
     // the rows follow: no hospital, no sales rep
     expect(text(el)).not.toContain("Mount Elizabeth");

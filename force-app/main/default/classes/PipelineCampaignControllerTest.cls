@@ -283,6 +283,8 @@ private class PipelineCampaignControllerTest {
       System.assertEquals('Plan', detail.members[0].deals[0].stage);
       System.assertEquals('Hip', detail.members[0].deals[0].portfolio);
       System.assertEquals('opp', detail.members[0].deals[0].kind);
+      System.assertEquals(null, detail.members[0].y1Rep); // the test surgeon has no Y1 or Y6 rep
+      System.assertEquals(null, detail.members[0].y6Rep);
       System.assertEquals(1, detail.members[0].ratings.size()); // one per portfolio the campaign covers
       System.assertEquals(
         'Extremities',

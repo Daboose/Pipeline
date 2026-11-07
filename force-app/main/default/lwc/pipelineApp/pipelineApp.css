@@ -189,8 +189,10 @@
 }
 .main > c-pipeline-type-list,
 .main > c-pipeline-team-table,
+.main > c-pipeline-campaign-members,
 .dcols {
   align-self: stretch;
+  min-width: 0; /* the screen keeps its width: a wide table scrolls inside its own box and never widens the page */
 }
 .dcols {
   display: grid;
@@ -449,39 +451,25 @@
   transform: rotate(45deg);
 }
 
-/* the Campaigns button and the campaign members screen */
-.cbtn {
-  background: #475569;
-  border-color: #475569;
-  color: #fff;
-}
-.cbtn.on {
-  background: var(--indigo);
-  border-color: var(--indigo);
-}
-.cmain {
-  --stick: 59px; /* the sticky top bar's height, so the members list keeps its headings just under it */
+/* the campaign linked in Change selection: the Campaign / Pipeline switch in the top middle, and the campaign screen */
+.viewseg {
+  --seg-lab: var(--panel);
+  --seg-track: var(--panel2);
+  --seg-line: var(--edge);
+  --seg-optx: var(--muted);
+  --seg-indigo: var(--indigo);
+  --seg-muted: var(--muted);
+  --seg-shadow: rgba(0, 0, 0, 0.35);
 }
 .ctrail {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   gap: 14px;
   flex-wrap: wrap;
-  margin: 0 0 12px;
 }
-.crumblink {
-  background: none;
-  border: 0;
-  padding: 0;
-  color: var(--indigo2);
-  font-size: 16px;
-  font-weight: 700;
-  text-decoration: underline;
-  cursor: pointer;
-}
-.ctrail select.in {
-  min-width: 320px;
-  font-weight: 700;
+.cname {
+  font-size: 18px;
+  font-weight: 800;
 }
 .cfacts {
   color: var(--muted);
@@ -499,4 +487,47 @@
 }
 .tag.fill.bad {
   background: #dc2626;
+}
+/* the screen coming in slides in from the side (the motion standard: 0.4 s, the same easing) */
+.main.slide-left {
+  animation: slideInLeft 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.main.slide-right {
+  animation: slideInRight 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-6%);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(6%);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .main.slide-left,
+  .main.slide-right {
+    animation: none;
+  }
+}
+
+/* the Pipeline screen while the campaign screen is showing: kept, only out of sight */
+.main.away {
+  display: none;
+}
+
+/* the campaign screen ends at the bottom of the window: little padding below the list, which fits itself to what is left */
+.main.cscreen {
+  padding-bottom: 16px;
 }

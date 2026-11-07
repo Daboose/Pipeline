@@ -233,34 +233,22 @@
             </div>
           </div>
 
-          <div class={eventCls} lwc:if={canEvent}>
-            <div class="gt">EVENT</div>
-            <div class="seg" role="group" aria-label="Link to APAC Event">
-              <template for:each={eventButtons} for:item="b">
-                <button
-                  type="button"
-                  key={b.value}
-                  class={b.cls}
-                  data-value={b.value}
-                  onclick={handleEventMode}
-                >
-                  {b.label}
-                </button>
-              </template>
+          <div class="group">
+            <div class="gt">CAMPAIGN</div>
+            <div class="fld">
+              <select
+                class="in"
+                aria-label="Campaign"
+                onchange={handleCampaignPick}
+              >
+                <template for:each={campaignOptions} for:item="o">
+                  <option key={o.value} value={o.value} selected={o.selected}>
+                    {o.label}
+                  </option>
+                </template>
+              </select>
             </div>
-            <div class="eventpick" lwc:if={showEventPicker}>
-              <c-pipeline-lookup
-                field-name="APAC_Event__c"
-                value-id={draft.evId}
-                value-name={draft.evName}
-                placeholder="Type part of an event name…"
-                onchange={handleEventPick}
-              ></c-pipeline-lookup>
-            </div>
-            <div class="hint">{eventHint}</div>
-            <div class="hint" lwc:if={hasRisk}>
-              Events apply to opportunities and ROSA deals, not to risks.
-            </div>
+            <div class="hint">{campaignHint}</div>
           </div>
 
           <div class="group">

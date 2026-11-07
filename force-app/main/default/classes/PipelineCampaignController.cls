@@ -97,6 +97,10 @@ public with sharing class PipelineCampaignController {
     @AuraEnabled
     public String stages;
     @AuraEnabled
+    public String y1Rep; // the surgeon's Y1 Recon Rep (hip and knee): a user, shown as a column at the end
+    @AuraEnabled
+    public String y6Rep; // the surgeon's Y6 Extremities Rep: a user
+    @AuraEnabled
     public List<RatingCell> ratings = new List<RatingCell>(); // one per portfolio the campaign covers
     @AuraEnabled
     public List<MemberDeal> deals = new List<MemberDeal>(); // the surgeon's deals linked to this campaign
@@ -376,7 +380,9 @@ public with sharing class PipelineCampaignController {
           HCPUsageHipRating__c,
           HCPUsageKneeRating__c,
           HCPUsageShoulderRating__c,
-          HCPUsageCMFRating__c
+          HCPUsageCMFRating__c,
+          Y1User__r.Name,
+          Y6User__r.Name
         FROM Account
         WHERE Id IN :surgeonIds
         WITH SYSTEM_MODE
@@ -445,6 +451,11 @@ public with sharing class PipelineCampaignController {
       if (dealsOf.containsKey(m.Surgeon__c)) {
         r.deals = dealsOf.get(m.Surgeon__c);
       }
+      if (ratingsOf.containsKey(m.Surgeon__c)) {
+        Account ra = ratingsOf.get(m.Surgeon__c);
+        r.y1Rep = ra.Y1User__r == null ? null : ra.Y1User__r.Name;
+        r.y6Rep = ra.Y6User__r == null ? null : ra.Y6User__r.Name;
+      }
       for (String p : campaignPortfolios) {
         RatingCell c = new RatingCell();
         c.portfolio = p.trim();
@@ -512,92 +523,6 @@ public with sharing class PipelineCampaignController {
     d.isClosed = r.IsClosed__c;
     d.onHold = r.OnHold__c;
     return d;
-  }
-
-  /**
-   * The surgeon's own deals that could be put in this campaign and are not yet (the "Link a deal" button on a surgeon with no
-   * deal yet): opportunities and risks of that surgeon that fit the campaign (active, the owner's country and the portfolio).
-   * The deals are read without field-level checks (sharing still applies); linking one needs edit access to it.
-   */
-  @AuraEnabled
-  public static List<MemberDeal> linkableDeals(Id campaignId, Id surgeonId) {
-    List<MemberDeal> out = new List<MemberDeal>();
-    if (campaignId == null || surgeonId == null) {
-      return out;
-    }
-    Sales_Campaign__c c = [
-      SELECT Active__c, Countries__c, Portfolios__c
-      FROM Sales_Campaign__c
-      WHERE Id = :campaignId
-      WITH USER_MODE
-      LIMIT 1
-    ];
-    Set<Id> linked = new Set<Id>();
-    for (Sales_Campaign_Deal__c l : [
-      SELECT Deal__c
-      FROM Sales_Campaign_Deal__c
-      WHERE Campaign__c = :campaignId
-      WITH USER_MODE
-      LIMIT 5000
-    ]) {
-      linked.add(l.Deal__c);
-    }
-    String hcp = [
-      SELECT Name
-      FROM Account
-      WHERE Id = :surgeonId
-      WITH USER_MODE
-      LIMIT 1
-    ]
-    .Name;
-    for (SalesRisks__c r : [
-      SELECT
-        Name,
-        Account__c,
-        Stage__c,
-        AmountPerYear__c,
-        CurrencyIsoCode,
-        Expected_Closure_Quarter__c,
-        Expected_Closing_Year__c,
-        Owner.Name,
-        Owner_Country__c,
-        Latest_Chatter_Date__c,
-        Last_Stage_Change_Date__c,
-        CreatedDate,
-        IsClosed__c,
-        OnHold__c,
-        RecordType.DeveloperName,
-        Portfolio__c
-      FROM SalesRisks__c
-      WHERE
-        Account__c = :surgeonId
-        AND (NOT RecordType.DeveloperName LIKE '%ROSA%')
-        AND RecordType.DeveloperName NOT IN ('Master', 'SALE')
-      WITH SYSTEM_MODE
-      ORDER BY CreatedDate DESC
-      LIMIT 200
-    ]) {
-      if (linked.contains(r.Id)) {
-        continue;
-      }
-      Set<String> ports = PipelineDealCampaignController.dealPortfolios(
-        r.RecordType.DeveloperName,
-        r.Portfolio__c
-      );
-      if (
-        PipelineDealCampaignController.reasons(
-            c,
-            r.Owner_Country__c,
-            ports,
-            true,
-            hcp
-          )
-          .isEmpty()
-      ) {
-        out.add(memberDeal(r));
-      }
-    }
-    return out;
   }
 
   /** The current hospitals of each surgeon, from the Account Relationship records (no end date, neither side inactive). */

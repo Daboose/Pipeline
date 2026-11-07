@@ -277,79 +277,61 @@ describe("c-pipeline-selection", () => {
     expect(text()).toEqual(["Persona", "Vanguard"]);
   });
 
-  describe("Link to APAC Event", () => {
-    const eventBtns = (el) =>
-      el.shadowRoot.querySelector('.seg[aria-label="Link to APAC Event"]');
+  describe("Campaign", () => {
+    const campaigns = [
+      { id: "c1", name: "Hip Roadshow AU-NZ" },
+      { id: "c2", name: "Knee Forum SG" }
+    ];
+    const select = (el) =>
+      el.shadowRoot.querySelector('select[aria-label="Campaign"]');
 
-    it("offers no Event choice, and says nothing about it, to someone who cannot see the field", () => {
-      const el = make();
-      expect(eventBtns(el)).toBeNull();
-      expect(el.shadowRoot.textContent).not.toContain("Has an event");
-    });
-
-    it("offers it to someone who can, as Any / Has an event / No event, starting on Any", () => {
-      const el = make({ canEvent: true });
-      const seg = eventBtns(el);
+    it("offers No campaign and the active campaigns, starting on No campaign", () => {
+      const el = make({ campaigns });
+      const opts = [...select(el).options].map((o) => o.textContent.trim());
+      expect(opts).toEqual([
+        "No campaign",
+        "Hip Roadshow AU-NZ",
+        "Knee Forum SG"
+      ]);
       expect(
-        [...seg.querySelectorAll("button")].map((b) => b.textContent.trim())
-      ).toEqual(["Any", "Has an event", "No event"]);
-      expect(seg.querySelector(".on").textContent.trim()).toBe("Any");
-      expect(el.shadowRoot.querySelector("c-pipeline-lookup")).toBeNull();
+        select(el).options[select(el).selectedIndex].textContent.trim()
+      ).toBe("No campaign");
     });
 
-    it("shows the event search under 'Has an event', and Apply carries the choice", async () => {
-      const el = make({ canEvent: true });
+    it("carries the chosen campaign with Apply, and forgets it again for No campaign", async () => {
+      const el = make({ campaigns });
       const apply = jest.fn();
       el.addEventListener("apply", apply);
-      btn(el, "Has an event").click();
-      await Promise.resolve();
-      const lookup = el.shadowRoot.querySelector("c-pipeline-lookup");
-      expect(lookup.fieldName).toBe("APAC_Event__c");
-      lookup.dispatchEvent(
-        new CustomEvent("change", {
-          detail: { id: "e1", name: "Hip Masterclass" }
-        })
-      );
+      select(el).value = "c2";
+      select(el).dispatchEvent(new CustomEvent("change"));
       await Promise.resolve();
       btn(el, "Apply").click();
       expect(apply.mock.calls[0][0].detail.filter).toMatchObject({
-        evMode: "has",
-        evId: "e1",
-        evName: "Hip Masterclass"
+        campId: "c2",
+        campName: "Knee Forum SG"
+      });
+      select(el).value = "";
+      select(el).dispatchEvent(new CustomEvent("change"));
+      await Promise.resolve();
+      btn(el, "Apply").click();
+      expect(apply.mock.calls[1][0].detail.filter).toMatchObject({
+        campId: "",
+        campName: ""
       });
     });
 
-    it("forgets the chosen event when the choice goes back to Any or No event", async () => {
+    it("keeps a saved campaign visible even when it is no longer in the list", () => {
       const el = make({
-        canEvent: true,
+        campaigns,
         filter: {
           ...defaultFilter(["opp"], CHOICES, MINE),
-          evMode: "has",
-          evId: "e1",
-          evName: "Hip Masterclass"
+          campId: "gone",
+          campName: "Old Forum"
         }
       });
-      const apply = jest.fn();
-      el.addEventListener("apply", apply);
-      btn(el, "No event").click();
-      await Promise.resolve();
-      btn(el, "Apply").click();
-      expect(apply.mock.calls[0][0].detail.filter).toMatchObject({
-        evMode: "none",
-        evId: "",
-        evName: ""
-      });
-    });
-
-    it("greys the group out when only risks are chosen", async () => {
-      const el = make({
-        canEvent: true,
-        filter: defaultFilter(["risk"], CHOICES, MINE)
-      });
-      expect(eventBtns(el).parentElement.className).toContain("off");
-      btn(el, "Opportunities").click();
-      await Promise.resolve();
-      expect(eventBtns(el).parentElement.className).not.toContain("off");
+      expect(
+        [...select(el).options].map((o) => o.textContent.trim())
+      ).toContain("Old Forum");
     });
   });
 });

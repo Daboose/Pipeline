@@ -92,35 +92,4 @@ private class PipelineLookupControllerTest {
       PipelineLookupController.search('Link_To_ROSA_Deal__c', 'Plan').size()
     );
   }
-
-  /** Link to APAC Event: events are offered (newest first) only to a person who can see the field; nothing otherwise. */
-  @IsTest
-  static void anEventPickerOffersEventsOnlyToSomeoneWhoCanSeeTheField() {
-    Event__c event = new Event__c(
-      Name = 'Zzpickertest Masterclass',
-      Event_Start_Date__c = Datetime.newInstance(2030, 5, 4, 9, 0, 0)
-    );
-    if (
-      Schema.SObjectType.Event__c.fields.getMap().containsKey('Legacy_Event__c')
-    ) {
-      event.put('Legacy_Event__c', true); // the APAC Events rules (manager, venue and so on) do not apply to a legacy event
-    }
-    insert event;
-    List<PipelineLookupController.Hit> hits = PipelineLookupController.search(
-      'APAC_Event__c',
-      'Zzpickertest'
-    );
-    if (PipelineController.canSeeEvent()) {
-      System.assertEquals(1, hits.size(), 'The event is offered');
-      System.assertEquals(event.Id, hits[0].id);
-      System.assertNotEquals('', hits[0].sub, 'Its start date shows');
-    } else {
-      System.assertEquals(0, hits.size(), 'Nothing without the field');
-    }
-    System.assertEquals(
-      0,
-      PipelineLookupController.search('APAC_Event__c', 'Z').size(),
-      'Short terms find nothing'
-    );
-  }
 }

@@ -2,6 +2,8 @@
 
 :host {
   display: block;
+  min-width: 0; /* never wider than the screen it sits in: the table scrolls inside its own box */
+  max-width: 100%;
   /* the colours of the slider and search pills, from the screen it sits in */
   --seg-lab: var(--panel);
   --seg-track: var(--panel2, var(--panel));
@@ -71,22 +73,30 @@
 
 /* the card */
 .card {
+  min-width: 0;
   background: var(--panel);
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.14);
+  border: 1px solid var(--edge);
+  border-radius: 14px;
+  box-shadow: var(--shadow, 0 4px 14px rgba(0, 0, 0, 0.14));
 }
+/* the top of the list: a band across the whole card tinted with the person's heading colour, and the title in the same style as the
+   Opportunities, Risks and Team lists, so the lists look alike (Robert, 2026-11-07) */
 .cardhead {
   display: flex;
   align-items: center;
   gap: 10px;
   flex-wrap: wrap;
-  padding: 10px 14px 8px;
+  padding: 10px 14px;
+  border-radius: 13px 13px 0 0;
+  background: rgba(253, 184, 39, 0.14);
+  background: color-mix(in srgb, var(--head) 16%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--head) 38%, transparent);
 }
 .cardhead h2 {
   margin: 0 6px 0 0;
-  font-size: 13px;
-  letter-spacing: 0.16em;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--head);
 }
@@ -160,42 +170,10 @@
   padding: 4px 12px;
   font-size: 11px;
 }
-.linkbtn {
-  margin-left: 14px;
-}
-
-/* the panel for linking a deal */
-.linkpanel {
-  border-top: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
-  background: var(--panel2, var(--panel));
-  padding: 10px 16px;
-}
-.lphead {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 6px;
-}
-.lplist {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-.lplist li {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 6px 0;
-  border-top: 1px solid var(--line);
-}
-.lpname {
-  font-weight: 700;
-}
 
 /* the table: every table sorts by a heading, resizes by a column edge and keeps its headings in view */
 .tscroll {
-  border-radius: 0 0 12px 12px;
+  border-radius: 0 0 13px 13px;
 }
 /* the table scrolls inside its own box, sideways and up and down, so a wide table can always be reached with the bar at the bottom
    and the headings stay locked at the top of the box (Robert, 2026-11-07) */
@@ -343,19 +321,7 @@ input[type="checkbox"] {
   padding: 0;
 }
 
-/* the cog in the table's top right corner stays in view while the table scrolls; it opens the Columns dialog */
-th.cogcell,
-td.cogcell {
-  position: sticky;
-  right: 0;
-  width: 44px;
-  padding: 0;
-  text-align: center;
-  background: var(--panel);
-}
-th.cogcell {
-  z-index: 5;
-}
+/* the cog in the table's top bar (always in reach, never off to the right of the columns) opens the Columns dialog */
 .cog {
   width: 32px;
   height: 32px;
@@ -366,6 +332,7 @@ th.cogcell {
   cursor: pointer;
   display: inline-grid;
   place-items: center;
+  flex: none;
 }
 .cog:hover {
   background: rgba(127, 140, 180, 0.2);

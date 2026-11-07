@@ -23,7 +23,6 @@ import {
   serverFilter,
   serverChanged,
   clientMatch,
-  withoutEvent,
   MINE
 } from "c/pipelineFilterModel";
 import { quarterRank } from "c/pipelineFormat";
@@ -45,7 +44,7 @@ function stableJson(value) {
  * Usages, Surgeries and Chatter, saved filters); 0.10 follows the final mockup: a filter bar with chips and a Change
  * selection panel with Apply, in place of the always-visible Choose Your Data panel.
  */
-const PIPELINE_VERSION = "0.74";
+const PIPELINE_VERSION = "0.83";
 
 /** The colours a person can choose for the headings (Robert, 2026-11-02); the look of each is in pipelineApp.css. */
 const HEAD_COLOURS = [
@@ -108,12 +107,6 @@ export default class PipelineApp extends LightningElement {
   filtersOn = false; // and slid into view
   flyOn = false; // the same for the deal flyout
   sumOpen = false;
-  campaignsOpen = false; // the campaign members screen is shown instead of the deal lists
-  campaignList = [];
-  campaignId = "";
-  campaignDetail = null;
-  campaignBusy = false;
-  campaignError = "";
   fsOn = false;
   settings = {
     theme: "dark",
@@ -124,7 +117,14 @@ export default class PipelineApp extends LightningElement {
     ui: {},
     last: null
   };
-  filter = null; // the choices applied; set once the stage choices and the person are known
+  _filter = null; // the choices applied; set once the stage choices and the person are known
+  campaigns = []; // the active sales campaigns offered in Change selection
+  campaignDetail = null; // the linked campaign and its members, for the campaign screen
+  campaignLoadedFor = ""; // the campaign the detail above belongs to
+  campaignBusy = false;
+  campaignError = "";
+  screen = "pipeline"; // which screen is showing when a campaign is linked: pipeline or campaign
+  screenIn = ""; // the way the screen coming in slides from: left or right
   choices = {
     opp: { open: [], closed: [] },
     risk: { open: [], closed: [] },
@@ -226,6 +226,7 @@ export default class PipelineApp extends LightningElement {
     getContext()
       .then((ctx) => {
         this.ctx = ctx;
+        this.loadCampaigns();
         this.readSettings(ctx.settingsJson);
         return listFilters().catch(() => []);
       })
@@ -283,7 +284,7 @@ export default class PipelineApp extends LightningElement {
         this.startTeam
       );
     }
-    this.filter = this.canEvent ? f : withoutEvent(f);
+    this.filter = f;
     this.loadDeals();
   }
   parse(row) {
@@ -295,10 +296,7 @@ export default class PipelineApp extends LightningElement {
         this.isManager,
         this.startTeam
       );
-      return {
-        saved,
-        filter: this.canEvent ? read : withoutEvent(read)
-      };
+      return { saved, filter: read };
     } catch {
       return null;
     }
@@ -404,42 +402,96 @@ export default class PipelineApp extends LightningElement {
       dotCls: "dot " + h.key
     }));
   }
-  /* ----- the campaign members screen, reached from the Campaigns button in the top bar ----- */
-  get showPipelineScreen() {
-    return this.ready && !this.campaignsOpen;
+  /* ----- the campaign linked in Change selection: the view shows its deals, and a switch at the top middle changes to its members ----- */
+  get filter() {
+    return this._filter;
   }
-  get campaignsBtnCls() {
-    return this.campaignsOpen ? "btn cbtn on" : "btn cbtn";
+  set filter(value) {
+    this._filter = value;
+    this.syncCampaign();
   }
-  handleCampaignsToggle() {
-    this.campaignsOpen = !this.campaignsOpen;
-    if (this.campaignsOpen && !this.campaignList.length)
-      this.loadCampaignList();
+  get linkedCampaignId() {
+    return (this._filter && this._filter.campId) || "";
   }
-  async loadCampaignList() {
-    try {
-      const all = await listCampaigns();
-      this.campaignList = (all || []).filter((c) => c.active);
-    } catch (e) {
-      this.campaignError =
-        e && e.body ? e.body.message : "The campaigns could not be read.";
-    }
+  get showViewToggle() {
+    return this.ready && !!this.linkedCampaignId;
   }
-  get campaignOptions() {
+  get viewOptions() {
     return [
-      { value: "", label: "Choose a campaign", selected: !this.campaignId },
-      ...this.campaignList.map((c) => ({
-        value: c.id,
-        label: c.name,
-        selected: c.id === this.campaignId
-      }))
+      { value: "campaign", label: "Campaign" },
+      { value: "pipeline", label: "Pipeline" }
     ];
   }
-  get noCampaignDetail() {
-    return !this.campaignDetail;
+  get showPipelineScreen() {
+    return this.ready && (!this.linkedCampaignId || this.screen === "pipeline");
   }
-  get campaignHint() {
-    return !this.campaignDetail && !this.campaignBusy && !this.campaignError;
+  /** The Pipeline screen stays on the page while the campaign screen shows (hidden, not removed), so what the person opened is still open when they come back. */
+  get pipelineMainCls() {
+    const away = !this.showPipelineScreen;
+    return (
+      "main" +
+      (away ? " away" : "") +
+      (!away && this.screenIn ? " slide-" + this.screenIn : "")
+    );
+  }
+  get showCampaignScreen() {
+    return this.ready && !!this.linkedCampaignId && this.screen === "campaign";
+  }
+  get screenCls() {
+    return "main cscreen" + (this.screenIn ? " slide-" + this.screenIn : "");
+  }
+  handleViewPick(event) {
+    const next = event.detail.value;
+    if (next === this.screen) return;
+    // Pipeline flies off to the right as the campaign comes in from the left, and back again the other way
+    this.screenIn = next === "campaign" ? "left" : "right";
+    this.screen = next;
+  }
+  /** Reads the linked campaign when the choice changes, and goes back to the deals when the campaign is unlinked. */
+  syncCampaign() {
+    const id = this.linkedCampaignId;
+    if (!id) {
+      this.campaignDetail = null;
+      this.campaignLoadedFor = "";
+      this.screen = "pipeline";
+      this.screenIn = "";
+      return;
+    }
+    if (id !== this.campaignLoadedFor) {
+      this.screen = "pipeline"; // after Apply the person is back on the deals
+      this.screenIn = "";
+      this.loadCampaign();
+    }
+  }
+  async loadCampaign() {
+    const id = this.linkedCampaignId;
+    this.campaignLoadedFor = id;
+    this.campaignError = "";
+    if (!id) return;
+    this.campaignBusy = true;
+    try {
+      const detail = await getCampaign({ campaignId: id });
+      if (id === this.linkedCampaignId) this.campaignDetail = detail;
+    } catch (e) {
+      this.campaignDetail = null;
+      this.campaignError =
+        e && e.body ? e.body.message : "The campaign could not be read.";
+    } finally {
+      this.campaignBusy = false;
+    }
+  }
+  async loadCampaigns() {
+    try {
+      const all = await listCampaigns();
+      this.campaigns = (all || []).filter((c) => c.active);
+    } catch {
+      this.campaigns = []; // without access to campaigns the choice simply offers none
+    }
+  }
+  get campaignName() {
+    return this.campaignDetail
+      ? this.campaignDetail.campaign.name
+      : (this._filter && this._filter.campName) || "";
   }
   get campaignStatusText() {
     return this.campaignDetail && this.campaignDetail.campaign.active
@@ -461,36 +513,8 @@ export default class PipelineApp extends LightningElement {
       .filter(Boolean)
       .join(" · ");
   }
-  handleCampaignPick(event) {
-    this.campaignId = event.target.value;
-    this.loadCampaign();
-  }
-  handleDealsLinked() {
-    this.loadCampaign();
-  }
-  async loadCampaign() {
-    this.campaignError = "";
-    if (!this.campaignId) {
-      this.campaignDetail = null;
-      return;
-    }
-    this.campaignBusy = true;
-    try {
-      this.campaignDetail = await getCampaign({ campaignId: this.campaignId });
-    } catch (e) {
-      this.campaignDetail = null;
-      this.campaignError =
-        e && e.body ? e.body.message : "The campaign could not be read.";
-    } finally {
-      this.campaignBusy = false;
-    }
-  }
   get ready() {
     return !!(this.ctx && this.filter);
-  }
-  /** True when this person can see the Link to APAC Event field: only then is the Event choice offered or applied. */
-  get canEvent() {
-    return !!(this.ctx && this.ctx.canEvent);
   }
   get isManager() {
     return !!(this.ctx && this.ctx.isManager);

@@ -78,7 +78,7 @@
 
     <div class="err" lwc:if={error}>{error}</div>
 
-    <main class="main" lwc:if={ready}>
+    <main class={mainCls} lwc:if={ready}>
       <!-- ============ the list ============ -->
       <template lwc:if={isList}>
         <div class="toolrow">

@@ -27,7 +27,7 @@ import {
 } from "c/pipelineCampaignModel";
 
 /** Shown on the screen; raise it with each change that goes out. */
-export const CAMPAIGN_VERSION = "0.31";
+export const CAMPAIGN_VERSION = "0.37";
 const THEME_KEY = "pipelineCampaignTheme";
 const WIDTHS_KEY = "pipelineCampaignWidths";
 
@@ -219,6 +219,10 @@ export default class PipelineCampaigns extends LightningElement {
   }
   get isReconcile() {
     return this.view === "reconcile";
+  }
+  /** One campaign's screen ends at the bottom of the window (the members list fits itself to what is left), so it has little padding below. */
+  get mainCls() {
+    return this.isDetail ? "main tall" : "main";
   }
   get ready() {
     return !!this.ctx;

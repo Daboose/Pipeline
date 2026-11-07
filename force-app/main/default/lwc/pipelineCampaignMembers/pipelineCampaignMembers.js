@@ -8,12 +8,12 @@ import {
   stageBand
 } from "c/pipelineFormat";
 import { sortRows, memberTiles, ratingRank } from "c/pipelineCampaignModel";
-import linkableDeals from "@salesforce/apex/PipelineCampaignController.linkableDeals";
-import setLink from "@salesforce/apex/PipelineDealCampaignController.setLink";
 
 const WIDTHS_KEY = "pipelineCampaignMembersWidths";
 const HIDDEN_KEY = "pipelineCampaignMembersHidden";
 /** The columns that belong to a deal; the rest describe the surgeon. */
+/** The columns about the surgeon that sit at the very end of the table (the two reps). */
+const TAIL_IDS = ["y1", "y6"];
 const DEAL_IDS = [
   "portfolio",
   "stage",
@@ -24,7 +24,6 @@ const DEAL_IDS = [
   "rep"
 ];
 const TICK_WIDTH = 56;
-const COG_WIDTH = 44;
 const AREA = {
   Hip: "Hip",
   Knee: "Knee",
@@ -41,10 +40,6 @@ function proper(s) {
   if (!s) return "";
   return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
 }
-const errorText = (e) =>
-  (e && e.body && e.body.message) ||
-  (e && e.message) ||
-  "Something went wrong. Please try again.";
 function withEnglish(name, english) {
   const same =
     !english ||
@@ -57,11 +52,11 @@ const byNewest = (a, b) =>
 /**
  * pipelineCampaignMembers: the one members list of a sales campaign (Robert, 2026-11-07; mockup pipeline_campaign_members_v1.html).
  * Used by Campaign Management (with tick boxes and tools passed in through the slots tools, remove and ask) and by Pipeline
- * (read only, with a "Link a deal" button on surgeons with no deal). Shows tiles, a Show filter and search, and a table: the
+ (read only). Shows tiles, a Show filter and search, and a table: the
  * surgeon, hospitals, country and city, type, one rating column per portfolio the campaign covers, and the surgeon's deals
  * linked to the campaign (a second line for each further deal; a Portfolio column when the campaign covers several portfolios).
  * The table sorts by a heading, resizes by a column edge and keeps its headings in view, like every Pipeline table.
- * It reads nothing itself except the deals a surgeon could be linked to; the parent gives it the campaign and its members.
+ * It reads nothing itself; the parent gives it the campaign and its members. It only shows what is connected: reps link their own deals.
  */
 export default class PipelineCampaignMembers extends LightningElement {
   /** The campaign (CampaignRow from PipelineCampaignController) and its members (MemberRow list). */
@@ -69,8 +64,6 @@ export default class PipelineCampaignMembers extends LightningElement {
   @api members = [];
   /** Campaign Management: show the tick boxes. */
   @api manage = false;
-  /** Pipeline: offer "Link a deal" on a surgeon with no deal yet. */
-  @api canLink = false;
 
   filter = "all";
   q = "";
@@ -80,7 +73,6 @@ export default class PipelineCampaignMembers extends LightningElement {
   pickerOpen = false;
   live = null;
   ticked = {};
-  linking = null;
 
   connectedCallback() {
     this.onResize = () => this.fit();
@@ -104,7 +96,15 @@ export default class PipelineCampaignMembers extends LightningElement {
     const box = this.template.querySelector(".tscroll");
     if (!box) return;
     const top = box.getBoundingClientRect().top;
-    const room = Math.max(260, Math.floor(window.innerHeight - top - 16));
+    // what the screen around the list adds below it (its bottom padding), so the page ends exactly at the window's bottom and never scrolls
+    const parent = this.template.host.parentElement;
+    const below = parent
+      ? parseFloat(window.getComputedStyle(parent).paddingBottom) || 0
+      : 0;
+    const room = Math.max(
+      260,
+      Math.floor(window.innerHeight - top - below - 4)
+    );
     box.style.maxHeight = room + "px";
   }
   renderedCallback() {
@@ -142,8 +142,8 @@ export default class PipelineCampaignMembers extends LightningElement {
   get colDefs() {
     const defs = [
       ["name", "Surgeon", false, 230],
-      ["hospitals", "Current Hospitals", false, 300],
-      ["place", "Country · City", false, 170],
+      ["hospitals", "Current Hospitals", false, 200],
+      ["place", "Country · City", false, 150],
       ["type", "Type", false, 170]
     ];
     this.ports.forEach((p) =>
@@ -151,7 +151,7 @@ export default class PipelineCampaignMembers extends LightningElement {
         "rate:" + p,
         this.multi ? (AREA[p] || p) + " Rating" : "Rating",
         false,
-        150
+        140
       ])
     );
     if (this.multi) defs.push(["portfolio", "Portfolio", false, 130]);
@@ -161,7 +161,9 @@ export default class PipelineCampaignMembers extends LightningElement {
       ["quarter", "Close Quarter", false, 140],
       ["posted", "Last Posted", false, 130],
       ["moved", "Last Stage Move", false, 150],
-      ["rep", "Sales Rep", false, 170]
+      ["rep", "Sales Rep", false, 170],
+      ["y1", "Y1 Recon Rep", false, 170],
+      ["y6", "Y6 Extremities Rep", false, 190]
     );
     return defs;
   }
@@ -172,7 +174,12 @@ export default class PipelineCampaignMembers extends LightningElement {
     );
   }
   get leadDefs() {
-    return this.visibleDefs.filter((d) => !DEAL_IDS.includes(d[0]));
+    return this.visibleDefs.filter(
+      (d) => !DEAL_IDS.includes(d[0]) && !TAIL_IDS.includes(d[0])
+    );
+  }
+  get tailDefs() {
+    return this.visibleDefs.filter((d) => TAIL_IDS.includes(d[0]));
   }
   get dealDefs() {
     return this.visibleDefs.filter((d) => DEAL_IDS.includes(d[0]));
@@ -185,22 +192,17 @@ export default class PipelineCampaignMembers extends LightningElement {
       arrow: this.sort.id === d[0] ? (this.sort.dir === 1 ? " ▲" : " ▼") : ""
     }));
   }
+  /** The widths in use: what the person dragged them to, else the standard ones (so a long hospital list can never take the screen). */
   get currentWidths() {
-    return this.live ? this.live : this.widths;
+    return this.live || this.widths || {};
   }
   get colList() {
     const w = this.currentWidths;
-    if (!w) return [];
     const out = this.visibleDefs.map((d) => ({
       id: d[0],
       px: w[d[0]] || d[3],
       style: "width:" + (w[d[0]] || d[3]) + "px"
     }));
-    out.push({
-      id: "__cog",
-      px: COG_WIDTH,
-      style: "width:" + COG_WIDTH + "px"
-    });
     if (this.manage)
       out.unshift({
         id: "__tick",
@@ -215,10 +217,10 @@ export default class PipelineCampaignMembers extends LightningElement {
   get tableStyle() {
     if (!this.hasWidths) return "";
     const total = this.colList.reduce((a, c) => a + c.px, 0);
-    return "table-layout:fixed;width:" + total + "px";
+    return "table-layout:fixed;width:" + total + "px;min-width:100%";
   }
   get emptySpan() {
-    return this.visibleDefs.length + (this.manage ? 1 : 0) + 1; // the cog column
+    return this.visibleDefs.length + (this.manage ? 1 : 0);
   }
   handleSort(event) {
     const id = event.currentTarget.dataset.id;
@@ -328,6 +330,8 @@ export default class PipelineCampaignMembers extends LightningElement {
       place: (m) => [m.country, m.city].filter(Boolean).join(" · "),
       type: (m) => m.type,
       portfolio: (m) => (deal(m) ? AREA[deal(m).portfolio] || "" : ""),
+      y1: (m) => m.y1Rep,
+      y6: (m) => m.y6Rep,
       stage: (m) => (deal(m) ? deal(m).stage : ""),
       value: (m) => (deal(m) ? Number(deal(m).value) || 0 : null),
       quarter: (m) => (deal(m) ? deal(m).quarter : ""),
@@ -422,12 +426,16 @@ export default class PipelineCampaignMembers extends LightningElement {
         cells.push({
           key: "nd",
           isNoDeal: true,
-          colspan: this.dealDefs.length,
-          id: m.accountId,
-          canLink: this.canLink
+          colspan: this.dealDefs.length
         });
       }
-      cells.push({ key: "cog", isText: true, cls: "cogcell", text: "" });
+      this.tailDefs.forEach((def) =>
+        cells.push({
+          key: "t" + def[0],
+          isText: true,
+          text: (def[0] === "y1" ? m.y1Rep : m.y6Rep) || ""
+        })
+      );
       out.push({ key: m.memberId, cls: "", cells });
       for (let i = 1; i < deals.length; i++) {
         const extra = [];
@@ -439,7 +447,9 @@ export default class PipelineCampaignMembers extends LightningElement {
           text: ""
         });
         extra.push(...this.dealCells(deals[i], "d" + i, now));
-        extra.push({ key: "cog", isText: true, cls: "cogcell", text: "" });
+        this.tailDefs.forEach((def) =>
+          extra.push({ key: "t" + def[0], isText: true, text: "" })
+        );
         out.push({ key: m.memberId + "-" + i, cls: "deal2", cells: extra });
       }
     });
@@ -474,71 +484,6 @@ export default class PipelineCampaignMembers extends LightningElement {
     });
     this.ticked = next;
     this.announce();
-  }
-
-  // ---------- linking a deal (Pipeline) ----------
-  async handleLinkOpen(event) {
-    const surgeonId = event.currentTarget.dataset.id;
-    const m = (this.members || []).find((x) => x.accountId === surgeonId);
-    this.linking = {
-      surgeonId,
-      name: m ? m.name : "this surgeon",
-      loading: true,
-      error: "",
-      none: false,
-      hasDeals: false,
-      deals: []
-    };
-    try {
-      const found = await linkableDeals({
-        campaignId: this.campaign.id,
-        surgeonId
-      });
-      const deals = (found || []).map((d) => ({
-        id: d.id,
-        title: d.name + " · " + (d.kind === "risk" ? "Risk" : "Opportunity"),
-        detail: [
-          AREA[d.portfolio] || d.portfolio,
-          d.stage,
-          formatMoney(d.value, d.currencyCode),
-          d.ownerName
-        ]
-          .filter(Boolean)
-          .join(" · ")
-      }));
-      if (this.linking && this.linking.surgeonId === surgeonId)
-        this.linking = {
-          ...this.linking,
-          loading: false,
-          deals,
-          hasDeals: deals.length > 0,
-          none: deals.length === 0
-        };
-    } catch (e) {
-      if (this.linking)
-        this.linking = {
-          ...this.linking,
-          loading: false,
-          error: errorText(e)
-        };
-    }
-  }
-  handleLinkClose() {
-    this.linking = null;
-  }
-  async handleLinkPick(event) {
-    const dealId = event.currentTarget.dataset.id;
-    try {
-      await setLink({
-        dealId,
-        campaignId: this.campaign.id,
-        linked: true
-      });
-      this.linking = null;
-      this.dispatchEvent(new CustomEvent("dealslinked"));
-    } catch (e) {
-      if (this.linking) this.linking = { ...this.linking, error: errorText(e) };
-    }
   }
 
   // ---------- the Columns picker (everything on by default; the person turns off what they do not need) ----------

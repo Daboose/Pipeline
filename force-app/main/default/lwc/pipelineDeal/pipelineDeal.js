@@ -25,11 +25,10 @@ import {
 const SLIDE_IN_DELAY_MS = 30; // lets the closed position be drawn first, so the slide runs
 const SLIDE_OUT_MS = 450; // a little longer than the slide itself (0.4 s in the style sheet)
 /**
- * Fields that exist in only some orgs and that only some people may see (Link to APAC Event, opportunities and ROSA deals
- * only, never risks). A row for one of them is shown only when Salesforce reports the field to this person, so anyone
- * without access, and any org without the field, sees no trace of it.
+ * Fields that exist in only some orgs and that only some people may see: a row for one of them is shown only when Salesforce
+ * reports the field to this person. None at the moment (the Link to APAC Event field was taken out on 2026-11-07).
  */
-const OPTIONAL_FIELDS = ["APAC_Event__c"];
+const OPTIONAL_FIELDS = [];
 const QUARTER_FIELD = "Expected_Closure_Quarter__c";
 const YEAR_FIELD = "Expected_Closing_Year__c";
 
@@ -56,7 +55,6 @@ const FIELDS = {
     ["myMo__c", "MyMo", "bool"],
     ["myMo_Stage__c", "MyMo stage", "picklist"],
     ["Link_To_ROSA_Deal__c", "Link to ROSA deal", "lookup"],
-    ["APAC_Event__c", "Link to APAC Event", "lookup"],
     ["Objective__c", "Background information", "textarea", false, true]
   ],
   risk: [
@@ -85,7 +83,6 @@ const FIELDS = {
     ["Expected_Closing_Year__c", "Expected closing year", "picklist"],
     ["Install_Date__c", "Install date", "date"],
     ["Close_Date__c", "Close date", "date"],
-    ["APAC_Event__c", "Link to APAC Event", "lookup"],
     ["ROSA_Platform_Shoulder_Stage__c", "ROSA platform: shoulder", "picklist"],
     ["ROSA_Platform_Hip_Stage__c", "ROSA platform: hip", "picklist"],
     [

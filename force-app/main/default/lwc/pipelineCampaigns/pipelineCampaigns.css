@@ -1144,3 +1144,7 @@ textarea.in::placeholder {
 .askwrap {
   display: block;
 }
+
+.main.tall {
+  padding-bottom: 16px;
+}
