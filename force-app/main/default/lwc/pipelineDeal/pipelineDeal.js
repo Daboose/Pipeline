@@ -19,13 +19,11 @@ import {
   chatterBand,
   stageBand,
   suggestYear,
-  quarterIsPast,
-  STAGE_COLOURS
+  quarterIsPast
 } from "c/pipelineFormat";
 
 const SLIDE_IN_DELAY_MS = 30; // lets the closed position be drawn first, so the slide runs
 const SLIDE_OUT_MS = 450; // a little longer than the slide itself (0.4 s in the style sheet)
-const WON_GREEN = "#16a34a";
 /**
  * Fields that exist in only some orgs and that only some people may see (Link to APAC Event, opportunities and ROSA deals
  * only, never risks). A row for one of them is shown only when Salesforce reports the field to this person, so anyone
@@ -160,6 +158,7 @@ export default class PipelineDeal extends LightningElement {
   draft = {};
   draftNames = {}; // the names of records picked in this edit, by field
   savedTick = 0; // counts saves, so the Usages and Case Bookings panels read again
+  campaignsNow = null; // the campaign count after a change made in the Campaigns panel; null until then
   panel = ""; // which panel is over the deal: usages, cases or none
   panelMounted = false; // the panel is on the page (it stays a moment after closing, to slide away)
   panelOn = false; // and slid into view
@@ -183,6 +182,9 @@ export default class PipelineDeal extends LightningElement {
   }
   get casesOpen() {
     return this.panelMounted && this.panel === "cases";
+  }
+  get campaignsOpen() {
+    return this.panelMounted && this.panel === "campaigns";
   }
   /**
    * The bottom row holds only action buttons (Robert, 2026-11-04): over the deal itself, Open in Salesforce, Cancel and Save
@@ -259,8 +261,23 @@ export default class PipelineDeal extends LightningElement {
   get casesBtnCls() {
     return this.panelOn && this.panel === "cases" ? "btn nav on" : "btn nav";
   }
+  /** How many campaigns the deal is in: from the list, and kept right while the person puts the deal in or out. */
+  get campaignsCount() {
+    if (this.campaignsNow !== null) return this.campaignsNow;
+    return (this._deal && this._deal.campaignCount) || 0;
+  }
+  handleCampaignsChanged(event) {
+    this.campaignsNow = event.detail.linkedCount;
+  }
+  get campaignsBtnCls() {
+    return this.panelOn && this.panel === "campaigns"
+      ? "btn nav on"
+      : "btn nav";
+  }
   get panelTitle() {
-    return this.panel === "cases" ? "MyCase bookings" : "Surgeon usages";
+    if (this.panel === "cases") return "MyCase bookings";
+    if (this.panel === "campaigns") return "Campaigns";
+    return "Surgeon usages";
   }
   get panelSubtitle() {
     return (this._deal && this._deal.hcp) || "";
@@ -305,6 +322,10 @@ export default class PipelineDeal extends LightningElement {
     if (this.panelOn && this.panel === "cases") this.closePanel();
     else this.openPanel("cases");
   }
+  handleCampaignsButton() {
+    if (this.panelOn && this.panel === "campaigns") this.closePanel();
+    else this.openPanel("campaigns");
+  }
   handlePanelClose() {
     this.closePanel();
   }
@@ -330,6 +351,7 @@ export default class PipelineDeal extends LightningElement {
     const changed = !this._deal || !value || this._deal.id !== value.id;
     this._deal = value;
     if (changed) {
+      this.campaignsNow = null;
       this.badges = undefined;
       this.loadBadges();
     }
@@ -454,11 +476,6 @@ export default class PipelineDeal extends LightningElement {
     const d = this._deal || {};
     return (this.kind === "rosa" ? d.facility : d.hcp) || d.name || "";
   }
-  get subtitle() {
-    const d = this._deal || {};
-    const seg = this.kind === "opp" && d.segment ? d.segment + " " : "";
-    return seg + KIND_NAME[this.kind];
-  }
   get positionText() {
     return `${this.index + 1} of ${this.total}`;
   }
@@ -472,48 +489,40 @@ export default class PipelineDeal extends LightningElement {
     return this.valueOf("Stage__c") || (this._deal && this._deal.stage);
   }
   /**
-   * The stage path (Robert, 2026-11-06): the open stages, then BOTH closing stages side by side, the winning one in green
-   * and the losing one in red, so a deal can be set to either from the path. Finished steps are outlined in the colour of
-   * the stage the deal is at; once a deal is won or lost the whole path takes that colour.
+   * The stage slider (Robert, 2026-11-07): the open stages, then the winning and the losing stage at the end, so a deal can be
+   * set to either from the slider. The slider itself draws the colours (a blue trail, a green fill, a red pill).
    */
-  get pathSteps() {
+  get stageSteps() {
     const ends = ENDS[this.kind];
     const values = (this.choices("Stage__c") || []).map((v) => v.value);
     const now = this.stageNow;
-    const isWon = now === ends.won;
-    const isLost = now === ends.lost;
     const open = values.filter((v) => v !== ends.won && v !== ends.lost);
-    if (!values.length) open.push(now);
+    if (!values.length && now) open.push(now);
     const closing = values.length
       ? [ends.won, ends.lost].filter((v) => values.includes(v) || v === now)
       : [];
-    const all = [...open, ...closing];
-    const at = open.indexOf(now);
-    const ring = isLost
-      ? "var(--bad)"
-      : isWon
-        ? WON_GREEN
-        : STAGE_COLOURS[Math.max(at, 0) % STAGE_COLOURS.length];
-    return all.map((value, i) => {
-      let cls = "pstep";
-      let style = `--ring:${ring}`;
-      if (i === 0) cls += " first";
-      if (i === all.length - 1) cls += " last";
-      if (i < open.length) {
-        if (isWon || isLost || i < at) cls += " done";
-        else if (i === at) {
-          cls += " cur";
-          style += `;background:${ring}`;
-        }
-      } else if (value === now) {
-        cls += isLost ? " cur lost" : " cur";
-        if (!isLost) style += `;background:${WON_GREEN}`;
-      } else {
-        cls += value === ends.won ? " endwon" : " endlost";
-      }
-      if (value === ends.lost && i > 0) cls += " endgap";
-      return { value, cls, style };
-    });
+    return [...open, ...closing];
+  }
+  get stageWon() {
+    return ENDS[this.kind].won;
+  }
+  get stageLost() {
+    return ENDS[this.kind].lost;
+  }
+  get stageReadonly() {
+    return !this.updateable("Stage__c");
+  }
+  handleStageChange(event) {
+    if (!this.updateable("Stage__c")) return;
+    this.setDraft("Stage__c", event.detail.value);
+  }
+  /** The kind of deal, which used to sit under the surgeon's name: an opportunity shows its portfolio, the others their name. */
+  typeItem(d) {
+    if (this.kind === "opp") {
+      return { label: "Opportunity", value: d.segment || "–" };
+    }
+    const seg = this.kind === "risk" && d.segment ? d.segment + " " : "";
+    return { label: "Type", value: seg + KIND_NAME[this.kind] };
   }
   get strip() {
     const d = this._deal || {};
@@ -523,6 +532,7 @@ export default class PipelineDeal extends LightningElement {
     const quiet = d.isClosed || d.onHold;
     return [
       { label: "Owner", value: d.ownerName || "–" },
+      this.typeItem(d),
       {
         label: VALUE_LABEL[this.kind],
         value: formatMoney(d.value, d.currencyCode)
@@ -716,11 +726,6 @@ export default class PipelineDeal extends LightningElement {
       : [...on, value];
     this.setDraft(fieldName, next.join(";"));
   }
-  handlePathStep(event) {
-    if (!this.updateable("Stage__c")) return;
-    this.setDraft("Stage__c", event.currentTarget.dataset.value);
-  }
-
   /* ----- saving ----- */
   get clean() {
     return Object.keys(this.draft).length === 0;

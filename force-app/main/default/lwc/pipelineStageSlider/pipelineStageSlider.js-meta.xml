@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+  <apiVersion>68.0</apiVersion>
+  <description
+  >Pipeline: the stage slider in the deal panel's header. All the stages in one pill; the current stage is highlighted with a blue trail fading in up to it, a won stage fills green up to itself, a lost stage fills the whole pill red.</description>
+  <isExposed>false</isExposed>
+</LightningComponentBundle>

@@ -1,0 +1,194 @@
+:host {
+  display: inline-block;
+  /* colours: from Pipeline's own variables */
+  --seg-lab: var(--panel);
+  --seg-track: var(--panel2);
+  --seg-line: var(--edge);
+  --seg-optx: var(--muted);
+  --seg-muted: var(--muted);
+  --seg-shadow: rgba(0, 0, 0, 0.35);
+  --win: #16a34a;
+  --lose: #dc2626;
+}
+.wrap {
+  display: flex;
+  align-items: stretch;
+  width: fit-content;
+  border-radius: 999px;
+  background: var(--seg-lab);
+  border: 1px solid var(--seg-line);
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  transition: border-color 0.4s;
+}
+.slbl {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 14px 0 16px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--seg-muted);
+  white-space: nowrap;
+}
+.choices {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin: -1px -1px -1px 0;
+  padding: 3px;
+  border-radius: 999px;
+  background: var(--seg-track);
+  border: 1px solid var(--seg-line);
+  transition:
+    background 0.4s,
+    border-color 0.4s;
+}
+.trail {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  height: 28px;
+  width: 0;
+  border-radius: 999px;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--indigo) 8%, transparent),
+    color-mix(in srgb, var(--indigo) 55%, transparent)
+  );
+}
+.pill {
+  position: absolute;
+  top: 3px;
+  left: 0;
+  width: 0;
+  height: 28px;
+  border-radius: 999px;
+  background: var(--indigo);
+  box-shadow: 0 4px 14px var(--seg-shadow);
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition:
+    background 0.4s,
+    box-shadow 0.4s;
+}
+.choices.placed .pill,
+.choices.placed .trail {
+  opacity: 1;
+}
+.choices.animated .pill {
+  transition:
+    left 0.55s cubic-bezier(0.3, 1.35, 0.5, 1),
+    width 0.55s cubic-bezier(0.3, 1.35, 0.5, 1),
+    background 0.4s,
+    box-shadow 0.4s;
+}
+.choices.animated .trail {
+  transition: width 0.55s cubic-bezier(0.3, 1.35, 0.5, 1);
+}
+.pill.squish {
+  animation: squish 0.55s ease-out;
+}
+@keyframes squish {
+  0% {
+    scale: 1 1;
+  }
+  35% {
+    scale: 1.12 0.92;
+  }
+  100% {
+    scale: 1 1;
+  }
+}
+.opt {
+  position: relative;
+  z-index: 1;
+  height: 28px;
+  padding: 0 15px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--seg-optx);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+.choices.ro .opt {
+  cursor: default;
+}
+.opt.on {
+  color: #fff;
+}
+.opt.done {
+  color: var(--text);
+}
+.opt:hover:not(.on) {
+  background: rgba(127, 140, 180, 0.16);
+}
+.choices.ro .opt:hover:not(.on) {
+  background: transparent;
+}
+/* a not yet drawn highlight: the chosen stage carries its own colour so it never looks unselected */
+.choices:not(.placed) .opt.on {
+  background: var(--indigo);
+}
+
+/* won: a flat green fill from the start up to the won stage (it stops there) */
+.wrap.good .pill {
+  background: var(--win);
+  box-shadow: 0 4px 14px rgba(22, 163, 74, 0.45);
+}
+.wrap.good .trail {
+  top: -1px;
+  bottom: -1px;
+  left: -1px;
+  height: auto;
+  background: color-mix(in srgb, var(--win) 20%, var(--seg-lab));
+  border: 1px solid color-mix(in srgb, var(--win) 55%, var(--seg-lab));
+}
+.wrap.good .opt.in {
+  color: color-mix(in srgb, var(--win) 75%, var(--text));
+}
+.wrap.good .choices:not(.placed) .opt.on {
+  background: var(--win);
+}
+/* lost: the whole pill fills light red, the lost stage solid red */
+.wrap.bad {
+  border-color: color-mix(in srgb, var(--lose) 45%, var(--seg-lab));
+}
+.wrap.bad .choices {
+  background: color-mix(in srgb, var(--lose) 18%, var(--seg-lab));
+  border-color: color-mix(in srgb, var(--lose) 45%, var(--seg-lab));
+}
+.wrap.bad .pill {
+  background: var(--lose);
+  box-shadow: 0 4px 14px rgba(220, 38, 38, 0.45);
+}
+.wrap.bad .trail {
+  display: none;
+}
+.wrap.bad .opt:not(.on) {
+  color: color-mix(in srgb, var(--lose) 75%, var(--text));
+}
+.wrap.bad .choices:not(.placed) .opt.on {
+  background: var(--lose);
+}
+@media (prefers-reduced-motion: reduce) {
+  .choices.animated .pill,
+  .choices.animated .trail {
+    transition: none;
+  }
+  .pill.squish {
+    animation: none;
+  }
+}

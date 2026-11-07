@@ -37,6 +37,14 @@ jest.mock(
   { virtual: true }
 );
 jest.mock(
+  "c/pipelineDealCampaigns",
+  () => {
+    const { LightningElement } = require("lwc");
+    return { __esModule: true, default: class extends LightningElement {} };
+  },
+  { virtual: true }
+);
+jest.mock(
   "c/pipelineBookings",
   () => {
     const { LightningElement } = require("lwc");
@@ -145,10 +153,39 @@ describe("c-pipeline-deal", () => {
       expect(button(opp, "Surgeon Usages")).toBeTruthy();
       expect(button(opp, "MyCase Bookings")).toBeTruthy();
       expect(opp.shadowRoot.querySelectorAll(".foot .btn.nav").length).toBe(0);
+      expect(button(opp, "Campaigns")).toBeTruthy();
       const rosa = await mount("rosa");
+      // a ROSA deal has no surgeon panels, but it can still be put in a campaign
       expect(rosa.shadowRoot.querySelectorAll(".fhead .btn.nav").length).toBe(
-        0
+        1
       );
+      expect(button(rosa, "Campaigns")).toBeTruthy();
+      expect(button(rosa, "Surgeon Usages")).toBeFalsy();
+    });
+
+    it("shows how many campaigns the deal is in on the Campaigns button", async () => {
+      const el = await mount("opp");
+      const count = () =>
+        button(el, "Campaigns").querySelector(".badge").textContent;
+      expect(count()).toBe("0");
+      el.deal = { ...el.deal, campaignCount: 3 };
+      await Promise.resolve();
+      expect(count()).toBe("3");
+    });
+
+    it("opens the Campaigns panel for any kind of deal", async () => {
+      jest.useFakeTimers();
+      const el = await mount("rosa");
+      button(el, "Campaigns").click();
+      jest.advanceTimersByTime(40);
+      await Promise.resolve();
+      expect(
+        el.shadowRoot.querySelector("c-pipeline-deal-campaigns")
+      ).not.toBeNull();
+      expect(el.shadowRoot.querySelector(".shead h2").textContent).toBe(
+        "Campaigns"
+      );
+      jest.useRealTimers();
     });
 
     it("keeps the bottom row for actions only: the deal's three buttons, nothing over a panel, the panel's own while editing", async () => {
@@ -468,48 +505,56 @@ describe("c-pipeline-deal", () => {
       await Promise.resolve();
       return el;
     }
-    const steps = (el) => [...el.shadowRoot.querySelectorAll(".pstep")];
+    const slider = (el) =>
+      el.shadowRoot.querySelector("c-pipeline-stage-slider");
     const OPP = ["Plan", "Action", "Conversion", "Unsuccessful Conversion"];
 
-    it("shows both closing stages at the end, the winning one then the losing one", async () => {
+    it("gives the slider every stage, with both closing stages at the end, the winning one then the losing one", async () => {
       const el = await open("opp", "Action", OPP);
-      expect(steps(el).map((s) => s.textContent.trim())).toEqual([
+      expect(slider(el).steps).toEqual([
         "Plan",
         "Action",
         "Conversion",
         "Unsuccessful Conversion"
       ]);
-      const [, , won, lost] = steps(el);
-      expect(won.className).toContain("endwon");
-      expect(lost.className).toContain("endlost");
+      expect(slider(el).won).toBe("Conversion");
+      expect(slider(el).lost).toBe("Unsuccessful Conversion");
+      expect(slider(el).value).toBe("Action");
     });
 
-    it("lights the losing stage red, and outlines everything before it, when the deal is lost", async () => {
-      const el = await open("opp", "Unsuccessful Conversion", OPP);
-      const [plan, , won, lost] = steps(el);
-      expect(lost.className).toContain("lost");
-      expect(lost.className).toContain("cur");
-      expect(plan.className).toContain("done");
-      expect(won.className).toContain("endwon");
-    });
-
-    it("lights the winning stage green when the deal is won, leaving the losing stage tinted", async () => {
+    it("uses each kind's own closing stages", async () => {
       const el = await open("rosa", "Closed Won", [
         "Sales Pipeline",
         "Closed Won",
         "Deal Lost"
       ]);
-      const [, won, lost] = steps(el);
-      expect(won.className).toContain("cur");
-      expect(won.getAttribute("style")).toContain("#16a34a");
-      expect(lost.className).toContain("endlost");
+      expect(slider(el).steps).toEqual([
+        "Sales Pipeline",
+        "Closed Won",
+        "Deal Lost"
+      ]);
+      expect(slider(el).won).toBe("Closed Won");
+      expect(slider(el).lost).toBe("Deal Lost");
     });
 
-    it("sets the stage from either closing step", async () => {
+    it("sets the stage when a stage is clicked on the slider", async () => {
       const el = await open("opp", "Action", OPP);
-      steps(el)[3].click();
+      slider(el).dispatchEvent(
+        new CustomEvent("change", {
+          detail: { value: "Unsuccessful Conversion" }
+        })
+      );
       await Promise.resolve();
-      expect(steps(el)[3].className).toContain("cur");
+      expect(slider(el).value).toBe("Unsuccessful Conversion");
+    });
+
+    it("puts the kind of deal in the subheader, not under the name", async () => {
+      const el = await open("opp", "Action", OPP);
+      const strip = el.shadowRoot
+        .querySelector(".strip")
+        .textContent.replace(/\s+/g, " ");
+      expect(strip).toContain("Opportunity");
+      expect(el.shadowRoot.querySelector(".ttl")).toBeNull();
     });
   });
 });

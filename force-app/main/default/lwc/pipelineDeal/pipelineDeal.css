@@ -48,20 +48,23 @@
     transition: none;
   }
 }
+/* the header, in two rows (Robert, 2026-11-07, comfortable padding): the name with the buttons and navigation, then the stage slider */
 .fhead {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 12px 20px;
   border-bottom: 1px solid var(--line);
 }
-.ttl .name {
+.h1 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 20px 6px;
+}
+.h2 {
+  padding: 4px 20px 10px;
+}
+.name {
   font-size: 22px;
   font-weight: 800;
-}
-.ttl .sub {
-  color: var(--muted);
-  font-size: 14px;
+  line-height: 1.1;
 }
 .sp {
   flex: 1;
@@ -85,121 +88,6 @@
   margin: 0 4px 0 0;
 }
 
-/* the stage path, like Salesforce's own */
-.path {
-  display: flex;
-  flex: 1 1 auto;
-  min-width: 0;
-  max-width: 1060px;
-  margin-left: 8px;
-}
-/* each step is an arrow; --shape is its outline, used again for the inner fill that leaves a coloured ring */
-.pstep {
-  --shape: polygon(
-    0 0,
-    calc(100% - 14px) 0,
-    100% 50%,
-    calc(100% - 14px) 100%,
-    0 100%,
-    14px 50%
-  );
-  /* the same arrow drawn 2 px smaller all round; its slanted corners are moved by 1.64 / 13.1 / 0.37 / 14.37 px (worked out
-     for a 14 px point on a 44 px bar) so the ring is an even 2 px on the slants as well as on the straight edges */
-  --inner: polygon(
-    1.64px 0,
-    calc(100% - 13.1px) 0,
-    calc(100% - 0.37px) 50%,
-    calc(100% - 13.1px) 100%,
-    1.64px 100%,
-    14.37px 50%
-  );
-  position: relative;
-  flex: 1 1 0;
-  min-width: 0;
-  height: 44px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  border: 0;
-  padding: 0 18px 0 22px;
-  margin-left: -8px;
-  font-size: 13px;
-  font-weight: 700;
-  line-height: 1.1;
-  color: var(--muted);
-  background: var(--panel2);
-  cursor: pointer;
-  clip-path: var(--shape);
-}
-.pstep > span {
-  position: relative;
-  z-index: 1;
-}
-.pstep.first {
-  --shape: polygon(
-    0 0,
-    calc(100% - 14px) 0,
-    100% 50%,
-    calc(100% - 14px) 100%,
-    0 100%
-  );
-  --inner: polygon(
-    0 0,
-    calc(100% - 13.1px) 0,
-    calc(100% - 0.37px) 50%,
-    calc(100% - 13.1px) 100%,
-    0 100%
-  );
-  margin-left: 0;
-  padding-left: 14px;
-  border-radius: 8px 0 0 8px;
-}
-.pstep.last {
-  --shape: polygon(0 0, 100% 0, 100% 100%, 0 100%, 14px 50%);
-  --inner: polygon(1.64px 0, 100% 0, 100% 100%, 1.64px 100%, 14.37px 50%);
-  padding-right: 12px;
-  border-radius: 0 8px 8px 0;
-}
-/* stages already passed: outlined in the colour of the stage the deal is at now, so the progress shows */
-.pstep.done {
-  background: var(--ring);
-  color: var(--text);
-}
-.pstep.done::before {
-  content: "";
-  position: absolute;
-  inset: 2px;
-  background: var(--panel);
-  clip-path: var(--inner);
-  border-radius: 6px 0 0 6px;
-}
-.pstep.first.done::before {
-  border-radius: 6px 0 0 6px;
-}
-.pstep:not(.first).done::before {
-  border-radius: 0;
-}
-.pstep.cur {
-  color: #fff;
-}
-.pstep.lost {
-  background: var(--bad);
-  color: #fff;
-}
-/* the two closing stages when the deal is not at either: tinted green (won) and red (lost), the lost one set a little apart */
-.pstep.endwon {
-  background: color-mix(in srgb, #16a34a 38%, var(--panel2));
-  color: var(--text);
-}
-.pstep.endlost {
-  background: color-mix(in srgb, var(--bad) 38%, var(--panel2));
-  color: var(--text);
-}
-.pstep.endgap {
-  margin-left: 4px;
-}
-
 .under {
   position: relative;
   flex: 1;
@@ -212,7 +100,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 8px 36px;
-  padding: 10px 20px;
+  padding: 10px 20px 12px;
   border-bottom: 1px solid var(--line);
 }
 .strip .l,
@@ -383,14 +271,16 @@ input.in {
   display: flex;
   gap: 10px;
 }
-/* the two panel buttons: outlined, filled while their panel is open */
+/* the panel buttons (Surgeon Usages, MyCase Bookings, Campaigns): filled slate, filled indigo while their panel is open
+   (Robert, 2026-11-07: buttons are always filled in) */
 .btn.nav {
-  background: transparent;
-  color: var(--text);
-  border-color: var(--indigo);
+  background: #475569;
+  color: #fff;
+  border-color: #475569;
 }
 .btn.nav.on {
   background: var(--indigo);
+  border-color: var(--indigo);
   color: #fff;
 }
 .btn[disabled] {

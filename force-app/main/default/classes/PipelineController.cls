@@ -88,6 +88,8 @@ public with sharing class PipelineController {
     @AuraEnabled
     public Boolean repPriority;
     @AuraEnabled
+    public Integer campaignCount; // how many sales campaigns the deal is in (a gold star in the lists, a number on the Campaigns button)
+    @AuraEnabled
     public Boolean statePriority;
     @AuraEnabled
     public Datetime lastPosted;
@@ -281,7 +283,41 @@ public with sharing class PipelineController {
     for (Integer i = 0; i < rows.size() && i < MAX_DEALS; i++) {
       out.deals.add(toDeal(rows[i], withEvent));
     }
+    markCampaignDeals(out.deals);
     return out;
+  }
+
+  /**
+   * Counts, for each deal, the sales campaigns it is in (Robert, 2026-11-07: a gold star beside the surgeon, and the number on the Campaigns button). One query
+   * for the whole list, in the person's own access; a person with no access to campaigns simply sees no stars.
+   */
+  private static void markCampaignDeals(List<Deal> deals) {
+    for (Deal d : deals) {
+      d.campaignCount = 0;
+    }
+    if (
+      deals.isEmpty() ||
+      !Schema.sObjectType.Sales_Campaign_Deal__c.isAccessible()
+    ) {
+      return;
+    }
+    Set<Id> ids = new Set<Id>();
+    for (Deal d : deals) {
+      ids.add(d.id);
+    }
+    Map<Id, Integer> counts = new Map<Id, Integer>();
+    for (AggregateResult a : [
+      SELECT Deal__c, COUNT(Id) n
+      FROM Sales_Campaign_Deal__c
+      WHERE Deal__c IN :ids
+      WITH USER_MODE
+      GROUP BY Deal__c
+    ]) {
+      counts.put((Id) a.get('Deal__c'), (Integer) a.get('n'));
+    }
+    for (Deal d : deals) {
+      d.campaignCount = counts.containsKey(d.id) ? counts.get(d.id) : 0;
+    }
   }
 
   /** Saves the signed-in person's own screen choices (dark or light, columns and so on) as one block of JSON. */

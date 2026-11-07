@@ -1,0 +1,705 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>
+      Pipeline: mockup of the deal panel header, comfortable padding, stage
+      progress fills
+    </title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: #cdd3de;
+        font:
+          14px/1.45 -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          Roboto,
+          Arial,
+          sans-serif;
+        color: #1b2640;
+      }
+      .page {
+        max-width: 1560px;
+        margin: 0 auto;
+        padding: 18px 22px 50px;
+      }
+      h1.mock {
+        margin: 0 0 12px;
+        font-size: 13px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: #5d6b85;
+      }
+      .about {
+        max-width: 1050px;
+        background: #fff;
+        border: 1px solid #b3bfd6;
+        border-radius: 12px;
+        padding: 14px 18px;
+        margin-bottom: 16px;
+      }
+      .about h2 {
+        margin: 0 0 6px;
+        font-size: 12px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: #b7791f;
+      }
+      .about p,
+      .about li {
+        margin: 3px 0;
+      }
+      .about ol,
+      .about ul {
+        margin: 4px 0 8px 18px;
+        padding: 0;
+      }
+      .sfnav {
+        display: flex;
+        align-items: center;
+        gap: 22px;
+        background: #0b2239;
+        color: #fff;
+        padding: 0 16px;
+        height: 44px;
+        border-radius: 10px 10px 0 0;
+        font-size: 13px;
+      }
+      .sfnav .tab {
+        padding: 13px 0;
+        color: #b8c4d6;
+      }
+      .sfnav .tab.on {
+        color: #fff;
+        border-bottom: 3px solid #1b96ff;
+      }
+      .sfnav .grow {
+        flex: 1;
+      }
+      .sfnav button {
+        background: #3a4a63;
+        color: #fff;
+        border: 0;
+        border-radius: 999px;
+        padding: 6px 14px;
+        font-weight: 700;
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+      }
+
+      .screen {
+        border-radius: 0 0 10px 10px;
+        padding: 0 0 22px;
+      }
+      .screen[data-theme="dark"] {
+        --bg: #141e2e;
+        --panel: #1a2740;
+        --line: #2f4163;
+        --text: #e8edf5;
+        --muted: #8b9bb0;
+        --indigo: #6366f1;
+        --indigo2: #4f46e5;
+        --fill: #475569;
+        --lab: #1a2740;
+        --track: #243452;
+        --tline: #3a4e75;
+        --optx: #a9b8d0;
+        --shadow: rgba(8, 12, 40, 0.55);
+        --gtrack: #14402f;
+        --gline: #1f7a55;
+        --gopt: #8fd9b6;
+        --gfill: #16a34a;
+        --gshadow: rgba(22, 163, 74, 0.45);
+        --rtrack: #4a1d22;
+        --rline: #8f3a42;
+        --ropt: #f0a3a8;
+        --rfill: #dc2626;
+        --rshadow: rgba(220, 38, 38, 0.45);
+      }
+      .screen[data-theme="light"] {
+        --bg: #f4f6fa;
+        --panel: #ffffff;
+        --line: #d5dcea;
+        --text: #1b2640;
+        --muted: #5d6b85;
+        --indigo: #4f46e5;
+        --indigo2: #3730a3;
+        --fill: #475569;
+        --lab: #ffffff;
+        --track: #e3e8f4;
+        --tline: #c4cde2;
+        --optx: #5d6b85;
+        --shadow: rgba(79, 70, 229, 0.35);
+        --gtrack: #d9f2e6;
+        --gline: #8fd1b2;
+        --gopt: #2e6f52;
+        --gfill: #16a34a;
+        --gshadow: rgba(22, 163, 74, 0.4);
+        --rtrack: #fbe0e2;
+        --rline: #eba3a9;
+        --ropt: #8f2f37;
+        --rfill: #dc2626;
+        --rshadow: rgba(220, 38, 38, 0.4);
+      }
+      .screen {
+        background: var(--bg);
+        color: var(--text);
+        font-size: 15px;
+      }
+      .cap {
+        margin: 0;
+        padding: 14px 20px 8px;
+        font-size: 12px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--muted);
+        font-weight: 700;
+      }
+      .cap b {
+        color: var(--text);
+      }
+      .cap span {
+        text-transform: none;
+        letter-spacing: 0;
+        font-weight: 400;
+        font-size: 13px;
+        margin-left: 8px;
+      }
+
+      /* the deal panel's top at the comfortable padding (padding 3 of the last mockup) */
+      .head {
+        background: var(--panel);
+        border-bottom: 1px solid var(--line);
+      }
+      .h1row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 20px 6px;
+      }
+      .h2row {
+        display: flex;
+        align-items: center;
+        padding: 4px 20px 10px;
+      }
+      .name {
+        font-size: 22px;
+        font-weight: 800;
+        line-height: 1.1;
+        margin-right: auto;
+      }
+      .sub {
+        display: flex;
+        gap: 34px;
+        padding: 10px 20px 12px;
+        background: var(--bg);
+        border-bottom: 1px solid var(--line);
+        flex-wrap: wrap;
+      }
+      .fact span {
+        display: block;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .fact b {
+        display: block;
+        font-size: 19px;
+        line-height: 1.25;
+      }
+      .tag {
+        display: inline-block;
+        border-radius: 999px;
+        padding: 0 9px;
+        font-size: 13px;
+        font-weight: 700;
+        border: 1px solid currentColor;
+        color: #dc2626;
+        line-height: 1.5;
+        font-style: normal;
+      }
+      .btn {
+        border: 0;
+        background: var(--fill);
+        color: #fff;
+        border-radius: 999px;
+        padding: 0 18px;
+        height: 36px;
+        font-weight: 700;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        white-space: nowrap;
+      }
+      .btn.pick {
+        background: var(--fill);
+      }
+      .btn.pick.on {
+        background: var(--indigo);
+      }
+      .badge {
+        background: #fff;
+        color: #1b2640;
+        border-radius: 999px;
+        font-size: 12px;
+        padding: 0 8px;
+        min-width: 22px;
+        text-align: center;
+        letter-spacing: 0;
+        line-height: 20px;
+      }
+      .rbtn {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        border: 1px solid var(--line);
+        background: var(--bg);
+        color: var(--text);
+        display: grid;
+        place-items: center;
+        cursor: pointer;
+        font-size: 16px;
+      }
+      .pos {
+        color: var(--muted);
+        margin: 0 4px;
+        white-space: nowrap;
+      }
+      .picker {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 0 20px 10px;
+        flex-wrap: wrap;
+      }
+      .picker .lbl {
+        color: var(--muted);
+        font-size: 12px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        font-weight: 700;
+        margin-right: 4px;
+      }
+
+      /* the one-pill stage slider with a progress fill */
+      .wrap {
+        display: flex;
+        align-items: stretch;
+        width: fit-content;
+        border-radius: 999px;
+        background: var(--lab);
+        border: 1px solid var(--tline);
+      }
+      .slbl {
+        display: inline-flex;
+        align-items: center;
+        padding: 0 14px 0 16px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+        white-space: nowrap;
+      }
+      .choices {
+        position: relative;
+        display: flex;
+        align-items: center;
+        margin: -1px -1px -1px 0;
+        padding: 3px;
+        border-radius: 999px;
+        background: var(--track);
+        border: 1px solid var(--tline);
+        transition:
+          background 0.4s,
+          border-color 0.4s;
+      }
+      .trail {
+        position: absolute;
+        top: 3px;
+        left: 3px;
+        height: 28px;
+        width: 0;
+        border-radius: 999px;
+        z-index: 0;
+        pointer-events: none;
+        opacity: 0;
+      }
+      .pill {
+        position: absolute;
+        top: 3px;
+        left: 0;
+        width: 0;
+        height: 28px;
+        border-radius: 999px;
+        background: var(--indigo);
+        box-shadow: 0 4px 14px var(--shadow);
+        z-index: 0;
+        pointer-events: none;
+        opacity: 0;
+        transition:
+          background 0.4s,
+          box-shadow 0.4s;
+      }
+      .choices.placed .pill,
+      .choices.placed .trail {
+        opacity: 1;
+      }
+      .choices.animated .pill {
+        transition:
+          left 0.55s cubic-bezier(0.3, 1.35, 0.5, 1),
+          width 0.55s cubic-bezier(0.3, 1.35, 0.5, 1),
+          background 0.4s,
+          box-shadow 0.4s;
+      }
+      .choices.animated .trail {
+        transition: width 0.55s cubic-bezier(0.3, 1.35, 0.5, 1);
+      }
+      .pill.squish {
+        animation: squish 0.55s ease-out;
+      }
+      @keyframes squish {
+        0% {
+          scale: 1 1;
+        }
+        35% {
+          scale: 1.12 0.92;
+        }
+        100% {
+          scale: 1 1;
+        }
+      }
+      .opt {
+        position: relative;
+        z-index: 1;
+        height: 28px;
+        padding: 0 15px;
+        border: 0;
+        border-radius: 999px;
+        background: transparent;
+        color: var(--optx);
+        font: inherit;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        white-space: nowrap;
+        cursor: pointer;
+        transition: color 0.3s;
+      }
+      .opt.on {
+        color: #fff;
+      }
+      .opt:hover:not(.on) {
+        background: rgba(127, 140, 180, 0.16);
+      }
+      .opt.done {
+        color: var(--text);
+      }
+      .wrap.good .pill {
+        background: var(--gfill);
+        box-shadow: 0 4px 14px var(--gshadow);
+      }
+      .wrap.good .trail {
+        top: -1px;
+        bottom: -1px;
+        left: -1px;
+        height: auto;
+        background: var(--gtrack);
+        border: 1px solid var(--gline);
+      }
+      .wrap.good .opt.in {
+        color: var(--gopt);
+      }
+      .wrap.bad .choices {
+        background: var(--rtrack);
+        border-color: var(--rline);
+      }
+      .wrap.bad .pill {
+        background: var(--rfill);
+        box-shadow: 0 4px 14px var(--rshadow);
+      }
+      .wrap.bad .opt:not(.on) {
+        color: var(--ropt);
+      }
+      .wrap.bad {
+        border-color: var(--rline);
+      }
+      .wrap.bad .trail {
+        display: none;
+      }
+
+      /* the five progress fills */
+      .v-A .trail {
+        background: color-mix(in srgb, var(--indigo) 30%, transparent);
+      }
+      .v-B .trail {
+        background: var(--indigo);
+      }
+      .v-B .pill {
+        background: var(--indigo2);
+      }
+      .v-B .opt.done {
+        color: #fff;
+      }
+      .v-C .trail {
+        background: linear-gradient(
+          90deg,
+          color-mix(in srgb, var(--indigo) 8%, transparent),
+          color-mix(in srgb, var(--indigo) 55%, transparent)
+        );
+      }
+      .v-D .trail {
+        top: auto;
+        bottom: 0;
+        height: 4px;
+        left: 12px;
+        border-radius: 2px;
+        background: var(--indigo);
+      }
+      .v-E .trail {
+        background: color-mix(in srgb, var(--indigo) 18%, transparent);
+      }
+      .v-E .opt.done::before {
+        content: "\2713\00a0";
+        font-weight: 800;
+      }
+
+      .block {
+        border-top: 1px solid var(--line);
+      }
+      .rows {
+        display: grid;
+        grid-template-columns: 220px auto;
+        gap: 8px 14px;
+        align-items: center;
+        padding: 4px 20px 14px;
+      }
+      .rows .st {
+        font-size: 14px;
+        color: var(--muted);
+      }
+      .rows .st b {
+        color: var(--text);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <h1 class="mock">
+        Pipeline &middot; Mockup: the deal panel header at comfortable padding,
+        with the fading stage trail (invented data, nothing built)
+      </h1>
+      <div class="about">
+        <h2>About this mockup</h2>
+        <p>
+          <b>The fading trail, with your change:</b> for Plan, Action, Commit,
+          1st Case and 5th Case a blue trail fades in from Plan up to the
+          current stage. At <b>Conversion</b> the green is a flat fill filling
+          the pill exactly like the red one (no inner line), from the start to
+          Conversion: it <b>stops at Conversion</b> and Unsuccessful Conversion
+          has no colour at all. At <b>Unsuccessful Conversion</b> the whole pill
+          fills red, as before.
+        </p>
+        <p>
+          <b>Top picture:</b> the real header at the comfortable padding, drawn
+          live: click any stage to see it slide and fill. <b>Below:</b> the
+          slider at each of the seven stages. Dark and Light buttons are at the
+          bottom.
+        </p>
+        <p>
+          <b>Not shown:</b> the body of the panel below the subheader, and risk
+          and ROSA deals (own stages).
+        </p>
+      </div>
+
+      <div class="sfnav">
+        <b>Sales</b><span class="tab">Home</span
+        ><span class="tab on">Pipeline</span
+        ><span class="tab">Opportunities &amp; Risks</span
+        ><span class="grow"></span
+        ><button type="button" id="fs">Full screen</button>
+      </div>
+      <div class="screen" id="screen" data-theme="light">
+        <p class="cap">
+          <b>In the header</b
+          ><span>comfortable padding, fading trail; click a stage</span>
+        </p>
+        <div class="head">
+          <div class="h1row">
+            <div class="name">Rishi Narasimhan</div>
+            <button class="btn" type="button">Surgeon Usages</button>
+            <button class="btn" type="button">
+              MyCase Bookings <span class="badge">0</span>
+            </button>
+            <button class="btn" type="button">
+              Campaigns <span class="badge">2</span>
+            </button>
+            <button class="rbtn" type="button">&#8249;</button
+            ><span class="pos">1 of 53</span
+            ><button class="rbtn" type="button">&#8250;</button
+            ><button class="rbtn" type="button">&#10005;</button>
+          </div>
+          <div class="h2row"><div id="live"></div></div>
+        </div>
+        <div class="sub">
+          <div class="fact"><span>Owner</span><b>Craige Watson</b></div>
+          <div class="fact"><span>Opportunity</span><b>Extremities</b></div>
+          <div class="fact">
+            <span>Expected Annual Value</span><b>A$250k</b>
+          </div>
+          <div class="fact"><span>Close Quarter</span><b>Q4 2026</b></div>
+          <div class="fact">
+            <span>Last Posted</span><b><i class="tag">1178 d</i></b>
+          </div>
+          <div class="fact">
+            <span>Last Stage Move</span><b><i class="tag">1178 d</i></b>
+          </div>
+          <div class="fact"><span>Deal Age</span><b>1179 d</b></div>
+          <div class="fact"><span>Status</span><b>Open</b></div>
+        </div>
+        <div id="varieties"></div>
+        <p style="padding: 14px 20px 0; margin: 0; display: flex; gap: 10px">
+          <button type="button" class="btn pick" data-t="dark">Dark</button>
+          <button type="button" class="btn pick on" data-t="light">
+            Light
+          </button>
+        </p>
+      </div>
+    </div>
+    <script>
+      var STAGES = [
+        "Plan",
+        "Action",
+        "Commit",
+        "1st Case",
+        "5th Case",
+        "Conversion",
+        "Unsuccessful Conversion"
+      ];
+      var VARIETIES = [["C", "Fading trail"]];
+      function build(host, stage, v, live) {
+        host.innerHTML = "";
+        var wrap = document.createElement("div");
+        wrap.className = "wrap v-" + v;
+        wrap.innerHTML =
+          '<span class="slbl">Stage</span><div class="choices"><div class="trail"></div><div class="pill"></div>' +
+          STAGES.map(function (s) {
+            return (
+              '<button type="button" class="opt" data-s="' +
+              s +
+              '">' +
+              s +
+              "</button>"
+            );
+          }).join("") +
+          "</div>";
+        host.appendChild(wrap);
+        var box = wrap.querySelector(".choices"),
+          pill = wrap.querySelector(".pill"),
+          trail = wrap.querySelector(".trail");
+        function paint(animate) {
+          wrap.classList.toggle("good", stage === "Conversion");
+          wrap.classList.toggle("bad", stage === "Unsuccessful Conversion");
+          var idx = STAGES.indexOf(stage);
+          wrap.querySelectorAll(".opt").forEach(function (o, i) {
+            o.classList.toggle("on", i === idx);
+            o.classList.toggle("done", idx >= 0 && idx < 5 && i < idx);
+            o.classList.toggle("in", idx === 5 && i < idx);
+          });
+          var on = wrap.querySelector(".opt.on");
+          if (!on) {
+            box.classList.remove("placed");
+            return;
+          }
+          if (animate) {
+            box.classList.add("animated");
+            pill.classList.remove("squish");
+            void pill.offsetWidth;
+            pill.classList.add("squish");
+          }
+          pill.style.left = on.offsetLeft + "px";
+          pill.style.width = on.offsetWidth + "px";
+          var end = on.offsetLeft + on.offsetWidth - 3;
+          trail.style.width =
+            (idx === 5 ? end + 7 : v === "D" ? Math.max(0, end - 9) : end) +
+            "px"; // Conversion: a flat fill from the very start of the pill to just past Conversion
+          box.classList.add("placed");
+        }
+        if (live)
+          wrap.querySelectorAll(".opt").forEach(function (o) {
+            o.addEventListener("click", function () {
+              stage = o.dataset.s;
+              paint(true);
+            });
+          });
+        paint(false);
+        return {
+          set: function (s) {
+            stage = s;
+            paint(true);
+          }
+        };
+      }
+      var current = "C",
+        liveStage = "Action",
+        liveHost = document.getElementById("live");
+      function rebuildLive() {
+        var h = build(liveHost, liveStage, current, true);
+        liveHost.querySelectorAll(".opt").forEach(function (o) {
+          o.addEventListener("click", function () {
+            liveStage = o.dataset.s;
+          });
+        });
+      }
+      rebuildLive();
+      var host = document.getElementById("varieties");
+      VARIETIES.forEach(function (v) {
+        var blk = document.createElement("div");
+        blk.className = "block";
+        blk.innerHTML =
+          '<p class="cap"><b>' +
+          v[0] +
+          ". " +
+          v[1] +
+          '</b></p><div class="rows"></div>';
+        host.appendChild(blk);
+        var rows = blk.querySelector(".rows");
+        STAGES.forEach(function (s) {
+          var l = document.createElement("div");
+          l.className = "st";
+          l.innerHTML = "Deal at <b>" + s + "</b>";
+          var c = document.createElement("div");
+          rows.appendChild(l);
+          rows.appendChild(c);
+          build(c, s, v[0], false);
+        });
+      });
+      document.querySelectorAll("[data-t]").forEach(function (b) {
+        b.addEventListener("click", function () {
+          document.getElementById("screen").dataset.theme = b.dataset.t;
+          document.querySelectorAll("[data-t]").forEach(function (o) {
+            o.classList.toggle("on", o === b);
+          });
+        });
+      });
+      document.getElementById("fs").addEventListener("click", function () {
+        var e = document.documentElement;
+        if (document.fullscreenElement) document.exitFullscreen();
+        else if (e.requestFullscreen) e.requestFullscreen();
+      });
+    </script>
+  </body>
+</html>

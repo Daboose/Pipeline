@@ -126,6 +126,8 @@
                         <template lwc:else
                           >{c.text}<span lwc:if={c.star} class="star"
                             >&nbsp;★</span
+                          ><span lwc:if={c.campaign} class="cstar"
+                            >&nbsp;★</span
                           ></template
                         >
                       </td>
@@ -146,6 +148,8 @@
                         <span lwc:if={c.tag} class={c.tagCls}>{c.text}</span>
                         <template lwc:else
                           >{c.text}<span lwc:if={c.star} class="star"
+                            >&nbsp;★</span
+                          ><span lwc:if={c.campaign} class="cstar"
                             >&nbsp;★</span
                           ></template
                         >

@@ -267,7 +267,8 @@ export default class PipelineTypeList extends LightningElement {
       title: "",
       tag: false,
       tagCls: "",
-      star: false
+      star: false,
+      campaign: false
     };
     const live = group.filter((d) => !d.isClosed && !d.onHold);
     const days = (fn) => live.map((d) => fn(d, now)).filter((n) => n !== null);
@@ -406,7 +407,9 @@ export default class PipelineTypeList extends LightningElement {
         return {
           ...base,
           text,
-          star: !!d.repPriority && (id === "hcp") === (this.kind !== "rosa")
+          star: !!d.repPriority && (id === "hcp") === (this.kind !== "rosa"),
+          // the gold star: the deal is in one or more campaigns (beside the surgeon; a ROSA list has no surgeon column)
+          campaign: d.campaignCount > 0 && id === "hcp" && this.kind !== "rosa"
         };
       }
       case "value":

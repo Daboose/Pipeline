@@ -229,3 +229,7 @@
 .star {
   color: var(--head);
 }
+/* the gold star: the deal is in one or more campaigns */
+.cstar {
+  color: var(--gold);
+}

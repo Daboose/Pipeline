@@ -1,0 +1,57 @@
+<template>
+  <div class="wrap">
+    <p class="err" lwc:if={error}>{error}</p>
+    <p class="none" lwc:if={loading}>Reading the campaigns…</p>
+    <template lwc:if={ready}>
+      <p class="facts">{factsText}</p>
+      <p class="none" lwc:if={noHcp}>
+        This deal has no Primary HCP yet, so there is no surgeon to match to a
+        campaign. Add the Primary HCP to the deal first.
+      </p>
+      <template lwc:if={hasHcp}>
+        <p class="none" lwc:if={noOffered}>
+          No campaign fits this deal at the moment. A campaign is offered when
+          it is active, covers the country of the deal's owner and the deal's
+          portfolio, and has {hcpName} as a member.
+        </p>
+        <ul class="list" lwc:if={hasOffered}>
+          <template for:each={rows} for:item="r">
+            <li key={r.id} class="row">
+              <div class="what">
+                <div class="nm">{r.name}</div>
+                <div class="meta">{r.meta}</div>
+                <div class="warn" lwc:if={r.note}>{r.note}</div>
+              </div>
+              <div class="ctl">
+                <span class="saving" lwc:if={r.busy}>Saving…</span>
+                <c-pipeline-segmented
+                  class="seg"
+                  heading="In campaign"
+                  label={r.label}
+                  options={yesNo}
+                  value={r.value}
+                  data-id={r.id}
+                  onchange={handlePick}
+                ></c-pipeline-segmented>
+              </div>
+            </li>
+          </template>
+        </ul>
+        <div class="left" lwc:if={hasNotOffered}>
+          <h4>Not offered, because {hcpName} is not a member</h4>
+          <ul class="plain">
+            <template for:each={notOffered} for:item="n">
+              <li key={n.id}>
+                <b>{n.name}</b> <span class="meta">{n.meta}</span>
+              </li>
+            </template>
+          </ul>
+          <p class="meta">
+            A campaign manager can add the surgeon to a campaign in Sales
+            Campaign Management.
+          </p>
+        </div>
+      </template>
+    </template>
+  </div>
+</template>

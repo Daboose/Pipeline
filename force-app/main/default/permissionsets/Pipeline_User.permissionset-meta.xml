@@ -36,8 +36,12 @@
     <apexClass>PipelineScope</apexClass>
     <enabled>true</enabled>
   </classAccesses>
+  <classAccesses>
+    <apexClass>PipelineDealCampaignController</apexClass>
+    <enabled>true</enabled>
+  </classAccesses>
   <description
-  >Pipeline: lets a person open Pipeline and keep their own screen choices. Gives no extra access to deals: what each person sees is still decided by sharing and by the Teams. Everyone who uses Pipeline needs this.</description>
+  >Pipeline: lets a person open Pipeline, keep their screen choices, and put a deal they can edit in or out of sales campaigns. No other extra access to deals: sharing and Teams still decide what is seen. Everyone who uses Pipeline needs this.</description>
   <hasActivationRequired>false</hasActivationRequired>
   <label>Pipeline User</label>
   <objectPermissions>
@@ -47,6 +51,42 @@
     <allowRead>true</allowRead>
     <modifyAllRecords>false</modifyAllRecords>
     <object>Pipeline_Filter__c</object>
+    <viewAllRecords>false</viewAllRecords>
+  </objectPermissions>
+  <objectPermissions>
+    <allowCreate>false</allowCreate>
+    <allowDelete>false</allowDelete>
+    <allowEdit>false</allowEdit>
+    <allowRead>true</allowRead>
+    <modifyAllRecords>false</modifyAllRecords>
+    <object>SalesRisks__c</object>
+    <viewAllRecords>false</viewAllRecords>
+  </objectPermissions>
+  <objectPermissions>
+    <allowCreate>false</allowCreate>
+    <allowDelete>false</allowDelete>
+    <allowEdit>false</allowEdit>
+    <allowRead>true</allowRead>
+    <modifyAllRecords>false</modifyAllRecords>
+    <object>Sales_Campaign__c</object>
+    <viewAllRecords>false</viewAllRecords>
+  </objectPermissions>
+  <objectPermissions>
+    <allowCreate>false</allowCreate>
+    <allowDelete>false</allowDelete>
+    <allowEdit>false</allowEdit>
+    <allowRead>true</allowRead>
+    <modifyAllRecords>false</modifyAllRecords>
+    <object>Sales_Campaign_Member__c</object>
+    <viewAllRecords>false</viewAllRecords>
+  </objectPermissions>
+  <objectPermissions>
+    <allowCreate>true</allowCreate>
+    <allowDelete>true</allowDelete>
+    <allowEdit>true</allowEdit>
+    <allowRead>true</allowRead>
+    <modifyAllRecords>false</modifyAllRecords>
+    <object>Sales_Campaign_Deal__c</object>
     <viewAllRecords>false</viewAllRecords>
   </objectPermissions>
   <fieldPermissions>
@@ -72,6 +112,31 @@
   <fieldPermissions>
     <editable>true</editable>
     <field>SalesRisks__c.Expected_Closing_Year__c</field>
+    <readable>true</readable>
+  </fieldPermissions>
+  <fieldPermissions>
+    <editable>false</editable>
+    <field>Sales_Campaign__c.Active__c</field>
+    <readable>true</readable>
+  </fieldPermissions>
+  <fieldPermissions>
+    <editable>false</editable>
+    <field>Sales_Campaign__c.Portfolios_Text__c</field>
+    <readable>true</readable>
+  </fieldPermissions>
+  <fieldPermissions>
+    <editable>false</editable>
+    <field>Sales_Campaign__c.Countries_Text__c</field>
+    <readable>true</readable>
+  </fieldPermissions>
+  <fieldPermissions>
+    <editable>false</editable>
+    <field>Sales_Campaign__c.Campaign_Manager__c</field>
+    <readable>true</readable>
+  </fieldPermissions>
+  <fieldPermissions>
+    <editable>false</editable>
+    <field>Sales_Campaign_Member__c.Surgeon__c</field>
     <readable>true</readable>
   </fieldPermissions>
   <pageAccesses>

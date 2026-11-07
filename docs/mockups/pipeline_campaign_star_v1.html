@@ -1,0 +1,492 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Pipeline: mockup of the gold "in campaign" star</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: #cdd3de;
+        font:
+          14px/1.45 -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          Roboto,
+          Arial,
+          sans-serif;
+        color: #1b2640;
+      }
+      .page {
+        max-width: 1500px;
+        margin: 0 auto;
+        padding: 18px 22px 50px;
+      }
+      h1.mock {
+        margin: 0 0 12px;
+        font-size: 13px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: #5d6b85;
+      }
+      .about {
+        max-width: 980px;
+        background: #fff;
+        border: 1px solid #b3bfd6;
+        border-radius: 12px;
+        padding: 14px 18px;
+        margin-bottom: 16px;
+      }
+      .about h2 {
+        margin: 0 0 6px;
+        font-size: 12px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: #b7791f;
+      }
+      .about p,
+      .about li {
+        margin: 3px 0;
+      }
+      .about ol,
+      .about ul {
+        margin: 4px 0 8px 18px;
+        padding: 0;
+      }
+      .sfnav {
+        display: flex;
+        align-items: center;
+        gap: 22px;
+        background: #0b2239;
+        color: #fff;
+        padding: 0 16px;
+        height: 44px;
+        border-radius: 10px 10px 0 0;
+        font-size: 13px;
+      }
+      .sfnav .tab {
+        padding: 13px 0;
+        color: #b8c4d6;
+      }
+      .sfnav .tab.on {
+        color: #fff;
+        border-bottom: 3px solid #1b96ff;
+      }
+      .sfnav .grow {
+        flex: 1;
+      }
+      .sfnav button {
+        background: #3a4a63;
+        color: #fff;
+        border: 0;
+        border-radius: 999px;
+        padding: 6px 14px;
+        font-weight: 700;
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+      }
+
+      .screen {
+        position: relative;
+        border-radius: 0 0 10px 10px;
+        padding-bottom: 24px;
+      }
+      .screen[data-theme="dark"] {
+        --bg: #141e2e;
+        --panel: #1a2740;
+        --line: #2f4163;
+        --text: #e8edf5;
+        --muted: #8b9bb0;
+        --pipe: #fdb827;
+        --head: #a3e635;
+        --gold: #ffc400;
+        --ok: #4ee0b0;
+        --warn: #fb923c;
+        --bad: #f87171;
+        --indigo: #6366f1;
+        --fill: #475569;
+      }
+      .screen[data-theme="light"] {
+        --bg: #f4f6fa;
+        --panel: #ffffff;
+        --line: #d5dcea;
+        --text: #1b2640;
+        --muted: #5d6b85;
+        --pipe: #b7791f;
+        --head: #4d7c0f;
+        --gold: #e0a100;
+        --ok: #0f9d74;
+        --warn: #c2570c;
+        --bad: #dc2626;
+        --indigo: #4f46e5;
+        --fill: #475569;
+      }
+      .screen {
+        background: var(--bg);
+        color: var(--text);
+        font-size: 15px;
+      }
+
+      .top {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 8px 20px;
+        min-height: 54px;
+        border-bottom: 1px solid var(--line);
+      }
+      .word {
+        font-weight: 800;
+        letter-spacing: 0.16em;
+        font-size: 20px;
+      }
+      .word .p {
+        color: var(--pipe);
+      }
+      .sp {
+        flex: 1;
+      }
+      .btn {
+        border: 0;
+        background: var(--fill);
+        color: #fff;
+        border-radius: 999px;
+        padding: 8px 18px;
+        min-height: 36px;
+        font-weight: 700;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+      }
+      .btn.on {
+        background: var(--indigo);
+      }
+
+      .main {
+        padding: 14px 20px 10px;
+      }
+      .legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px 18px;
+        color: var(--muted);
+        font-size: 14px;
+        padding: 0 4px;
+        margin-bottom: 14px;
+        align-items: center;
+      }
+      .tag {
+        display: inline-block;
+        border-radius: 999px;
+        padding: 1px 9px;
+        font-size: 13px;
+        font-weight: 700;
+        border: 1px solid currentColor;
+        white-space: nowrap;
+      }
+      .tag.ok {
+        color: var(--ok);
+      }
+      .tag.warn {
+        color: var(--warn);
+      }
+      .tag.bad {
+        color: var(--bad);
+      }
+      .tag.hold {
+        color: var(--muted);
+      }
+      .star {
+        color: var(--head);
+      }
+      .gold {
+        color: var(--gold);
+      }
+
+      .card {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        overflow: hidden;
+      }
+      .card h2 {
+        margin: 0;
+        padding: 12px 16px 8px;
+        font-size: 13px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--head);
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      th {
+        text-align: left;
+        font-size: 12px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--head);
+        padding: 9px 14px;
+        border-bottom: 1px solid var(--line);
+        white-space: nowrap;
+      }
+      td {
+        padding: 9px 14px;
+        border-top: 1px solid var(--line);
+        white-space: nowrap;
+      }
+      th.num,
+      td.num {
+        text-align: right;
+      }
+      td.hcp {
+        font-weight: 700;
+      }
+      .stars {
+        margin-left: 6px;
+        letter-spacing: 3px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <h1 class="mock">
+        Pipeline &middot; Mockup: a gold star for "in campaign" (invented data,
+        nothing built)
+      </h1>
+      <div class="about">
+        <h2>About this mockup</h2>
+        <p>
+          <b>Is this what you meant?</b> The Opportunities list on the Pipeline
+          home screen, with:
+        </p>
+        <ol>
+          <li>
+            A <b>gold star</b> after the surgeon's name when the deal is in one
+            or more campaigns, beside the existing green rep priority star.
+          </li>
+          <li>
+            A new item in the legend above the lists:
+            <span style="color: #e0a100">&#9733;</span> In Campaign, next to
+            <span style="color: #4d7c0f">&#9733;</span> Rep Priority. Every word
+            in the legend now starts with a capital letter (proper case).
+          </li>
+        </ol>
+        <p>
+          The rows show every combination: neither star, green only, gold only,
+          and both. The green star follows each person's heading colour setting
+          (lime here). Dark and Light buttons are in the top bar. Nothing else
+          changes.
+        </p>
+        <p>
+          <b>Not changed:</b> the small tags in the list itself (current, needs
+          update, very old) are still lower case. Say if they should be proper
+          case too.
+        </p>
+        <p>
+          <b>Not shown:</b> the Risks list would carry the same star. The ROSA
+          list has no surgeon column, so it is not drawn.
+        </p>
+      </div>
+
+      <div class="sfnav">
+        <b>Sales</b><span class="tab">Home</span
+        ><span class="tab on">Pipeline</span
+        ><span class="tab">Opportunities &amp; Risks</span
+        ><span class="grow"></span
+        ><button type="button" id="fs">Full screen</button>
+      </div>
+      <div class="screen" id="screen" data-theme="dark">
+        <header class="top">
+          <span class="word"><span class="p">PIPE</span>LINE</span>
+          <span class="sp"></span>
+          <button type="button" class="btn on" data-t="dark">Dark</button>
+          <button type="button" class="btn" data-t="light">Light</button>
+        </header>
+        <main class="main">
+          <div class="legend">
+            <span
+              ><span class="tag ok">Current</span> Posted In Last 30 Days</span
+            >
+            <span><span class="tag warn">Needs Update</span> 30–90 Days</span>
+            <span><span class="tag bad">Very Old</span> Over 90 Days</span>
+            <span
+              >Stage: <span class="tag bad">Red</span> = No Move In Over 90
+              Days</span
+            >
+            <span><span class="tag hold">On Hold</span> No Warnings</span>
+            <span><span class="star">&#9733;</span> Rep Priority</span>
+            <span><span class="gold">&#9733;</span> In Campaign</span>
+          </div>
+          <div class="card">
+            <h2>Opportunities</h2>
+            <table>
+              <thead>
+                <tr>
+                  <th>Surgeon</th>
+                  <th>Hospital</th>
+                  <th>Portfolio</th>
+                  <th>Brand</th>
+                  <th>Stage</th>
+                  <th class="num">Revenue / year</th>
+                  <th>Close quarter</th>
+                  <th>Last posted</th>
+                </tr>
+              </thead>
+              <tbody id="rows"></tbody>
+            </table>
+          </div>
+        </main>
+      </div>
+    </div>
+    <script>
+      // invented deals only: [surgeon, hospital, portfolio, brand, stage, revenue, quarter, posted, priority, inCampaign]
+      var deals = [
+        [
+          "Dr Mei Lin Tan",
+          "Mount Elizabeth",
+          "Knee",
+          "Persona",
+          "Plan",
+          "A$180,000",
+          "Q1 2027",
+          ["current", "ok"],
+          false,
+          false
+        ],
+        [
+          "Dr Jonathan Wu",
+          "Raffles Hospital",
+          "Hip",
+          "Taperloc",
+          "Action",
+          "A$95,000",
+          "Q4 2026",
+          ["needs update", "warn"],
+          true,
+          false
+        ],
+        [
+          "Dr Siti Abdullah",
+          "Prince Court",
+          "Knee",
+          "NexGen",
+          "Commit/Contract",
+          "A$240,000",
+          "Q1 2027",
+          ["current", "ok"],
+          false,
+          true
+        ],
+        [
+          "Dr Priya Nair",
+          "Mercy Hospital",
+          "Extremities",
+          "Comprehensive",
+          "1st Case",
+          "A$310,000",
+          "Q2 2027",
+          ["current", "ok"],
+          true,
+          true
+        ],
+        [
+          "Dr Bruce Ashford",
+          "Royal North Shore",
+          "Hip",
+          "G7",
+          "Plan",
+          "A$60,000",
+          "Q4 2026",
+          ["very old", "bad"],
+          false,
+          false
+        ],
+        [
+          "Dr Wei Ming Lim",
+          "Singapore General",
+          "Knee",
+          "Persona",
+          "5th Case",
+          "A$410,000",
+          "Q1 2027",
+          ["current", "ok"],
+          false,
+          true
+        ],
+        [
+          "Dr Anthony Maher",
+          "Gosford District",
+          "Hip",
+          "Avenir",
+          "Action",
+          "A$120,000",
+          "Q1 2027",
+          ["needs update", "warn"],
+          true,
+          false
+        ],
+        [
+          "Dr Karen Fong",
+          "Gleneagles KL",
+          "CMFT",
+          "Biomet",
+          "Conversion",
+          "A$75,000",
+          "Q4 2026",
+          ["current", "ok"],
+          false,
+          true
+        ]
+      ];
+      document.getElementById("rows").innerHTML = deals
+        .map(function (d) {
+          var stars =
+            (d[8] ? '<span class="star">&#9733;</span>' : "") +
+            (d[9] ? '<span class="gold">&#9733;</span>' : "");
+          return (
+            "<tr><td class='hcp'>" +
+            d[0] +
+            (stars ? "<span class='stars'>" + stars + "</span>" : "") +
+            "</td><td>" +
+            d[1] +
+            "</td><td>" +
+            d[2] +
+            "</td><td>" +
+            d[3] +
+            "</td><td>" +
+            d[4] +
+            "</td><td class='num'>" +
+            d[5] +
+            "</td><td>" +
+            d[6] +
+            "</td><td><span class='tag " +
+            d[7][1] +
+            "'>" +
+            d[7][0] +
+            "</span></td></tr>"
+          );
+        })
+        .join("");
+      document.querySelectorAll("[data-t]").forEach(function (b) {
+        b.addEventListener("click", function () {
+          document.getElementById("screen").dataset.theme = b.dataset.t;
+          document.querySelectorAll("[data-t]").forEach(function (o) {
+            o.classList.toggle("on", o === b);
+          });
+        });
+      });
+      document.getElementById("fs").addEventListener("click", function () {
+        var e = document.documentElement;
+        if (document.fullscreenElement) document.exitFullscreen();
+        else if (e.requestFullscreen) e.requestFullscreen();
+      });
+    </script>
+  </body>
+</html>

@@ -73,6 +73,23 @@ describe("c-pipeline-type-list", () => {
     expect(rows(el).length).toBe(2);
   });
 
+  it("marks a deal that is in a campaign with a gold star beside the surgeon, never in a ROSA list", async () => {
+    const el = make({
+      kind: "opp",
+      deals: [
+        deal("1", "Ann", { campaignCount: 1 }),
+        deal("2", "Ann", { campaignCount: 0 }),
+        deal("3", "Ann", { campaignCount: 2, repPriority: true })
+      ]
+    });
+    await Promise.resolve();
+    expect(el.shadowRoot.querySelectorAll("span.cstar").length).toBe(2);
+    el.kind = "rosa";
+    el.deals = [deal("4", "Ann", { kind: "rosa", campaignCount: 1 })];
+    await Promise.resolve();
+    expect(el.shadowRoot.querySelectorAll("span.cstar").length).toBe(0);
+  });
+
   it("marks a rep priority deal with a star, which the style sheet colours amber", async () => {
     const el = make({
       kind: "opp",

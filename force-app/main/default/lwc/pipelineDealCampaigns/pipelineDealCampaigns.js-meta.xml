@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+  <apiVersion>68.0</apiVersion>
+  <description
+  >Pipeline: the Campaigns control of a deal. Shows the sales campaigns a deal can be put in (active, covering the owner's country and the deal's portfolio, with the Primary HCP as a member) and puts the deal in or out of each. Used in the deal flyout.</description>
+  <isExposed>false</isExposed>
+</LightningComponentBundle>

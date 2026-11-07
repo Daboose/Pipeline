@@ -1,0 +1,509 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Pipeline: mockup of the stage slider (implant opportunity)</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: #cdd3de;
+        font:
+          14px/1.45 -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          Roboto,
+          Arial,
+          sans-serif;
+        color: #1b2640;
+      }
+      .page {
+        max-width: 1500px;
+        margin: 0 auto;
+        padding: 18px 22px 50px;
+      }
+      h1.mock {
+        margin: 0 0 12px;
+        font-size: 13px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: #5d6b85;
+      }
+      .about {
+        max-width: 1000px;
+        background: #fff;
+        border: 1px solid #b3bfd6;
+        border-radius: 12px;
+        padding: 14px 18px;
+        margin-bottom: 16px;
+      }
+      .about h2 {
+        margin: 0 0 6px;
+        font-size: 12px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: #b7791f;
+      }
+      .about p,
+      .about li {
+        margin: 3px 0;
+      }
+      .about ol {
+        margin: 4px 0 8px 18px;
+        padding: 0;
+      }
+      .sfnav {
+        display: flex;
+        align-items: center;
+        gap: 22px;
+        background: #0b2239;
+        color: #fff;
+        padding: 0 16px;
+        height: 44px;
+        border-radius: 10px 10px 0 0;
+        font-size: 13px;
+      }
+      .sfnav .tab {
+        padding: 13px 0;
+        color: #b8c4d6;
+      }
+      .sfnav .tab.on {
+        color: #fff;
+        border-bottom: 3px solid #1b96ff;
+      }
+      .sfnav .grow {
+        flex: 1;
+      }
+      .sfnav button {
+        background: #3a4a63;
+        color: #fff;
+        border: 0;
+        border-radius: 999px;
+        padding: 6px 14px;
+        font-weight: 700;
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+      }
+
+      .screen {
+        border-radius: 0 0 10px 10px;
+        padding: 0 0 26px;
+      }
+      .screen[data-theme="dark"] {
+        --bg: #141e2e;
+        --panel: #1a2740;
+        --line: #2f4163;
+        --text: #e8edf5;
+        --muted: #8b9bb0;
+        --pipe: #fdb827;
+        --indigo: #6366f1;
+        --fill: #475569;
+        --lab: #1a2740;
+        --track: #243452;
+        --tline: #3a4e75;
+        --optx: #a9b8d0;
+        --shadow: rgba(8, 12, 40, 0.55);
+        --gtrack: #14402f;
+        --gline: #1f7a55;
+        --gopt: #8fd9b6;
+        --gfill: #16a34a;
+        --gshadow: rgba(22, 163, 74, 0.45);
+        --rtrack: #4a1d22;
+        --rline: #8f3a42;
+        --ropt: #f0a3a8;
+        --rfill: #dc2626;
+        --rshadow: rgba(220, 38, 38, 0.45);
+      }
+      .screen[data-theme="light"] {
+        --bg: #f4f6fa;
+        --panel: #ffffff;
+        --line: #d5dcea;
+        --text: #1b2640;
+        --muted: #5d6b85;
+        --pipe: #b7791f;
+        --indigo: #4f46e5;
+        --fill: #475569;
+        --lab: #ffffff;
+        --track: #e3e8f4;
+        --tline: #c4cde2;
+        --optx: #5d6b85;
+        --shadow: rgba(79, 70, 229, 0.35);
+        --gtrack: #d9f2e6;
+        --gline: #8fd1b2;
+        --gopt: #2e6f52;
+        --gfill: #16a34a;
+        --gshadow: rgba(22, 163, 74, 0.4);
+        --rtrack: #fbe0e2;
+        --rline: #eba3a9;
+        --ropt: #8f2f37;
+        --rfill: #dc2626;
+        --rshadow: rgba(220, 38, 38, 0.4);
+      }
+      .screen {
+        background: var(--bg);
+        color: var(--text);
+        font-size: 15px;
+      }
+      .top {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 8px 20px;
+        min-height: 54px;
+        border-bottom: 1px solid var(--line);
+      }
+      .word {
+        font-weight: 800;
+        letter-spacing: 0.16em;
+        font-size: 20px;
+      }
+      .word .p {
+        color: var(--pipe);
+      }
+      .sp {
+        flex: 1;
+      }
+      .btn {
+        border: 0;
+        background: var(--fill);
+        color: #fff;
+        border-radius: 999px;
+        padding: 8px 18px;
+        min-height: 36px;
+        font-weight: 700;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+      }
+      .btn.on {
+        background: var(--indigo);
+      }
+
+      .body {
+        padding: 18px 22px 0;
+      }
+      .row {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        padding: 10px 0;
+        border-bottom: 1px solid var(--line);
+      }
+      .row .name {
+        width: 230px;
+        flex: none;
+      }
+      .row .name b {
+        display: block;
+      }
+      .row .name span {
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .live {
+        padding: 14px 0 18px;
+        border-bottom: 2px solid var(--line);
+        margin-bottom: 6px;
+      }
+      .live .hint {
+        color: var(--muted);
+        margin: 6px 0 0 4px;
+        font-size: 13px;
+      }
+
+      /* the one-pill stage slider */
+      .wrap {
+        display: flex;
+        align-items: stretch;
+        width: fit-content;
+        border-radius: 999px;
+        background: var(--lab);
+        border: 1px solid var(--tline);
+      }
+      .slbl {
+        display: inline-flex;
+        align-items: center;
+        padding: 0 16px 0 18px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+        white-space: nowrap;
+      }
+      .choices {
+        position: relative;
+        display: flex;
+        align-items: center;
+        margin: -1px -1px -1px 0;
+        padding: 3px;
+        border-radius: 999px;
+        background: var(--track);
+        border: 1px solid var(--tline);
+        transition:
+          background 0.4s,
+          border-color 0.4s;
+      }
+      .pill {
+        position: absolute;
+        top: 3px;
+        left: 0;
+        width: 0;
+        height: 28px;
+        border-radius: 999px;
+        background: var(--indigo);
+        box-shadow: 0 4px 14px var(--shadow);
+        z-index: 0;
+        pointer-events: none;
+        opacity: 0;
+        transition:
+          background 0.4s,
+          box-shadow 0.4s;
+      }
+      .choices.placed .pill {
+        opacity: 1;
+      }
+      .choices.animated .pill {
+        transition:
+          left 0.55s cubic-bezier(0.3, 1.35, 0.5, 1),
+          width 0.55s cubic-bezier(0.3, 1.35, 0.5, 1),
+          background 0.4s,
+          box-shadow 0.4s;
+      }
+      .pill.squish {
+        animation: squish 0.55s ease-out;
+      }
+      @keyframes squish {
+        0% {
+          scale: 1 1;
+        }
+        35% {
+          scale: 1.12 0.92;
+        }
+        100% {
+          scale: 1 1;
+        }
+      }
+      .opt {
+        position: relative;
+        z-index: 1;
+        height: 28px;
+        padding: 0 16px;
+        border: 0;
+        border-radius: 999px;
+        background: transparent;
+        color: var(--optx);
+        font: inherit;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        white-space: nowrap;
+        cursor: pointer;
+        transition: color 0.3s;
+      }
+      .opt.on {
+        color: #fff;
+      }
+      .opt:hover:not(.on) {
+        background: rgba(127, 140, 180, 0.16);
+      }
+      /* conversion: the whole pill turns green; unsuccessful conversion: the whole pill turns red */
+      .wrap.good .choices {
+        background: var(--gtrack);
+        border-color: var(--gline);
+      }
+      .wrap.good .pill {
+        background: var(--gfill);
+        box-shadow: 0 4px 14px var(--gshadow);
+      }
+      .wrap.good .opt:not(.on) {
+        color: var(--gopt);
+      }
+      .wrap.good {
+        border-color: var(--gline);
+      }
+      .wrap.bad .choices {
+        background: var(--rtrack);
+        border-color: var(--rline);
+      }
+      .wrap.bad .pill {
+        background: var(--rfill);
+        box-shadow: 0 4px 14px var(--rshadow);
+      }
+      .wrap.bad .opt:not(.on) {
+        color: var(--ropt);
+      }
+      .wrap.bad {
+        border-color: var(--rline);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <h1 class="mock">
+        Pipeline &middot; Mockup: the stage slider for an implant opportunity
+        (invented data, nothing built)
+      </h1>
+      <div class="about">
+        <h2>About this mockup</h2>
+        <p>
+          <b>Is this what you meant?</b> The stage path becomes the sliding
+          one-pill switch from My Case Plan: the label STAGE on the white end, a
+          shaded track holding all seven stages, and one highlight that slides
+          to the stage the deal is at.
+        </p>
+        <ol>
+          <li>
+            <b>Plan, Action, Commit, 1st Case, 5th Case:</b> the highlight is
+            blue (indigo) and the track stays its normal shade.
+          </li>
+          <li><b>Conversion:</b> the whole pill turns green.</li>
+          <li><b>Unsuccessful Conversion:</b> the whole pill turns red.</li>
+          <li>
+            <b>No stage set:</b> every stage is shown on the plain track and
+            nothing is highlighted.
+          </li>
+        </ol>
+        <p>
+          <b>Try it:</b> the first row is live: click any stage and the
+          highlight slides across (the colour changes with it). Below it, the
+          same slider is shown once for each state, so you can judge the
+          colouring of each. Dark and Light buttons are in the top bar.
+        </p>
+        <p>
+          <b>Not shown:</b> where it sits in the deal panel (it replaces the
+          path in the top row), and the stage lists of risks and ROSA deals,
+          which have their own stages. Earlier stages are not marked once the
+          deal moves on, only the current one is highlighted; say if you want
+          the passed stages marked.
+        </p>
+      </div>
+
+      <div class="sfnav">
+        <b>Sales</b><span class="tab">Home</span
+        ><span class="tab on">Pipeline</span
+        ><span class="tab">Opportunities &amp; Risks</span
+        ><span class="grow"></span
+        ><button type="button" id="fs">Full screen</button>
+      </div>
+      <div class="screen" id="screen" data-theme="light">
+        <header class="top">
+          <span class="word"><span class="p">PIPE</span>LINE</span>
+          <span class="sp"></span>
+          <button type="button" class="btn" data-t="dark">Dark</button>
+          <button type="button" class="btn on" data-t="light">Light</button>
+        </header>
+        <div class="body">
+          <div class="live">
+            <div id="live"></div>
+            <p class="hint">Live: click a stage.</p>
+          </div>
+          <div id="gallery"></div>
+        </div>
+      </div>
+    </div>
+    <script>
+      var STAGES = [
+        "Plan",
+        "Action",
+        "Commit",
+        "1st Case",
+        "5th Case",
+        "Conversion",
+        "Unsuccessful Conversion"
+      ];
+      var STATES = [
+        ["No stage set", null, "A new deal before a stage is chosen"]
+      ].concat(
+        STAGES.map(function (s, i) {
+          return [s, s, i < 5 ? "In progress" : i === 5 ? "Won" : "Lost"];
+        })
+      );
+
+      function build(host, stage, live) {
+        var wrap = document.createElement("div");
+        wrap.className = "wrap";
+        wrap.innerHTML =
+          '<span class="slbl">Stage</span><div class="choices"><div class="pill"></div>' +
+          STAGES.map(function (s) {
+            return (
+              '<button type="button" class="opt" data-s="' +
+              s +
+              '">' +
+              s +
+              "</button>"
+            );
+          }).join("") +
+          "</div>";
+        host.appendChild(wrap);
+        var box = wrap.querySelector(".choices"),
+          pill = wrap.querySelector(".pill");
+        function paint(animate) {
+          wrap.classList.toggle("good", stage === "Conversion");
+          wrap.classList.toggle("bad", stage === "Unsuccessful Conversion");
+          wrap.querySelectorAll(".opt").forEach(function (o) {
+            o.classList.toggle("on", o.dataset.s === stage);
+          });
+          var on = wrap.querySelector(".opt.on");
+          if (!on) {
+            box.classList.remove("placed");
+            return;
+          }
+          if (animate) {
+            box.classList.add("animated");
+            pill.classList.remove("squish");
+            void pill.offsetWidth;
+            pill.classList.add("squish");
+          }
+          pill.style.left = on.offsetLeft + "px";
+          pill.style.width = on.offsetWidth + "px";
+          box.classList.add("placed");
+        }
+        if (live)
+          wrap.querySelectorAll(".opt").forEach(function (o) {
+            o.addEventListener("click", function () {
+              stage = o.dataset.s;
+              paint(true);
+            });
+          });
+        paint(false);
+        window.addEventListener("resize", function () {
+          paint(false);
+        });
+      }
+      build(document.getElementById("live"), "Action", true);
+      var g = document.getElementById("gallery");
+      STATES.forEach(function (st) {
+        var row = document.createElement("div");
+        row.className = "row";
+        row.innerHTML =
+          '<div class="name"><b>' +
+          st[0] +
+          "</b><span>" +
+          st[2] +
+          "</span></div><div></div>";
+        g.appendChild(row);
+        build(row.lastChild, st[1], false);
+      });
+      document.querySelectorAll("[data-t]").forEach(function (b) {
+        b.addEventListener("click", function () {
+          document.getElementById("screen").dataset.theme = b.dataset.t;
+          document.querySelectorAll("[data-t]").forEach(function (o) {
+            o.classList.toggle("on", o === b);
+          });
+        });
+      });
+      document.getElementById("fs").addEventListener("click", function () {
+        var e = document.documentElement;
+        if (document.fullscreenElement) document.exitFullscreen();
+        else if (e.requestFullscreen) e.requestFullscreen();
+      });
+    </script>
+  </body>
+</html>

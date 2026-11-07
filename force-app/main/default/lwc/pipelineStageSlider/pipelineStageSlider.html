@@ -1,0 +1,21 @@
+<template>
+  <div class={wrapCls} role="group" aria-label="Stage">
+    <span class="slbl">Stage</span>
+    <div class={trackCls}>
+      <div class="trail" lwc:ref="trail"></div>
+      <div class="pill" lwc:ref="pill" aria-hidden="true"></div>
+      <template for:each={items} for:item="item">
+        <button
+          key={item.value}
+          type="button"
+          class={item.cls}
+          aria-pressed={item.pressed}
+          data-value={item.value}
+          onclick={handleClick}
+        >
+          {item.value}
+        </button>
+      </template>
+    </div>
+  </div>
+</template>
