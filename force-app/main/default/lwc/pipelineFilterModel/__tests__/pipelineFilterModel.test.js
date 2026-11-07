@@ -5,6 +5,7 @@ import {
   withStatus,
   toggleKind,
   defaultFilter,
+  reconcileFlyout,
   fromSaved,
   serverFilter,
   serverChanged,
@@ -304,6 +305,28 @@ describe("c-pipeline-filter-model", () => {
     });
     it("is not part of what makes the server read again", () => {
       expect(serverChanged(f, { ...f, campId: "c1" })).toBe(false);
+    });
+  });
+});
+
+describe("reconcileFlyout", () => {
+  const deals = [{ id: "a" }, { id: "c" }];
+  it("leaves everything alone when no deal is open", () => {
+    expect(reconcileFlyout("", ["a", "b"], deals)).toEqual({
+      ids: ["a", "b"],
+      gone: false
+    });
+  });
+  it("keeps the open deal and drops the ones that are no longer there from previous / next", () => {
+    expect(reconcileFlyout("a", ["a", "b", "c"], deals)).toEqual({
+      ids: ["a", "c"],
+      gone: false
+    });
+  });
+  it("says the open deal is gone when a save moved it out of what is shown, but keeps it in the list so its position stays valid", () => {
+    expect(reconcileFlyout("b", ["a", "b", "c"], deals)).toEqual({
+      ids: ["a", "b", "c"],
+      gone: true
     });
   });
 });

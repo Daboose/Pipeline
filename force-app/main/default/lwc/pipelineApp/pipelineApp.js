@@ -23,6 +23,7 @@ import {
   serverFilter,
   serverChanged,
   clientMatch,
+  reconcileFlyout,
   MINE
 } from "c/pipelineFilterModel";
 import { quarterRank } from "c/pipelineFormat";
@@ -44,7 +45,7 @@ function stableJson(value) {
  * Usages, Surgeries and Chatter, saved filters); 0.10 follows the final mockup: a filter bar with chips and a Change
  * selection panel with Apply, in place of the always-visible Choose Your Data panel.
  */
-const PIPELINE_VERSION = "0.92";
+const PIPELINE_VERSION = "0.93";
 
 /** The colours a person can choose for the headings (Robert, 2026-11-02); the look of each is in pipelineApp.css. */
 const HEAD_COLOURS = [
@@ -98,6 +99,7 @@ export default class PipelineApp extends LightningElement {
   asAt = "";
   flyId = "";
   flyIds = [];
+  flyLeaving; // the deal whose panel is sliding away because a save moved it out of what the screen shows
   savedFilters = [];
   activeFilterId = "";
   settingsOpen = false;
@@ -364,7 +366,9 @@ export default class PipelineApp extends LightningElement {
     this.error = "";
     return getDeals({ filterJson: JSON.stringify(serverFilter(this.filter)) })
       .then((res) => {
+        const before = this.allDeals;
         this.allDeals = res.deals;
+        this.closeFlyoutIfGone(before);
         this.truncated = res.truncated;
         this.teamNames = res.teamNames || {};
         this.asAt = new Date().toLocaleString("en-AU", {
@@ -845,7 +849,7 @@ export default class PipelineApp extends LightningElement {
   /* ----- the deal flyout ----- */
   get flyDeal() {
     return this.flyId
-      ? this.allDeals.find((d) => d.id === this.flyId)
+      ? this.allDeals.find((d) => d.id === this.flyId) || this.flyLeaving
       : undefined;
   }
   get flyIndex() {
@@ -856,6 +860,7 @@ export default class PipelineApp extends LightningElement {
   }
   handleDealOpen(event) {
     clearTimeout(this.flyTimer);
+    this.flyLeaving = undefined;
     this.flyIds = event.detail.ids;
     this.flyId = event.detail.id;
     if (!this.flyOn) {
@@ -869,7 +874,26 @@ export default class PipelineApp extends LightningElement {
     this.flyOn = false;
     this.flyTimer = this.slideOut(() => {
       this.flyId = "";
+      this.flyLeaving = undefined;
     });
+  }
+  /**
+   * Called after the deals are read again. If the deal being looked at is no longer among them (a save moved it out of the
+   * open or the closed choice) its panel closes, sliding away, and the screen goes back to the list; the previous / next
+   * buttons only step through deals that are still there. Without this the panel stayed "open" behind the scenes and came
+   * back by itself when the choices later brought that deal into the list again (Robert, 2026-11-07).
+   */
+  closeFlyoutIfGone(before) {
+    if (!this.flyId) return;
+    const { ids, gone } = reconcileFlyout(
+      this.flyId,
+      this.flyIds,
+      this.allDeals
+    );
+    this.flyIds = ids;
+    if (!gone) return;
+    this.flyLeaving = (before || []).find((d) => d.id === this.flyId);
+    this.handleDealClose();
   }
   handleDealPrev() {
     const i = this.flyIndex;

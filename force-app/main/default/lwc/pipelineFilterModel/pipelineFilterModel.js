@@ -315,3 +315,19 @@ export function teamRows(teams, opened, query) {
   walk("", 0, new Set());
   return out;
 }
+
+/**
+ * After the deals are read again: the deal panel's deal and its previous / next list are checked against the new deals.
+ * A save can move a deal out of what is on the screen (closing an open deal while looking at the open ones, or reopening a
+ * closed one), so the deal may no longer be there. Returns { ids, gone }: the previous / next list with only the deals still
+ * there (the current deal is kept, so its position stays valid while it slides away), and whether the current deal is gone,
+ * in which case the panel must close (it must not wait and reappear when the choices bring that deal back).
+ */
+export function reconcileFlyout(flyId, flyIds, deals) {
+  if (!flyId) return { ids: flyIds || [], gone: false };
+  const there = new Set((deals || []).map((d) => d.id));
+  return {
+    ids: (flyIds || []).filter((id) => id === flyId || there.has(id)),
+    gone: !there.has(flyId)
+  };
+}
