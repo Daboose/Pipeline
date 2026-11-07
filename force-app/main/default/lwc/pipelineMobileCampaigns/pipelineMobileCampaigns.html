@@ -1,0 +1,19 @@
+<template>
+  <div class={pageCls}>
+    <div class="ctl bar">
+      <button type="button" class="backbtn" onclick={handleBack}>
+        <span class="bk">&#8249;</span> Back to deal
+      </button>
+    </div>
+    <div class="pad">
+      <div class="dh"><h1 class="dname">Campaigns</h1></div>
+      <p class="dsub">{dealLabel}</p>
+      <c-pipeline-deal-campaigns
+        lwc:if={recordId}
+        record-id={recordId}
+        yes-tone="good"
+        oncampaignschanged={handleChanged}
+      ></c-pipeline-deal-campaigns>
+    </div>
+  </div>
+</template>

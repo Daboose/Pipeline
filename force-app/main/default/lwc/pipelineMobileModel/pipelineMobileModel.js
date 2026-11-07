@@ -9,7 +9,8 @@ import {
   chatterBand,
   stageBand,
   STAGE_COLOURS,
-  STAGE_ENDS
+  STAGE_ENDS,
+  daysSince
 } from "c/pipelineFormat";
 
 /**
@@ -281,6 +282,7 @@ export const FORM_FIELDS = {
     ["Expected_Closing_Year__c", "Expected closing year", "picklist"],
     ["AmountPerYear__c", "Expected annual value", "number"],
     ["CurrencyIsoCode", "Currency", "picklist"],
+    // a number box (the number keyboard, no letters), though Salesforce holds it as text (255 characters): the screen sends it as text
     ["UnitsCasesPerYear__c", "Expected annual units / cases", "number"],
     ["Brand__c", "Brand", "multi"],
     ["OnHold__c", "On hold", "bool"],
@@ -508,4 +510,86 @@ export function formRows(kind, ctx) {
     });
   });
   return out;
+}
+
+/* ----- Chatter on the phone (Robert, 2026-11-07; mockup pipeline_mobile_chatter_v1.html, option C) ----- */
+
+/** How long ago a post was made, short for a phone: "today", "yesterday", "5 d ago". */
+export function agoShort(iso, now = Date.now()) {
+  const n = daysSince(iso, now);
+  if (n === null) return "";
+  if (n === 0) return "today";
+  if (n === 1) return "yesterday";
+  return `${n} d ago`;
+}
+
+/** The row on the deal screen: how many posts and how long since the last ("4 posts · last 2 d ago"). */
+export function chatterSummary(posts, now = Date.now()) {
+  const list = posts || [];
+  if (!list.length) return "No posts yet";
+  let newest = "";
+  list.forEach((p) => {
+    [p.posted, ...(p.replies || []).map((r) => r.posted)].forEach((d) => {
+      if (d && (!newest || Date.parse(d) > Date.parse(newest))) newest = d;
+    });
+  });
+  const last = agoShort(newest, now);
+  return `${list.length} ${list.length === 1 ? "post" : "posts"}${last ? ` · last ${last}` : ""}`;
+}
+
+/**
+ * The @ being typed just before the caret: { start, end, q } (the text after the @, with where the @ starts and where the caret is), or
+ * null when the caret is not in a mention. An @ only counts at the start or after a space, so an email address does not open the list.
+ */
+export function mentionQuery(text, caret) {
+  const before = String(text || "").slice(0, caret);
+  const m = /(^|[\s\u00a0])@([\p{L}'.\- ]{0,40})$/u.exec(before);
+  if (!m) return null;
+  return { start: caret - m[2].length - 1, end: caret, q: m[2] };
+}
+
+/** The text with the typed @ part replaced by the picked person's name (and a space after), and where the caret goes next. */
+export function insertMention(text, query, name) {
+  const next = `${text.slice(0, query.start)}@${name} ${text.slice(query.end)}`;
+  return { text: next, caret: query.start + name.length + 2 };
+}
+
+/**
+ * The pieces to post: [{ t: "text" }, { u: "Id", n: "Name" }]. text is what was written; mentioned is the people picked from the list
+ * ([{ id, name }]). A picked person's "@Name" in the text becomes a real mention; a name typed but never picked (or changed after it
+ * was picked) stays plain text. Leading and trailing blanks are taken off.
+ */
+export function segmentsFrom(text, mentioned) {
+  const names = [...(mentioned || [])].sort(
+    (a, b) => b.name.length - a.name.length
+  );
+  const s = String(text || "");
+  const out = [];
+  let buf = "";
+  let i = 0;
+  // the person whose "@Name" starts at position `at`, if there is one (the name must end there, not run on into more letters)
+  const mentionAt = (at) => {
+    if (s[at] !== "@") return null;
+    return names.find((p) => {
+      const end = at + 1 + p.name.length;
+      return s.startsWith(p.name, at + 1) && !/\p{L}/u.test(s[end] || "");
+    });
+  };
+  while (i < s.length) {
+    const hit = mentionAt(i);
+    if (hit) {
+      if (buf) out.push({ t: buf });
+      buf = "";
+      out.push({ u: hit.id, n: hit.name });
+      i += 1 + hit.name.length;
+    } else {
+      buf += s[i];
+      i += 1;
+    }
+  }
+  if (buf) out.push({ t: buf });
+  if (out.length && out[0].t) out[0].t = out[0].t.replace(/^\s+/, "");
+  const last = out[out.length - 1];
+  if (last && last.t) last.t = last.t.replace(/\s+$/, "");
+  return out.filter((x) => x.u || x.t);
 }

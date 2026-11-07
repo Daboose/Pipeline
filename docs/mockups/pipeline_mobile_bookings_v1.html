@@ -1,0 +1,2410 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>
+      Mockup: MyCase Bookings on the phone, on its own screen (version 1)
+    </title>
+    <style>
+      :root,
+      [data-theme="light"] {
+        --page: #e9edf4;
+        --card: #ffffff;
+        --bg: #f3f3f3;
+        --box: #eef2fa;
+        --line: #d5dcea;
+        --edge: #b3bfd6;
+        --text: #1b2640;
+        --muted: #5d6b85;
+        --pipe: #b7791f;
+        --indigo: #4f46e5;
+        --slate: #64748b;
+        --head: #db2777;
+        --field: #ffffff;
+        --ok: #0f9d74;
+      }
+      [data-theme="dark"] {
+        --page: #141e2e;
+        --card: #1a2740;
+        --bg: #141e2e;
+        --box: #20304f;
+        --line: #2f4163;
+        --edge: #5b6f93;
+        --text: #e8edf5;
+        --muted: #9fb0cc;
+        --pipe: #fdb827;
+        --indigo: #6366f1;
+        --slate: #475569;
+        --head: #f472b6;
+        --field: #11151c;
+        --ok: #4ee0b0;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--page);
+        color: var(--text);
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-size: 16px;
+      }
+      button,
+      input {
+        font-family: inherit;
+        font-size: inherit;
+        color: inherit;
+      }
+      .sp {
+        flex: 1;
+      }
+      .muted {
+        color: var(--muted);
+      }
+      .sfnav {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        height: 44px;
+        padding: 0 16px;
+        background: #0b1220;
+        color: #cdd6e6;
+        font-size: 14px;
+      }
+      .sfnav .app {
+        font-weight: 800;
+        letter-spacing: 0.14em;
+      }
+      .sfnav .app b {
+        color: #fdb827;
+      }
+      .sfnav .tab {
+        color: #9fb0cc;
+      }
+      .sfnav .tab.on {
+        color: #fff;
+        border-bottom: 2px solid #6366f1;
+        padding-bottom: 2px;
+      }
+      .btn,
+      .pill {
+        border: 0;
+        border-radius: 999px;
+        padding: 7px 16px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+        background: var(--slate);
+        color: #fff;
+      }
+      .pill.on {
+        background: var(--indigo);
+      }
+      .about {
+        margin: 14px 16px;
+        padding: 12px 18px;
+        background: var(--card);
+        border: 1px solid var(--edge);
+        border-radius: 12px;
+        line-height: 1.5;
+        max-width: 1100px;
+        font-size: 15px;
+      }
+      .about summary {
+        cursor: pointer;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        color: var(--pipe);
+      }
+      .about ul {
+        margin: 4px 0 8px;
+        padding-left: 22px;
+      }
+      .tools {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+        padding: 0 16px 10px;
+      }
+      .tools .lab {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        margin-left: 14px;
+      }
+      .tools .lab:first-child {
+        margin-left: 0;
+      }
+      .mocknote {
+        margin: 0 16px 12px;
+        padding: 8px 14px;
+        border: 1px dashed var(--edge);
+        border-radius: 10px;
+        color: var(--muted);
+        font-size: 14px;
+        font-style: italic;
+        max-width: 1100px;
+      }
+      .phones {
+        display: flex;
+        gap: 40px;
+        flex-wrap: wrap;
+        padding: 0 16px 40px;
+        align-items: flex-start;
+      }
+      .opt h2 {
+        margin: 0 0 2px;
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--head);
+      }
+      .opt p {
+        margin: 0 0 10px;
+        color: var(--muted);
+        font-size: 14px;
+        max-width: 390px;
+      }
+
+      /* the phone: 390 px wide, Salesforce's own top bar and bottom tab bar around our page */
+      .phone {
+        position: relative;
+        width: 390px;
+        height: 800px;
+        border: 10px solid #0b1220;
+        border-radius: 38px;
+        overflow: hidden;
+        background: var(--bg);
+        display: flex;
+        flex-direction: column;
+      }
+      .sfstatus {
+        height: 40px;
+        flex: none;
+        padding: 12px 0 0 28px;
+        font-size: 14px;
+        font-weight: 600;
+        background: var(--card);
+      }
+      .sfbar {
+        flex: none;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        height: 46px;
+        padding: 0 14px;
+        background: var(--card);
+        border-bottom: 1px solid var(--line);
+        font-weight: 700;
+      }
+      .sfbar .ham {
+        width: 22px;
+        height: 14px;
+        border-top: 2px solid var(--muted);
+        border-bottom: 2px solid var(--muted);
+        position: relative;
+      }
+      .sfbar .ham::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 4px;
+        border-top: 2px solid var(--muted);
+      }
+      .scroll {
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+        padding: 12px 12px 16px;
+      }
+      .sftabs {
+        flex: none;
+        display: flex;
+        height: 58px;
+        background: var(--card);
+        border-top: 1px solid var(--line);
+      }
+      .sftabs span {
+        flex: 1;
+        text-align: center;
+        padding-top: 9px;
+        font-size: 11px;
+        color: var(--muted);
+      }
+      .sftabs span.on {
+        color: var(--indigo);
+        font-weight: 700;
+      }
+      .sftabs i {
+        display: block;
+        width: 22px;
+        height: 22px;
+        margin: 0 auto 3px;
+        border-radius: 6px;
+        background: currentColor;
+        opacity: 0.35;
+      }
+
+      /* the one-pill slider (phone): full width, 37 px options (33% taller than on desktop), label end */
+      .yn {
+        display: flex;
+        align-items: stretch;
+        width: 100%;
+        background: var(--card);
+        border: 1px solid var(--edge);
+        border-radius: 999px;
+      }
+      .yn .lb {
+        display: inline-flex;
+        align-items: center;
+        padding: 0 12px 0 16px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+        white-space: nowrap;
+      }
+      .yn .trk {
+        position: relative;
+        flex: 1;
+        display: flex;
+        margin: -1px;
+        padding: 3px;
+        background: var(--box);
+        border: 1px solid var(--edge);
+        border-radius: 999px;
+      }
+      .yn .hl {
+        position: absolute;
+        top: 3px;
+        left: 0;
+        width: 0;
+        height: 37px;
+        border-radius: 999px;
+        background: var(--indigo);
+        box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35);
+        transition:
+          left 0.5s cubic-bezier(0.3, 1.35, 0.5, 1),
+          width 0.5s cubic-bezier(0.3, 1.35, 0.5, 1);
+      }
+      .yn button {
+        position: relative;
+        z-index: 1;
+        flex: 1 1 0;
+        height: 37px;
+        border: 0;
+        background: none;
+        font-weight: 700;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+        cursor: pointer;
+        white-space: nowrap;
+        transition: color 0.25s;
+      }
+      .yn button.on {
+        color: #fff;
+      }
+      .ctl {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-bottom: 12px;
+      }
+      .search {
+        position: relative;
+      }
+      .search input {
+        width: 100%;
+        height: 44px;
+        border-radius: 999px;
+        border: 1px solid var(--edge);
+        background: var(--field);
+        padding: 0 42px 0 16px;
+        font-size: 16px; /* 16 px, or the iPhone zooms the page when it is tapped */
+        outline: none;
+      }
+      .search input:focus {
+        border-color: var(--indigo);
+      }
+      .xc {
+        position: absolute;
+        right: 8px;
+        top: 7px;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        border: 0;
+        background: var(--edge);
+        cursor: pointer;
+        display: none;
+      }
+      .xc.show {
+        display: block;
+      }
+      .xc::before,
+      .xc::after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 13px;
+        height: 2px;
+        background: var(--card);
+        transform: translate(-50%, -50%) rotate(45deg);
+      }
+      .xc::after {
+        transform: translate(-50%, -50%) rotate(-45deg);
+      }
+
+      /* the type: one at a time (A) or a section each (B) */
+      .count {
+        color: var(--muted);
+        font-size: 14px;
+        margin: 2px 4px 8px;
+      }
+      .sec {
+        margin-bottom: 10px;
+      }
+      .sechead {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 11px 14px;
+        border-radius: 12px;
+        background: color-mix(in srgb, var(--head) 16%, var(--card));
+        border: 1px solid color-mix(in srgb, var(--head) 38%, var(--card));
+        margin-bottom: 8px;
+        cursor: pointer;
+      }
+      .sechead h3 {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--head);
+      }
+      .sechead .n {
+        color: var(--muted);
+        font-size: 14px;
+      }
+      .chev {
+        width: 9px;
+        height: 9px;
+        border-right: 2.5px solid var(--muted);
+        border-bottom: 2.5px solid var(--muted);
+        transform: rotate(45deg);
+        margin-top: -4px;
+        transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .sec.shut .chev {
+        transform: rotate(-45deg);
+        margin-top: 0;
+      }
+      .fold {
+        display: grid;
+        grid-template-rows: 1fr;
+        transition: grid-template-rows 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .sec.shut .fold {
+        grid-template-rows: 0fr;
+      }
+      .fold > div {
+        overflow: hidden;
+        min-height: 0;
+      }
+
+      /* a deal card: the whole card is the tap target */
+      .deal {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 12px 14px;
+        margin-bottom: 8px;
+        cursor: pointer;
+      }
+      .deal .r1 {
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+      }
+      .deal .nm {
+        font-size: 17px;
+        font-weight: 800;
+        line-height: 1.25;
+      }
+      .deal .val {
+        font-weight: 800;
+        white-space: nowrap;
+      }
+      .deal .r2 {
+        color: var(--muted);
+        font-size: 14px;
+        margin-top: 2px;
+      }
+      .deal .r3 {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 8px;
+        font-size: 14px;
+      }
+      .star {
+        color: #16a34a;
+      }
+      .cstar {
+        color: #e0a100;
+      }
+      .stp {
+        display: inline-flex;
+        align-items: center;
+        height: 24px;
+        padding: 0 11px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      .st-open {
+        background: var(--indigo);
+        color: #fff;
+      }
+      .st-hold {
+        background: #f59e0b;
+        color: #1b2640;
+      }
+      .st-won {
+        background: #16a34a;
+        color: #fff;
+      }
+      .st-lost {
+        background: #dc2626;
+        color: #fff;
+      }
+      .none {
+        color: var(--muted);
+        text-align: center;
+        padding: 26px 10px;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .yn .hl,
+        .chev,
+        .fold {
+          transition: none;
+        }
+      }
+
+      .phone-note {
+        max-width: 390px;
+      }
+      .tiles {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+        margin: 4px 0 12px;
+      }
+      .tile {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 9px 10px;
+      }
+      .tile .l {
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .tile .v {
+        font-size: 18px;
+        font-weight: 800;
+        margin-top: 2px;
+      }
+      .tile .v.warn {
+        color: #c2570c;
+      }
+      .ch3 {
+        margin: 12px 0 6px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--head);
+      }
+      .chips2 {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+      .chip2 {
+        display: inline-flex;
+        gap: 8px;
+        align-items: baseline;
+        padding: 6px 10px;
+        border-radius: 999px;
+        font-size: 13px;
+        color: #fff;
+        font-weight: 700;
+      }
+      .chip2 .cv {
+        font-weight: 800;
+      }
+      .qrow {
+        display: grid;
+        grid-template-columns: 62px 1fr auto;
+        gap: 8px;
+        align-items: center;
+        margin: 6px 0;
+        font-size: 14px;
+      }
+      .qrow .track {
+        height: 12px;
+        border-radius: 99px;
+        background: var(--box);
+        overflow: hidden;
+      }
+      .qrow .fill {
+        display: block;
+        height: 100%;
+        border-radius: 99px;
+        background: var(--indigo);
+      }
+      .qrow .n {
+        color: var(--muted);
+        font-size: 13px;
+        white-space: nowrap;
+      }
+      /* real charts: bars by stage, columns by close quarter */
+      .hbar {
+        display: grid;
+        grid-template-columns: 84px 1fr auto;
+        gap: 8px;
+        align-items: center;
+        margin: 7px 0;
+        font-size: 13px;
+      }
+      .hbar .nm {
+        font-weight: 700;
+        line-height: 1.15;
+      }
+      .hbar .bar {
+        height: 22px;
+        border-radius: 6px;
+        min-width: 4px;
+      }
+      .hbar .v {
+        font-weight: 800;
+        white-space: nowrap;
+      }
+      .cols {
+        display: flex;
+        align-items: flex-end;
+        gap: 10px;
+        height: 150px;
+        padding: 4px 2px 0;
+        border-bottom: 1px solid var(--edge);
+      }
+      .cols .c {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        align-items: center;
+        height: 100%;
+        gap: 4px;
+        font-size: 11px;
+        font-weight: 800;
+      }
+      .cols .c i {
+        display: block;
+        width: 100%;
+        background: var(--indigo);
+        border-radius: 6px 6px 0 0;
+      }
+      .qlabels {
+        display: flex;
+        gap: 10px;
+        padding: 4px 2px 0;
+        font-size: 11px;
+        color: var(--muted);
+        text-align: center;
+      }
+      .qlabels span {
+        flex: 1;
+      }
+      .chartnote {
+        color: var(--muted);
+        font-size: 12px;
+        margin: 8px 2px 0;
+      }
+
+      .back {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        height: 44px;
+        padding: 0 6px;
+        border: 0;
+        background: none;
+        color: var(--indigo);
+        font-weight: 700;
+        font-size: 16px;
+      }
+      .dh {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin: 2px 2px 2px;
+      }
+      .dh .nm {
+        font-size: 24px;
+        font-weight: 800;
+        line-height: 1.15;
+      }
+      .dsub {
+        color: var(--muted);
+        font-size: 14px;
+        margin: 0 2px 10px;
+      }
+      .grid2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+      .tile {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 9px 12px;
+        min-width: 0;
+      }
+      .tile .l {
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .tile .v {
+        font-size: 16px;
+        font-weight: 800;
+        margin-top: 2px;
+      }
+      .tg {
+        display: inline-block;
+        padding: 1px 10px;
+        border-radius: 999px;
+        font-size: 13px;
+        font-weight: 700;
+        border: 1px solid currentColor;
+      }
+      .tg.ok {
+        color: #0f9d74;
+      }
+      .tg.warn {
+        color: #c2570c;
+      }
+      .tg.bad {
+        color: #dc2626;
+      }
+      .card {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 12px 14px;
+        margin-bottom: 12px;
+      }
+      .card h3 {
+        margin: 0 0 8px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--head);
+      }
+      .frow {
+        padding: 9px 0;
+        border-top: 1px solid var(--line);
+      }
+      .frow:first-of-type {
+        border-top: 0;
+      }
+      .frow .fl {
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .frow .fv {
+        font-size: 16px;
+        margin-top: 2px;
+      }
+      .yes {
+        color: #0f9d74;
+        font-weight: 800;
+      }
+      .no {
+        color: var(--muted);
+      }
+      .go {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 52px;
+        padding: 0 14px;
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        margin-bottom: 8px;
+        font-weight: 700;
+      }
+      .go b {
+        color: var(--pipe);
+      }
+      .go i {
+        width: 9px;
+        height: 9px;
+        border-right: 2.5px solid var(--muted);
+        border-top: 2.5px solid var(--muted);
+        transform: rotate(45deg);
+      }
+      .later {
+        color: var(--muted);
+        font-size: 13px;
+        font-style: italic;
+        padding: 6px 2px 14px;
+      }
+
+      /* the stage, three ways. A: the one-pill slider, scrolling sideways with the current stage in view */
+      .stgA {
+        --c: var(--indigo);
+        display: flex;
+        align-items: stretch;
+        background: var(--c);
+        border: 1px solid var(--c);
+        border-radius: 999px;
+        margin-bottom: 12px;
+        transition:
+          background 0.4s,
+          border-color 0.4s;
+      }
+      .stgA.good {
+        --c: #16a34a;
+      }
+      .stgA.bad {
+        --c: #dc2626;
+      }
+      .stgA .lb {
+        display: inline-flex;
+        align-items: center;
+        padding: 0 10px 0 14px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: #fff;
+      }
+      .stgA .scr {
+        flex: 1;
+        overflow-x: auto;
+        margin: -1px;
+        border-radius: 999px;
+        background: color-mix(in srgb, var(--c) 82%, #000);
+        border: 1px solid var(--c);
+        scrollbar-width: none;
+      }
+      .stgA .scr::-webkit-scrollbar {
+        display: none;
+      }
+      .stgA .trk {
+        display: flex;
+        padding: 3px;
+        width: max-content;
+      }
+      .stgA .st {
+        height: 37px;
+        padding: 0 14px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        white-space: nowrap;
+        color: #fff;
+      }
+      .stgA .st.ahead {
+        color: rgba(255, 255, 255, 0.4);
+      }
+      .stgA .st.on {
+        background: #fff;
+        color: var(--c);
+      }
+      .stgA .tick {
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: #fff;
+        color: var(--c);
+        font-size: 11px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+      /* B: the stage's name, big, over a bar of steps */
+      .stgB {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 12px 14px;
+        margin-bottom: 12px;
+      }
+      .stgB .top {
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+      }
+      .stgB .k {
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .stgB .now {
+        font-size: 20px;
+        font-weight: 800;
+      }
+      .stgB .of {
+        margin-left: auto;
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .steps {
+        display: flex;
+        gap: 4px;
+        margin: 10px 0 8px;
+      }
+      .steps i {
+        flex: 1;
+        height: 10px;
+        border-radius: 99px;
+        background: var(--box);
+      }
+      .steps i.f {
+        background: var(--indigo);
+      }
+      .stgB.good .steps i.f {
+        background: #16a34a;
+      }
+      .stgB.bad .steps i {
+        background: #dc2626;
+      }
+      .stgB .next {
+        color: var(--muted);
+        font-size: 13px;
+      }
+      /* C: one row that says the stage and opens the list of stages */
+      .stgC {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-height: 56px;
+        padding: 0 14px;
+        border-radius: 12px;
+        color: #fff;
+        background: var(--c2);
+        margin-bottom: 12px;
+        font-weight: 800;
+        transition: background 0.4s;
+      }
+      .stgC small {
+        font-size: 11px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        opacity: 0.85;
+        font-weight: 700;
+      }
+      .stgC .v {
+        font-size: 18px;
+      }
+      .stgC i {
+        margin-left: auto;
+        width: 9px;
+        height: 9px;
+        border-right: 2.5px solid #fff;
+        border-bottom: 2.5px solid #fff;
+        transform: rotate(45deg);
+      }
+      .stgC .pk {
+        margin-left: auto;
+        font-size: 12px;
+        opacity: 0.85;
+      }
+      .listsheet {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        margin: -4px 0 12px;
+        overflow: hidden;
+      }
+      .listsheet div {
+        padding: 13px 14px;
+        border-top: 1px solid var(--line);
+        display: flex;
+        justify-content: space-between;
+      }
+      .listsheet div:first-child {
+        border-top: 0;
+      }
+      .listsheet .cur {
+        background: var(--box);
+        font-weight: 800;
+      }
+
+      /* the locked back bar: a full-width filled button that stays at the top of the page while the deal scrolls */
+      .lock {
+        position: sticky;
+        top: -12px; /* the phone frame's own 12 px padding is taken back, so the bar sits right at the top */
+        z-index: 5;
+        margin: -12px -12px 10px;
+        padding: 10px 12px 8px;
+        background: var(--bg);
+        box-shadow: 0 1px 0 var(--line);
+      }
+      .lockbtn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        width: 100%;
+        height: 44px;
+        border: 0;
+        border-radius: 999px;
+        background: var(--indigo);
+        color: #fff;
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+      }
+      .lockbtn span {
+        font-size: 22px;
+        line-height: 1;
+        margin-top: -2px;
+      }
+
+      /* the stage control as ONE component: the coloured row and its list joined, one outline in the row's colour all round */
+      .stc {
+        --c: var(--indigo);
+        border: 2px solid var(--c);
+        border-radius: 14px;
+        overflow: hidden;
+        background: var(--card);
+        margin-bottom: 12px;
+        transition: border-color 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .stc.good {
+        --c: #16a34a;
+      }
+      .stc.bad {
+        --c: #dc2626;
+      }
+      .stc .hd {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+        min-height: 60px;
+        padding: 6px 12px 6px 16px;
+        border: 0;
+        background: var(--c);
+        color: #fff;
+        text-align: left;
+        cursor: pointer;
+        transition: background 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .stc .hd small {
+        display: block;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        opacity: 0.85;
+      }
+      .stc .hd .sv {
+        display: block;
+        font-size: 19px;
+        font-weight: 800;
+      }
+      /* the chevron: big, and it turns over as the list opens and closes */
+      .chv {
+        margin-left: auto;
+        flex: none;
+        width: 36px;
+        height: 36px;
+        position: relative;
+        border-radius: 50%;
+        transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .chv::before {
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 14px;
+        height: 14px;
+        border-right: 4px solid #fff;
+        border-bottom: 4px solid #fff;
+        border-radius: 2px;
+        transform: translate(-50%, -70%) rotate(45deg);
+      }
+      .stc.shut .chv {
+        transform: rotate(0deg);
+      }
+      .stc:not(.shut) .chv {
+        transform: rotate(180deg);
+      }
+      .chv.ring {
+        background: rgba(255, 255, 255, 0.22);
+      }
+      .stc .fold {
+        display: grid;
+        grid-template-rows: 1fr;
+        transition: grid-template-rows 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .stc.shut .fold {
+        grid-template-rows: 0fr;
+      }
+      .stc .fold > div {
+        overflow: hidden;
+        min-height: 0;
+      }
+      .stc .li {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 14px 16px;
+        border-top: 1px solid var(--line);
+        font-size: 16px;
+      }
+      .stc .li:first-child {
+        border-top: 0;
+      }
+      .stc .li.here {
+        background: color-mix(in srgb, var(--c) 12%, var(--card));
+        font-weight: 800;
+      }
+      .stc .li .ck {
+        margin-left: auto;
+        color: var(--c);
+        font-weight: 800;
+      }
+      /* B: the row you are on has a bar of the colour down its left edge */
+      .vb .li.here {
+        box-shadow: inset 5px 0 0 var(--c);
+        padding-left: 20px;
+      }
+      /* C: progress, as on the desktop slider: finished stages carry a tick in a circle, stages to come are dimmer */
+      .vc .li.done .ck {
+        display: none;
+      }
+      .vc .li .tk {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: var(--c);
+        color: #fff;
+        font-size: 12px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        order: 3;
+        margin-left: auto;
+      }
+      .vc .li.ahead {
+        color: var(--muted);
+      }
+      .mini {
+        margin: 0 0 12px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      /* the stage you are on: bold, a bar of the row's colour down its left edge (option B, chosen) */
+      .stc .li.here {
+        box-shadow: inset 5px 0 0 var(--c);
+        padding-left: 20px;
+      }
+
+      /* ===== editing on the phone (version 1) ===== */
+      .pbody {
+        position: relative;
+        flex: 1;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+      .pbody .scroll {
+        flex: 1;
+      }
+      .f {
+        padding: 9px 0;
+        border-top: 1px solid var(--line);
+      }
+      .f:first-of-type {
+        border-top: 0;
+      }
+      .f .fl {
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 5px;
+        transition: color 0.4s;
+      }
+      .f .fl .rq {
+        color: #dc2626;
+      }
+      .f.changed .fl {
+        color: var(--indigo);
+      }
+      .f.changed .in,
+      .f.changed .lk {
+        border-color: var(--indigo);
+      }
+      .in,
+      .lk {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        height: 44px;
+        padding: 0 14px;
+        border: 1px solid var(--edge);
+        border-radius: 10px;
+        background: var(--field);
+        color: var(--text);
+        font-size: 16px; /* 16 px, or the iPhone zooms the page */
+        text-align: left;
+        transition: border-color 0.4s;
+      }
+      select.in {
+        appearance: none;
+        -webkit-appearance: none;
+        background-image:
+          linear-gradient(45deg, transparent 50%, var(--muted) 50%),
+          linear-gradient(135deg, var(--muted) 50%, transparent 50%);
+        background-position:
+          calc(100% - 20px) 19px,
+          calc(100% - 14px) 19px;
+        background-size:
+          6px 6px,
+          6px 6px;
+        background-repeat: no-repeat;
+      }
+      textarea.in {
+        height: auto;
+        min-height: 96px;
+        padding: 10px 14px;
+        font-family: inherit;
+        resize: none;
+      }
+      .lk {
+        justify-content: space-between;
+        cursor: pointer;
+      }
+      .lk i {
+        width: 9px;
+        height: 9px;
+        border-right: 2.5px solid var(--muted);
+        border-top: 2.5px solid var(--muted);
+        transform: rotate(45deg);
+      }
+      .two {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+      .pl {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .pl button {
+        height: 40px;
+        padding: 0 16px;
+        border: 1px solid var(--edge);
+        border-radius: 999px;
+        background: var(--box);
+        color: var(--muted);
+        font-weight: 700;
+        font-size: 14px;
+        transition:
+          background 0.3s,
+          color 0.3s;
+      }
+      .pl button.on {
+        background: var(--indigo);
+        border-color: var(--indigo);
+        color: #fff;
+      }
+      .flags {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        padding: 9px 0;
+        border-top: 1px solid var(--line);
+      }
+      .flags .yn.changed {
+        border-color: var(--indigo);
+      }
+      .yn.warn .hl {
+        background: #f59e0b;
+        box-shadow: 0 4px 14px rgba(245, 158, 11, 0.4);
+      }
+      .yn.good .hl {
+        background: #16a34a;
+        box-shadow: 0 4px 14px rgba(22, 163, 74, 0.35);
+      }
+      .yn.warn button.on[data-v="yes"] {
+        color: #1b2640;
+      }
+      .yn.changed .lb {
+        color: var(--indigo);
+      }
+      /* the MyMo stage folds open only while MyMo is Yes (0.4 s) */
+      .mm {
+        display: grid;
+        grid-template-rows: 0fr;
+        transition: grid-template-rows 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .phone.mmon .mm {
+        grid-template-rows: 1fr;
+      }
+      .mm > div {
+        overflow: hidden;
+        min-height: 0;
+      }
+      .mm .f {
+        border-top: 0;
+        padding-top: 4px;
+      }
+      /* On hold: the amber pill beside the name; it fades in and gives its room back when off */
+      .holdp {
+        max-width: 0;
+        opacity: 0;
+        overflow: hidden;
+        padding: 0;
+        white-space: nowrap;
+        transition:
+          max-width 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+          opacity 0.4s,
+          padding 0.4s;
+      }
+      .phone.holdon .holdp {
+        max-width: 120px;
+        opacity: 1;
+        padding: 0 11px;
+      }
+      /* the stage list: a row you can tap */
+      .stc .li {
+        min-height: 52px;
+        cursor: pointer;
+      }
+      /* the locked Save bar: folds up from the bottom edge of the page when the first change is made */
+      .savewrap {
+        position: sticky;
+        bottom: -16px;
+        z-index: 6;
+        margin: 0 -12px -16px;
+        display: grid;
+        grid-template-rows: 0fr;
+        background: var(--bg);
+        box-shadow: 0 -1px 0 var(--line);
+        transition: grid-template-rows 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .phone.dirty .savewrap {
+        grid-template-rows: 1fr;
+      }
+      .savewrap > div {
+        overflow: hidden;
+        min-height: 0;
+      }
+      .savebar {
+        display: flex;
+        gap: 10px;
+        padding: 10px 12px 12px;
+      }
+      .savebar button {
+        flex: 1 1 0;
+        height: 44px;
+        border: 0;
+        border-radius: 999px;
+        color: #fff;
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+      }
+      .savebar .cancel {
+        background: var(--slate);
+      }
+      .savebar .save {
+        background: var(--indigo);
+      }
+      .savebar button[disabled] {
+        opacity: 0.55;
+      }
+      .okmsg {
+        color: var(--ok);
+        font-weight: 800;
+        padding: 0 0 8px;
+        max-height: 0;
+        opacity: 0;
+        overflow: hidden;
+        transition:
+          max-height 0.4s,
+          opacity 0.4s;
+      }
+      .phone.saved .okmsg {
+        max-height: 40px;
+        opacity: 1;
+      }
+      /* the search sheet for a person, hospital or deal: slides in from the right over the page (0.4 s), with its own locked back bar */
+      .sheet {
+        position: absolute;
+        inset: 0;
+        z-index: 8;
+        display: flex;
+        flex-direction: column;
+        padding: 12px;
+        background: var(--bg);
+        transform: translateX(105%);
+        visibility: hidden;
+        transition:
+          transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+          visibility 0s linear 0.4s;
+      }
+      .phone.sh .sheet {
+        transform: none;
+        visibility: visible;
+        transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .sheet .lockbtn {
+        flex: none;
+        margin-bottom: 10px;
+      }
+      .sheet h4 {
+        margin: 2px 2px 8px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--head);
+      }
+      .sheet .search {
+        margin-bottom: 10px;
+        flex: none;
+      }
+      .sheet .results {
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+      }
+      .rs {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 58px;
+        padding: 8px 14px;
+        border-top: 1px solid var(--line);
+        cursor: pointer;
+      }
+      .rs:first-child {
+        border-top: 0;
+      }
+      .rs b {
+        display: block;
+        font-size: 16px;
+      }
+      .rs small {
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .rs .ck2 {
+        color: var(--indigo);
+        font-weight: 800;
+      }
+      .rs.is {
+        background: color-mix(in srgb, var(--indigo) 10%, var(--card));
+      }
+      .noneL {
+        padding: 22px 14px;
+        text-align: center;
+        color: var(--muted);
+      }
+      /* leaving with unsaved changes: a question over a blurred, darkened page */
+      .askwrap {
+        position: absolute;
+        inset: 0;
+        z-index: 9;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        background: rgba(6, 11, 20, 0.55);
+        -webkit-backdrop-filter: blur(4px);
+        backdrop-filter: blur(4px);
+        opacity: 0;
+        visibility: hidden;
+        transition:
+          opacity 0.3s,
+          visibility 0s linear 0.3s;
+      }
+      .phone.ask .askwrap {
+        opacity: 1;
+        visibility: visible;
+        transition: opacity 0.3s;
+      }
+      .ask1 {
+        width: 100%;
+        padding: 18px;
+        background: var(--card);
+        border: 1px solid var(--edge);
+        border-radius: 14px;
+      }
+      .ask1 b {
+        font-size: 18px;
+      }
+      .ask1 p {
+        margin: 6px 0 14px;
+        color: var(--muted);
+        font-size: 15px;
+      }
+      .ask1 .row2 {
+        display: flex;
+        gap: 10px;
+      }
+      .ask1 button {
+        flex: 1 1 0;
+        height: 44px;
+        border: 0;
+        border-radius: 999px;
+        color: #fff;
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+      }
+      .ask1 .stay {
+        background: var(--indigo);
+      }
+      .ask1 .leave {
+        background: #dc2626;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .mm,
+        .holdp,
+        .savewrap,
+        .sheet,
+        .askwrap,
+        .okmsg {
+          transition: none;
+        }
+      }
+
+      /* ===== Chatter on the phone (version 1) ===== */
+      .phones {
+        gap: 28px;
+      }
+      .phone.kb .pbody {
+        margin-bottom: 242px;
+      }
+      .kbd {
+        display: none;
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 300px;
+        z-index: 20;
+        background: #d1d5db;
+        color: #6b7280;
+        font-size: 13px;
+        text-align: center;
+        padding-top: 118px;
+        border-top: 1px solid #b6bcc6;
+      }
+      .phone.kb .kbd {
+        display: block;
+      }
+      .post {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 12px 14px;
+        margin-bottom: 10px;
+      }
+      .meta {
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+        font-size: 14px;
+      }
+      .meta b {
+        font-size: 15px;
+      }
+      .when {
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .txt {
+        margin-top: 4px;
+        font-size: 16px;
+        line-height: 1.4;
+        overflow-wrap: anywhere;
+      }
+      .mention {
+        color: var(--indigo);
+        font-weight: 700;
+      }
+      .reply {
+        margin: 10px 0 0 6px;
+        padding: 2px 0 2px 12px;
+        border-left: 3px solid var(--line);
+      }
+      .rbtn {
+        height: 40px;
+        margin-top: 10px;
+        padding: 0 18px;
+        border: 0;
+        border-radius: 999px;
+        background: var(--slate);
+        color: #fff;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+      }
+      .big {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        width: 100%;
+        height: 44px;
+        margin-bottom: 10px;
+        border: 0;
+        border-radius: 999px;
+        background: var(--indigo);
+        color: #fff;
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+      }
+      .compose {
+        display: block;
+        width: 100%;
+        height: 44px;
+        margin-bottom: 10px;
+        padding: 0 16px;
+        border: 1px solid var(--edge);
+        border-radius: 999px;
+        background: var(--field);
+        color: var(--muted);
+        font-size: 16px;
+        text-align: left;
+      }
+      .composebox {
+        display: none;
+        margin-bottom: 10px;
+        padding: 10px;
+        background: var(--card);
+        border: 1px solid var(--indigo);
+        border-radius: 12px;
+      }
+      .composebox textarea,
+      .wtext {
+        display: block;
+        width: 100%;
+        min-height: 96px;
+        padding: 10px 12px;
+        border: 1px solid var(--edge);
+        border-radius: 10px;
+        background: var(--field);
+        color: var(--text);
+        font-family: inherit;
+        font-size: 16px;
+        resize: none;
+      }
+      .phone.cmp .compose {
+        display: none;
+      }
+      .phone.cmp .composebox {
+        display: block;
+      }
+      .row2 {
+        display: flex;
+        gap: 10px;
+        margin-top: 10px;
+      }
+      .row2 button {
+        flex: 1 1 0;
+        height: 44px;
+        border: 0;
+        border-radius: 999px;
+        color: #fff;
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+      }
+      .row2 .c {
+        background: var(--slate);
+      }
+      .row2 .p {
+        background: var(--indigo);
+      }
+      /* B: the composer locked at the bottom of the screen */
+      .dock {
+        position: sticky;
+        bottom: -16px;
+        z-index: 6;
+        margin: 0 -12px -16px;
+        padding: 8px 12px 10px;
+        background: var(--bg);
+        box-shadow: 0 -1px 0 var(--line);
+      }
+      .dock .chip {
+        display: none;
+        margin-bottom: 6px;
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .phone.rep .dock .chip {
+        display: block;
+      }
+      .dockrow {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+      .dockrow input {
+        flex: 1;
+        min-width: 0;
+        height: 44px;
+        padding: 0 16px;
+        border: 1px solid var(--edge);
+        border-radius: 999px;
+        background: var(--field);
+        color: var(--text);
+        font-size: 16px;
+      }
+      .send {
+        flex: none;
+        width: 44px;
+        height: 44px;
+        border: 0;
+        border-radius: 50%;
+        background: var(--indigo);
+        color: #fff;
+        font-size: 20px;
+        font-weight: 800;
+        cursor: pointer;
+      }
+      /* C: the writing page: the original post (a reply only), the box, the people list, a locked Cancel / Post bar */
+      .sheet .quote {
+        flex: none;
+        margin-bottom: 8px;
+        padding: 8px 12px;
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        font-size: 14px;
+        color: var(--muted);
+        display: none;
+      }
+      .phone.isreply .sheet .quote {
+        display: block;
+      }
+      .sheet .wtext {
+        flex: 1;
+        min-height: 60px;
+      }
+      .people {
+        flex: none;
+        margin-top: 8px;
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        overflow: hidden;
+        display: none;
+      }
+      .phone.ment .people {
+        display: block;
+      }
+      .person {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        min-height: 54px;
+        padding: 4px 14px;
+        border-top: 1px solid var(--line);
+        cursor: pointer;
+      }
+      .person:first-child {
+        border-top: 0;
+      }
+      .person small {
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .sheet .row2 {
+        flex: none;
+        margin-top: 10px;
+      }
+      .go.live {
+        border-color: var(--indigo);
+      }
+      .go .sub {
+        font-weight: 400;
+        color: var(--muted);
+        font-size: 13px;
+        margin-left: 8px;
+      }
+
+      /* ===== MyCase Bookings on the phone (version 1) ===== */
+      .phones {
+        gap: 32px;
+      }
+      :root,
+      [data-theme="light"] {
+        --bar-primary: #2563eb;
+        --bar-revision: #ea580c;
+        --bar-cmft: #0d9488;
+        --grid-line: rgba(93, 107, 133, 0.3);
+      }
+      [data-theme="dark"] {
+        --bar-primary: #2f80ed;
+        --bar-revision: #fb923c;
+        --bar-cmft: #14b8a6;
+        --grid-line: rgba(139, 155, 176, 0.25);
+      }
+      .go.live {
+        border-color: var(--indigo);
+      }
+      .go .sub {
+        font-weight: 400;
+        color: var(--muted);
+        font-size: 13px;
+        margin-left: 8px;
+      }
+      .window {
+        margin: 0 2px 8px;
+        color: var(--muted);
+        font-size: 14px;
+      }
+      .legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px 14px;
+        margin: 0 2px 12px;
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .legend i {
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        margin-right: 5px;
+        border-radius: 3px;
+        vertical-align: -1px;
+      }
+      .legend .p {
+        background: var(--bar-primary);
+      }
+      .legend .r {
+        background: var(--bar-revision);
+      }
+      .legend .c {
+        background: var(--bar-cmft);
+      }
+      .type {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 12px 14px 8px;
+        margin-bottom: 12px;
+      }
+      .type h3 {
+        margin: 0;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--head);
+      }
+      .big1 {
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+        margin-top: 2px;
+      }
+      .big1 b {
+        font-size: 30px;
+        font-weight: 800;
+      }
+      .big1 span {
+        color: var(--muted);
+        font-size: 14px;
+      }
+      .split {
+        color: var(--muted);
+        font-size: 14px;
+        margin: 2px 0 8px;
+      }
+      .split b {
+        color: var(--text);
+      }
+      .hosp {
+        margin: 6px 0 4px;
+      }
+      .chart svg {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+      .chart .gl {
+        stroke: var(--grid-line);
+        stroke-width: 1;
+      }
+      .chart text {
+        fill: var(--muted);
+        font-size: 10px;
+      }
+      .chart text.v {
+        fill: var(--text);
+        font-size: 11px;
+        font-weight: 700;
+      }
+      .nomsg {
+        padding: 22px 14px;
+        text-align: center;
+        color: var(--muted);
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+      }
+    </style>
+  </head>
+  <body data-theme="light">
+    <div class="sfnav">
+      <span class="app"><b>PIPE</b>LINE</span>
+      <span class="tab on">Pipeline</span>
+      <span class="tab">Opportunities &amp; Risks</span>
+      <span class="sp"></span>
+      <button type="button" class="btn" id="fullbtn">Full screen</button>
+    </div>
+
+    <details class="about" open>
+      <summary>ABOUT THIS MOCKUP</summary>
+      <p>
+        <b>Version 1, invented data only.</b>
+        <b>MyCase Bookings on the phone, as a screen of its own.</b> It shows
+        the same thing as the desktop panel:
+        <b>how many surgeries the deal's surgeon is booking</b>, a simple bar
+        chart for each type of surgery (Hip, Knee, Shoulder, CMFT), month by
+        month. Graphs only, no editing.
+      </p>
+      <ul>
+        <li>
+          <b>Phone 1, the way in:</b> a <b>MyCase Bookings</b> row on the deal
+          screen next to Chatter and Campaigns, saying how many cases in the
+          last 12 months. Tapping it slides the screen in (0.4 s), with its own
+          “‹ Back to deal” bar.
+        </li>
+        <li>
+          <b>Phone 2, the screen:</b> one card for each type the surgeon does.
+          Each has the number of cases in the last 12 months in big figures,
+          Primary and Revision under it, and a bar chart: the 12 whole months
+          and this month so far (lighter, not in the total, marked *), with the
+          number above each bar, primary under revision. CMFT is never split.
+        </li>
+        <li>
+          <b>A surgeon with several hospitals</b> for a type (Hip here) gets a
+          <b>dropdown above the chart</b>: “All hospitals” first, then each
+          hospital with its cases. Choosing one redraws the chart and the
+          figures; the desktop does the same with a list. With one hospital
+          there is no dropdown and the card says “all at Mater Hospital”.
+          <b>Try the Hip dropdown.</b>
+        </li>
+        <li>
+          <b>Phone 3:</b> the two things a rep can be told instead of charts: no
+          Primary HCP on the deal, or no surgeries with usage items in the last
+          12 months.
+        </li>
+      </ul>
+      <p class="muted">
+        Not shown: how the cases are counted (a surgery that has happened, has
+        at least one usage item, is not a demo or non-billable one; revision is
+        Type A01) since it is the desktop's rule, unchanged, and the numbers are
+        read with the existing Apex (<code>getBookings</code>), no new server
+        code. Charts are drawn by the same code as the desktop's, sized to the
+        phone. Colours are the desktop's (primary blue, revision orange, CMFT
+        teal). Theme for dark.
+      </p>
+    </details>
+
+    <div class="tools">
+      <span class="lab" style="margin-left: 0">Theme</span>
+      <button type="button" class="pill on" data-theme-btn="light">
+        Light
+      </button>
+      <button type="button" class="pill" data-theme-btn="dark">Dark</button>
+    </div>
+    <div class="mocknote" id="note">
+      Mockup note: this line says what a press would do in Salesforce.
+    </div>
+    <div class="phones" id="phones"></div>
+
+    <script>
+      var START = "2025-11-01",
+        MON = [
+          "Jan",
+          "Feb",
+          "Mar",
+          "Apr",
+          "May",
+          "Jun",
+          "Jul",
+          "Aug",
+          "Sep",
+          "Oct",
+          "Nov",
+          "Dec"
+        ];
+      var TYPES = [
+        {
+          name: "Hip",
+          split: true,
+          rows: [
+            {
+              id: "m",
+              name: "Mater Hospital",
+              primary: [2, 2, 1, 3, 1, 2, 1, 1, 2, 1, 3, 2],
+              revision: [0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0],
+              partial: [1, 0]
+            },
+            {
+              id: "e",
+              name: "Epworth Richmond",
+              primary: [1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1],
+              revision: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
+              partial: [0, 1]
+            }
+          ]
+        },
+        {
+          name: "Knee",
+          split: true,
+          rows: [
+            {
+              id: "m",
+              name: "Mater Hospital",
+              primary: [1, 0, 1, 1, 0, 1, 2, 0, 1, 1, 0, 1],
+              revision: [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
+              partial: [0, 0]
+            }
+          ]
+        },
+        {
+          name: "Shoulder",
+          split: true,
+          rows: [
+            {
+              id: "e",
+              name: "Epworth Richmond",
+              primary: [0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 1],
+              revision: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+              partial: [1, 0]
+            }
+          ]
+        },
+        {
+          name: "CMFT",
+          split: false,
+          rows: [
+            {
+              id: "m",
+              name: "Mater Hospital",
+              primary: [0, 1, 0, 0, 2, 0, 1, 0, 0, 1, 0, 0],
+              revision: [],
+              partial: [0, 0]
+            }
+          ]
+        }
+      ];
+      function sum(a) {
+        return (a || []).reduce(function (x, y) {
+          return x + y;
+        }, 0);
+      }
+      function add(a, b) {
+        return a.map(function (v, i) {
+          return v + (b[i] || 0);
+        });
+      }
+      TYPES.forEach(function (t) {
+        t.primary = t.rows
+          .map(function (r) {
+            return r.primary;
+          })
+          .reduce(add);
+        t.revision = t.split
+          ? t.rows
+              .map(function (r) {
+                return r.revision;
+              })
+              .reduce(add)
+          : [];
+        t.partial = t.rows
+          .map(function (r) {
+            return r.partial;
+          })
+          .reduce(add);
+      });
+      function labels() {
+        var m = 10;
+        var out = [];
+        for (var i = 0; i < 12; i++) out.push(MON[(m + i) % 12]);
+        out.push(MON[(m + 12) % 12] + "*");
+        return out;
+      }
+      function niceStep(max) {
+        var s = [1, 2, 5, 10, 20, 50].filter(function (x) {
+          return max / x <= 4;
+        })[0];
+        return s || 50;
+      }
+      function chart(g) {
+        var W = 330,
+          H = 190,
+          L = 24,
+          T = 22,
+          B = 26,
+          R = 6;
+        var lab = labels(),
+          prim = g.primary.concat([g.partial[0] || 0]),
+          rev = g.split ? g.revision.concat([g.partial[1] || 0]) : null;
+        var tot = prim.map(function (p, i) {
+          return p + (rev ? rev[i] : 0);
+        });
+        var max = Math.max.apply(null, tot),
+          step = niceStep(max),
+          top = Math.max(4, (Math.floor(max / step) + 1) * step),
+          ph = H - T - B,
+          bw = (W - L - R) / 13;
+        function y(v) {
+          return T + ph - (v / top) * ph;
+        }
+        var s = '<svg viewBox="0 0 ' + W + " " + H + '" role="img">';
+        for (var gv = 0; gv <= top; gv += step)
+          s +=
+            '<line class="gl" x1="' +
+            L +
+            '" x2="' +
+            (W - R) +
+            '" y1="' +
+            y(gv) +
+            '" y2="' +
+            y(gv) +
+            '"></line><text x="' +
+            (L - 5) +
+            '" y="' +
+            (y(gv) + 3) +
+            '" text-anchor="end">' +
+            gv +
+            "</text>";
+        lab.forEach(function (l, i) {
+          var w = bw * 0.66,
+            x = L + bw * i + (bw - w) / 2,
+            at = y(0),
+            op = i === 12 ? 0.45 : 1;
+          function seg(c, kind) {
+            if (c <= 0) return;
+            var h = (c / top) * ph;
+            at -= h;
+            s +=
+              '<rect x="' +
+              x +
+              '" y="' +
+              at +
+              '" width="' +
+              w +
+              '" height="' +
+              h +
+              '" rx="2" fill="var(--bar-' +
+              kind +
+              ')" opacity="' +
+              op +
+              '"></rect>';
+          }
+          seg(prim[i], g.split ? "primary" : "cmft");
+          if (rev) seg(rev[i], "revision");
+          if (tot[i] > 0)
+            s +=
+              '<text class="v" x="' +
+              (x + w / 2) +
+              '" y="' +
+              (at - 4) +
+              '" text-anchor="middle" opacity="' +
+              op +
+              '">' +
+              tot[i] +
+              "</text>";
+          s +=
+            '<text x="' +
+            (x + w / 2) +
+            '" y="' +
+            (H - 8) +
+            '" text-anchor="middle">' +
+            l +
+            "</text>";
+        });
+        return s + "</svg>";
+      }
+      var SEL = {};
+      function view(t) {
+        var many = t.rows.length > 1,
+          row = many
+            ? t.rows.filter(function (r) {
+                return r.id === SEL[t.name];
+              })[0]
+            : t.rows[0],
+          shown = row || t;
+        var p = sum(shown.primary),
+          r = t.split ? sum(shown.revision) : 0;
+        return {
+          many: many,
+          row: row,
+          g: {
+            split: t.split,
+            primary: shown.primary,
+            revision: shown.revision,
+            partial: shown.partial
+          },
+          booked: p + r,
+          p: p,
+          r: r
+        };
+      }
+      function card(t) {
+        var v = view(t),
+          opts = "";
+        if (v.many) {
+          opts =
+            '<select class="in hosp" data-type="' +
+            t.name +
+            '"><option value="all">All hospitals · ' +
+            (sum(t.primary) + (t.split ? sum(t.revision) : 0)) +
+            " cases</option>" +
+            t.rows
+              .map(function (r) {
+                return (
+                  '<option value="' +
+                  r.id +
+                  '"' +
+                  (SEL[t.name] === r.id ? " selected" : "") +
+                  ">" +
+                  r.name +
+                  " · " +
+                  (sum(r.primary) + (t.split ? sum(r.revision) : 0)) +
+                  " cases</option>"
+                );
+              })
+              .join("") +
+            "</select>";
+        }
+        var where = !v.many
+          ? " · all at " + t.rows[0].name
+          : v.row
+            ? " · " + v.row.name + " only"
+            : "";
+        return (
+          '<div class="type" data-type="' +
+          t.name +
+          '"><h3>' +
+          t.name +
+          '</h3><div class="big1"><b>' +
+          v.booked +
+          "</b><span>cases in the last 12 months" +
+          where +
+          "</span></div>" +
+          (t.split
+            ? '<div class="split">Primary <b>' +
+              v.p +
+              "</b> · Revision <b>" +
+              v.r +
+              "</b></div>"
+            : '<div class="split">All one type: no primary or revision split</div>') +
+          opts +
+          '<div class="chart">' +
+          chart(v.g) +
+          "</div></div>"
+        );
+      }
+      function legend() {
+        return '<p class="window">Surgeries from 1 Nov 2025 to 31 Oct 2026 (12 whole months), and this month so far.</p><div class="legend"><span><i class="p"></i>Primary</span><span><i class="r"></i>Revision</span><span><i class="c"></i>CMFT</span><span>* this month so far (lighter, not in the total)</span></div>';
+      }
+      function frame(i, inner) {
+        return (
+          '<div class="phone" data-i="' +
+          i +
+          '"><div class="sfstatus">3:14</div><div class="sfbar"><span class="ham"></span><span>Pipeline Mobile</span><span class="sp"></span></div><div class="pbody"><div class="scroll">' +
+          inner +
+          '</div></div><div class="sftabs"><span><i></i>Home</span><span class="on"><i></i>Pipeline</span><span><i></i>Accounts</span><span><i></i>More</span></div></div>'
+        );
+      }
+      function back(l) {
+        return (
+          '<div class="lock"><button type="button" class="lockbtn" data-act="back"><span>‹</span> ' +
+          l +
+          "</button></div>"
+        );
+      }
+      function head() {
+        return '<div class="dh"><div class="nm">MyCase Bookings</div></div><div class="dsub">Dr Chris Lee · Opportunity · Hip</div>';
+      }
+      function total() {
+        return TYPES.reduce(function (a, t) {
+          return a + sum(t.primary) + (t.split ? sum(t.revision) : 0);
+        }, 0);
+      }
+      function draw() {
+        document.body.setAttribute("data-theme", S.theme);
+        var P = [
+          [
+            "1. The way in",
+            "A row on the deal screen, like Chatter and Campaigns.",
+            frame(
+              0,
+              back("Back to My Pipeline") +
+                '<div class="dh"><div class="nm">Dr Chris Lee</div></div><div class="dsub">Opportunity · Hip</div><div class="grid2"><div class="tile"><div class="l">Owner</div><div class="v">Lewis Dawson</div></div><div class="tile"><div class="l">Status</div><div class="v"><span class="stp st-open">Open</span></div></div></div><div class="card"><h3>The deal</h3><div class="frow"><div class="fl">Primary HCP</div><div class="fv">Dr Chris Lee</div></div><div class="frow"><div class="fl">Healthcare facility</div><div class="fv">Mater Hospital</div></div></div><div class="go live"><span>Chatter</span><span class="sub">4 posts · last 2 d ago</span><span class="sp"></span><i></i></div><div class="go live"><span>Campaigns</span><span class="sub">In 2 campaigns</span><span class="sp"></span><i></i></div><div class="go live" data-act="open"><span>MyCase Bookings</span><span class="sub">' +
+                total() +
+                ' cases in 12 months</span><span class="sp"></span><i></i></div><div class="go" style="opacity:.55"><span>Surgeon Usages</span><span class="sp"></span><span class="muted" style="font-size:12px">Soon</span></div>'
+            )
+          ],
+          [
+            "2. The screen",
+            "A card for each type of surgery. Try the Hip dropdown.",
+            frame(
+              1,
+              back("Back to deal") +
+                head() +
+                legend() +
+                TYPES.map(card).join("")
+            )
+          ],
+          [
+            "3. When there is nothing to show",
+            "No Primary HCP on the deal, or no surgeries in the last 12 months.",
+            frame(
+              2,
+              back("Back to deal") +
+                head() +
+                '<div class="nomsg" style="margin-bottom:12px">This deal has no Primary HCP, so there are no bookings to show.</div><div class="nomsg">This surgeon has no surgeries with usage items in the last 12 months.</div>'
+            )
+          ]
+        ];
+        document.getElementById("phones").innerHTML = P.map(function (x) {
+          return (
+            '<div class="opt"><h2>' +
+            x[0] +
+            "</h2><p>" +
+            x[1] +
+            "</p>" +
+            x[2] +
+            "</div>"
+          );
+        }).join("");
+        Array.prototype.forEach.call(
+          document.querySelectorAll("[data-theme-btn]"),
+          function (x) {
+            x.classList.toggle("on", x.dataset.themeBtn === S.theme);
+          }
+        );
+      }
+      function note(t) {
+        document.getElementById("note").textContent = "Mockup note: " + t;
+      }
+      var S = { theme: "light" };
+      document.addEventListener("click", function (e) {
+        var th = e.target.closest("[data-theme-btn]");
+        if (th) {
+          S.theme = th.dataset.themeBtn;
+          draw();
+          return;
+        }
+        var a = e.target.closest("[data-act]");
+        if (!a) return;
+        if (a.dataset.act === "open")
+          note(
+            "this slides the MyCase Bookings screen in from the right (phone 2)."
+          );
+        if (a.dataset.act === "back")
+          note("this goes back (the screen slides off to the right).");
+      });
+      document.addEventListener("change", function (e) {
+        var sel = e.target.closest("select[data-type]");
+        if (!sel) return;
+        var name = sel.dataset.type,
+          t = TYPES.filter(function (x) {
+            return x.name === name;
+          })[0],
+          card1 = sel.closest(".type");
+        SEL[name] = sel.value === "all" ? undefined : sel.value;
+        var tmp = document.createElement("div");
+        tmp.innerHTML = card(t);
+        card1.replaceWith(tmp.firstChild);
+      });
+      document.getElementById("fullbtn").addEventListener("click", function () {
+        note(
+          "in Salesforce this opens in a new full-screen tab without the Salesforce navigation."
+        );
+      });
+      if (location.hash.indexOf("dark") > -1) S.theme = "dark";
+      draw();
+    </script>
+  </body>
+</html>

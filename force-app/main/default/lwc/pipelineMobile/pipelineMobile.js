@@ -33,7 +33,7 @@ import {
 } from "c/pipelineMobileModel";
 import { formatMoney, suggestYear, quarterIsPast } from "c/pipelineFormat";
 
-const MOBILE_VERSION = "0.19"; // shown at the foot of the screen; raised with each change that goes out
+const MOBILE_VERSION = "0.26"; // shown at the foot of the screen; raised with each change that goes out
 
 const SLIDE_OUT_MS = 450; // a little longer than the slide itself (0.4 s in the style sheet)
 const LOOKUP_MIN = 2; // letters before a search is made, as on the desktop
@@ -87,6 +87,14 @@ export default class PipelineMobile extends LightningElement {
 
   version = MOBILE_VERSION;
   openId = ""; // the deal being looked at; blank when the list is showing
+  chatOn = false; // the Chatter screen is slid in over the deal
+  chatSummary = ""; // "4 posts · last 2 d ago", told by the Chatter screen
+  bookingsOn = false; // the MyCase Bookings screen is slid in over the deal
+  bookingsSummary = ""; // "54 cases in 12 months", told by the Bookings screen
+  bookingsKey = 0; // goes up when the deal is saved, so the bookings are read again
+  campaignsOn = false; // the Campaigns screen is slid in over the deal
+  campaignsNow = null; // how many campaigns the deal is in after a change made on the Campaigns screen; null until then
+  campaignsDirty = false;
   dealOn = false; // the deal screen is slid in (it stays on the page a moment after sliding out)
   stagesOpen = false; // the list of stages under the stage row
   draft = {}; // the changes not yet saved, by field (nothing is saved until Save is pressed)
@@ -174,20 +182,30 @@ export default class PipelineMobile extends LightningElement {
     });
   }
 
+  /** The labels of every Yes / No slider on the phone: the four on the deal form and the one on each campaign. */
+  get measureLabels() {
+    return ["On hold", "Rep priority", "State priority", "MyMo", "In campaign"];
+  }
   /**
-   * Gives the four Yes / No sliders one label width, the width of the longest label (measured from hidden copies set in the slider's own
-   * label type, plus the slider's 34 px of padding round its label), so the No and Yes are the same size on every one.
+   * Gives every Yes / No slider on the phone one label width, the width of the longest label (measured from hidden copies set in the
+   * slider's own label type, plus the slider's 34 px of padding round its label), so the No and Yes are the same size on the deal form
+   * and on the Campaigns screen (Robert, 2026-11-07). Set on the form's block of sliders and on the Campaigns screen, and so inherited by
+   * the sliders inside; not on the whole screen, which would also widen the Status slider.
    */
   shareLabelWidth() {
-    const box = this.template.querySelector(".flagbox");
-    if (!box) return;
     let widest = 0;
-    box.querySelectorAll(".lblmeasure").forEach((s) => {
+    this.template.querySelectorAll(".lblmeasure").forEach((s) => {
       widest = Math.max(widest, s.getBoundingClientRect().width);
     });
     const value = `${Math.ceil(widest) + 34}px`;
-    if (box.style.getPropertyValue("--seg-label-width") !== value)
-      box.style.setProperty("--seg-label-width", value);
+    const targets = [
+      ...this.template.querySelectorAll(".flagbox"),
+      ...this.template.querySelectorAll("c-pipeline-mobile-campaigns")
+    ];
+    targets.forEach((el) => {
+      if (el.style.getPropertyValue("--seg-label-width") !== value)
+        el.style.setProperty("--seg-label-width", value);
+    });
   }
 
   /**
@@ -341,7 +359,11 @@ export default class PipelineMobile extends LightningElement {
   resetOuterScroll() {
     // not while a text box is still being typed in (the keyboard is up and the phone is showing the box)
     const on = this.template.activeElement;
-    if (on && /^(INPUT|TEXTAREA|SELECT)$/.test(on.tagName)) return;
+    if (
+      on &&
+      /^(INPUT|TEXTAREA|SELECT|C-PIPELINE-MOBILE-CHATTER)$/.test(on.tagName)
+    )
+      return;
     let node = this.template.host;
     for (let i = 0; i < 25 && node; i++) {
       const root = node.getRootNode ? node.getRootNode() : null;
@@ -415,15 +437,7 @@ export default class PipelineMobile extends LightningElement {
   get goRows() {
     const d = this.openDeal;
     if (!d) return [];
-    return [
-      { key: "usages", label: "Surgeon Usages" },
-      { key: "bookings", label: "MyCase Bookings" },
-      {
-        key: "campaigns",
-        label: "Campaigns",
-        badge: d.campaignCount > 0 ? d.campaignCount : ""
-      }
-    ];
+    return [{ key: "usages", label: "Surgeon Usages" }];
   }
   get stageNow() {
     return (this.liveDeal && this.liveDeal.stage) || "–";
@@ -473,6 +487,13 @@ export default class PipelineMobile extends LightningElement {
     clearTimeout(this.leaveTimer);
     this.stagesOpen = false;
     this.clearDraft();
+    this.chatOn = false;
+    this.chatSummary = "";
+    this.campaignsOn = false;
+    this.campaignsNow = null;
+    this.campaignsDirty = false;
+    this.bookingsOn = false;
+    this.bookingsSummary = "";
     this.openId = event.currentTarget.dataset.id;
     this.dealOn = true;
     this.scrollDealTo(0);
@@ -491,6 +512,9 @@ export default class PipelineMobile extends LightningElement {
   /** The deal slides off to the right; it is taken off the page once it has gone (its words stay on it while it slides). */
   leaveDeal() {
     this.confirming = false;
+    this.chatOn = false;
+    this.campaignsOn = false;
+    this.bookingsOn = false;
     this.dealOn = false;
     clearTimeout(this.leaveTimer);
     // eslint-disable-next-line @lwc/lwc/no-async-operation
@@ -500,6 +524,61 @@ export default class PipelineMobile extends LightningElement {
       this.stagesOpen = false;
       this.openId = "";
     }, SLIDE_OUT_MS);
+  }
+  /* ----- Chatter: its own screen, slid in over the deal ----- */
+  get chatLabel() {
+    const h = this.header;
+    return [h.name, h.sub].filter(Boolean).join(" · ");
+  }
+  handleChatOpen() {
+    this.chatOn = true;
+  }
+  handleChatClose() {
+    this.chatOn = false;
+  }
+  handleChatFeed(event) {
+    this.chatSummary = event.detail;
+  }
+  /** A post was made: read the deals again, so the deal's own "Last posted" figure follows (as the desktop does). */
+  handleChatPosted() {
+    this.fetchDeals()
+      .then((res) => this.takeDeals(res))
+      .catch(() => {});
+  }
+  /* ----- Campaigns: its own screen, slid in over the deal, holding the Campaigns list that already works on the desktop ----- */
+  get campaignsSummary() {
+    const n =
+      this.campaignsNow !== null
+        ? this.campaignsNow
+        : (this.openDeal && this.openDeal.campaignCount) || 0;
+    if (n === 0) return "In no campaign";
+    return n === 1 ? "In 1 campaign" : `In ${n} campaigns`;
+  }
+  handleCampaignsOpen() {
+    this.campaignsOn = true;
+  }
+  handleCampaignsChanged(event) {
+    this.campaignsNow = event.detail;
+    this.campaignsDirty = true;
+  }
+  /** Back from the Campaigns screen; if the deal was put in or out of a campaign the deals are read again, so its card's star follows. */
+  handleCampaignsClose() {
+    this.campaignsOn = false;
+    if (!this.campaignsDirty) return;
+    this.campaignsDirty = false;
+    this.fetchDeals()
+      .then((res) => this.takeDeals(res))
+      .catch(() => {});
+  }
+  /* ----- MyCase Bookings: its own screen, slid in over the deal ----- */
+  handleBookingsOpen() {
+    this.bookingsOn = true;
+  }
+  handleBookingsClose() {
+    this.bookingsOn = false;
+  }
+  handleBookingsSummary(event) {
+    this.bookingsSummary = event.detail;
   }
   handleStay() {
     this.confirming = false;
@@ -604,9 +683,14 @@ export default class PipelineMobile extends LightningElement {
   handleText(event) {
     this.setDraft(event.target.dataset.api, event.target.value);
   }
+  /** A number box. A field Salesforce holds as text (the units) is sent as the text typed; a number field is sent as a number. */
   handleNumber(event) {
+    const api = event.target.dataset.api;
     const v = event.target.value;
-    this.setDraft(event.target.dataset.api, v === "" ? "" : Number(v));
+    const info = this.objectInfo && this.objectInfo.data;
+    const field = info && info.fields[api];
+    const asText = !!field && field.dataType === "String";
+    this.setDraft(api, v === "" ? "" : asText ? String(v) : Number(v));
   }
   handleFlag(event) {
     this.setDraft(
@@ -639,6 +723,7 @@ export default class PipelineMobile extends LightningElement {
         this.draft = {};
         this.draftNames = {};
         this.savedMsg = true;
+        this.bookingsKey += 1; // the Primary HCP may have changed, so the bookings are read again
         getRecordNotifyChange([{ recordId: id }]);
         // read the deals again, quietly, so the list and the summary show what was saved
         return this.fetchDeals().then((res) => this.takeDeals(res));

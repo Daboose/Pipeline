@@ -4,6 +4,13 @@
    desktop is not around this page. One layer per rule; phone sizes: 16 px search text (or the iPhone zooms), 37 px sliders, 44 px search. */
 :host {
   display: block;
+  --ok: #0f9d74; /* the Campaigns list inside takes these from here */
+  --warn: #c2570c;
+  --bad: #dc2626;
+  --bar-primary: #2563eb; /* the bookings charts: the desktop's colours */
+  --bar-revision: #ea580c;
+  --bar-cmft: #0d9488;
+  --grid-line: rgba(93, 107, 133, 0.3);
   --seg-good: #16a34a;
   --seg-warn: #f59e0b;
   --panel: #ffffff;
@@ -987,6 +994,12 @@ select.in {
 
 /* the four Yes / No sliders share one label width, so every No and Yes is the same size (Robert, 2026-11-07). The width is measured: these
    hidden copies of the labels are set in the slider's own label type, the widest one sets --seg-label-width (see renderedCallback). */
+.measures {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
 .lblmeasure {
   position: absolute;
   visibility: hidden;
@@ -1087,4 +1100,39 @@ select.in {
   .dealpage.on {
     transition: none;
   }
+}
+
+/* the Chatter row on the deal screen: a button that looks like the rows for the other screens, in the live colour, with how many posts */
+button.go {
+  width: 100%;
+  box-sizing: border-box;
+  font-family: inherit;
+  font-size: 16px;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.go.live {
+  border-color: var(--indigo);
+  transition:
+    background 0.3s,
+    border-color 0.4s;
+}
+.go.live:active {
+  background: #dde2ec;
+  transition: none;
+}
+.gsub {
+  font-weight: 400;
+  color: var(--muted);
+  font-size: 13px;
+}
+.gchev {
+  flex: none;
+  width: 9px;
+  height: 9px;
+  border-right: 2.5px solid var(--muted);
+  border-top: 2.5px solid var(--muted);
+  transform: rotate(45deg);
 }

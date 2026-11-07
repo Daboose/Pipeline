@@ -1,0 +1,114 @@
+<template>
+  <div class={pageCls}>
+    <div class="ctl bar">
+      <button type="button" class="backbtn" onclick={handleBack}>
+        <span class="bk">&#8249;</span> Back to deal
+      </button>
+    </div>
+    <div class="pad">
+      <div class="dh"><h1 class="dname">MyCase Bookings</h1></div>
+      <p class="dsub">{dealLabel}</p>
+
+      <p class="note" lwc:if={loading}>Reading the bookings…</p>
+      <p class="err" lwc:if={error}>{error}</p>
+      <p class="nomsg" lwc:if={noSurgeon}>
+        This deal has no Primary HCP, so there are no bookings to show.
+      </p>
+      <p class="nomsg" lwc:if={noBookings}>
+        This surgeon has no surgeries with usage items in the last 12 months.
+      </p>
+
+      <template lwc:if={showCharts}>
+        <p class="window">{windowText}</p>
+        <div class="legend">
+          <span lwc:if={anySplit}><i class="sw primary"></i>Primary</span>
+          <span lwc:if={anySplit}><i class="sw revision"></i>Revision</span>
+          <span lwc:if={anyCmft}><i class="sw cmft"></i>CMFT</span>
+          <span>* this month so far (lighter, not in the total)</span>
+        </div>
+
+        <template for:each={sections} for:item="s">
+          <section class="type" key={s.key}>
+            <h3>{s.name}</h3>
+            <div class="big1">
+              <b>{s.booked}</b>
+              <span>cases in the last 12 months</span>
+              <span lwc:if={s.where}>&middot; {s.where}</span>
+            </div>
+            <div class="split" lwc:if={s.split}>
+              <span>Primary&nbsp;</span><b>{s.primaryTotal}</b
+              ><span>&nbsp;&middot; Revision&nbsp;</span
+              ><b>{s.revisionTotal}</b>
+            </div>
+            <div class="split" lwc:else>
+              All one type: no primary or revision split
+            </div>
+            <select
+              lwc:if={s.many}
+              class="hosp"
+              data-type={s.key}
+              aria-label="Hospital"
+              onchange={handleHospital}
+            >
+              <template for:each={s.options} for:item="o">
+                <option key={o.value} value={o.value} selected={o.selected}>
+                  {o.label}
+                </option>
+              </template>
+            </select>
+            <div class="chart">
+              <svg
+                viewBox={s.chart.viewBox}
+                role="img"
+                aria-label={s.chartLabel}
+              >
+                <template for:each={s.chart.grid} for:item="g">
+                  <g key={g.key}>
+                    <line
+                      class="gl"
+                      x1={g.x1}
+                      x2={g.x2}
+                      y1={g.y}
+                      y2={g.y}
+                    ></line>
+                    <text x={g.tx} y={g.ty} text-anchor="end">{g.label}</text>
+                  </g>
+                </template>
+                <template for:each={s.chart.bars} for:item="b">
+                  <g key={b.key}>
+                    <template for:each={b.segments} for:item="seg">
+                      <rect
+                        key={seg.key}
+                        x={seg.x}
+                        y={seg.y}
+                        width={seg.w}
+                        height={seg.h}
+                        rx="3"
+                        fill={seg.fill}
+                        opacity={b.opacity}
+                      >
+                        <title>{seg.title}</title>
+                      </rect>
+                    </template>
+                    <text
+                      class="v"
+                      x={b.tx}
+                      y={b.ty}
+                      text-anchor="middle"
+                      opacity={b.opacity}
+                    >
+                      {b.total}
+                    </text>
+                    <text class="mon" x={b.lx} y={b.ly} text-anchor="middle">
+                      {b.label}
+                    </text>
+                  </g>
+                </template>
+              </svg>
+            </div>
+          </section>
+        </template>
+      </template>
+    </div>
+  </div>
+</template>

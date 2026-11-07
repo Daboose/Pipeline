@@ -3,6 +3,8 @@ import PipelineMobile from "c/pipelineMobile";
 import getContext from "@salesforce/apex/PipelineController.getContext";
 import getDeals from "@salesforce/apex/PipelineController.getDeals";
 import { registerLdsTestWireAdapter } from "@salesforce/sfdx-lwc-jest";
+import getFeed from "@salesforce/apex/PipelineChatterController.getFeed";
+import getBookings from "@salesforce/apex/PipelineBookingsController.getBookings";
 import searchLookup from "@salesforce/apex/PipelineLookupController.search";
 import searchNear from "@salesforce/apex/PipelineLookupController.searchNear";
 import { getRecord, updateRecord } from "lightning/uiRecordApi";
@@ -24,6 +26,31 @@ jest.mock(
 );
 
 jest.mock(
+  "@salesforce/apex/PipelineChatterController.getFeed",
+  () => ({ default: jest.fn() }),
+  { virtual: true }
+);
+jest.mock(
+  "@salesforce/apex/PipelineChatterController.post",
+  () => ({ default: jest.fn() }),
+  { virtual: true }
+);
+jest.mock(
+  "@salesforce/apex/PipelineChatterController.reply",
+  () => ({ default: jest.fn() }),
+  { virtual: true }
+);
+jest.mock(
+  "@salesforce/apex/PipelineChatterController.searchPeople",
+  () => ({ default: jest.fn() }),
+  { virtual: true }
+);
+jest.mock(
+  "@salesforce/apex/PipelineBookingsController.getBookings",
+  () => ({ default: jest.fn() }),
+  { virtual: true }
+);
+jest.mock(
   "@salesforce/apex/PipelineLookupController.searchNear",
   () => ({ default: jest.fn() }),
   { virtual: true }
@@ -31,6 +58,16 @@ jest.mock(
 jest.mock(
   "@salesforce/apex/PipelineLookupController.search",
   () => ({ default: jest.fn() }),
+  { virtual: true }
+);
+
+// the Campaigns list has its own tests; here it is an empty stand-in
+jest.mock(
+  "c/pipelineDealCampaigns",
+  () => {
+    const { LightningElement } = require("lwc");
+    return { __esModule: true, default: class extends LightningElement {} };
+  },
   { virtual: true }
 );
 
@@ -69,7 +106,33 @@ const DEALS = [
   })
 ];
 
+const FEED = [
+  {
+    id: "0D5A",
+    who: "Lewis Dawson",
+    posted: new Date(Date.now() - 2 * 86400000).toISOString(),
+    text: "Visited Mater.",
+    replies: []
+  }
+];
 const make = async () => {
+  getFeed.mockResolvedValue(FEED);
+  getBookings.mockResolvedValue({
+    surgeonId: "001S",
+    windowStart: "2025-11-01",
+    today: "2026-11-07",
+    types: [
+      {
+        name: "Hip",
+        split: true,
+        booked: 5,
+        primary: [1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0],
+        revision: [],
+        partial: [0, 0],
+        rows: []
+      }
+    ]
+  });
   getContext.mockResolvedValue({
     stageOrder: ["Plan", "Action", "Conversion"]
   });
@@ -200,7 +263,7 @@ describe("c-pipeline-mobile", () => {
         true
       ); // the deal has slid in over the list
       expect(root(el).querySelectorAll(".dealpage .tile").length).toBe(8);
-      expect(root(el).querySelectorAll(".go.soon").length).toBe(3);
+      expect(root(el).querySelectorAll(".go.soon").length).toBe(1);
     });
 
     it("goes back to the list exactly as it was left", async () => {
@@ -399,6 +462,34 @@ describe("c-pipeline-mobile", () => {
         expect(bar(el).classList.contains("on")).toBe(true);
       });
 
+      it("gives the units a number box (the number keyboard) but sends the text Salesforce holds, not a number", async () => {
+        updateRecord.mockResolvedValue({});
+        const el = await make();
+        sections(el)[1].click();
+        await flush();
+        await open(el, "Chen");
+        await emitFields(el, { UnitsCasesPerYear__c: { value: "24" } });
+        const info = {};
+        FORM_FIELDS.opp.forEach((f) => {
+          info[f[0]] = { updateable: true };
+        });
+        info.UnitsCasesPerYear__c = { updateable: true, dataType: "String" };
+        infoAdapter.emit({ fields: info });
+        await flush();
+        const box = root(el).querySelector(
+          'input.in[data-api="UnitsCasesPerYear__c"]'
+        );
+        expect(box.type).toBe("number");
+        box.value = "30";
+        box.dispatchEvent(new CustomEvent("change"));
+        await flush();
+        root(el).querySelector(".save").click();
+        await flush();
+        expect(updateRecord).toHaveBeenCalledWith({
+          fields: { Id: "Chen", UnitsCasesPerYear__c: "30" }
+        });
+      });
+
       it("saves only what changed, then reads the deals again", async () => {
         updateRecord.mockResolvedValue({});
         const el = await openChen();
@@ -568,6 +659,84 @@ describe("c-pipeline-mobile", () => {
         expect(updateRecord).toHaveBeenCalledWith({
           fields: { Id: "Chen", Link_To_ROSA_Deal__c: null }
         });
+      });
+    });
+
+    describe("Chatter", () => {
+      it("shows how many posts on the deal screen's Chatter row, and slides the Chatter screen in when it is tapped", async () => {
+        const el = await make();
+        sections(el)[1].click();
+        await flush();
+        await open(el, "Chen");
+        await flush();
+        expect(getFeed).toHaveBeenCalledWith({ dealId: "Chen" });
+        const row = root(el).querySelector(".go.live");
+        expect(row.textContent).toContain("Chatter");
+        expect(row.textContent).toContain("1 post · last 2 d ago");
+        const chat = root(el).querySelector("c-pipeline-mobile-chatter");
+        expect(chat.open).toBe(false);
+        row.click();
+        await flush();
+        expect(chat.open).toBe(true);
+        chat.dispatchEvent(new CustomEvent("close"));
+        await flush();
+        expect(chat.open).toBe(false);
+      });
+    });
+
+    describe("Campaigns", () => {
+      it("shows how many campaigns the deal is in on its row, slides the Campaigns screen in, and follows a change made there", async () => {
+        const el = await make();
+        sections(el)[1].click();
+        await flush();
+        await open(el, "Chen");
+        await flush();
+        const row = [...root(el).querySelectorAll(".go.live")].find((r) =>
+          r.textContent.includes("Campaigns")
+        );
+        expect(row.textContent).toContain("In no campaign");
+        // the Campaigns sliders take the same label width as the form's Yes / No sliders (set from the measured labels)
+        expect(
+          root(el)
+            .querySelector("c-pipeline-mobile-campaigns")
+            .style.getPropertyValue("--seg-label-width")
+        ).toMatch(/^\d+px$/);
+        const screen = root(el).querySelector("c-pipeline-mobile-campaigns");
+        expect(screen.open).toBe(false);
+        row.click();
+        await flush();
+        expect(screen.open).toBe(true);
+        screen.dispatchEvent(new CustomEvent("changed", { detail: 2 }));
+        await flush();
+        expect(row.textContent).toContain("In 2 campaigns");
+        const before = getDeals.mock.calls.length;
+        screen.dispatchEvent(new CustomEvent("close"));
+        await flush();
+        expect(screen.open).toBe(false);
+        expect(getDeals.mock.calls.length).toBe(before + 1); // read again so the card's star follows
+      });
+    });
+
+    describe("MyCase Bookings", () => {
+      it("shows the cases in 12 months on the deal screen's row, and slides the Bookings screen in when it is tapped", async () => {
+        const el = await make();
+        sections(el)[1].click();
+        await flush();
+        await open(el, "Chen");
+        await flush();
+        expect(getBookings).toHaveBeenCalledWith({ dealId: "Chen" });
+        const row = [...root(el).querySelectorAll(".go.live")].find((r) =>
+          r.textContent.includes("MyCase Bookings")
+        );
+        expect(row.textContent).toContain("5 cases in 12 months");
+        const screen = root(el).querySelector("c-pipeline-mobile-bookings");
+        expect(screen.open).toBe(false);
+        row.click();
+        await flush();
+        expect(screen.open).toBe(true);
+        screen.dispatchEvent(new CustomEvent("close"));
+        await flush();
+        expect(screen.open).toBe(false);
       });
     });
   });

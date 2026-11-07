@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+  <apiVersion>68.0</apiVersion>
+  <description
+  >Pipeline Mobile: the Campaigns screen of one deal on the phone. It slides in over the deal and holds the existing Campaigns list (put the deal in or out of a campaign with a Yes / No slider). Used only inside Pipeline Mobile.</description>
+  <isExposed>false</isExposed>
+</LightningComponentBundle>

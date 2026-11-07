@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+  <apiVersion>68.0</apiVersion>
+  <description
+  >Pipeline Mobile: the MyCase Bookings screen of one deal on the phone. Slides in over the deal and shows the surgeries booked each month as a bar chart for each type of surgery. Graphs only, nothing is changed. Used only inside Pipeline Mobile.</description>
+  <isExposed>false</isExposed>
+</LightningComponentBundle>

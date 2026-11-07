@@ -76,6 +76,16 @@ describe("c-pipeline-deal-campaigns", () => {
     );
   });
 
+  it("turns Yes solid green only where asked (the phone), and leaves the other screens as they were", async () => {
+    const el = await make();
+    const slider = () => el.shadowRoot.querySelector("c-pipeline-segmented");
+    expect(slider().options[1].tone).toBeUndefined();
+    el.yesTone = "good";
+    await flush();
+    expect(slider().options[1].tone).toBe("good");
+    expect(slider().options[0].tone).toBeUndefined(); // No stays in the ordinary blue
+  });
+
   it("puts the deal in a campaign when the slider says Yes, and saves at once", async () => {
     setLink.mockResolvedValue(undefined);
     const el = await make();

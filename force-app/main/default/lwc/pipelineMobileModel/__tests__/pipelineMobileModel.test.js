@@ -12,7 +12,12 @@ import {
   stageTone,
   liveDeal,
   formRows,
-  formFieldNames
+  formFieldNames,
+  agoShort,
+  chatterSummary,
+  mentionQuery,
+  insertMention,
+  segmentsFrom
 } from "c/pipelineMobileModel";
 
 const d = (id, o = {}) => ({
@@ -329,6 +334,73 @@ describe("pipelineMobileModel", () => {
         "State priority"
       ]);
       expect(make("rosa")[0].api).toBe("Healthcare_Facility__c");
+    });
+  });
+
+  describe("Chatter", () => {
+    const now = Date.parse("2026-11-07T10:00:00Z");
+    it("says how long ago, short", () => {
+      expect(agoShort("2026-11-07T01:00:00Z", now)).toBe("today");
+      expect(agoShort("2026-11-06T01:00:00Z", now)).toBe("yesterday");
+      expect(agoShort("2026-11-02T01:00:00Z", now)).toBe("5 d ago");
+      expect(agoShort("", now)).toBe("");
+    });
+    it("sums up the posts for the deal screen's row, counting the newest reply as the last word", () => {
+      expect(chatterSummary([], now)).toBe("No posts yet");
+      expect(
+        chatterSummary([{ posted: "2026-10-20T00:00:00Z", replies: [] }], now)
+      ).toBe("1 post · last 18 d ago");
+      expect(
+        chatterSummary(
+          [
+            {
+              posted: "2026-10-20T00:00:00Z",
+              replies: [{ posted: "2026-11-05T09:00:00Z" }]
+            },
+            { posted: "2026-10-01T00:00:00Z", replies: [] }
+          ],
+          now
+        )
+      ).toBe("2 posts · last 2 d ago");
+    });
+    it("finds the @ being typed, only at the start of a word", () => {
+      expect(mentionQuery("Thanks @pri", 11)).toEqual({
+        start: 7,
+        end: 11,
+        q: "pri"
+      });
+      expect(mentionQuery("@Priya N", 8)).toEqual({
+        start: 0,
+        end: 8,
+        q: "Priya N"
+      });
+      expect(mentionQuery("mail me@home", 12)).toBeNull();
+      expect(mentionQuery("no mention", 10)).toBeNull();
+    });
+    it("puts the picked name in place of what was typed", () => {
+      const q = mentionQuery("Thanks @pri for", 11);
+      expect(insertMention("Thanks @pri for", q, "Priya Nair")).toEqual({
+        text: "Thanks @Priya Nair  for",
+        caret: 19
+      });
+    });
+    it("turns the text and the people picked into pieces, a name never picked staying plain text", () => {
+      const people = [{ id: "005A", name: "Priya Nair" }];
+      expect(
+        segmentsFrom(
+          "  Thanks @Priya Nair can you check? cc @Sam Patel ",
+          people
+        )
+      ).toEqual([
+        { t: "Thanks " },
+        { u: "005A", n: "Priya Nair" },
+        { t: " can you check? cc @Sam Patel" }
+      ]);
+      expect(segmentsFrom("   ", people)).toEqual([]);
+      // a name changed after it was picked is no longer a mention
+      expect(segmentsFrom("hi @Priya Nairn", people)).toEqual([
+        { t: "hi @Priya Nairn" }
+      ]);
     });
   });
 });

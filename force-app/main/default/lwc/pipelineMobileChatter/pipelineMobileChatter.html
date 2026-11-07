@@ -1,0 +1,95 @@
+<template>
+  <div class={pageCls}>
+    <div class="ctl bar">
+      <button type="button" class="backbtn" onclick={handleBack}>
+        <span class="bk">&#8249;</span> Back to deal
+      </button>
+    </div>
+    <div class="pad">
+      <div class="dh"><h1 class="dname">Chatter</h1></div>
+      <p class="dsub">{dealLabel}</p>
+      <button type="button" class="bigbtn" onclick={handleNew}>
+        + New post
+      </button>
+      <p class="note" lwc:if={loading}>Reading the posts…</p>
+      <p class="err" lwc:if={error}>{error}</p>
+      <p class="none" lwc:if={noPosts}>Nobody has posted on this deal yet.</p>
+      <template for:each={posts} for:item="p">
+        <div class="post" key={p.id}>
+          <div class="meta">
+            <b>{p.who}</b><span class="when">{p.ago}</span>
+          </div>
+          <div class="txt">
+            <template for:each={p.parts} for:item="t"
+              ><span key={t.key} class={t.cls}>{t.text}</span></template
+            >
+          </div>
+          <template for:each={p.replies} for:item="r">
+            <div class="reply" key={r.id}>
+              <div class="meta">
+                <b>{r.who}</b><span class="when">{r.ago}</span>
+              </div>
+              <div class="txt">
+                <template for:each={r.parts} for:item="t"
+                  ><span key={t.key} class={t.cls}>{t.text}</span></template
+                >
+              </div>
+            </div>
+          </template>
+          <button
+            type="button"
+            class="rbtn"
+            data-id={p.id}
+            onclick={handleReply}
+          >
+            Reply
+          </button>
+        </div>
+      </template>
+    </div>
+  </div>
+
+  <div class={writeCls}>
+    <button type="button" class="backbtn" onclick={handleWriteClose}>
+      <span class="bk">&#8249;</span> Back to Chatter
+    </button>
+    <h4 class="sht">{writeTitle}</h4>
+    <div class="quote" lwc:if={isReply}>{quoteText}</div>
+    <textarea
+      class="wtext"
+      placeholder={writePlaceholder}
+      aria-label={writeTitle}
+      oninput={handleWriteInput}
+      onclick={handleCaret}
+      onkeyup={handleCaret}
+    ></textarea>
+    <div class={peopleCls}>
+      <template for:each={peopleRows} for:item="p">
+        <div
+          class="person"
+          key={p.id}
+          data-id={p.id}
+          data-name={p.name}
+          onclick={handlePickPerson}
+        >
+          <b>{p.name}</b><small>{p.title}</small>
+        </div>
+      </template>
+      <p class="hint" lwc:if={noPeopleRows}>{peopleHint}</p>
+    </div>
+    <p class="err" lwc:if={hasWriteError}>{writeError}</p>
+    <div class="row2">
+      <button type="button" class="cancel" onclick={handleWriteClose}>
+        Cancel
+      </button>
+      <button
+        type="button"
+        class="postbtn"
+        disabled={sending}
+        onclick={handlePost}
+      >
+        {postWord}
+      </button>
+    </div>
+  </div>
+</template>

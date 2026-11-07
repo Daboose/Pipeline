@@ -1,5 +1,10 @@
 <template>
   <div class="wrap">
+    <div class="measures" aria-hidden="true">
+      <template for:each={measureLabels} for:item="m">
+        <span key={m} class="lblmeasure">{m}</span>
+      </template>
+    </div>
     <div class="page">
       <div class="ctl" lwc:if={showList}>
         <c-pipeline-segmented
@@ -235,11 +240,6 @@
                     </div>
                     <div class="flagbox" lwc:if={f.isFlags}>
                       <template for:each={f.flags} for:item="g">
-                        <span key={g.api} class="lblmeasure" aria-hidden="true"
-                          >{g.label}</span
-                        >
-                      </template>
-                      <template for:each={f.flags} for:item="g">
                         <c-pipeline-segmented
                           key={g.api}
                           class="flagseg"
@@ -372,6 +372,27 @@
             </template>
           </section>
 
+          <button type="button" class="go live" onclick={handleChatOpen}>
+            <span>Chatter</span>
+            <span class="gsub" lwc:if={chatSummary}>{chatSummary}</span>
+            <span class="sp"></span>
+            <span class="gchev"></span>
+          </button>
+
+          <button type="button" class="go live" onclick={handleCampaignsOpen}>
+            <span>Campaigns</span>
+            <span class="gsub">{campaignsSummary}</span>
+            <span class="sp"></span>
+            <span class="gchev"></span>
+          </button>
+
+          <button type="button" class="go live" onclick={handleBookingsOpen}>
+            <span>MyCase Bookings</span>
+            <span class="gsub" lwc:if={bookingsSummary}>{bookingsSummary}</span>
+            <span class="sp"></span>
+            <span class="gchev"></span>
+          </button>
+
           <template for:each={goRows} for:item="g">
             <div class="go soon" key={g.key} aria-disabled="true">
               <span>{g.label}</span>
@@ -380,14 +401,6 @@
               <span class="soonword">Soon</span>
             </div>
           </template>
-
-          <section class="card">
-            <h3>Chatter</h3>
-            <p class="later">
-              Chatter comes in a later step. It will sit here, below the deal,
-              so nobody reaches it before the deal.
-            </p>
-          </section>
         </template>
 
         <template lwc:if={showDeal}>
@@ -418,6 +431,35 @@
         </div>
       </div>
     </div>
+
+    <c-pipeline-mobile-chatter
+      lwc:if={showDeal}
+      record-id={openId}
+      deal-label={chatLabel}
+      open={chatOn}
+      onfeed={handleChatFeed}
+      onposted={handleChatPosted}
+      onclose={handleChatClose}
+    ></c-pipeline-mobile-chatter>
+
+    <c-pipeline-mobile-campaigns
+      lwc:if={showDeal}
+      record-id={openId}
+      deal-label={chatLabel}
+      open={campaignsOn}
+      onchanged={handleCampaignsChanged}
+      onclose={handleCampaignsClose}
+    ></c-pipeline-mobile-campaigns>
+
+    <c-pipeline-mobile-bookings
+      lwc:if={showDeal}
+      record-id={openId}
+      deal-label={chatLabel}
+      open={bookingsOn}
+      refresh-key={bookingsKey}
+      onsummary={handleBookingsSummary}
+      onclose={handleBookingsClose}
+    ></c-pipeline-mobile-bookings>
 
     <div class={sheetCls}>
       <button type="button" class="backbtn" onclick={handleSheetClose}>

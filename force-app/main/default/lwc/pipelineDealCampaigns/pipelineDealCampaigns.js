@@ -2,9 +2,11 @@ import { LightningElement, api } from "lwc";
 import getDealCampaigns from "@salesforce/apex/PipelineDealCampaignController.getDealCampaigns";
 import setLink from "@salesforce/apex/PipelineDealCampaignController.setLink";
 
-const YES_NO = [
+const yesNo = (yesTone) => [
   { value: "no", label: "No" },
-  { value: "yes", label: "Yes" }
+  yesTone
+    ? { value: "yes", label: "Yes", tone: yesTone }
+    : { value: "yes", label: "Yes" }
 ];
 
 /** A plain message from an Apex error. */
@@ -25,7 +27,11 @@ export default class PipelineDealCampaigns extends LightningElement {
   loading = false;
   error = "";
   busyId = "";
-  yesNo = YES_NO;
+  /**
+   * "good" turns the whole slider solid green while it is Yes, as the Yes / No sliders on the phone's deal form do (Robert, 2026-11-07).
+   * Unset (the default), Yes stays the slider's ordinary highlight, as in the desktop flyout and the record page's Campaigns button.
+   */
+  @api yesTone = "";
 
   @api
   get recordId() {
@@ -58,6 +64,9 @@ export default class PipelineDealCampaigns extends LightningElement {
     }
   }
 
+  get yesNo() {
+    return yesNo(this.yesTone);
+  }
   get ready() {
     return !!this.data;
   }

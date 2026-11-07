@@ -1,0 +1,224 @@
+/* The colours come from the Pipeline Mobile screen (set on its :host and inherited); the fallbacks are the same light palette. */
+:host {
+  display: block;
+  color: var(--text, #1b2640);
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+}
+/* the screen slides in over the deal from the right and slides off again (0.4 s, the motion standard); it scrolls itself, in the height that
+   is left on the screen (--fit-height, set by Pipeline Mobile) */
+.bookingspage {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--fit-height, 100%);
+  z-index: 8;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  background: var(--bg, #f3f3f3);
+  transform: translateX(105%);
+  visibility: hidden;
+  transition:
+    transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+    visibility 0s linear 0.4s;
+}
+.bookingspage.on {
+  transform: none;
+  visibility: visible;
+  transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.ctl {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  padding: 0 12px 8px;
+  background: var(--bg, #f3f3f3);
+  box-shadow: 0 1px 0 var(--line, #d5dcea);
+}
+.pad {
+  padding: 8px 12px 24px;
+}
+.backbtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  height: 44px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--indigo, #4f46e5);
+  color: #fff;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: filter 0.3s;
+}
+.backbtn:active {
+  filter: brightness(0.86);
+  transition: none;
+}
+.bk {
+  font-size: 22px;
+  line-height: 1;
+  margin-top: -2px;
+}
+.dh {
+  margin: 2px 2px;
+}
+.dname {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 800;
+  line-height: 1.15;
+}
+.dsub {
+  color: var(--muted, #5d6b85);
+  font-size: 14px;
+  margin: 0 2px 10px;
+}
+.note {
+  color: var(--muted, #5d6b85);
+  text-align: center;
+  padding: 14px 10px;
+  margin: 0;
+}
+.err {
+  color: #dc2626;
+  font-weight: 700;
+  margin: 6px 2px;
+}
+.nomsg {
+  margin: 0 0 12px;
+  padding: 22px 14px;
+  text-align: center;
+  color: var(--muted, #5d6b85);
+  background: var(--panel, #fff);
+  border: 1px solid var(--line, #d5dcea);
+  border-radius: 12px;
+}
+.window {
+  margin: 0 2px 8px;
+  color: var(--muted, #5d6b85);
+  font-size: 14px;
+}
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  margin: 0 2px 12px;
+  font-size: 13px;
+  color: var(--muted, #5d6b85);
+}
+.sw {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin-right: 5px;
+  border-radius: 3px;
+  vertical-align: -1px;
+}
+.sw.primary {
+  background: var(--bar-primary, #2563eb);
+}
+.sw.revision {
+  background: var(--bar-revision, #ea580c);
+}
+.sw.cmft {
+  background: var(--bar-cmft, #0d9488);
+}
+.type {
+  background: var(--panel, #fff);
+  border: 1px solid var(--line, #d5dcea);
+  border-radius: 12px;
+  padding: 12px 14px 8px;
+  margin-bottom: 12px;
+}
+.type h3 {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--head, #db2777);
+}
+.big1 {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0 8px;
+  margin-top: 2px;
+}
+.big1 b {
+  font-size: 30px;
+  font-weight: 800;
+}
+.big1 span {
+  color: var(--muted, #5d6b85);
+  font-size: 14px;
+}
+.split {
+  color: var(--muted, #5d6b85);
+  font-size: 14px;
+  margin: 2px 0 8px;
+}
+.split b {
+  color: var(--text, #1b2640);
+}
+/* the hospital dropdown: 44 px, 16 px text (or the iPhone zooms the page), our own chevron */
+.hosp {
+  display: block;
+  width: 100%;
+  height: 44px;
+  margin: 6px 0 4px;
+  padding: 0 34px 0 14px;
+  box-sizing: border-box;
+  border: 1px solid var(--edge, #b3bfd6);
+  border-radius: 10px;
+  background-color: var(--pfield, #fff);
+  color: var(--text, #1b2640);
+  font-family: inherit;
+  font-size: 16px;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--muted, #5d6b85) 50%),
+    linear-gradient(135deg, var(--muted, #5d6b85) 50%, transparent 50%);
+  background-position:
+    calc(100% - 20px) 19px,
+    calc(100% - 14px) 19px;
+  background-size:
+    6px 6px,
+    6px 6px;
+  background-repeat: no-repeat;
+}
+.chart svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.chart .gl {
+  stroke: var(--grid-line, rgba(93, 107, 133, 0.3));
+  stroke-width: 1;
+}
+.chart text {
+  fill: var(--muted, #5d6b85);
+  font-size: 10px;
+}
+.chart text.v {
+  fill: var(--text, #1b2640);
+  font-size: 11px;
+  font-weight: 700;
+}
+@media (prefers-reduced-motion: reduce) {
+  .bookingspage,
+  .bookingspage.on {
+    transition: none;
+  }
+}
