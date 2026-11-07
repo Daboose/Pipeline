@@ -279,6 +279,16 @@ private class PipelineCampaignControllerTest {
       );
       System.assertEquals(1, detail.members[0].dealCount);
       System.assertEquals('Plan', detail.members[0].stages);
+      System.assertEquals(1, detail.members[0].deals.size());
+      System.assertEquals('Plan', detail.members[0].deals[0].stage);
+      System.assertEquals('Hip', detail.members[0].deals[0].portfolio);
+      System.assertEquals('opp', detail.members[0].deals[0].kind);
+      System.assertEquals(1, detail.members[0].ratings.size()); // one per portfolio the campaign covers
+      System.assertEquals(
+        'Extremities',
+        detail.members[0].ratings[0].portfolio
+      ); // the test campaign covers Extremities
+      System.assertEquals('Shoulder', detail.members[0].ratings[0].area);
       System.assertEquals(
         1,
         PipelineCampaignController.listCampaigns()[0].dealCount

@@ -255,19 +255,24 @@ describe("c-pipeline-campaigns", () => {
     expect(sent.friendlyName).toBe("Hip Update");
     expect(sent.countries).toEqual(["SG", "AU"]);
     expect(sent.managerId).toBe("005A");
-    expect(text(el)).toContain("Members");
+    expect(q(el, "c-pipeline-campaign-members")).not.toBeNull(); // the saved campaign is open
   });
 
-  it("opens a campaign and shows who has a deal and who does not", async () => {
+  const members = (el) => q(el, "c-pipeline-campaign-members");
+  const pickIds = (el, ids) =>
+    members(el).dispatchEvent(
+      new CustomEvent("selectionchange", { detail: { ids } })
+    );
+
+  it("opens a campaign and gives its members to the shared members list, with the tick boxes for a campaign manager", async () => {
     const el = make();
     await flush();
     q(el, "tr.click").click();
     await flush();
-    const t = text(el);
-    expect(t).toContain("Dr One (English: One E)");
-    expect(t).toContain("1 deal · Plan");
-    expect(t).toContain("No deal yet");
-    expect(q(el, ".kpis").textContent).toContain("2");
+    expect(members(el)).not.toBeNull();
+    expect(members(el).members.length).toBe(2);
+    expect(members(el).campaign.id).toBe("a01");
+    expect(members(el).manage).toBe(true);
   });
 
   it('asks "are you sure?" under the Remove button before removing anyone', async () => {
@@ -276,11 +281,7 @@ describe("c-pipeline-campaigns", () => {
     await flush();
     q(el, "tr.click").click();
     await flush();
-    const boxes = el.shadowRoot.querySelectorAll(
-      'td.tick input[type="checkbox"]'
-    );
-    boxes[0].checked = true;
-    boxes[0].dispatchEvent(new CustomEvent("change"));
+    pickIds(el, ["m1"]);
     await flush();
     expect(text(el)).toContain("Remove 1 campaign member");
     expect(text(el)).not.toContain("ticked");
@@ -298,29 +299,17 @@ describe("c-pipeline-campaigns", () => {
     expect(removeMembers).toHaveBeenCalledWith({ memberIds: ["m1"] });
   });
 
-  it("has a Select all box above the member boxes that ticks and clears them all", async () => {
+  it("shows the Remove button only once something is ticked, naming how many", async () => {
     const el = make();
     await flush();
     q(el, "tr.click").click();
     await flush();
-    const all = q(el, "th.tick input.selall");
-    all.checked = true;
-    all.dispatchEvent(new CustomEvent("change"));
+    pickIds(el, ["m1", "m2"]);
     await flush();
     expect(text(el)).toContain("Remove 2 campaign members");
-    const one = el.shadowRoot.querySelectorAll(
-      'td.tick input[type="checkbox"]'
-    )[0];
-    one.checked = false;
-    one.dispatchEvent(new CustomEvent("change"));
+    pickIds(el, []);
     await flush();
-    expect(text(el)).toContain("Remove 1 campaign member");
-    expect(q(el, "th.tick input.selall").indeterminate).toBe(true);
-    const again = q(el, "th.tick input.selall");
-    again.checked = false;
-    again.dispatchEvent(new CustomEvent("change"));
-    await flush();
-    expect(text(el)).toContain("Remove campaign members");
+    expect(text(el)).not.toContain("Remove"); // nothing ticked, so no Remove button
   });
 
   it("searches for a surgeon only from two characters, offers widening, and adds one", async () => {

@@ -689,3 +689,49 @@ Mockup `docs/mockups/pipeline_deal_header_v2.html` (approved by Robert: comforta
 Robert checked all three types (opportunities, risks, ROSA deals) in UAT ("it all looks really good") and asked for DEV. Same source as UAT, dry run \`0Af8s00000fLizJCAS\` then deploy \`0Af8s00000fLj2XCAS\`: the Apex \`PipelineController\` (campaign counts) and \`PipelineDealCampaignController\` with its test, the \`Pipeline_User\` permission set, and the components \`pipelineApp\`, \`pipelineDeal\`, \`pipelineDealCampaigns\`, \`pipelineSegmented\`, \`pipelineStageSlider\` and \`pipelineTypeList\` (10 components, 22/22 Apex tests with \`PipelineControllerTest\`, \`PipelineDealCampaignControllerTest\` and \`PipelineCampaignControllerTest\`). What this release holds: the Campaigns control and count in the deal panel (0.61 to 0.63, 0.65), the gold "In Campaign" star and the proper-case legend (0.64), and the two-row deal header with the stage slider (0.66). PROD untouched (Gearset, by Robert): the Pipeline_User change, the new classes and components and the campaign objects must all be in the package.
 
 **Open questions for Robert:** should the ROSA list carry the gold star (on the facility column, where the rep priority star sits)? Should the small tags inside the lists (current, needs update, very old) be proper case like the legend?
+
+### Version 0.67 (UAT only, 2026-11-07): proper case for "On Hold"
+
+Robert: the small texts in the lists should be proper case like the legend. The only lower-case word was "On hold" (the status in the lists and the deal panel's Status); it is now "On Hold". The day counts (such as 12 d) are numbers, not words. Field labels in the deal form are left as they are. UAT deploy `0AfOg000007Hxm2KAC` (components only). Not in DEV; not committed.
+
+### Version 0.68 (UAT only, 2026-11-07): Pipeline always opens folded
+
+Robert: "When Pipeline opens, could we have it open with everything collapsed." The two summary panels (stage part), the Team table and the lists now always open folded, whatever was left open last time (the open or closed state is no longer restored from the person's settings; opening one still works within the session). UAT deploy `0AfOg000007HzUTKA0` (component only). Not in DEV; not committed.
+
+## Version 0.69 and Campaign Management 0.26: the one members list (UAT only, 2026-11-07)
+
+Mockup `docs/mockups/pipeline_campaign_members_v1.html` (approved: "I think this is a very clever way of linking the two objects together"; one rating column per portfolio, also for the all-four worst case).
+
+- **New component `pipelineCampaignMembers`** (8 Jest tests): tiles (surgeons, with a deal, no deal yet, deals, value per currency); a **Show** slider (All, With a deal, No deal yet) and a Search pill; the table with Surgeon, Current Hospitals, Country · City, Type, **one Rating column per portfolio the campaign covers** (Platinum, Gold, Silver, Bronze as metal chips, "Not rated"), a **Portfolio** column only when the campaign covers several, then the deal columns Stage, Revenue / Year, Close Quarter, Last Posted, Last Stage Move, Sales Rep; a surgeon with two deals gets a second line. Sortable headings, resizable columns (widths remembered on that computer), headings kept in view.
+- **Campaign Management** now uses it for the members of a campaign: the tick boxes, Select all, the add-a-surgeon search, Import members, Remove campaign members and its "Are you sure?" gate are passed in through the list's slots. The old members table and the three counts at the top right (now the tiles) are gone.
+- **Pipeline:** a **Campaigns** button in the top bar opens the same list (no tick boxes, no import or remove) with a link back to Pipeline and a campaign choice (active campaigns). A surgeon with no deal yet has **Link a deal**: it lists that surgeon's own opportunities and risks that fit the campaign (active, owner's country, portfolio) and links the chosen one. _The Campaigns button in the top bar is my proposal for how to reach it; the earlier design (Campaign as a choice in Change selection with a Campaign / Pipeline toggle) is not built._
+- **Apex:** `getCampaign` now also returns each member's ratings (one per campaign portfolio, from the stored usage ratings on the account) and the deals linked to the campaign; `linkableDeals(campaignId, surgeonId)` is new. The deals and the ratings are read without field-level checks (sharing still applies), so a campaign manager need not hold those fields; linking one needs edit access to the deal (checked by `PipelineDealCampaignController.setLink`). `Pipeline_User` also gets the class and read of the campaign dates and description. ROSA deals are not in campaigns.
+- UAT deploy `0AfOg000007HzkbKAC`, 26/26 Apex tests; read-only checks on real UAT campaigns: NZ SES Shoulder Event 19 members, 1 with a deal; Shoulder Sydney Meeting 22 members across 3 portfolios. Not in DEV; not committed. 0.68 (Pipeline always opens folded, deploy `0AfOg000007HzUTKA0`) is in UAT too.
+
+### Pipeline 0.70 and Campaign Management 0.27 (UAT only, 2026-11-07): the members list scrolls sideways
+
+Robert: the wide members list could only be read by narrowing columns. Locking the headings had stopped sideways scrolling (the wrapper clipped). The table now scrolls inside its own box (up to the window's height less the screen above it): a sideways bar stays visible at the bottom of the box and the headings stay locked at the top of the box. UAT deploy `0AfOg000007HonbKAC` (components only). Not in DEV; not committed.
+
+### Pipeline 0.71 and Campaign Management 0.28 (UAT only, 2026-11-07): tiles beside the heading
+
+Robert: the space to the right of the heading was wasted and the table could have been taller. The members list now has the screen's heading (the trail, status and facts, passed in through a slot) on the left and the five tiles on the right, level, so the table starts as high as it can. Both Campaign Management and Pipeline use it. UAT deploy `0AfOg000007I07BKAS` (components only). Not in DEV; not committed.
+
+### Pipeline 0.72 and Campaign Management 0.29 (UAT only, 2026-11-07): smaller tiles
+
+Robert: halve the padding inside the tiles. Padding is now 4 px top and bottom and about 9 px at the sides (was 8 and 17), and the minimum width is 100 px (was 150). UAT deploy `0AfOg000007I07CKAS`. Not in DEV; not committed.
+
+### Pipeline 0.73 and Campaign Management 0.30 (UAT only, 2026-11-07): choose the columns, and Remove only when needed
+
+- **Columns:** Robert asked for the columns configurator the Pipeline lists have on the members list, then said a big Columns button wastes space. A small **cog** sits in the table's top right corner (it stays in view while the table scrolls sideways) and opens a small **Columns** dialog with a tick box per column (Surgeon always stays), Reset columns, Reset widths and Done. Everything is on by default; what the person turns off is remembered on that computer. It works in Campaign Management and in Pipeline.
+- **Remove campaign members** now appears only once at least one member is ticked (no greyed-out button taking up room beside the other tools).
+- Jest: members list 7, campaigns 18. UAT deploy `0AfOg000007HvkFKAS` (components only). Not in DEV; not committed.
+
+### Pipeline 0.74 and Campaign Management 0.31 (UAT only, 2026-11-07): the members table reaches the bottom of the window
+
+Robert: the table stopped about 100 px short of the bottom of the window. The height had been a guess ("window height less 320 px"). The list now measures where its box starts and sets the box to the space left in the window (less 16 px), again on every resize, so it reaches the bottom in Campaign Management, in Pipeline and in any frame. UAT deploy `0AfOg000007I0LhKAK` (components only). Not in DEV; not committed.
+
+## Pipeline 0.67 to 0.74 and Campaign Management 0.31 brought to DEV (2026-11-07)
+
+Robert tested the one members list in UAT ("the design of this table is really good... I really like its flexibility") and asked for DEV, documentation, commit and push. Same source as UAT: dry run \`0Af8s00000fLjVZCA0\`, deploy \`0Af8s00000fLickCAC\` (13 components, 26/26 Apex tests: \`PipelineCampaignControllerTest\`, \`PipelineDealCampaignControllerTest\`, \`PipelineCampaignImportTest\`). It holds: the shared members list \`pipelineCampaignMembers\` (tiles beside the heading, Show filter and search, one rating column per portfolio, deal columns, a cog to choose columns, sideways and vertical scrolling inside its own box, headings kept in view, the box fitted to the window by measuring) used by Campaign Management and by Pipeline's new **Campaigns** button (with **Link a deal**); \`PipelineCampaignController\` (ratings and deals per member, \`linkableDeals\`); the \`Pipeline_User\` permission set (class and campaign fields); the proper-case "On Hold"; Pipeline opening folded; and the deal panel pieces already in DEV from 0.66. UAT and DEV are level at Pipeline 0.74 and Campaign Management 0.31. PROD untouched (Gearset, Robert): the package needs the new component, the class change and the permission set.
+
+**Next (Robert, 2026-11-07): how to link Pipeline's current view to a campaign.** Today Change selection carries an **Event** choice (version 0.60, UAT only: the Link to APAC Event field, saved in filters, opportunities and ROSA only); campaigns are meant to replace it. Under discussion, nothing built.

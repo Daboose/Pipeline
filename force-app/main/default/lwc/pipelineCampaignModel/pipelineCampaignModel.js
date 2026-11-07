@@ -180,3 +180,36 @@ export function importCounts(rows) {
     toAdd: live.filter((r) => r.status !== "dup" && r.pick && r.ok).length
   };
 }
+
+/** Platinum first, then Gold, Silver and Bronze; anything else (not rated) has no rank, so it sorts last. */
+export function ratingRank(rating) {
+  const i = ["PLATINUM", "GOLD", "SILVER", "BRONZE"].indexOf(
+    String(rating || "").toUpperCase()
+  );
+  return i < 0 ? null : i;
+}
+
+/** The tiles above the members list: surgeons, with a deal, no deal yet, deals, and the value per currency (never added across currencies). */
+export function memberTiles(members) {
+  const value = {};
+  let deals = 0;
+  let withDeal = 0;
+  (members || []).forEach((m) => {
+    const ds = m.deals || [];
+    if (ds.length) withDeal += 1;
+    ds.forEach((d) => {
+      deals += 1;
+      const c = d.currencyCode || "";
+      value[c] = (value[c] || 0) + (Number(d.value) || 0);
+    });
+  });
+  return {
+    surgeons: (members || []).length,
+    withDeal,
+    noDeal: (members || []).length - withDeal,
+    deals,
+    value: Object.keys(value)
+      .sort()
+      .map((currencyCode) => ({ currencyCode, total: value[currencyCode] }))
+  };
+}

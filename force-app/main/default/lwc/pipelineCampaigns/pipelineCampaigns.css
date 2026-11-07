@@ -1136,3 +1136,11 @@ textarea.in::placeholder {
 .tag.fill.bad {
   background: #dc2626;
 }
+
+/* the slotted tools of the shared members list sit in the list's own header row */
+.toolwrap {
+  display: contents;
+}
+.askwrap {
+  display: block;
+}

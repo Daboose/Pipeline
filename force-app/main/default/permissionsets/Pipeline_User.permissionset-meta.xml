@@ -40,8 +40,12 @@
     <apexClass>PipelineDealCampaignController</apexClass>
     <enabled>true</enabled>
   </classAccesses>
+  <classAccesses>
+    <apexClass>PipelineCampaignController</apexClass>
+    <enabled>true</enabled>
+  </classAccesses>
   <description
-  >Pipeline: lets a person open Pipeline, keep their screen choices, and put a deal they can edit in or out of sales campaigns. No other extra access to deals: sharing and Teams still decide what is seen. Everyone who uses Pipeline needs this.</description>
+  >Pipeline: lets a person open Pipeline, keep their screen choices, see a campaign&apos;s members, and put a deal they can edit in or out of sales campaigns. No other extra access to deals. Everyone who uses Pipeline needs this.</description>
   <hasActivationRequired>false</hasActivationRequired>
   <label>Pipeline User</label>
   <objectPermissions>
@@ -137,6 +141,21 @@
   <fieldPermissions>
     <editable>false</editable>
     <field>Sales_Campaign_Member__c.Surgeon__c</field>
+    <readable>true</readable>
+  </fieldPermissions>
+  <fieldPermissions>
+    <editable>false</editable>
+    <field>Sales_Campaign__c.Start_Date__c</field>
+    <readable>true</readable>
+  </fieldPermissions>
+  <fieldPermissions>
+    <editable>false</editable>
+    <field>Sales_Campaign__c.End_Date__c</field>
+    <readable>true</readable>
+  </fieldPermissions>
+  <fieldPermissions>
+    <editable>false</editable>
+    <field>Sales_Campaign__c.Description__c</field>
     <readable>true</readable>
   </fieldPermissions>
   <pageAccesses>

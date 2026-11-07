@@ -405,8 +405,13 @@
             Yes, delete it
           </button>
         </div>
-        <div class="topband">
-          <div class="tl">
+        <c-pipeline-campaign-members
+          campaign={campaign}
+          members={detail.members}
+          manage={canManage}
+          onselectionchange={handleSelection}
+        >
+          <div slot="heading" class="tl">
             <h1 class="head1 trail">
               <template for:each={crumbs} for:item="c">
                 <span key={c.key} class="crumb">
@@ -429,19 +434,7 @@
             </div>
             <p class="note" lwc:if={hasActiveNote}>{activeNote}</p>
           </div>
-          <div class="kpis">
-            <div class="kpi"><b>{counts.total}</b><span>Members</span></div>
-            <div class="kpi">
-              <b>{counts.withDeal}</b><span>With a deal</span>
-            </div>
-            <div class="kpi gap">
-              <b>{counts.none}</b><span>No deal yet</span>
-            </div>
-          </div>
-        </div>
-        <div class="card full tablecard">
-          <div class="cardhead">
-            <h2>Members</h2>
+          <div slot="tools" class="toolwrap" lwc:if={canManage}>
             <span class="rel" lwc:if={canManage}>
               <span class="sbox big">
                 <input
@@ -500,7 +493,8 @@
             >
               Import members
             </button>
-            <span class="sp"></span>
+          </div>
+          <div slot="remove" class="toolwrap" lwc:if={showRemoveButton}>
             <button
               type="button"
               class="btn danger"
@@ -511,92 +505,24 @@
               {removeText}
             </button>
           </div>
-          <div class="askrow" lwc:if={showRemoveAsk}>
-            <span>{removeAskText}</span>
-            <span class="sp"></span>
-            <button type="button" class="btn sec" onclick={handleRemoveNo}>
-              Keep them
-            </button>
-            <button type="button" class="btn danger" onclick={handleRemoveYes}>
-              {removeYesText}
-            </button>
+          <div slot="ask" class="askwrap">
+            <div class="askrow" lwc:if={showRemoveAsk}>
+              <span>{removeAskText}</span>
+              <span class="sp"></span>
+              <button type="button" class="btn sec" onclick={handleRemoveNo}>
+                Keep them
+              </button>
+              <button
+                type="button"
+                class="btn danger"
+                onclick={handleRemoveYes}
+              >
+                {removeYesText}
+              </button>
+            </div>
+            <p class="ok pad" lwc:if={hasToast}>{toast}</p>
           </div>
-          <p class="ok pad" lwc:if={hasToast}>{toast}</p>
-          <div class="tscroll stick">
-            <table class="tbl" style={memberTableStyle}>
-              <colgroup lwc:if={memberHasWidths}>
-                <template for:each={memberCols} for:item="c">
-                  <col key={c.id} style={c.style} />
-                </template>
-              </colgroup>
-              <thead>
-                <tr>
-                  <th class="tick">
-                    <input
-                      type="checkbox"
-                      class="selall"
-                      lwc:if={canManage}
-                      checked={allTicked}
-                      aria-label="Select all members"
-                      title="Select all"
-                      onchange={handleTickAll}
-                    />
-                  </th>
-                  <template for:each={memberHeads} for:item="h">
-                    <th
-                      key={h.id}
-                      class={h.cls}
-                      data-table="members"
-                      data-id={h.id}
-                    >
-                      <span
-                        class="lab2"
-                        data-table="members"
-                        data-id={h.id}
-                        onclick={handleSort}
-                        title="Click to sort"
-                        >{h.label}<span class="arrow">{h.arrow}</span></span
-                      >
-                      <i
-                        class="rz"
-                        data-table="members"
-                        data-id={h.id}
-                        title="Drag to resize. Double-click to reset the widths."
-                        onmousedown={handleResizeStart}
-                        ondblclick={handleWidthsReset}
-                      ></i>
-                    </th>
-                  </template>
-                </tr>
-              </thead>
-              <tbody>
-                <template for:each={memberRows} for:item="m">
-                  <tr key={m.key}>
-                    <td class="tick">
-                      <input
-                        type="checkbox"
-                        data-id={m.memberId}
-                        checked={m.ticked}
-                        onchange={handleTick}
-                        lwc:if={canManage}
-                      />
-                    </td>
-                    <td class="strong">{m.nameText}</td>
-                    <td>{m.hospitals}</td>
-                    <td>{m.placeText}</td>
-                    <td>{m.type}</td>
-                    <td><span class={m.dealCls}>{m.dealText}</span></td>
-                  </tr>
-                </template>
-                <tr lwc:if={noMembers}>
-                  <td colspan="6" class="empty">
-                    No members yet. Type a surgeon's name above to add one.
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
+        </c-pipeline-campaign-members>
         <p class="note" lwc:if={truncated}>
           Only the first 2,000 members are shown.
         </p>

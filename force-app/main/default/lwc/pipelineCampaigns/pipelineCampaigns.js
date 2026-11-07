@@ -18,7 +18,6 @@ import {
   formFromCampaign,
   formProblems,
   toggled,
-  memberCounts,
   sortRows,
   parseLines,
   cleaningReport,
@@ -28,7 +27,7 @@ import {
 } from "c/pipelineCampaignModel";
 
 /** Shown on the screen; raise it with each change that goes out. */
-export const CAMPAIGN_VERSION = "0.25";
+export const CAMPAIGN_VERSION = "0.31";
 const THEME_KEY = "pipelineCampaignTheme";
 const WIDTHS_KEY = "pipelineCampaignWidths";
 
@@ -41,13 +40,6 @@ const LIST_COLUMNS = [
   ["status", "Status", false, 130],
   ["members", "Members", true, 130],
   ["deals", "Deals linked", true, 150]
-];
-const MEMBER_COLUMNS = [
-  ["name", "Surgeon", false, 340],
-  ["hospitals", "Current hospitals", false, 380],
-  ["place", "Country · city", false, 200],
-  ["type", "Type", false, 200],
-  ["deal", "Deal in this campaign", false, 240]
 ];
 const RECON_COLUMNS = [
   ["file", "In your file", false, 260],
@@ -112,11 +104,11 @@ export default class PipelineCampaigns extends LightningElement {
   rows = []; // the check screen's rows
   sorts = {
     list: { id: "name", dir: 1 },
-    members: { id: "name", dir: 1 },
     recon: { id: "", dir: 1 }
   };
-  widths = { list: null, members: null, recon: null }; // null: the table finds its own widths; otherwise {column: pixels}
+  widths = { list: null, recon: null }; // null: the table finds its own widths; otherwise {column: pixels}
   live = null;
+  selectedIds = []; // the ticked members of the list
   deleteAsking = false; // the campaign screen is asking "are you sure?" before deleting
   removeAsking = false; // the members card is asking "are you sure?" before removing
   leaveAsking = false; // the check screen is asking "leave without adding?"
@@ -134,7 +126,6 @@ export default class PipelineCampaigns extends LightningElement {
       if (saved)
         this.widths = {
           list: saved.list || null,
-          members: saved.members || null,
           recon: saved.recon || null
         };
     } catch {
@@ -542,9 +533,6 @@ export default class PipelineCampaigns extends LightningElement {
         );
       }
     }
-    // some members ticked but not all: the Select all box shows a dash
-    const all = this.template.querySelector("input.selall");
-    if (all) all.indeterminate = this.tickedIds.length > 0 && !this.allTicked;
   }
 
   handleNew() {
@@ -638,6 +626,7 @@ export default class PipelineCampaigns extends LightningElement {
   async loadDetail(id) {
     this.detail = await getCampaign({ campaignId: id });
     this.view = "detail";
+    this.selectedIds = [];
     this.deleteAsking = false;
     this.removeAsking = false;
     this.memberQ = "";
@@ -676,46 +665,19 @@ export default class PipelineCampaigns extends LightningElement {
   get toggleActiveText() {
     return this.campaign && this.campaign.active ? "Deactivate" : "Activate";
   }
-  get counts() {
-    return memberCounts(this.detail ? this.detail.members : []);
-  }
-  get memberRows() {
-    const by = {
-      name: (m) => m.name,
-      hospitals: (m) => m.hospitals,
-      place: (m) => [m.country, m.city].filter(Boolean).join(" · "),
-      type: (m) => m.type,
-      deal: (m) => m.dealCount
-    }[this.sorts.members.id];
-    const sorted = sortRows(
-      this.detail ? this.detail.members : [],
-      by,
-      this.sorts.members.dir
-    );
-    return sorted.map((m) => {
-      const has = m.dealCount > 0;
-      return {
-        ...m,
-        key: m.memberId,
-        nameText: withEnglish(m.name, m.preferredName),
-        placeText: [m.country, m.city].filter(Boolean).join(" · "),
-        dealText: has
-          ? m.dealCount +
-            (m.dealCount > 1 ? " deals" : " deal") +
-            (m.stages ? " · " + m.stages : "")
-          : "No deal yet",
-        dealCls: has ? "tag ok" : "tag warn",
-        ticked: !!m.ticked
-      };
-    });
-  }
   get noMembers() {
     return !this.detail || this.detail.members.length === 0;
   }
+  /** The members ticked in the list (the list tells us). */
   get tickedIds() {
-    return (this.detail ? this.detail.members : [])
-      .filter((m) => m.ticked)
-      .map((m) => m.memberId);
+    return this.selectedIds;
+  }
+  handleSelection(event) {
+    this.selectedIds = event.detail.ids;
+  }
+  /** The Remove button only appears once something is ticked (Robert, 2026-11-07): no greyed-out button taking up room. */
+  get showRemoveButton() {
+    return this.canManage && this.tickedIds.length > 0;
   }
   get removeDisabled() {
     return this.tickedIds.length === 0;
@@ -741,27 +703,6 @@ export default class PipelineCampaigns extends LightningElement {
     return this.toast.length > 0;
   }
 
-  get allTicked() {
-    const m = this.detail ? this.detail.members : [];
-    return m.length > 0 && m.every((x) => x.ticked);
-  }
-  /** Select all: ticks every member, or clears them if all were ticked. */
-  handleTickAll(event) {
-    const on = event.target.checked;
-    this.detail = {
-      ...this.detail,
-      members: this.detail.members.map((m) => ({ ...m, ticked: on }))
-    };
-  }
-  handleTick(event) {
-    const id = event.target.dataset.id;
-    this.detail = {
-      ...this.detail,
-      members: this.detail.members.map((m) => {
-        return m.memberId === id ? { ...m, ticked: event.target.checked } : m;
-      })
-    };
-  }
   // Delete campaign only asks "Are you sure?" under the top bar; the second button does the deleting (Robert, 2026-11-07)
   get deleteAskText() {
     const c = this.campaign;
@@ -823,6 +764,8 @@ export default class PipelineCampaigns extends LightningElement {
     this.run(async () => {
       await removeMembers({ memberIds: ids });
       await this.loadDetail(this.campaign.id);
+      const list = this.template.querySelector("c-pipeline-campaign-members");
+      if (list) list.clearSelection();
       this.toast = `Removed ${ids.length} from the campaign.`;
     });
   }
@@ -1261,9 +1204,6 @@ export default class PipelineCampaigns extends LightningElement {
   get listHeads() {
     return this.heads("list", LIST_COLUMNS);
   }
-  get memberHeads() {
-    return this.heads("members", MEMBER_COLUMNS);
-  }
   current(table) {
     return this.live && this.live.table === table
       ? this.live.widths
@@ -1286,9 +1226,6 @@ export default class PipelineCampaigns extends LightningElement {
   get listCols() {
     return this.cols("list", LIST_COLUMNS, 0);
   }
-  get memberCols() {
-    return this.cols("members", MEMBER_COLUMNS, TICK_WIDTH);
-  }
   get reconCols() {
     return this.cols("recon", RECON_COLUMNS, TICK_WIDTH, ACTION_WIDTH);
   }
@@ -1304,9 +1241,6 @@ export default class PipelineCampaigns extends LightningElement {
   get listHasWidths() {
     return this.listCols.length > 0;
   }
-  get memberHasWidths() {
-    return this.memberCols.length > 0;
-  }
   tableStyle(cols) {
     if (!cols.length) return "";
     const total = cols.reduce((a, c) => a + c.px, 0);
@@ -1314,9 +1248,6 @@ export default class PipelineCampaigns extends LightningElement {
   }
   get listTableStyle() {
     return this.tableStyle(this.listCols);
-  }
-  get memberTableStyle() {
-    return this.tableStyle(this.memberCols);
   }
 
   handleSort(event) {

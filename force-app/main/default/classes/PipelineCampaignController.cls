@@ -96,6 +96,52 @@ public with sharing class PipelineCampaignController {
     public Integer dealCount;
     @AuraEnabled
     public String stages;
+    @AuraEnabled
+    public List<RatingCell> ratings = new List<RatingCell>(); // one per portfolio the campaign covers
+    @AuraEnabled
+    public List<MemberDeal> deals = new List<MemberDeal>(); // the surgeon's deals linked to this campaign
+  }
+
+  /** A surgeon's usage rating (PLATINUM, GOLD, SILVER, BRONZE or empty) for one of the campaign's portfolios. */
+  public class RatingCell {
+    @AuraEnabled
+    public String portfolio;
+    @AuraEnabled
+    public String area; // the word the usage ratings use: Hip, Knee, Shoulder, CMF
+    @AuraEnabled
+    public String rating;
+  }
+
+  /** One deal as the members list shows it. */
+  public class MemberDeal {
+    @AuraEnabled
+    public Id id;
+    @AuraEnabled
+    public String name;
+    @AuraEnabled
+    public String kind; // opp or risk
+    @AuraEnabled
+    public String portfolio;
+    @AuraEnabled
+    public String stage;
+    @AuraEnabled
+    public Decimal value;
+    @AuraEnabled
+    public String currencyCode;
+    @AuraEnabled
+    public String quarter;
+    @AuraEnabled
+    public String ownerName;
+    @AuraEnabled
+    public Datetime lastPosted;
+    @AuraEnabled
+    public Datetime lastStageChange;
+    @AuraEnabled
+    public Datetime createdDate;
+    @AuraEnabled
+    public Boolean isClosed;
+    @AuraEnabled
+    public Boolean onHold;
   }
 
   public class CampaignDetail {
@@ -323,15 +369,46 @@ public with sharing class PipelineCampaignController {
       surgeonIds.add(m.Surgeon__c);
     }
     Map<Id, List<String>> hospitals = hospitalsFor(surgeonIds);
+    // the stored usage ratings: read without field-level checks (a campaign manager need not hold those fields), sharing still applies
+    Map<Id, Account> ratingsOf = new Map<Id, Account>(
+      [
+        SELECT
+          HCPUsageHipRating__c,
+          HCPUsageKneeRating__c,
+          HCPUsageShoulderRating__c,
+          HCPUsageCMFRating__c
+        FROM Account
+        WHERE Id IN :surgeonIds
+        WITH SYSTEM_MODE
+      ]
+    );
     Map<Id, Integer> dealCount = new Map<Id, Integer>();
     Map<Id, List<String>> stages = new Map<Id, List<String>>();
-    for (Sales_Campaign_Deal__c l : [
-      SELECT Deal__r.Account__c, Deal__r.Stage__c
+    Map<Id, List<MemberDeal>> dealsOf = new Map<Id, List<MemberDeal>>();
+    List<Sales_Campaign_Deal__c> links = [
+      SELECT
+        Deal__c,
+        Deal__r.Name,
+        Deal__r.Account__c,
+        Deal__r.Stage__c,
+        Deal__r.AmountPerYear__c,
+        Deal__r.CurrencyIsoCode,
+        Deal__r.Expected_Closure_Quarter__c,
+        Deal__r.Expected_Closing_Year__c,
+        Deal__r.Owner.Name,
+        Deal__r.Latest_Chatter_Date__c,
+        Deal__r.Last_Stage_Change_Date__c,
+        Deal__r.CreatedDate,
+        Deal__r.IsClosed__c,
+        Deal__r.OnHold__c,
+        Deal__r.RecordType.DeveloperName,
+        Deal__r.Portfolio__c
       FROM Sales_Campaign_Deal__c
       WHERE Campaign__c = :campaignId
-      WITH USER_MODE
+      WITH SYSTEM_MODE
       LIMIT 5000
-    ]) {
+    ];
+    for (Sales_Campaign_Deal__c l : links) {
       Id a = l.Deal__r == null ? null : l.Deal__r.Account__c;
       if (a == null) {
         continue;
@@ -339,11 +416,16 @@ public with sharing class PipelineCampaignController {
       dealCount.put(a, (dealCount.containsKey(a) ? dealCount.get(a) : 0) + 1);
       if (!stages.containsKey(a)) {
         stages.put(a, new List<String>());
+        dealsOf.put(a, new List<MemberDeal>());
       }
       if (l.Deal__r.Stage__c != null) {
         stages.get(a).add(l.Deal__r.Stage__c);
       }
+      dealsOf.get(a).add(memberDeal(l.Deal__r));
     }
+    List<String> campaignPortfolios = String.isBlank(found[0].Portfolios__c)
+      ? new List<String>()
+      : found[0].Portfolios__c.split(';');
     for (Sales_Campaign_Member__c m : ms) {
       MemberRow r = new MemberRow();
       r.memberId = m.Id;
@@ -360,9 +442,162 @@ public with sharing class PipelineCampaignController {
       r.stages = stages.containsKey(m.Surgeon__c)
         ? String.join(stages.get(m.Surgeon__c), ', ')
         : '';
+      if (dealsOf.containsKey(m.Surgeon__c)) {
+        r.deals = dealsOf.get(m.Surgeon__c);
+      }
+      for (String p : campaignPortfolios) {
+        RatingCell c = new RatingCell();
+        c.portfolio = p.trim();
+        c.area = areaOf(c.portfolio);
+        c.rating = ratingsOf.containsKey(m.Surgeon__c)
+          ? ratingOf(ratingsOf.get(m.Surgeon__c), c.portfolio)
+          : null;
+        r.ratings.add(c);
+      }
       d.members.add(r);
     }
     return d;
+  }
+
+  /** The word the usage ratings use for a campaign portfolio. */
+  private static String areaOf(String portfolio) {
+    return portfolio == 'Extremities'
+      ? 'Shoulder'
+      : (portfolio == 'CMFT' ? 'CMF' : portfolio);
+  }
+
+  /** The surgeon's stored usage rating for a campaign portfolio. */
+  private static String ratingOf(Account a, String portfolio) {
+    if (portfolio == 'Hip') {
+      return a.HCPUsageHipRating__c;
+    } else if (portfolio == 'Knee') {
+      return a.HCPUsageKneeRating__c;
+    } else if (portfolio == 'Extremities') {
+      return a.HCPUsageShoulderRating__c;
+    } else if (portfolio == 'CMFT') {
+      return a.HCPUsageCMFRating__c;
+    }
+    return null;
+  }
+
+  private static MemberDeal memberDeal(SalesRisks__c r) {
+    MemberDeal d = new MemberDeal();
+    d.id = r.Id;
+    d.name = r.Name;
+    String rt = r.RecordType == null ||
+      r.RecordType.DeveloperName == null
+      ? ''
+      : r.RecordType.DeveloperName.toUpperCase();
+    d.kind = rt.endsWith('RISK') ? 'risk' : 'opp';
+    List<String> ports = new List<String>(
+      PipelineDealCampaignController.dealPortfolios(
+        r.RecordType == null ? null : r.RecordType.DeveloperName,
+        r.Portfolio__c
+      )
+    );
+    ports.sort();
+    d.portfolio = ports.isEmpty() ? null : ports[0];
+    d.stage = r.Stage__c;
+    d.value = r.AmountPerYear__c;
+    d.currencyCode = r.CurrencyIsoCode;
+    d.quarter = String.isBlank(r.Expected_Closure_Quarter__c)
+      ? null
+      : (String.isBlank(r.Expected_Closing_Year__c)
+          ? r.Expected_Closure_Quarter__c
+          : r.Expected_Closure_Quarter__c + ' ' + r.Expected_Closing_Year__c);
+    d.ownerName = r.Owner == null ? null : r.Owner.Name;
+    d.lastPosted = r.Latest_Chatter_Date__c;
+    d.lastStageChange = r.Last_Stage_Change_Date__c;
+    d.createdDate = r.CreatedDate;
+    d.isClosed = r.IsClosed__c;
+    d.onHold = r.OnHold__c;
+    return d;
+  }
+
+  /**
+   * The surgeon's own deals that could be put in this campaign and are not yet (the "Link a deal" button on a surgeon with no
+   * deal yet): opportunities and risks of that surgeon that fit the campaign (active, the owner's country and the portfolio).
+   * The deals are read without field-level checks (sharing still applies); linking one needs edit access to it.
+   */
+  @AuraEnabled
+  public static List<MemberDeal> linkableDeals(Id campaignId, Id surgeonId) {
+    List<MemberDeal> out = new List<MemberDeal>();
+    if (campaignId == null || surgeonId == null) {
+      return out;
+    }
+    Sales_Campaign__c c = [
+      SELECT Active__c, Countries__c, Portfolios__c
+      FROM Sales_Campaign__c
+      WHERE Id = :campaignId
+      WITH USER_MODE
+      LIMIT 1
+    ];
+    Set<Id> linked = new Set<Id>();
+    for (Sales_Campaign_Deal__c l : [
+      SELECT Deal__c
+      FROM Sales_Campaign_Deal__c
+      WHERE Campaign__c = :campaignId
+      WITH USER_MODE
+      LIMIT 5000
+    ]) {
+      linked.add(l.Deal__c);
+    }
+    String hcp = [
+      SELECT Name
+      FROM Account
+      WHERE Id = :surgeonId
+      WITH USER_MODE
+      LIMIT 1
+    ]
+    .Name;
+    for (SalesRisks__c r : [
+      SELECT
+        Name,
+        Account__c,
+        Stage__c,
+        AmountPerYear__c,
+        CurrencyIsoCode,
+        Expected_Closure_Quarter__c,
+        Expected_Closing_Year__c,
+        Owner.Name,
+        Owner_Country__c,
+        Latest_Chatter_Date__c,
+        Last_Stage_Change_Date__c,
+        CreatedDate,
+        IsClosed__c,
+        OnHold__c,
+        RecordType.DeveloperName,
+        Portfolio__c
+      FROM SalesRisks__c
+      WHERE
+        Account__c = :surgeonId
+        AND (NOT RecordType.DeveloperName LIKE '%ROSA%')
+        AND RecordType.DeveloperName NOT IN ('Master', 'SALE')
+      WITH SYSTEM_MODE
+      ORDER BY CreatedDate DESC
+      LIMIT 200
+    ]) {
+      if (linked.contains(r.Id)) {
+        continue;
+      }
+      Set<String> ports = PipelineDealCampaignController.dealPortfolios(
+        r.RecordType.DeveloperName,
+        r.Portfolio__c
+      );
+      if (
+        PipelineDealCampaignController.reasons(
+            c,
+            r.Owner_Country__c,
+            ports,
+            true,
+            hcp
+          )
+          .isEmpty()
+      ) {
+        out.add(memberDeal(r));
+      }
+    }
+    return out;
   }
 
   /** The current hospitals of each surgeon, from the Account Relationship records (no end date, neither side inactive). */

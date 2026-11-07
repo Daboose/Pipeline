@@ -9,6 +9,8 @@ import {
   parseLines,
   cleanLine,
   cleaningReport,
+  ratingRank,
+  memberTiles,
   rowDone,
   importCounts,
   NAME_LIMIT
@@ -161,6 +163,31 @@ describe("the importer", () => {
       lines: 0,
       symbols: []
     });
+  });
+  it("ranks the ratings Platinum first and leaves unrated last", () => {
+    expect(ratingRank("Platinum")).toBe(0);
+    expect(ratingRank("BRONZE")).toBe(3);
+    expect(ratingRank(null)).toBeNull();
+  });
+  it("counts the tiles above the members list, with the value per currency", () => {
+    const t = memberTiles([
+      {
+        deals: [
+          { value: 100, currencyCode: "SGD" },
+          { value: 50, currencyCode: "SGD" }
+        ]
+      },
+      { deals: [{ value: 70, currencyCode: "MYR" }] },
+      { deals: [] }
+    ]);
+    expect(t.surgeons).toBe(3);
+    expect(t.withDeal).toBe(2);
+    expect(t.noDeal).toBe(1);
+    expect(t.deals).toBe(3);
+    expect(t.value).toEqual([
+      { currencyCode: "MYR", total: 70 },
+      { currencyCode: "SGD", total: 150 }
+    ]);
   });
   it("settles a row when it is deleted, a member already, or confirmed", () => {
     expect(rowDone({ status: "exact", pick: "1", ok: false })).toBe(false);

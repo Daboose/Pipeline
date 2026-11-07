@@ -239,4 +239,41 @@ private class PipelineDealCampaignControllerTest {
       System.assertEquals(0, counts.get(inNone.Id));
     }
   }
+
+  @IsTest
+  static void aSurgeonsOwnDealsThatFitCanBeOfferedForLinking() {
+    System.runAs(manager()) {
+      Account a = surgeon('Linkable');
+      Id c = campaign('Linkable', 'SG', 'Hip');
+      PipelineCampaignController.addMember(c, a.Id);
+      SalesRisks__c fits = new SalesRisks__c(
+        RecordTypeId = rt(SalesRisks__c.SObjectType, 'AUHIP'),
+        Account__c = a.Id,
+        Stage__c = 'Plan',
+        Expected_Closure_Quarter__c = 'Q4'
+      );
+      SalesRisks__c wrongPortfolio = new SalesRisks__c(
+        RecordTypeId = rt(SalesRisks__c.SObjectType, 'AUKNEE'),
+        Account__c = a.Id,
+        Stage__c = 'Plan',
+        Expected_Closure_Quarter__c = 'Q4'
+      );
+      insert new List<SalesRisks__c>{ fits, wrongPortfolio };
+      List<PipelineCampaignController.MemberDeal> offered = PipelineCampaignController.linkableDeals(
+        c,
+        a.Id
+      );
+      System.assertEquals(1, offered.size());
+      System.assertEquals(fits.Id, offered[0].id);
+      PipelineDealCampaignController.setLink(fits.Id, c, true);
+      System.assertEquals(
+        0,
+        PipelineCampaignController.linkableDeals(c, a.Id).size()
+      ); // now linked, so no longer offered
+      System.assertEquals(
+        0,
+        PipelineCampaignController.linkableDeals(null, null).size()
+      );
+    }
+  }
 }

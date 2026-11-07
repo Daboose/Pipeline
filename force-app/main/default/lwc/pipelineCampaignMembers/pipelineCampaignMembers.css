@@ -1,0 +1,424 @@
+@import "c/pipelineStyles";
+
+:host {
+  display: block;
+  /* the colours of the slider and search pills, from the screen it sits in */
+  --seg-lab: var(--panel);
+  --seg-track: var(--panel2, var(--panel));
+  --seg-line: var(--edge);
+  --seg-optx: var(--muted);
+  --seg-indigo: var(--indigo);
+  --seg-muted: var(--muted);
+  --seg-shadow: rgba(0, 0, 0, 0.35);
+}
+.sp {
+  flex: 1 1 0;
+}
+.muted {
+  color: var(--muted);
+}
+.bad {
+  color: var(--bad);
+  font-weight: 700;
+}
+
+/* the tiles */
+/* the heading (from the screen) on the left and the tiles on the right, level, so the table starts as high as it can */
+.band {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin: 0 0 12px;
+}
+.bandl {
+  flex: 1 1 320px;
+  min-width: 0;
+}
+.tiles {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 0;
+}
+.tile {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 4px 9px 4px 8px; /* half the padding it had (Robert, 2026-11-07) */
+  min-width: 100px;
+}
+.tile b {
+  display: block;
+  font-size: 26px;
+  line-height: 1.15;
+}
+.tile b.long {
+  font-size: 18px;
+  line-height: 1.6;
+}
+.tile span {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.tile.warn b {
+  color: var(--warn);
+}
+
+/* the card */
+.card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.14);
+}
+.cardhead {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 10px 14px 8px;
+}
+.cardhead h2 {
+  margin: 0 6px 0 0;
+  font-size: 13px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--head);
+}
+.fwrap {
+  display: flex;
+  align-items: stretch;
+  width: fit-content;
+  flex: none;
+  border-radius: 999px;
+  background: var(--seg-lab);
+  border: 1px solid var(--seg-line);
+}
+.fslbl {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 16px 0 18px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--seg-muted);
+  white-space: nowrap;
+}
+.ffield {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin: -1px -1px -1px 0;
+  padding: 3px;
+  width: 230px;
+  border-radius: 999px;
+  background: var(--seg-track);
+  border: 1px solid var(--seg-line);
+}
+.fin {
+  flex: 1;
+  min-width: 0;
+  height: 28px;
+  padding: 0 8px 0 16px;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+  outline: none;
+}
+.fin::placeholder {
+  color: var(--seg-optx);
+  opacity: 0.85;
+}
+.fclear {
+  margin-right: 2px;
+}
+
+/* buttons used inside the card */
+.btn {
+  background: var(--indigo);
+  border: 1px solid var(--indigo);
+  color: #fff;
+  font-size: 12px;
+  padding: 8px 18px;
+  min-height: 36px;
+  white-space: nowrap;
+}
+.btn.sec {
+  background: #475569;
+  border-color: #475569;
+}
+.btn.small {
+  min-height: 28px;
+  padding: 4px 12px;
+  font-size: 11px;
+}
+.linkbtn {
+  margin-left: 14px;
+}
+
+/* the panel for linking a deal */
+.linkpanel {
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  background: var(--panel2, var(--panel));
+  padding: 10px 16px;
+}
+.lphead {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+.lplist {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.lplist li {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 6px 0;
+  border-top: 1px solid var(--line);
+}
+.lpname {
+  font-weight: 700;
+}
+
+/* the table: every table sorts by a heading, resizes by a column edge and keeps its headings in view */
+.tscroll {
+  border-radius: 0 0 12px 12px;
+}
+/* the table scrolls inside its own box, sideways and up and down, so a wide table can always be reached with the bar at the bottom
+   and the headings stay locked at the top of the box (Robert, 2026-11-07) */
+.tscroll.stick {
+  overflow: auto;
+  max-height: calc(
+    100vh - 240px
+  ); /* a first guess; the component measures the real space and sets the height itself */
+  min-height: 260px;
+}
+.tscroll.stick::-webkit-scrollbar {
+  height: 14px;
+  width: 14px;
+}
+.tscroll.stick::-webkit-scrollbar-track {
+  background: var(--panel2, var(--panel));
+}
+.tscroll.stick::-webkit-scrollbar-thumb {
+  background: var(--edge);
+  border-radius: 7px;
+  border: 3px solid var(--panel2, var(--panel));
+}
+.tscroll.stick {
+  scrollbar-color: var(--edge) var(--panel2, var(--panel));
+}
+table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 15px;
+}
+th {
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  background: var(--panel);
+  text-align: left;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--head);
+  padding: 9px 14px;
+  white-space: nowrap;
+  border-bottom: 1px solid var(--line);
+  user-select: none;
+}
+th .lab2 {
+  cursor: pointer;
+}
+.arrow {
+  margin-left: 4px;
+  color: var(--indigo2, var(--indigo));
+}
+.rz {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 10px;
+  cursor: col-resize;
+}
+.rz::after {
+  content: "";
+  position: absolute;
+  right: 3px;
+  top: 24%;
+  bottom: 24%;
+  width: 2px;
+  border-radius: 1px;
+  background: var(--edge);
+}
+.rz:hover::after {
+  background: var(--indigo2, var(--indigo));
+  top: 0;
+  bottom: 0;
+}
+td {
+  padding: 8px 14px;
+  border-top: 1px solid var(--line);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+tr.deal2 td {
+  border-top: 0;
+  padding-top: 0;
+}
+th.num,
+td.num {
+  text-align: right;
+}
+th.tick,
+td.tick {
+  width: 44px;
+  padding-right: 0;
+}
+td.who {
+  font-weight: 700;
+}
+td.empty {
+  text-align: center;
+  color: var(--muted);
+  padding: 24px 14px;
+}
+input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  vertical-align: middle;
+}
+.nodeal {
+  color: var(--warn);
+  font-weight: 700;
+}
+
+/* the rating chips: brushed-metal colours */
+.rate {
+  display: inline-block;
+  border-radius: 6px;
+  padding: 0 10px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1.7;
+  color: #1b2640;
+}
+.rate.Platinum {
+  background: linear-gradient(135deg, #f1f4f8, #aeb9c8);
+}
+.rate.Gold {
+  background: linear-gradient(135deg, #ffe08a, #d9a21b);
+}
+.rate.Silver {
+  background: linear-gradient(135deg, #eef0f3, #b4b8bf);
+}
+.rate.Bronze {
+  background: linear-gradient(135deg, #f0c9a0, #b8763a);
+}
+.rate.none {
+  background: none;
+  color: var(--muted);
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  padding: 0;
+}
+
+/* the cog in the table's top right corner stays in view while the table scrolls; it opens the Columns dialog */
+th.cogcell,
+td.cogcell {
+  position: sticky;
+  right: 0;
+  width: 44px;
+  padding: 0;
+  text-align: center;
+  background: var(--panel);
+}
+th.cogcell {
+  z-index: 5;
+}
+.cog {
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--indigo2, var(--indigo));
+  cursor: pointer;
+  display: inline-grid;
+  place-items: center;
+}
+.cog:hover {
+  background: rgba(127, 140, 180, 0.2);
+}
+/* the Columns dialog: small, in front of a dimmed screen */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  background: rgba(6, 11, 20, 0.45);
+}
+.picker {
+  position: fixed;
+  z-index: 31;
+  top: 18%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--ppanel, var(--panel));
+  color: var(--text);
+  border: 1px solid var(--edge);
+  border-radius: 12px;
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.5);
+  padding: 12px 18px 14px;
+  min-width: 260px;
+  max-height: 64vh;
+  overflow-y: auto;
+}
+.picker h3 {
+  margin: 0 0 6px;
+  font-size: 13px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--head);
+}
+.pk {
+  display: flex;
+  gap: 9px;
+  align-items: center;
+  padding: 4px 0;
+  font-size: 15px;
+  cursor: pointer;
+}
+.pkfoot {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 8px;
+}
+.btn.ghost {
+  background: transparent;
+  border-color: transparent;
+  color: var(--indigo2, var(--indigo));
+  padding: 4px 8px;
+  min-height: 28px;
+  font-size: 11px;
+}

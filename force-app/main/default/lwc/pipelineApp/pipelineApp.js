@@ -6,6 +6,8 @@ import {
 import SALESRISKS from "@salesforce/schema/SalesRisks__c";
 import getContext from "@salesforce/apex/PipelineController.getContext";
 import getDeals from "@salesforce/apex/PipelineController.getDeals";
+import listCampaigns from "@salesforce/apex/PipelineCampaignController.listCampaigns";
+import getCampaign from "@salesforce/apex/PipelineCampaignController.getCampaign";
 import saveSettings from "@salesforce/apex/PipelineController.saveSettings";
 import listFilters from "@salesforce/apex/PipelineFilterController.listFilters";
 import {
@@ -43,7 +45,7 @@ function stableJson(value) {
  * Usages, Surgeries and Chatter, saved filters); 0.10 follows the final mockup: a filter bar with chips and a Change
  * selection panel with Apply, in place of the always-visible Choose Your Data panel.
  */
-const PIPELINE_VERSION = "0.66";
+const PIPELINE_VERSION = "0.74";
 
 /** The colours a person can choose for the headings (Robert, 2026-11-02); the look of each is in pipelineApp.css. */
 const HEAD_COLOURS = [
@@ -106,6 +108,12 @@ export default class PipelineApp extends LightningElement {
   filtersOn = false; // and slid into view
   flyOn = false; // the same for the deal flyout
   sumOpen = false;
+  campaignsOpen = false; // the campaign members screen is shown instead of the deal lists
+  campaignList = [];
+  campaignId = "";
+  campaignDetail = null;
+  campaignBusy = false;
+  campaignError = "";
   fsOn = false;
   settings = {
     theme: "dark",
@@ -328,7 +336,7 @@ export default class PipelineApp extends LightningElement {
         ui: s.ui && typeof s.ui === "object" ? s.ui : {},
         last: s.last && typeof s.last === "object" ? s.last : null
       };
-      this.sumOpen = this.settings.ui.sum === true;
+      // the summary panels, the Team table and the lists always open folded (Robert, 2026-11-07), whatever was left open last time
     } catch {
       // unreadable settings: keep the defaults
     }
@@ -395,6 +403,87 @@ export default class PipelineApp extends LightningElement {
       cls: h.key === this.settings.headColour ? "hc on" : "hc",
       dotCls: "dot " + h.key
     }));
+  }
+  /* ----- the campaign members screen, reached from the Campaigns button in the top bar ----- */
+  get showPipelineScreen() {
+    return this.ready && !this.campaignsOpen;
+  }
+  get campaignsBtnCls() {
+    return this.campaignsOpen ? "btn cbtn on" : "btn cbtn";
+  }
+  handleCampaignsToggle() {
+    this.campaignsOpen = !this.campaignsOpen;
+    if (this.campaignsOpen && !this.campaignList.length)
+      this.loadCampaignList();
+  }
+  async loadCampaignList() {
+    try {
+      const all = await listCampaigns();
+      this.campaignList = (all || []).filter((c) => c.active);
+    } catch (e) {
+      this.campaignError =
+        e && e.body ? e.body.message : "The campaigns could not be read.";
+    }
+  }
+  get campaignOptions() {
+    return [
+      { value: "", label: "Choose a campaign", selected: !this.campaignId },
+      ...this.campaignList.map((c) => ({
+        value: c.id,
+        label: c.name,
+        selected: c.id === this.campaignId
+      }))
+    ];
+  }
+  get noCampaignDetail() {
+    return !this.campaignDetail;
+  }
+  get campaignHint() {
+    return !this.campaignDetail && !this.campaignBusy && !this.campaignError;
+  }
+  get campaignStatusText() {
+    return this.campaignDetail && this.campaignDetail.campaign.active
+      ? "Active"
+      : "Inactive";
+  }
+  get campaignStatusCls() {
+    return this.campaignDetail && this.campaignDetail.campaign.active
+      ? "tag fill good"
+      : "tag fill bad";
+  }
+  get campaignFacts() {
+    const c = this.campaignDetail ? this.campaignDetail.campaign : null;
+    if (!c) return "";
+    return [
+      c.portfolios.join(", "),
+      c.managerName ? "Manager " + c.managerName : ""
+    ]
+      .filter(Boolean)
+      .join(" · ");
+  }
+  handleCampaignPick(event) {
+    this.campaignId = event.target.value;
+    this.loadCampaign();
+  }
+  handleDealsLinked() {
+    this.loadCampaign();
+  }
+  async loadCampaign() {
+    this.campaignError = "";
+    if (!this.campaignId) {
+      this.campaignDetail = null;
+      return;
+    }
+    this.campaignBusy = true;
+    try {
+      this.campaignDetail = await getCampaign({ campaignId: this.campaignId });
+    } catch (e) {
+      this.campaignDetail = null;
+      this.campaignError =
+        e && e.body ? e.body.message : "The campaign could not be read.";
+    } finally {
+      this.campaignBusy = false;
+    }
   }
   get ready() {
     return !!(this.ctx && this.filter);
@@ -517,7 +606,7 @@ export default class PipelineApp extends LightningElement {
       deals: deals.filter((d) => d.kind === k),
       columns: this.settings.cols[k],
       widths: this.settings.widths[k],
-      listOpen: (this.settings.ui.lists || {})[k] !== false
+      listOpen: false
     }));
   }
   get filterStatus() {
@@ -525,7 +614,7 @@ export default class PipelineApp extends LightningElement {
   }
 
   get teamStartsOpen() {
-    return this.settings.ui.team === true;
+    return false;
   }
   get showTeamTable() {
     return this.isManager && this.filter.kinds.length > 0;

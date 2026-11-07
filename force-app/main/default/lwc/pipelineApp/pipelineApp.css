@@ -448,3 +448,55 @@
   border-bottom: 2px solid currentColor;
   transform: rotate(45deg);
 }
+
+/* the Campaigns button and the campaign members screen */
+.cbtn {
+  background: #475569;
+  border-color: #475569;
+  color: #fff;
+}
+.cbtn.on {
+  background: var(--indigo);
+  border-color: var(--indigo);
+}
+.cmain {
+  --stick: 59px; /* the sticky top bar's height, so the members list keeps its headings just under it */
+}
+.ctrail {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin: 0 0 12px;
+}
+.crumblink {
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--indigo2);
+  font-size: 16px;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.ctrail select.in {
+  min-width: 320px;
+  font-weight: 700;
+}
+.cfacts {
+  color: var(--muted);
+  font-size: 14px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.tag.fill {
+  color: #fff;
+  border-color: transparent;
+  padding: 2px 12px;
+}
+.tag.fill.good {
+  background: #0b8a63;
+}
+.tag.fill.bad {
+  background: #dc2626;
+}

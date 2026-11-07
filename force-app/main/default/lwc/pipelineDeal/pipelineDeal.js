@@ -553,7 +553,7 @@ export default class PipelineDeal extends LightningElement {
       { label: "Deal age", value: `${ageDays(d, now) ?? "–"} d` },
       {
         label: "Status",
-        value: d.isClosed ? "Closed" : d.onHold ? "On hold" : "Open"
+        value: d.isClosed ? "Closed" : d.onHold ? "On Hold" : "Open"
       }
     ];
   }

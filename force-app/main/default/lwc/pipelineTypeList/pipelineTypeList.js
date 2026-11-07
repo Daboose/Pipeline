@@ -34,7 +34,7 @@ function implantColumns(valueHeading) {
     [
       "status",
       "Status",
-      (d) => (d.isClosed ? "Closed" : d.onHold ? "On hold" : "Open"),
+      (d) => (d.isClosed ? "Closed" : d.onHold ? "On Hold" : "Open"),
       false,
       true
     ],
@@ -58,7 +58,7 @@ const COLUMNS = {
     [
       "status",
       "Status",
-      (d) => (d.isClosed ? "Closed" : d.onHold ? "On hold" : "Open"),
+      (d) => (d.isClosed ? "Closed" : d.onHold ? "On Hold" : "Open"),
       false,
       true
     ],
@@ -424,7 +424,7 @@ export default class PipelineTypeList extends LightningElement {
           return {
             ...base,
             cls: "num",
-            text: d.onHold && !d.isClosed ? "On hold" : "–",
+            text: d.onHold && !d.isClosed ? "On Hold" : "–",
             tag: false
           };
         const none = !d.lastPosted;

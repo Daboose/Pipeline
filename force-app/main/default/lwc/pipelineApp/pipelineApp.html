@@ -35,6 +35,14 @@
       <span class="sp"></span>
       <button
         type="button"
+        class={campaignsBtnCls}
+        lwc:if={ready}
+        onclick={handleCampaignsToggle}
+      >
+        Campaigns
+      </button>
+      <button
+        type="button"
         class="fbtn"
         lwc:if={ready}
         onclick={handleFiltersToggle}
@@ -93,7 +101,7 @@
     </header>
 
     <c-pipeline-bar
-      lwc:if={ready}
+      lwc:if={showPipelineScreen}
       filter={filter}
       choices={choices}
       teams={teams}
@@ -105,7 +113,63 @@
 
     <div class="err" lwc:if={error}>{error}</div>
 
-    <main class="main" lwc:if={ready}>
+    <main class="main cmain" lwc:if={campaignsOpen}>
+      <div class="ctrail" lwc:if={noCampaignDetail}>
+        <button type="button" class="crumblink" onclick={handleCampaignsToggle}>
+          Pipeline
+        </button>
+        <select class="in" aria-label="Campaign" onchange={handleCampaignPick}>
+          <template for:each={campaignOptions} for:item="o">
+            <option key={o.value} value={o.value} selected={o.selected}>
+              {o.label}
+            </option>
+          </template>
+        </select>
+        <span class={campaignStatusCls} lwc:if={campaignDetail}
+          >{campaignStatusText}</span
+        >
+        <span class="cfacts" lwc:if={campaignDetail}>{campaignFacts}</span>
+      </div>
+      <p class="err" lwc:if={campaignError}>{campaignError}</p>
+      <p class="note" lwc:if={campaignBusy}>Reading the campaign…</p>
+      <p class="note" lwc:if={campaignHint}>
+        Choose a campaign to see its surgeons, their ratings and their deals.
+      </p>
+      <c-pipeline-campaign-members
+        lwc:if={campaignDetail}
+        campaign={campaignDetail.campaign}
+        members={campaignDetail.members}
+        can-link
+        ondealslinked={handleDealsLinked}
+      >
+        <div slot="heading" class="ctrail">
+          <button
+            type="button"
+            class="crumblink"
+            onclick={handleCampaignsToggle}
+          >
+            Pipeline
+          </button>
+          <select
+            class="in"
+            aria-label="Campaign"
+            onchange={handleCampaignPick}
+          >
+            <template for:each={campaignOptions} for:item="o">
+              <option key={o.value} value={o.value} selected={o.selected}>
+                {o.label}
+              </option>
+            </template>
+          </select>
+          <span class={campaignStatusCls} lwc:if={campaignDetail}
+            >{campaignStatusText}</span
+          >
+          <span class="cfacts" lwc:if={campaignDetail}>{campaignFacts}</span>
+        </div>
+      </c-pipeline-campaign-members>
+    </main>
+
+    <main class="main" lwc:if={showPipelineScreen}>
       <div class="note" lwc:if={truncated}>
         More deals match than can be shown. Narrow the choices with Change
         selection.
