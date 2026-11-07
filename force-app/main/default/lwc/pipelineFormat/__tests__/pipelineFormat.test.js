@@ -13,7 +13,8 @@ import {
   chatterDays,
   agoText,
   mentionParts,
-  chatterText
+  chatterText,
+  dealStatus
 } from "c/pipelineFormat";
 
 const NOW = Date.parse("2026-11-01T00:00:00Z");
@@ -155,5 +156,45 @@ describe("c-pipeline-format", () => {
     );
     expect(t).not.toContain("<");
     expect(t).toContain("hi");
+  });
+});
+
+describe("dealStatus", () => {
+  it("says Open, On Hold, Closed Won or Closed Lost, telling won from lost by the closing stage of each kind", () => {
+    const d = (o) => ({
+      kind: "opp",
+      stage: "Plan",
+      isClosed: false,
+      onHold: false,
+      ...o
+    });
+    expect(dealStatus(d({})).label).toBe("Open");
+    expect(dealStatus(d({ onHold: true })).key).toBe("hold");
+    expect(dealStatus(d({ isClosed: true, stage: "Conversion" }))).toEqual({
+      key: "won",
+      label: "Closed Won"
+    });
+    expect(
+      dealStatus(d({ isClosed: true, stage: "Unsuccessful Conversion" })).label
+    ).toBe("Closed Lost");
+    expect(
+      dealStatus(d({ kind: "risk", isClosed: true, stage: "Closed Retained" }))
+        .key
+    ).toBe("won");
+    expect(
+      dealStatus(d({ kind: "risk", isClosed: true, stage: "Lost Business" }))
+        .key
+    ).toBe("lost");
+    expect(
+      dealStatus(d({ kind: "rosa", isClosed: true, stage: "Closed Won" })).key
+    ).toBe("won");
+    expect(
+      dealStatus(d({ kind: "rosa", isClosed: true, stage: "Deal Lost" })).key
+    ).toBe("lost");
+  });
+  it("calls any other closed stage just Closed, and never shows a closed deal as on hold", () => {
+    expect(
+      dealStatus({ kind: "opp", isClosed: true, onHold: true, stage: "Other" })
+    ).toEqual({ key: "closed", label: "Closed" });
   });
 });

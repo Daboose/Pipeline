@@ -61,29 +61,16 @@
   border-bottom: 2.5px solid #fff;
   transform: rotate(45deg);
 }
-.seg {
-  height: var(--barh);
+/* the Status slider (the one-pill look of the Campaigns list; Robert, 2026-11-07), in Pipeline's colours */
+.status {
+  --seg-track: var(--panel2);
+  --seg-line: var(--edge);
+  --seg-lab: var(--panel);
+  --seg-optx: var(--muted);
+  --seg-indigo: var(--indigo);
+  --seg-muted: var(--muted);
+  --seg-shadow: rgba(0, 0, 0, 0.35);
   display: inline-flex;
-  border: 1px solid var(--edge);
-  border-radius: 999px;
-  overflow: hidden;
-}
-.seg button {
-  display: flex;
-  align-items: center;
-  border: 0;
-  background: transparent;
-  color: var(--muted);
-  padding: 8px 18px;
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  cursor: pointer;
-}
-.seg button.on {
-  background: var(--indigo);
-  color: #fff;
 }
 .chips {
   display: flex;

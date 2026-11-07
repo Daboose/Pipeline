@@ -31,6 +31,29 @@ export const STAGE_COLOURS = [
   "#14b8a6"
 ];
 
+/** The two closing stages of each kind of deal: won (the end of the stage path) and lost. Used by the deal panel's stage slider and the Status column. */
+export const STAGE_ENDS = {
+  opp: { won: "Conversion", lost: "Unsuccessful Conversion" },
+  risk: { won: "Closed Retained", lost: "Lost Business" },
+  rosa: { won: "Closed Won", lost: "Deal Lost" }
+};
+
+/**
+ * A deal's status for the Status column (Robert, 2026-11-07): closed (won or lost, told by its closing stage, as the stage
+ * slider does), on hold, or open. Returns { key, label }: key is "won", "lost", "closed" (a closed stage that is neither end),
+ * "hold" or "open". A closed deal is never "on hold". The labels sort in a sensible order: Closed Lost, Closed Won, On Hold, Open.
+ */
+export function dealStatus(deal) {
+  const ends = STAGE_ENDS[deal.kind] || STAGE_ENDS.opp;
+  if (deal.isClosed) {
+    if (deal.stage === ends.won) return { key: "won", label: "Closed Won" };
+    if (deal.stage === ends.lost) return { key: "lost", label: "Closed Lost" };
+    return { key: "closed", label: "Closed" };
+  }
+  if (deal.onHold) return { key: "hold", label: "On Hold" };
+  return { key: "open", label: "Open" };
+}
+
 /** 649000 in AUD is "A$649k"; 1,250,000 is "A$1.25m". Smaller amounts are shown whole. */
 export function formatMoney(value, currencyCode) {
   const v = Number(value) || 0;

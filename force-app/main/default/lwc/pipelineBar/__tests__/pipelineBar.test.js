@@ -43,24 +43,27 @@ describe("c-pipeline-bar", () => {
       document.body.removeChild(document.body.firstChild);
   });
 
-  it("shows the types and the Open / Closed / Both / Custom worked out from the stages", () => {
+  const status = (el) =>
+    el.shadowRoot.querySelector("c-pipeline-segmented").value;
+
+  it("shows the types and the Status slider (Open / Closed / Both) worked out from the stages, and nothing chosen when the stages were picked one by one", () => {
     const el = make();
     expect(el.shadowRoot.querySelectorAll(".ktog.on").length).toBe(1);
-    expect(
-      el.shadowRoot.querySelector(".seg button.on").textContent.trim()
-    ).toBe("Open");
+    expect(status(el)).toBe("open");
+    expect(el.shadowRoot.querySelector("c-pipeline-segmented").heading).toBe(
+      "Status"
+    );
     const both = make({
       filter: withStatus(defaultFilter(["opp"], CHOICES, MINE), "both", CHOICES)
     });
-    expect(
-      both.shadowRoot.querySelector(".seg button.on").textContent.trim()
-    ).toBe("Both");
+    expect(status(both)).toBe("both");
     const custom = make({
       filter: { ...defaultFilter(["opp"], CHOICES, MINE), stages: ["Plan"] }
     });
-    expect(
-      custom.shadowRoot.querySelector(".seg button.on").textContent.trim()
-    ).toBe("Custom");
+    expect(status(custom)).toBe("");
+    expect(custom.shadowRoot.querySelector(".chips").textContent).toContain(
+      "Plan"
+    );
   });
 
   it("says in chips what is looked at", () => {
@@ -73,24 +76,23 @@ describe("c-pipeline-bar", () => {
       filter: defaultFilter(["opp"], CHOICES, "")
     });
     expect(rep.shadowRoot.querySelector(".chips").textContent).toContain(
-      "My pipeline"
+      "My Pipeline"
     );
   });
 
-  it("announces a type or a status that was pressed, and opens the panel from Custom", () => {
+  it("announces a type or a status that was pressed", () => {
     const el = make();
     const kind = jest.fn();
-    const status = jest.fn();
-    const panel = jest.fn();
+    const picked = jest.fn();
     el.addEventListener("kindtoggle", kind);
-    el.addEventListener("statuspick", status);
-    el.addEventListener("openpanel", panel);
+    el.addEventListener("statuspick", picked);
     btn(el, "Risks").click();
     expect(kind.mock.calls[0][0].detail.kind).toBe("risk");
-    btn(el, "Closed").click();
-    expect(status.mock.calls[0][0].detail.value).toBe("closed");
-    btn(el, "Custom").click();
-    expect(status).toHaveBeenCalledTimes(1);
-    expect(panel).toHaveBeenCalledTimes(1);
+    el.shadowRoot
+      .querySelector("c-pipeline-segmented")
+      .dispatchEvent(
+        new CustomEvent("change", { detail: { value: "closed" } })
+      );
+    expect(picked.mock.calls[0][0].detail.value).toBe("closed");
   });
 });

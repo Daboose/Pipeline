@@ -55,7 +55,16 @@ export default class PipelineSegmented extends LightningElement {
   place(animate) {
     const chosen = this.template.querySelector(".opt.on");
     const pill = this.refs.pill;
-    if (!chosen || !pill || !chosen.offsetWidth) return;
+    if (!pill) return;
+    if (!chosen) {
+      // nothing is chosen (for example the stages were picked one by one): no highlight until something is
+      if (this.pillKey !== "") {
+        this.pillKey = "";
+        this.placed = false;
+      }
+      return;
+    }
+    if (!chosen.offsetWidth) return;
     const key = `${chosen.offsetLeft}:${chosen.offsetWidth}`;
     if (key === this.pillKey) return;
     const first = this.pillKey === "";

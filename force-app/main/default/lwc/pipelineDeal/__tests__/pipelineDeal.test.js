@@ -131,7 +131,7 @@ describe("c-pipeline-deal", () => {
   });
 
   describe("the header order and the stage", () => {
-    it("puts the summary line under the name and the stage slider in a band of its own under that, both in the header", async () => {
+    it("puts the summary line under the name in the header, and the stage slider in a band of its own at the top of the area the panels slide over", async () => {
       const el = createElement("c-pipeline-deal", { is: PipelineDeal });
       el.deal = { ...deal, kind: "opp", stage: "Commit" };
       document.body.appendChild(el);
@@ -139,9 +139,13 @@ describe("c-pipeline-deal", () => {
       const kids = [...el.shadowRoot.querySelector(".fhead").children].map(
         (c) => c.className
       );
-      expect(kids).toEqual(["h1", "strip", "band"]);
+      expect(kids).toEqual(["h1", "strip"]);
+      const under = [...el.shadowRoot.querySelector(".under").children].map(
+        (c) => c.className
+      );
+      expect(under[0]).toBe("band");
       expect(
-        el.shadowRoot.querySelector(".band c-pipeline-stage-slider")
+        el.shadowRoot.querySelector(".under > .band c-pipeline-stage-slider")
       ).not.toBeNull();
       expect(el.shadowRoot.querySelector(".under .strip")).toBeNull();
     });

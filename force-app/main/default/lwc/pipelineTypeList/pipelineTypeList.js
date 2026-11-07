@@ -11,7 +11,8 @@ import {
   totalsByCurrency,
   needsAttention,
   quarterRank,
-  plural
+  plural,
+  dealStatus
 } from "c/pipelineFormat";
 
 const PAGE = 25;
@@ -32,13 +33,7 @@ function implantColumns(valueHeading) {
     ["quarter", "Close quarter", (d) => quarterRank(d.quarter), false, true],
     ["posted", "Last posted", (d) => chatterDays(d) ?? -1, true, true],
     ["moved", "Last stage move", (d) => stageDays(d) ?? -1, true, true],
-    [
-      "status",
-      "Status",
-      (d) => (d.isClosed ? "Closed" : d.onHold ? "On Hold" : "Open"),
-      false,
-      true
-    ],
+    ["status", "Status", (d) => dealStatus(d).label, false, true],
     ["age", "Age", (d) => ageDays(d) ?? -1, true, false],
     ["state", "State", (d) => d.ownerState || "", false, false]
   ];
@@ -57,13 +52,7 @@ const COLUMNS = {
     ["installdate", "Install date", (d) => d.installDate || "", false, true],
     ["posted", "Last posted", (d) => chatterDays(d) ?? -1, true, true],
     ["moved", "Last stage move", (d) => stageDays(d) ?? -1, true, true],
-    [
-      "status",
-      "Status",
-      (d) => (d.isClosed ? "Closed" : d.onHold ? "On Hold" : "Open"),
-      false,
-      true
-    ],
+    ["status", "Status", (d) => dealStatus(d).label, false, true],
     ["age", "Age", (d) => ageDays(d) ?? -1, true, false],
     ["state", "State", (d) => d.ownerState || "", false, false]
   ]
@@ -210,7 +199,7 @@ export default class PipelineTypeList extends LightningElement {
     return this.visibleDefs.map((c) => ({
       id: c[0],
       label: c[1],
-      cls: c[3] ? "num" : "",
+      cls: (c[3] ? "num" : "") + (c[0] === "status" ? " c-status" : ""),
       arrow: this.sortId === c[0] ? (this.sortDir === 1 ? " ▲" : " ▼") : ""
     }));
   }
@@ -416,6 +405,7 @@ export default class PipelineTypeList extends LightningElement {
       id,
       cls: "",
       text: "",
+      textCls: "",
       title: "",
       tag: false,
       tagCls: "",
@@ -428,6 +418,10 @@ export default class PipelineTypeList extends LightningElement {
         return {
           ...base,
           text,
+          // by default the Hospital column is a little narrower: a long name is cut with "…" (the full name on hover) until the
+          // person drags the column to the width they want (Robert, 2026-11-07)
+          textCls: id === "facility" && !this.hasWidths ? "clip" : "",
+          title: id === "facility" ? text : "",
           star: !!d.repPriority && (id === "hcp") === (this.kind !== "rosa"),
           // the gold star: the deal is in one or more campaigns (beside the surgeon; a ROSA list has no surgeon column)
           campaign: d.campaignCount > 0 && id === "hcp" && this.kind !== "rosa"
@@ -441,13 +435,9 @@ export default class PipelineTypeList extends LightningElement {
         };
       case "posted": {
         const n = chatterDays(d, now);
+        // a closed or an on-hold deal has no "last posted" to watch; the Status column says On Hold (Robert, 2026-11-07)
         if (d.isClosed || d.onHold)
-          return {
-            ...base,
-            cls: "num",
-            text: d.onHold && !d.isClosed ? "On Hold" : "–",
-            tag: false
-          };
+          return { ...base, cls: "num", text: "–", tag: false };
         const none = !d.lastPosted;
         return {
           ...base,
@@ -492,6 +482,17 @@ export default class PipelineTypeList extends LightningElement {
         return { ...base, text: d.stage || "–" };
       case "quarter":
         return { ...base, text: d.quarter || "–" };
+      case "status": {
+        // a solid pill in the stage bar's colours: Open blue, On Hold amber, Closed Won green, Closed Lost red
+        const st = dealStatus(d);
+        return {
+          ...base,
+          cls: "c-status",
+          text: st.label,
+          tag: true,
+          tagCls: `stp st-${st.key}`
+        };
+      }
       case "country":
         return { ...base, text: d.ownerCountry || "–" };
       case "state":

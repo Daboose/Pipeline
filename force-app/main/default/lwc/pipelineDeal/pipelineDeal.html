@@ -79,16 +79,6 @@
           </div>
         </template>
       </div>
-      <div class="band">
-        <c-pipeline-stage-slider
-          steps={stageSteps}
-          won={stageWon}
-          lost={stageLost}
-          value={stageNow}
-          readonly={stageReadonly}
-          onchange={handleStageChange}
-        ></c-pipeline-stage-slider>
-      </div>
     </div>
 
     <div class="unsaved" lwc:if={confirming}>
@@ -103,6 +93,16 @@
     </div>
 
     <div class="under">
+      <div class="band">
+        <c-pipeline-stage-slider
+          steps={stageSteps}
+          won={stageWon}
+          lost={stageLost}
+          value={stageNow}
+          readonly={stageReadonly}
+          onchange={handleStageChange}
+        ></c-pipeline-stage-slider>
+      </div>
       <div class="body">
         <div class="col">
           <section class="card">

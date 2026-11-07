@@ -15,18 +15,14 @@
       </template>
     </div>
 
-    <div class="seg" role="group" aria-label="Open or closed">
-      <template for:each={statusButtons} for:item="s">
-        <button
-          type="button"
-          key={s.value}
-          class={s.cls}
-          data-value={s.value}
-          onclick={handleStatus}
-        >
-          {s.label}
-        </button>
-      </template>
+    <div class="status">
+      <c-pipeline-segmented
+        heading="Status"
+        label="Open, Closed or Both"
+        options={statusOptions}
+        value={statusValue}
+        onchange={handleStatus}
+      ></c-pipeline-segmented>
     </div>
 
     <div class="chips">

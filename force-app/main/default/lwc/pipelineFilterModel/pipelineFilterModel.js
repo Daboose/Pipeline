@@ -227,7 +227,7 @@ export function clientMatch(d, f, now = Date.now()) {
 export function chipList(f, choices, teams, isRep) {
   const out = [];
   const add = (label, text) => out.push({ key: out.length, label, text });
-  if (isRep) add("", "My pipeline");
+  if (isRep) add("", "My Pipeline");
   if (f.teamId === MINE) add("", "My team" + (f.below ? " + below" : ""));
   else if (f.teamId) {
     const t = (teams || []).find((x) => x.id === f.teamId);

@@ -205,7 +205,7 @@ describe("c-pipeline-filter-model", () => {
     expect(
       chipList(defaultFilter(["opp"], CHOICES, ""), CHOICES, teams, true)[0]
         .text
-    ).toBe("My pipeline");
+    ).toBe("My Pipeline");
     const busy = {
       ...f,
       teamId: "t1",

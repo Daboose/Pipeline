@@ -19,7 +19,8 @@ import {
   chatterBand,
   stageBand,
   suggestYear,
-  quarterIsPast
+  quarterIsPast,
+  STAGE_ENDS
 } from "c/pipelineFormat";
 
 const SLIDE_IN_DELAY_MS = 30; // lets the closed position be drawn first, so the slide runs
@@ -113,12 +114,6 @@ const KIND_NAME = {
   opp: "Opportunity",
   risk: "Risk",
   rosa: "ROSA opportunity"
-};
-/** The two closing stages of each kind: won (the end of the path) and lost. */
-const ENDS = {
-  opp: { won: "Conversion", lost: "Unsuccessful Conversion" },
-  risk: { won: "Closed Retained", lost: "Lost Business" },
-  rosa: { won: "Closed Won", lost: "Deal Lost" }
 };
 
 function parseErrors(e) {
@@ -517,7 +512,7 @@ export default class PipelineDeal extends LightningElement {
    * set to either from the slider. The slider itself draws the colours (a blue trail, a green fill, a red pill).
    */
   get stageSteps() {
-    const ends = ENDS[this.kind];
+    const ends = STAGE_ENDS[this.kind];
     const values = (this.choices("Stage__c") || []).map((v) => v.value);
     const now = this.stageNow;
     const open = values.filter((v) => v !== ends.won && v !== ends.lost);
@@ -528,10 +523,10 @@ export default class PipelineDeal extends LightningElement {
     return [...open, ...closing];
   }
   get stageWon() {
-    return ENDS[this.kind].won;
+    return STAGE_ENDS[this.kind].won;
   }
   get stageLost() {
-    return ENDS[this.kind].lost;
+    return STAGE_ENDS[this.kind].lost;
   }
   get stageReadonly() {
     return !this.updateable("Stage__c");

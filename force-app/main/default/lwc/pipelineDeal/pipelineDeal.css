@@ -59,12 +59,14 @@
   padding: 10px 20px 6px;
 }
 /* the stage slider sits centred in a tinted band of its own under the summary line: the overall stage of the deal (Robert, 2026-11-07;
-   mockup pipeline_deal_header_order_v2.html). Clicking a step changes the stage, so the form has no Stage field. */
+   mockup pipeline_deal_header_order_v2.html). Clicking a step changes the stage, so the form has no Stage field. The band is at the top of
+   the area the Surgeon Usages, MyCase Bookings and Campaigns panels slide over, so a panel covers it and its heading sits where the stage bar was. */
 .band {
   display: flex;
   padding: 12px 20px;
+  flex: none;
   background: var(--panel2);
-  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
   overflow-x: auto;
 }
 .band > c-pipeline-stage-slider {

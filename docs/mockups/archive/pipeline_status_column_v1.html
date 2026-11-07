@@ -1,0 +1,789 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>
+      Mockup: the stage slider with a tick on finished stages (version 3)
+    </title>
+    <style>
+      :root,
+      [data-theme="light"] {
+        --page: #e9edf4;
+        --card: #ffffff;
+        --bg: #f4f6fa;
+        --box: #eef2fa;
+        --line: #d5dcea;
+        --edge: #b3bfd6;
+        --text: #1b2640;
+        --muted: #5d6b85;
+        --pipe: #b7791f;
+        --indigo: #4f46e5;
+        --slate: #64748b;
+        --head: #db2777;
+        --hold: #f59e0b;
+      }
+      [data-theme="dark"] {
+        --page: #141e2e;
+        --card: #1a2740;
+        --bg: #141e2e;
+        --box: #20304f;
+        --line: #2f4163;
+        --edge: #5b6f93;
+        --text: #e8edf5;
+        --muted: #9fb0cc;
+        --pipe: #fdb827;
+        --indigo: #6366f1;
+        --slate: #475569;
+        --head: #f472b6;
+        --hold: #f59e0b;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--page);
+        color: var(--text);
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-size: 15px;
+      }
+      button {
+        font-family: inherit;
+        font-size: inherit;
+        color: inherit;
+      }
+      .sp {
+        flex: 1;
+      }
+      .muted {
+        color: var(--muted);
+      }
+      .sfnav {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        height: 44px;
+        padding: 0 16px;
+        background: #0b1220;
+        color: #cdd6e6;
+        font-size: 14px;
+      }
+      .sfnav .app {
+        font-weight: 800;
+        letter-spacing: 0.14em;
+      }
+      .sfnav .app b {
+        color: #fdb827;
+      }
+      .sfnav .tab {
+        color: #9fb0cc;
+      }
+      .sfnav .tab.on {
+        color: #fff;
+        border-bottom: 2px solid #6366f1;
+        padding-bottom: 2px;
+      }
+      .btn,
+      .pill {
+        border: 0;
+        border-radius: 999px;
+        padding: 7px 16px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+        background: var(--slate);
+        color: #fff;
+      }
+      .pill.on {
+        background: var(--indigo);
+      }
+      .about {
+        margin: 14px 16px;
+        padding: 12px 18px;
+        background: var(--card);
+        border: 1px solid var(--edge);
+        border-radius: 12px;
+        line-height: 1.5;
+        max-width: 1100px;
+      }
+      .about summary {
+        cursor: pointer;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        color: var(--pipe);
+      }
+      .about ul {
+        margin: 4px 0 8px;
+        padding-left: 22px;
+      }
+      .tools {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+        padding: 0 16px 10px;
+      }
+      .tools .lab {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        margin-left: 14px;
+      }
+      .tools .lab:first-child {
+        margin-left: 0;
+      }
+      .mocknote {
+        margin: 0 16px 12px;
+        padding: 8px 14px;
+        border: 1px dashed var(--edge);
+        border-radius: 10px;
+        color: var(--muted);
+        font-size: 14px;
+        font-style: italic;
+        max-width: 1100px;
+      }
+      .opts {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+        padding: 0 16px 40px;
+        max-width: 1280px;
+      }
+      .opt h2 {
+        margin: 0 0 6px;
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--head);
+      }
+      .opt p {
+        margin: 0 0 8px;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .opts {
+        display: flex;
+        flex-direction: column;
+        gap: 22px;
+        padding: 0 16px 40px;
+        max-width: 1280px;
+      }
+      .opt {
+        background: var(--card);
+        border: 1px solid var(--edge);
+        border-radius: 14px;
+        padding: 14px 18px 18px;
+      }
+      .opt h2 {
+        margin: 0 0 2px;
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--head);
+      }
+      .opt p {
+        margin: 0 0 10px;
+        color: var(--muted);
+        font-size: 14px;
+      }
+      .band {
+        display: flex;
+        justify-content: center;
+        padding: 14px 20px;
+        background: var(--box);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        margin-bottom: 14px;
+      }
+      .list {
+        display: grid;
+        grid-template-columns: 150px 1fr;
+        gap: 10px 14px;
+        align-items: center;
+      }
+      .list .tag {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+
+      /* the stage slider with a solid colour: blue while working, green at Conversion, red at Unsuccessful Conversion.
+         The whole pill is that colour; the chosen stage is a white pill carrying the colour as its text. */
+      .stg {
+        --c: var(--blue);
+        position: relative;
+        display: inline-flex;
+        align-items: stretch;
+        height: 38px;
+        background: var(--c);
+        border: 1px solid var(--c);
+        border-radius: 999px;
+        transition:
+          background 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+          border-color 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .stg.good {
+        --c: var(--win);
+      }
+      .stg.bad {
+        --c: var(--lose);
+      }
+      .stg.lock {
+        opacity: 0.55;
+      }
+      .stg .lb {
+        display: inline-flex;
+        align-items: center;
+        padding: 0 14px 0 18px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: #fff;
+      }
+      .stg .trk {
+        position: relative;
+        display: flex;
+        margin: -1px;
+        padding: 3px;
+        background: color-mix(in srgb, var(--c) 82%, #000);
+        border: 1px solid var(--c);
+        border-radius: 999px;
+        transition:
+          background 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+          border-color 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .stg .hl {
+        position: absolute;
+        z-index: 1;
+        top: 3px;
+        left: 0;
+        width: 0;
+        height: 28px;
+        border-radius: 999px;
+        background: #fff;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+        transition:
+          left 0.55s cubic-bezier(0.3, 1.35, 0.5, 1),
+          width 0.55s cubic-bezier(0.3, 1.35, 0.5, 1);
+      }
+      .stg .st {
+        position: relative;
+        z-index: 2;
+        display: inline-flex;
+        align-items: center;
+        height: 28px;
+        padding: 0 16px;
+        border: 0;
+        background: none;
+        font-family: inherit;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        white-space: nowrap;
+        color: #fff;
+        cursor: pointer;
+        transition: color 0.3s;
+      }
+      .stg.lock .st {
+        cursor: default;
+      }
+      .stg .st.on {
+        color: var(--c);
+      }
+      /* version B: the stages already passed stay bright and the ones still to come are dimmer, so progress still shows */
+      .opt .stg .st.ahead {
+        color: rgba(255, 255, 255, var(--dim, 0.62));
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .stg,
+        .stg .trk,
+        .stg .hl,
+        .stg .st {
+          transition: none;
+        }
+      }
+      :root {
+        --blue: #4f46e5;
+        --win: #16a34a;
+        --lose: #dc2626;
+      }
+      [data-theme="dark"] {
+        --blue: #6366f1;
+      }
+
+      .stg .tk {
+        flex: none;
+        width: 12px;
+        height: 12px;
+        margin-left: 7px;
+      }
+      .tb .stg .tk {
+        width: 16px;
+        height: 16px;
+        padding: 2px;
+        border-radius: 50%;
+        background: #fff;
+        color: var(--c);
+        margin-left: 7px;
+      }
+      .stg .st .tk {
+        display: none;
+      }
+      .ta .stg .st.done .tk,
+      .tb .stg .st.done .tk {
+        display: inline-block;
+      }
+
+      .bar {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px 14px;
+        padding: 10px 18px;
+        background: var(--bg);
+        border: 1px solid var(--edge);
+        border-radius: 12px;
+      }
+      .ktogs {
+        display: inline-flex;
+        gap: 8px;
+      }
+      .ktog {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        border: 1px solid var(--edge);
+        background: transparent;
+        color: var(--muted);
+        border-radius: 999px;
+        padding: 7px 8px 7px 16px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+      .ktog.on {
+        color: var(--text);
+        border-color: var(--indigo);
+        background: rgba(99, 102, 241, 0.14);
+      }
+      .kbox {
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        border: 2px solid var(--edge);
+        position: relative;
+        flex: none;
+      }
+      .ktog.on .kbox {
+        background: var(--indigo);
+        border-color: var(--indigo);
+      }
+      .ktog.on .kbox::after {
+        content: "";
+        position: absolute;
+        left: 6px;
+        top: 2px;
+        width: 5px;
+        height: 10px;
+        border-right: 2.5px solid #fff;
+        border-bottom: 2.5px solid #fff;
+        transform: rotate(45deg);
+      }
+      /* today's Open / Closed / Both / Custom */
+      .oldseg {
+        height: 38px;
+        display: inline-flex;
+        border: 1px solid var(--edge);
+        border-radius: 999px;
+        overflow: hidden;
+      }
+      .oldseg span {
+        display: flex;
+        align-items: center;
+        color: var(--muted);
+        padding: 8px 18px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+      .oldseg span.on {
+        background: var(--indigo);
+        color: #fff;
+      }
+      .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .chip {
+        border: 1px solid var(--edge);
+        border-radius: 999px;
+        padding: 6px 14px;
+        font-size: 14px;
+        color: var(--text);
+      }
+      .chip i {
+        font-style: normal;
+        color: var(--muted);
+        margin-right: 6px;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      /* the Status slider: Open / Closed / Both, in the new solid-colour look; B keeps the lighter look of the Campaigns slider */
+      .stg.lo {
+        --c: var(--blue);
+      }
+      .vb2 .stg {
+        background: var(--card);
+        border-color: var(--edge);
+      }
+      .vb2 .stg .lb {
+        color: var(--muted);
+      }
+      .vb2 .stg .trk {
+        background: var(--box);
+        border-color: var(--edge);
+      }
+      .vb2 .stg .hl {
+        background: var(--blue);
+      }
+      .vb2 .stg .st {
+        color: var(--muted);
+      }
+      .vb2 .stg .st.on {
+        color: #fff;
+      }
+      .note2 {
+        color: var(--muted);
+        font-size: 13px;
+        margin: 6px 0 0;
+      }
+
+      table.deals {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 15px;
+      }
+      table.deals th {
+        text-align: left;
+        padding: 9px 12px;
+        font-size: 12px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+        border-bottom: 1px solid var(--edge);
+        white-space: nowrap;
+      }
+      table.deals td {
+        padding: 9px 12px;
+        border-bottom: 1px solid var(--line);
+        white-space: nowrap;
+      }
+      table.deals td.num,
+      table.deals th.num {
+        text-align: right;
+      }
+      .stp {
+        display: inline-flex;
+        align-items: center;
+        height: 26px;
+        padding: 0 12px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      /* A: only On Hold is picked out; Open and Closed are plain words */
+      .sa .st-hold {
+        background: #f59e0b;
+        color: #1b2640;
+      }
+      .sa .st-closed,
+      .sa .st-open {
+        padding: 0;
+        height: auto;
+        font-size: 15px;
+        font-weight: 400;
+        letter-spacing: 0;
+        text-transform: none;
+        color: var(--text);
+      }
+      .sa .st-closed {
+        color: var(--muted);
+      }
+      /* B: all three are pills */
+      .sb .st-open {
+        background: color-mix(in srgb, var(--blue) 18%, var(--card));
+        border: 1px solid color-mix(in srgb, var(--blue) 50%, var(--card));
+        color: color-mix(in srgb, var(--blue) 80%, var(--text));
+      }
+      .sb .st-hold {
+        background: #f59e0b;
+        color: #1b2640;
+      }
+      .sb .st-closed {
+        background: var(--slate);
+        color: #fff;
+      }
+      .tag2 {
+        display: inline-block;
+        padding: 1px 10px;
+        border-radius: 999px;
+        font-size: 13px;
+        font-weight: 700;
+        background: color-mix(in srgb, #16a34a 18%, var(--card));
+        color: color-mix(in srgb, #16a34a 75%, var(--text));
+      }
+    </style>
+  </head>
+  <body data-theme="light">
+    <div class="sfnav">
+      <span class="app"><b>PIPE</b>LINE</span>
+      <span class="tab on">Pipeline</span>
+      <span class="tab">Opportunities &amp; Risks</span>
+      <span class="sp"></span>
+      <button type="button" class="btn" id="fullbtn">Full screen</button>
+    </div>
+
+    <details class="about" open>
+      <summary>ABOUT THIS MOCKUP</summary>
+      <p>
+        <b>Version 1, invented data only.</b> The <b>Status</b> column in the
+        deal lists has been empty for every deal. Robert chose to use it:
+        <b>each deal shows Open, On Hold or Closed</b>, with On Hold in the same
+        amber as the pill in the deal panel. Two looks, top to bottom, on a list
+        showing Open and Closed together (the Status slider on Both):
+      </p>
+      <ul>
+        <li>
+          <b>A. Only On Hold stands out:</b> an amber pill for On Hold; Open and
+          Closed are plain words (Closed a little greyer).
+        </li>
+        <li>
+          <b>B. All three are pills:</b> a light blue pill for Open, solid amber
+          for On Hold, solid slate for Closed.
+        </li>
+        <li>
+          <b>Try it:</b> <b>Rows</b> shows the list as it would be with only the
+          open deals, only the closed deals, or both. <b>Theme</b> for dark. (In
+          Pipeline the column sorts by clicking its heading, Closed, then On
+          Hold, then Open, as it already does; not drawn here.)
+        </li>
+      </ul>
+      <p class="muted">
+        Not shown: the other columns' tags (Last posted, Last stage move). The
+        collapsed rep's summary line, “3 need attention” or “All current”, stays
+        as it is.
+      </p>
+    </details>
+
+    <div class="tools">
+      <span class="lab" style="margin-left: 0">Rows</span>
+      <button type="button" class="pill" data-rows="open">Open only</button>
+      <button type="button" class="pill" data-rows="closed">Closed only</button>
+      <button type="button" class="pill on" data-rows="both">Both</button>
+      <span class="lab">Theme</span>
+      <button type="button" class="pill on" data-theme-btn="light">
+        Light
+      </button>
+      <button type="button" class="pill" data-theme-btn="dark">Dark</button>
+    </div>
+    <div class="mocknote" id="mocknote">
+      Mockup note: compare where the summary line and the stage slider sit in
+      each version.
+    </div>
+    <div class="opts" id="opts"></div>
+
+    <script>
+      var S = { theme: "light", rows: "both", sort: "" };
+      var DEALS = [
+        [
+          "Dr Lewis Chen",
+          "Mater Hospital",
+          "Hip",
+          "Commit",
+          "A$250k",
+          "Q1 2027",
+          "12 d",
+          "open"
+        ],
+        [
+          "Dr Anna Ward",
+          "Royal Perth Hospital",
+          "Knee",
+          "Action",
+          "A$180k",
+          "Q4 2026",
+          "41 d",
+          "hold"
+        ],
+        [
+          "Dr Sam Patel",
+          "Sydney Adventist",
+          "Hip",
+          "Conversion",
+          "A$320k",
+          "Q3 2026",
+          "–",
+          "closed"
+        ],
+        [
+          "Dr Tara Nguyen",
+          "St Vincent's Private",
+          "Extremities",
+          "1st Case",
+          "A$90k",
+          "Q2 2027",
+          "5 d",
+          "open"
+        ],
+        [
+          "Dr Joel Brandt",
+          "Calvary North Adelaide",
+          "Knee",
+          "Unsuccessful Conversion",
+          "A$140k",
+          "Q3 2026",
+          "–",
+          "closed"
+        ],
+        [
+          "Dr Mia Torres",
+          "Epworth Richmond",
+          "CMFT",
+          "Plan",
+          "A$60k",
+          "Q3 2027",
+          "28 d",
+          "hold"
+        ],
+        [
+          "Dr Chris Lee",
+          "Mater Hospital",
+          "Hip",
+          "5th Case",
+          "A$410k",
+          "Q1 2027",
+          "3 d",
+          "open"
+        ]
+      ];
+      var LABEL = { open: "Open", hold: "On Hold", closed: "Closed" };
+      function table(cls) {
+        var rows = DEALS.filter(function (d) {
+          return (
+            S.rows === "both" ||
+            (S.rows === "open" ? d[7] !== "closed" : d[7] === "closed")
+          );
+        });
+        return (
+          '<table class="deals ' +
+          cls +
+          '"><thead><tr><th>Surgeon</th><th>Hospital</th><th>Portfolio</th><th>Stage</th><th class="num">Revenue / year</th><th>Close quarter</th><th class="num">Last posted</th><th>Status</th></tr></thead><tbody>' +
+          rows
+            .map(function (d) {
+              return (
+                "<tr><td>" +
+                d[0] +
+                "</td><td>" +
+                d[1] +
+                "</td><td>" +
+                d[2] +
+                "</td><td>" +
+                d[3] +
+                '</td><td class="num">' +
+                d[4] +
+                "</td><td>" +
+                d[5] +
+                '</td><td class="num">' +
+                d[6] +
+                '</td><td><span class="stp st-' +
+                d[7] +
+                '">' +
+                LABEL[d[7]] +
+                "</span></td></tr>"
+              );
+            })
+            .join("") +
+          "</tbody></table>"
+        );
+      }
+      function opt(title, why, cls) {
+        return (
+          '<div class="opt"><h2>' +
+          title +
+          "</h2><p>" +
+          why +
+          "</p>" +
+          table(cls) +
+          "</div>"
+        );
+      }
+      function draw() {
+        document.body.setAttribute("data-theme", S.theme);
+        document.getElementById("opts").innerHTML =
+          opt(
+            "A. Only On Hold stands out",
+            "An amber pill for On Hold; Open and Closed are plain words.",
+            "sa"
+          ) +
+          opt(
+            "B. All three are pills",
+            "A light blue pill for Open, solid amber for On Hold, solid slate for Closed.",
+            "sb"
+          );
+        Array.prototype.forEach.call(
+          document.querySelectorAll("[data-rows]"),
+          function (x) {
+            x.classList.toggle("on", x.dataset.rows === S.rows);
+          }
+        );
+        Array.prototype.forEach.call(
+          document.querySelectorAll("[data-theme-btn]"),
+          function (x) {
+            x.classList.toggle("on", x.dataset.themeBtn === S.theme);
+          }
+        );
+        document.getElementById("mocknote").textContent =
+          "Mockup note: compare how each deal's status reads in A and in B; Rows shows the list with only open, only closed or both.";
+      }
+      document.addEventListener("click", function (e) {
+        var t = e.target.closest("[data-rows],[data-theme-btn]");
+        if (!t) return;
+        if (t.dataset.themeBtn) S.theme = t.dataset.themeBtn;
+        if (t.dataset.rows) S.rows = t.dataset.rows;
+        draw();
+      });
+      document.getElementById("fullbtn").addEventListener("click", function () {
+        document.getElementById("mocknote").textContent =
+          "Mockup note: in Salesforce this opens Pipeline in a new full-screen tab without the Salesforce navigation.";
+      });
+      location.hash
+        .slice(1)
+        .split("&")
+        .forEach(function (p) {
+          var kv = p.split("=");
+          if (kv[0] === "theme") S.theme = kv[1];
+          if (kv[0] === "rows") S.rows = kv[1];
+        });
+      draw();
+    </script>
+  </body>
+</html>

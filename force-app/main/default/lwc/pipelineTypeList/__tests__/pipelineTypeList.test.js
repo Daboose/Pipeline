@@ -270,4 +270,47 @@ describe("c-pipeline-type-list", () => {
     await Promise.resolve();
     expect(heads(el).join("|")).not.toContain("Country");
   });
+  it("shows each deal's status as a pill: Open, On Hold, Closed Won or Closed Lost", async () => {
+    const el = make({
+      kind: "opp",
+      deals: [
+        deal("1", "Ann"),
+        deal("2", "Ann", { onHold: true }),
+        deal("3", "Ann", { isClosed: true, stage: "Conversion" }),
+        deal("4", "Ann", { isClosed: true, stage: "Unsuccessful Conversion" })
+      ]
+    });
+    await Promise.resolve();
+    const pills = [...el.shadowRoot.querySelectorAll("tbody .stp")];
+    const by = (cls) => pills.filter((p) => p.classList.contains(cls));
+    expect(pills.length).toBe(4);
+    expect(by("st-open")[0].textContent).toBe("Open");
+    expect(by("st-hold")[0].textContent).toBe("On Hold");
+    expect(by("st-won")[0].textContent).toBe("Closed Won");
+    expect(by("st-lost")[0].textContent).toBe("Closed Lost");
+    // On Hold is said once, in the Status column: Last Posted shows a dash for an on-hold deal
+    const headTexts = [...el.shadowRoot.querySelectorAll("thead th")].map((h) =>
+      h.textContent.trim()
+    );
+    const col = headTexts.findIndex((h) => h.startsWith("Last posted"));
+    const held = by("st-hold")[0].closest("tr");
+    expect(held.querySelectorAll("td")[col].textContent.trim()).toBe("–");
+  });
+  it("by default cuts a long hospital name and keeps the Status column wide, and leaves a width the person has dragged alone", async () => {
+    const el = make({
+      kind: "opp",
+      deals: [
+        deal("1", "Ann", { facility: "Bathurst Base Hospital (Northern)" })
+      ]
+    });
+    await Promise.resolve();
+    const hospital = () => el.shadowRoot.querySelector("td .clip");
+    expect(hospital()).not.toBeNull();
+    expect(hospital().textContent).toBe("Bathurst Base Hospital (Northern)");
+    expect(el.shadowRoot.querySelector("th.c-status")).not.toBeNull();
+    expect(el.shadowRoot.querySelector("td.c-status")).not.toBeNull();
+    el.widths = { hcp: 160, facility: 300, status: 160 };
+    await Promise.resolve();
+    expect(el.shadowRoot.querySelector("td .clip")).toBeNull();
+  });
 });
