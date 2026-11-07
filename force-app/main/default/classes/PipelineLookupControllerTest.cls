@@ -92,4 +92,69 @@ private class PipelineLookupControllerTest {
       PipelineLookupController.search('Link_To_ROSA_Deal__c', 'Plan').size()
     );
   }
+
+  @IsTest
+  static void aSurgeonsHospitalsComeFirstOnlyWhenTheyMatchWhatWasTyped() {
+    Id physicianRt = Schema.SObjectType.Account.getRecordTypeInfosByDeveloperName()
+      .get('Physician')
+      .getRecordTypeId();
+    Id hospitalRt = Schema.SObjectType.Account.getRecordTypeInfosByDeveloperName()
+      .get('Healthcare_Facility')
+      .getRecordTypeId();
+    Account doctor = new Account(
+      FirstName = 'Zelda',
+      LastName = 'Zznear',
+      PersonMailingCountry = 'Australia',
+      PersonMailingCountryCode = 'AU',
+      RecordTypeId = physicianRt
+    );
+    insert doctor;
+    Account linked = new Account(
+      Name = 'Zznear Linked Hospital',
+      BillingCountry = 'Australia',
+      BillingCountryCode = 'AU',
+      RecordTypeId = hospitalRt
+    );
+    Account other = new Account(
+      Name = 'Zznear Aaa Other Hospital',
+      BillingCountry = 'Australia',
+      BillingCountryCode = 'AU',
+      RecordTypeId = hospitalRt
+    );
+    insert new List<Account>{ linked, other };
+    insert new Healthcare_Surgeon_Relationship__c(
+      Surgeon__c = doctor.Id,
+      Healthcare_Facility__c = linked.Id
+    );
+    Test.setFixedSearchResults(new List<Id>{ other.Id, linked.Id });
+    List<PipelineLookupController.Hit> hits = PipelineLookupController.searchNear(
+      'Healthcare_Facility__c',
+      'Zznear',
+      doctor.Id
+    );
+    System.assertEquals(2, hits.size(), 'each hospital once');
+    System.assertEquals(
+      linked.Id,
+      hits[0].id,
+      'the surgeon\'s own hospital is first, though it sorts after the other'
+    );
+    // a typed word the linked hospital does not match: it is not put first
+    hits = PipelineLookupController.searchNear(
+      'Healthcare_Facility__c',
+      'Aaa',
+      doctor.Id
+    );
+    System.assertNotEquals(linked.Id, hits.isEmpty() ? null : hits[0].id);
+    // no surgeon yet, or another picker: just the ordinary search
+    System.assertEquals(
+      PipelineLookupController.search('Healthcare_Facility__c', 'Zznear')
+        .size(),
+      PipelineLookupController.searchNear(
+          'Healthcare_Facility__c',
+          'Zznear',
+          null
+        )
+        .size()
+    );
+  }
 }

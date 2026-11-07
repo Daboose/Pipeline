@@ -268,40 +268,244 @@ export function stageTone(deal) {
 }
 
 /**
- * The deal's details as rows of label and words. rec: what the screen read from the record itself ({ units, mymo }); the rest is in
- * the deal. The Yes / No fields carry yes: true or false (the screen colours the word); a risk and a ROSA deal have no On hold or MyMo.
+ * The fields of a deal as the phone form shows them (Robert, 2026-11-07; mockup pipeline_mobile_edit_v1.html): the same fields, in the same order, as
+ * the desktop deal panel, for each kind of deal: [API name, label, kind of control, required]. "lookup" opens a search page; the lists of
+ * choices are read from Salesforce for the deal's record type, never typed in. What a person may change is Salesforce's decision (field
+ * access); a field they cannot change is shown as plain text.
  */
-export function detailRows(deal, rec = {}) {
+export const FORM_FIELDS = {
+  opp: [
+    ["Account__c", "Primary HCP", "lookup", true],
+    ["Healthcare_Facility__c", "Healthcare facility", "lookup"],
+    ["Expected_Closure_Quarter__c", "Expected closing quarter", "picklist"],
+    ["Expected_Closing_Year__c", "Expected closing year", "picklist"],
+    ["AmountPerYear__c", "Expected annual value", "number"],
+    ["CurrencyIsoCode", "Currency", "picklist"],
+    ["UnitsCasesPerYear__c", "Expected annual units / cases", "number"],
+    ["Brand__c", "Brand", "multi"],
+    ["OnHold__c", "On hold", "bool"],
+    ["Priority__c", "Rep priority", "bool"],
+    ["State_Priority__c", "State priority", "bool"],
+    ["myMo__c", "MyMo", "bool"],
+    ["myMo_Stage__c", "MyMo stage", "picklist"],
+    ["Link_To_ROSA_Deal__c", "Link to ROSA deal", "lookup"],
+    ["Objective__c", "Background information", "textarea"]
+  ],
+  risk: [
+    ["Account__c", "Primary HCP", "lookup", true],
+    ["Healthcare_Facility__c", "Healthcare facility", "lookup"],
+    ["Expected_Closure_Quarter__c", "Expected closing quarter", "picklist"],
+    ["Expected_Closing_Year__c", "Expected closing year", "picklist"],
+    ["AmountPerYear__c", "Annual value at risk", "number"],
+    ["CurrencyIsoCode", "Currency", "picklist"],
+    ["Portfolio__c", "Portfolio", "multi"],
+    ["Brand__c", "Brand", "multi"],
+    ["Priority__c", "Rep priority", "bool"],
+    ["State_Priority__c", "State priority", "bool"],
+    ["Objective__c", "Background information", "textarea"]
+  ],
+  rosa: [
+    ["Healthcare_Facility__c", "Healthcare facility", "lookup", true],
+    ["Account__c", "Primary HCP", "lookup"],
+    ["ROSA_Deal_Type__c", "ROSA deal type", "picklist"],
+    ["ROSA_Sales_Type__c", "ROSA sales type", "multi"],
+    ["ROSAGrowthDollar__c", "ROSA growth $", "number"],
+    ["CurrencyIsoCode", "Currency", "picklist"],
+    ["Expected_Closure_Quarter__c", "Expected closing quarter", "picklist"],
+    ["Expected_Closing_Year__c", "Expected closing year", "picklist"],
+    ["Install_Date__c", "Install date", "date"],
+    ["Close_Date__c", "Close date", "date"],
+    ["ROSA_Platform_Shoulder_Stage__c", "ROSA platform: shoulder", "picklist"],
+    ["ROSA_Platform_Hip_Stage__c", "ROSA platform: hip", "picklist"],
+    [
+      "ROSA_Platform_Partial_Knee__c",
+      "ROSA platform: partial knee",
+      "picklist"
+    ],
+    ["Priority__c", "Rep priority", "bool"],
+    ["State_Priority__c", "State priority", "bool"],
+    ["Objective__c", "Background information", "textarea"]
+  ]
+};
+export const QUARTER_FIELD = "Expected_Closure_Quarter__c";
+export const YEAR_FIELD = "Expected_Closing_Year__c";
+export const MYMO_FIELD = "myMo__c";
+export const MYMO_STAGE_FIELD = "myMo_Stage__c";
+const MONEY_FIELDS = ["AmountPerYear__c", "ROSAGrowthDollar__c"];
+const CURRENCY_FIELD = "CurrencyIsoCode";
+const ON_HOLD_FIELD = "OnHold__c";
+/** Yes turns the whole slider solid green (the desktop's colours); for On hold, a warning rather than good news, solid amber. */
+const YES_NO_GOOD = [
+  { value: "no", label: "No" },
+  { value: "yes", label: "Yes", tone: "good" }
+];
+const YES_NO_WARN = [
+  { value: "no", label: "No" },
+  { value: "yes", label: "Yes", tone: "warn" }
+];
+
+/** The record fields to read for a kind of deal (the stage, every form field, and the name behind each lookup). */
+export function formFieldNames(kind) {
+  const list = FORM_FIELDS[kind] || FORM_FIELDS.opp;
+  const out = ["SalesRisks__c.Stage__c"];
+  list.forEach((f) => out.push(`SalesRisks__c.${f[0]}`));
+  list
+    .filter((f) => f[2] === "lookup")
+    .forEach((f) =>
+      out.push(`SalesRisks__c.${f[0].replace(/__c$/, "__r")}.Name`)
+    );
+  return out;
+}
+
+/**
+ * The deal as it would be with the unsaved changes made, for the parts of the screen that show it at once (the On Hold pill, the Status
+ * tile, the colour of the stage row). A stage that is a closing stage closes the deal. The saved record is only changed by Save.
+ */
+export function liveDeal(deal, draft = {}) {
+  const out = { ...deal };
+  if ("Stage__c" in draft) {
+    const ends = STAGE_ENDS[deal.kind] || STAGE_ENDS.opp;
+    out.stage = draft.Stage__c;
+    out.isClosed = out.stage === ends.won || out.stage === ends.lost;
+  }
+  if (ON_HOLD_FIELD in draft) out.onHold = !!draft[ON_HOLD_FIELD];
+  return out;
+}
+
+const readText = (api, type, value, ctx) => {
+  if (type === "lookup") return ctx.lookupName(api) || "–";
+  if (value === null || value === undefined || value === "") return "–";
+  if (type === "bool") return value ? "Yes" : "No";
+  if (MONEY_FIELDS.includes(api))
+    return formatMoney(value, ctx.valueOf(CURRENCY_FIELD));
+  return String(value).split(";").join(", ");
+};
+
+/**
+ * The rows of the phone form, in order. ctx: { valueOf(api) (the draft or else the record), draft, choices(api) (the list of
+ * { value, label } for a picklist, or null), updateable(api), lookupName(api) }. The closing year sits beside its quarter and the currency
+ * beside the money, when both can be changed; the four Yes / No fields come together as one block of sliders; the MyMo stage folds open
+ * only while MyMo is Yes. Each row says which control to draw (isLookup, isSelect, isNumber, isDate, isMulti, isTextarea, isReadOnly, isFlags).
+ */
+export function formRows(kind, ctx) {
+  const list = FORM_FIELDS[kind] || FORM_FIELDS.opp;
+  const raw = list.map(([api, label, type, req]) => {
+    const value = ctx.valueOf(api);
+    const choices = ctx.choices(api);
+    const editable = type !== "readonly" && ctx.updateable(api);
+    const row = {
+      key: api,
+      api,
+      label,
+      req: !!req,
+      changed: api in ctx.draft,
+      value: value === null || value === undefined ? "" : value
+    };
+    let control = editable ? type : "readonly";
+    if (type === "bool") control = "bool"; // a slider even when it cannot be changed (greyed)
+    if ((control === "picklist" || control === "multi") && !choices)
+      control = "readonly";
+    if (control === "picklist") {
+      const options = choices.map((c) => ({ value: c.value, label: c.label }));
+      if (value && !options.some((c) => c.value === value))
+        options.unshift({ value, label: value });
+      if (!req) options.unshift({ value: "", label: "–" });
+      row.options = options.map((o) => ({
+        ...o,
+        selected: o.value === (value || "")
+      }));
+      row.isSelect = true;
+    } else if (control === "multi") {
+      const on = value ? String(value).split(";") : [];
+      row.options = choices.map((c) => ({
+        value: c.value,
+        label: c.label,
+        cls: "pl" + (on.includes(c.value) ? " on" : "")
+      }));
+      row.isMulti = true;
+    } else if (control === "lookup") {
+      row.isLookup = true;
+      row.lookupName = ctx.lookupName(api);
+      // an optional lookup that has something chosen can be cleared with the round cross; a required one can only be swapped
+      row.canClear = !req && !!value;
+      row.lookupCls = "lk" + (row.canClear ? " hasx" : "");
+    } else if (control === "number") {
+      row.isNumber = true;
+    } else if (control === "date") {
+      row.isDate = true;
+    } else if (control === "bool") {
+      row.isBool = true;
+      row.locked = !editable;
+      row.on = !!value;
+    } else if (control === "textarea") {
+      row.isTextarea = true;
+    } else {
+      row.isReadOnly = true;
+      row.text = readText(api, type, value, ctx);
+    }
+    return row;
+  });
+
+  // the pairs: quarter and year, money and currency
   const rows = [];
-  const add = (key, label, text, yes) =>
-    rows.push({ key, label, text, yes: yes === undefined ? null : yes });
-  if (deal.kind !== "rosa") add("hcp", "Primary HCP", deal.hcp || "–");
-  add("facility", "Healthcare facility", deal.facility || "–");
-  add("quarter", "Expected closing quarter and year", deal.quarter || "–");
-  add(
-    "value",
-    "Expected annual value",
-    formatMoney(deal.value, deal.currencyCode)
-  );
-  if (deal.kind === "opp" && rec.units !== null && rec.units !== undefined)
-    add("units", "Expected annual units / cases", String(rec.units));
-  if (deal.kind !== "rosa" && deal.brands)
-    add("brands", "Brand", deal.brands.split(";").join(", "));
-  if (deal.kind === "opp")
-    add("hold", "On hold", deal.onHold ? "Yes" : "No", !!deal.onHold);
-  add(
-    "rep",
-    "Rep priority",
-    deal.repPriority ? "Yes" : "No",
-    !!deal.repPriority
-  );
-  add(
-    "state",
-    "State priority",
-    deal.statePriority ? "Yes" : "No",
-    !!deal.statePriority
-  );
-  if (deal.kind === "opp")
-    add("mymo", "MyMo", rec.mymo ? "Yes" : "No", !!rec.mymo);
-  return rows;
+  raw.forEach((r) => {
+    const prev = rows[rows.length - 1];
+    if (
+      r.api === YEAR_FIELD &&
+      r.isSelect &&
+      prev &&
+      prev.api === QUARTER_FIELD &&
+      prev.isSelect
+    ) {
+      prev.pair = r;
+      prev.label = "Expected closing quarter and year";
+      prev.changed = prev.changed || r.changed;
+      return;
+    }
+    if (
+      r.api === CURRENCY_FIELD &&
+      r.isSelect &&
+      prev &&
+      MONEY_FIELDS.includes(prev.api) &&
+      prev.isNumber
+    ) {
+      prev.pair = r;
+      prev.changed = prev.changed || r.changed;
+      return;
+    }
+    rows.push(r);
+  });
+
+  // the Yes / No block, where the first Yes / No field was
+  const bools = rows.filter((r) => r.isBool);
+  const out = [];
+  rows.forEach((r) => {
+    if (r.isBool) {
+      if (r === bools[0])
+        out.push({
+          key: "__flags",
+          api: "__flags",
+          isFlags: true,
+          wrapCls: "frm",
+          cls: "flags",
+          flags: bools.map((b) => ({
+            api: b.api,
+            label: b.label,
+            value: b.on ? "yes" : "no",
+            options: b.api === ON_HOLD_FIELD ? YES_NO_WARN : YES_NO_GOOD,
+            locked: b.locked,
+            changed: b.changed
+          }))
+        });
+      return;
+    }
+    const fold = r.api === MYMO_STAGE_FIELD;
+    out.push({
+      ...r,
+      pairCls: r.pair ? "two" : "one",
+      wrapCls: fold ? "mm" + (ctx.valueOf(MYMO_FIELD) ? " open" : "") : "frm",
+      cls: "f" + (r.changed ? " changed" : "")
+    });
+  });
+  return out;
 }

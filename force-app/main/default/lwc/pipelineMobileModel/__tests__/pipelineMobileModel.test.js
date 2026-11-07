@@ -10,7 +10,9 @@ import {
   summaryTiles,
   stageSteps,
   stageTone,
-  detailRows
+  liveDeal,
+  formRows,
+  formFieldNames
 } from "c/pipelineMobileModel";
 
 const d = (id, o = {}) => ({
@@ -179,35 +181,154 @@ describe("pipelineMobileModel", () => {
     ).toBe("bad");
   });
 
-  it("lists the deal's details, with the Yes / No fields only where the kind has them", () => {
-    const opp = detailRows(
-      d("a", { brands: "Persona;Taperloc", repPriority: true }),
-      {
-        units: 24,
-        mymo: true
-      }
-    );
-    expect(opp.map((r) => r.label)).toEqual([
-      "Primary HCP",
-      "Healthcare facility",
-      "Expected closing quarter and year",
-      "Expected annual value",
-      "Expected annual units / cases",
-      "Brand",
-      "On hold",
-      "Rep priority",
-      "State priority",
-      "MyMo"
-    ]);
-    expect(opp.find((r) => r.key === "rep")).toMatchObject({
-      text: "Yes",
-      yes: true
+  it("shows the deal as it would be with the unsaved changes made", () => {
+    const deal = d("a");
+    expect(liveDeal(deal, {})).toEqual(deal);
+    const held = liveDeal(deal, { OnHold__c: true });
+    expect(headerOf(held).onHold).toBe(true);
+    expect(deal.onHold).toBe(false); // the saved deal is left alone
+    const won = liveDeal(deal, { Stage__c: "Conversion" });
+    expect(won.isClosed).toBe(true);
+    expect(stageTone(won)).toBe("good");
+    expect(
+      stageTone(liveDeal(deal, { Stage__c: "Unsuccessful Conversion" }))
+    ).toBe("bad");
+    expect(stageTone(liveDeal(deal, { Stage__c: "Action" }))).toBe("");
+  });
+
+  it("names the fields to read, with the name behind each lookup", () => {
+    const names = formFieldNames("opp");
+    expect(names).toContain("SalesRisks__c.Stage__c");
+    expect(names).toContain("SalesRisks__c.Account__r.Name");
+    expect(names).toContain("SalesRisks__c.myMo__c");
+    expect(formFieldNames("risk")).not.toContain("SalesRisks__c.myMo__c");
+  });
+
+  describe("the form rows", () => {
+    const record = {
+      Account__c: "001A",
+      Healthcare_Facility__c: "001B",
+      Expected_Closure_Quarter__c: "Q1",
+      Expected_Closing_Year__c: "2027",
+      AmountPerYear__c: 48000,
+      CurrencyIsoCode: "AUD",
+      Brand__c: "Persona;Taperloc",
+      OnHold__c: false,
+      Priority__c: true,
+      myMo__c: false,
+      Objective__c: "Background"
+    };
+    const lists = {
+      Expected_Closure_Quarter__c: ["Q1", "Q2"],
+      Expected_Closing_Year__c: ["2026", "2027"],
+      CurrencyIsoCode: ["AUD", "NZD"],
+      Brand__c: ["Persona", "Taperloc", "Vanguard"],
+      myMo_Stage__c: ["Awareness", "Trial"]
+    };
+    const make = (kind, draft = {}, over = {}) =>
+      formRows(kind, {
+        draft,
+        valueOf: (api) => (api in draft ? draft[api] : (record[api] ?? null)),
+        choices: (api) => {
+          if (!lists[api]) return null;
+          return lists[api].map((v) => ({ value: v, label: v }));
+        },
+        updateable: () => true,
+        lookupName: (api) => (api === "Account__c" ? "Dr Chris Lee" : ""),
+        ...over
+      });
+
+    it("puts the year beside the quarter, the currency beside the money, and the four Yes / No fields in one block", () => {
+      const rows = make("opp");
+      expect(rows.map((r) => r.api)).toEqual([
+        "Account__c",
+        "Healthcare_Facility__c",
+        "Expected_Closure_Quarter__c",
+        "AmountPerYear__c",
+        "UnitsCasesPerYear__c",
+        "Brand__c",
+        "__flags",
+        "myMo_Stage__c",
+        "Link_To_ROSA_Deal__c",
+        "Objective__c"
+      ]);
+      const quarter = rows.find((r) => r.api === "Expected_Closure_Quarter__c");
+      expect(quarter.label).toBe("Expected closing quarter and year");
+      expect(quarter.pair.api).toBe("Expected_Closing_Year__c");
+      expect(rows.find((r) => r.api === "AmountPerYear__c").pair.api).toBe(
+        "CurrencyIsoCode"
+      );
+      const flags = rows.find((r) => r.isFlags).flags;
+      expect(flags.map((f) => f.label)).toEqual([
+        "On hold",
+        "Rep priority",
+        "State priority",
+        "MyMo"
+      ]);
+      expect(flags[0].options[1].tone).toBe("warn");
+      expect(flags[1].options[1].tone).toBe("good");
+      expect(flags[1].value).toBe("yes");
     });
-    expect(opp.find((r) => r.key === "brands").text).toBe("Persona, Taperloc");
-    const risk = detailRows(d("a", { kind: "risk" }));
-    expect(risk.map((r) => r.key)).not.toContain("hold");
-    expect(risk.map((r) => r.key)).not.toContain("mymo");
-    const rosa = detailRows(d("a", { kind: "rosa" }));
-    expect(rosa.map((r) => r.key)).not.toContain("hcp");
+
+    it("shows the lookup's name, the brand pills and the picklists with the saved choice picked", () => {
+      const rows = make("opp");
+      expect(rows[0].isLookup).toBe(true);
+      expect(rows[0].lookupName).toBe("Dr Chris Lee");
+      expect(rows[0].req).toBe(true);
+      expect(rows[0].canClear).toBe(false); // required: swapped, never cleared
+      expect(rows[1].canClear).toBe(true); // the facility is optional and has one
+      const brand = rows.find((r) => r.api === "Brand__c");
+      expect(brand.options.map((o) => o.cls)).toEqual(["pl on", "pl on", "pl"]);
+      const q = rows.find((r) => r.api === "Expected_Closure_Quarter__c");
+      expect(q.options.find((o) => o.selected).value).toBe("Q1");
+    });
+
+    it("folds the MyMo stage open only while MyMo is Yes", () => {
+      expect(make("opp").find((r) => r.api === "myMo_Stage__c").wrapCls).toBe(
+        "mm"
+      );
+      expect(
+        make("opp", { myMo__c: true }).find((r) => r.api === "myMo_Stage__c")
+          .wrapCls
+      ).toBe("mm open");
+    });
+
+    it("marks what has been changed, the pair together", () => {
+      const rows = make("opp", {
+        Expected_Closing_Year__c: "2026",
+        OnHold__c: true
+      });
+      expect(
+        rows.find((r) => r.api === "Expected_Closure_Quarter__c").cls
+      ).toBe("f changed");
+      expect(rows.find((r) => r.api === "Healthcare_Facility__c").cls).toBe(
+        "f"
+      );
+      expect(rows.find((r) => r.isFlags).flags[0].changed).toBe(true);
+    });
+
+    it("shows a field the person may not change as plain text, and keeps a Yes / No slider greyed", () => {
+      const rows = make(
+        "opp",
+        {},
+        {
+          updateable: (api) => api !== "AmountPerYear__c" && api !== "OnHold__c"
+        }
+      );
+      const money = rows.find((r) => r.api === "AmountPerYear__c");
+      expect(money.isReadOnly).toBe(true);
+      expect(money.text).toBe("A$48k");
+      expect(rows.find((r) => r.api === "CurrencyIsoCode").isSelect).toBe(true); // not paired when the money cannot be changed
+      expect(rows.find((r) => r.isFlags).flags[0].locked).toBe(true);
+    });
+
+    it("gives a risk and a ROSA deal their own fields (no On hold or MyMo on a risk)", () => {
+      const risk = make("risk");
+      expect(risk.find((r) => r.isFlags).flags.map((f) => f.label)).toEqual([
+        "Rep priority",
+        "State priority"
+      ]);
+      expect(make("rosa")[0].api).toBe("Healthcare_Facility__c");
+    });
   });
 });

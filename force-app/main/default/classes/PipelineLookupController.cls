@@ -85,4 +85,83 @@ public with sharing class PipelineLookupController {
     }
     return out;
   }
+
+  /**
+   * The Healthcare facility picker on the phone (Robert, 2026-11-07): the same search, but the hospitals the chosen surgeon is linked to
+   * (Healthcare_Surgeon_Relationship__c, still current, hospital not inactive) come first, and only when their name matches what was typed
+   * (a linked hospital that does not match is never offered). The rest follow from the ordinary search, without repeating a hospital,
+   * up to the same 8. Any other picker, or no surgeon yet, is just the ordinary search. The relationship is read in system mode (it only
+   * helps order the list); the hospitals themselves are read in the signed-in person's own access, so nobody is offered a hospital they
+   * cannot see. The desktop picker does not use this.
+   */
+  @AuraEnabled
+  public static List<Hit> searchNear(
+    String fieldName,
+    String term,
+    Id surgeonId
+  ) {
+    List<Hit> rest = search(fieldName, term);
+    if (fieldName != 'Healthcare_Facility__c' || surgeonId == null) {
+      return rest;
+    }
+    List<String> words = new List<String>();
+    for (
+      String w : String.escapeSingleQuotes(term)
+        .replaceAll('[?&|!{}\\[\\]()^~*:\\\\"\'+\\-%_]', ' ')
+        .split(' ')
+    ) {
+      if (!String.isBlank(w) && words.size() < 4) {
+        words.add(w.trim());
+      }
+    }
+    if (words.isEmpty()) {
+      return rest;
+    }
+    String cond = '';
+    Map<String, Object> binds = new Map<String, Object>{
+      'surgeonId' => surgeonId
+    };
+    for (Integer i = 0; i < words.size(); i++) {
+      cond += ' AND Healthcare_Facility__r.Name LIKE :w' + i;
+      binds.put('w' + i, '%' + words[i] + '%');
+    }
+    Set<Id> facilityIds = new Set<Id>();
+    for (
+      Healthcare_Surgeon_Relationship__c r : (List<Healthcare_Surgeon_Relationship__c>) Database.queryWithBinds(
+        'SELECT Healthcare_Facility__c FROM Healthcare_Surgeon_Relationship__c WHERE Surgeon__c = :surgeonId AND Relationship_End_Date__c = NULL AND Healthcare_Facility_Inactive__c = FALSE' +
+          cond +
+          ' LIMIT 50',
+        binds,
+        AccessLevel.SYSTEM_MODE
+      )
+    ) {
+      facilityIds.add(r.Healthcare_Facility__c);
+    }
+    if (facilityIds.isEmpty()) {
+      return rest;
+    }
+    List<Hit> out = new List<Hit>();
+    Set<Id> taken = new Set<Id>();
+    for (Account a : [
+      SELECT Id, Name, BillingCity, BillingState
+      FROM Account
+      WHERE Id IN :facilityIds AND IsPersonAccount = FALSE
+      WITH USER_MODE
+      ORDER BY Name
+      LIMIT 8
+    ]) {
+      Hit h = new Hit();
+      h.id = a.Id;
+      h.name = a.Name;
+      h.sub = String.isBlank(a.BillingCity) ? a.BillingState : a.BillingCity;
+      out.add(h);
+      taken.add(a.Id);
+    }
+    for (Hit h : rest) {
+      if (out.size() < 8 && !taken.contains(h.id)) {
+        out.add(h);
+      }
+    }
+    return out;
+  }
 }

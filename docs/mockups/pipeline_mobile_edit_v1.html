@@ -1,0 +1,2134 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Mockup: editing a deal on the phone (version 1)</title>
+    <style>
+      :root,
+      [data-theme="light"] {
+        --page: #e9edf4;
+        --card: #ffffff;
+        --bg: #f3f3f3;
+        --box: #eef2fa;
+        --line: #d5dcea;
+        --edge: #b3bfd6;
+        --text: #1b2640;
+        --muted: #5d6b85;
+        --pipe: #b7791f;
+        --indigo: #4f46e5;
+        --slate: #64748b;
+        --head: #db2777;
+        --field: #ffffff;
+        --ok: #0f9d74;
+      }
+      [data-theme="dark"] {
+        --page: #141e2e;
+        --card: #1a2740;
+        --bg: #141e2e;
+        --box: #20304f;
+        --line: #2f4163;
+        --edge: #5b6f93;
+        --text: #e8edf5;
+        --muted: #9fb0cc;
+        --pipe: #fdb827;
+        --indigo: #6366f1;
+        --slate: #475569;
+        --head: #f472b6;
+        --field: #11151c;
+        --ok: #4ee0b0;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--page);
+        color: var(--text);
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-size: 16px;
+      }
+      button,
+      input {
+        font-family: inherit;
+        font-size: inherit;
+        color: inherit;
+      }
+      .sp {
+        flex: 1;
+      }
+      .muted {
+        color: var(--muted);
+      }
+      .sfnav {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        height: 44px;
+        padding: 0 16px;
+        background: #0b1220;
+        color: #cdd6e6;
+        font-size: 14px;
+      }
+      .sfnav .app {
+        font-weight: 800;
+        letter-spacing: 0.14em;
+      }
+      .sfnav .app b {
+        color: #fdb827;
+      }
+      .sfnav .tab {
+        color: #9fb0cc;
+      }
+      .sfnav .tab.on {
+        color: #fff;
+        border-bottom: 2px solid #6366f1;
+        padding-bottom: 2px;
+      }
+      .btn,
+      .pill {
+        border: 0;
+        border-radius: 999px;
+        padding: 7px 16px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+        background: var(--slate);
+        color: #fff;
+      }
+      .pill.on {
+        background: var(--indigo);
+      }
+      .about {
+        margin: 14px 16px;
+        padding: 12px 18px;
+        background: var(--card);
+        border: 1px solid var(--edge);
+        border-radius: 12px;
+        line-height: 1.5;
+        max-width: 1100px;
+        font-size: 15px;
+      }
+      .about summary {
+        cursor: pointer;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        color: var(--pipe);
+      }
+      .about ul {
+        margin: 4px 0 8px;
+        padding-left: 22px;
+      }
+      .tools {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+        padding: 0 16px 10px;
+      }
+      .tools .lab {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        margin-left: 14px;
+      }
+      .tools .lab:first-child {
+        margin-left: 0;
+      }
+      .mocknote {
+        margin: 0 16px 12px;
+        padding: 8px 14px;
+        border: 1px dashed var(--edge);
+        border-radius: 10px;
+        color: var(--muted);
+        font-size: 14px;
+        font-style: italic;
+        max-width: 1100px;
+      }
+      .phones {
+        display: flex;
+        gap: 40px;
+        flex-wrap: wrap;
+        padding: 0 16px 40px;
+        align-items: flex-start;
+      }
+      .opt h2 {
+        margin: 0 0 2px;
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--head);
+      }
+      .opt p {
+        margin: 0 0 10px;
+        color: var(--muted);
+        font-size: 14px;
+        max-width: 390px;
+      }
+
+      /* the phone: 390 px wide, Salesforce's own top bar and bottom tab bar around our page */
+      .phone {
+        position: relative;
+        width: 390px;
+        height: 800px;
+        border: 10px solid #0b1220;
+        border-radius: 38px;
+        overflow: hidden;
+        background: var(--bg);
+        display: flex;
+        flex-direction: column;
+      }
+      .sfstatus {
+        height: 40px;
+        flex: none;
+        padding: 12px 0 0 28px;
+        font-size: 14px;
+        font-weight: 600;
+        background: var(--card);
+      }
+      .sfbar {
+        flex: none;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        height: 46px;
+        padding: 0 14px;
+        background: var(--card);
+        border-bottom: 1px solid var(--line);
+        font-weight: 700;
+      }
+      .sfbar .ham {
+        width: 22px;
+        height: 14px;
+        border-top: 2px solid var(--muted);
+        border-bottom: 2px solid var(--muted);
+        position: relative;
+      }
+      .sfbar .ham::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 4px;
+        border-top: 2px solid var(--muted);
+      }
+      .scroll {
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+        padding: 12px 12px 16px;
+      }
+      .sftabs {
+        flex: none;
+        display: flex;
+        height: 58px;
+        background: var(--card);
+        border-top: 1px solid var(--line);
+      }
+      .sftabs span {
+        flex: 1;
+        text-align: center;
+        padding-top: 9px;
+        font-size: 11px;
+        color: var(--muted);
+      }
+      .sftabs span.on {
+        color: var(--indigo);
+        font-weight: 700;
+      }
+      .sftabs i {
+        display: block;
+        width: 22px;
+        height: 22px;
+        margin: 0 auto 3px;
+        border-radius: 6px;
+        background: currentColor;
+        opacity: 0.35;
+      }
+
+      /* the one-pill slider (phone): full width, 37 px options (33% taller than on desktop), label end */
+      .yn {
+        display: flex;
+        align-items: stretch;
+        width: 100%;
+        background: var(--card);
+        border: 1px solid var(--edge);
+        border-radius: 999px;
+      }
+      .yn .lb {
+        display: inline-flex;
+        align-items: center;
+        padding: 0 12px 0 16px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+        white-space: nowrap;
+      }
+      .yn .trk {
+        position: relative;
+        flex: 1;
+        display: flex;
+        margin: -1px;
+        padding: 3px;
+        background: var(--box);
+        border: 1px solid var(--edge);
+        border-radius: 999px;
+      }
+      .yn .hl {
+        position: absolute;
+        top: 3px;
+        left: 0;
+        width: 0;
+        height: 37px;
+        border-radius: 999px;
+        background: var(--indigo);
+        box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35);
+        transition:
+          left 0.5s cubic-bezier(0.3, 1.35, 0.5, 1),
+          width 0.5s cubic-bezier(0.3, 1.35, 0.5, 1);
+      }
+      .yn button {
+        position: relative;
+        z-index: 1;
+        flex: 1 1 0;
+        height: 37px;
+        border: 0;
+        background: none;
+        font-weight: 700;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+        cursor: pointer;
+        white-space: nowrap;
+        transition: color 0.25s;
+      }
+      .yn button.on {
+        color: #fff;
+      }
+      .ctl {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-bottom: 12px;
+      }
+      .search {
+        position: relative;
+      }
+      .search input {
+        width: 100%;
+        height: 44px;
+        border-radius: 999px;
+        border: 1px solid var(--edge);
+        background: var(--field);
+        padding: 0 42px 0 16px;
+        font-size: 16px; /* 16 px, or the iPhone zooms the page when it is tapped */
+        outline: none;
+      }
+      .search input:focus {
+        border-color: var(--indigo);
+      }
+      .xc {
+        position: absolute;
+        right: 8px;
+        top: 7px;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        border: 0;
+        background: var(--edge);
+        cursor: pointer;
+        display: none;
+      }
+      .xc.show {
+        display: block;
+      }
+      .xc::before,
+      .xc::after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 13px;
+        height: 2px;
+        background: var(--card);
+        transform: translate(-50%, -50%) rotate(45deg);
+      }
+      .xc::after {
+        transform: translate(-50%, -50%) rotate(-45deg);
+      }
+
+      /* the type: one at a time (A) or a section each (B) */
+      .count {
+        color: var(--muted);
+        font-size: 14px;
+        margin: 2px 4px 8px;
+      }
+      .sec {
+        margin-bottom: 10px;
+      }
+      .sechead {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 11px 14px;
+        border-radius: 12px;
+        background: color-mix(in srgb, var(--head) 16%, var(--card));
+        border: 1px solid color-mix(in srgb, var(--head) 38%, var(--card));
+        margin-bottom: 8px;
+        cursor: pointer;
+      }
+      .sechead h3 {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--head);
+      }
+      .sechead .n {
+        color: var(--muted);
+        font-size: 14px;
+      }
+      .chev {
+        width: 9px;
+        height: 9px;
+        border-right: 2.5px solid var(--muted);
+        border-bottom: 2.5px solid var(--muted);
+        transform: rotate(45deg);
+        margin-top: -4px;
+        transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .sec.shut .chev {
+        transform: rotate(-45deg);
+        margin-top: 0;
+      }
+      .fold {
+        display: grid;
+        grid-template-rows: 1fr;
+        transition: grid-template-rows 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .sec.shut .fold {
+        grid-template-rows: 0fr;
+      }
+      .fold > div {
+        overflow: hidden;
+        min-height: 0;
+      }
+
+      /* a deal card: the whole card is the tap target */
+      .deal {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 12px 14px;
+        margin-bottom: 8px;
+        cursor: pointer;
+      }
+      .deal .r1 {
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+      }
+      .deal .nm {
+        font-size: 17px;
+        font-weight: 800;
+        line-height: 1.25;
+      }
+      .deal .val {
+        font-weight: 800;
+        white-space: nowrap;
+      }
+      .deal .r2 {
+        color: var(--muted);
+        font-size: 14px;
+        margin-top: 2px;
+      }
+      .deal .r3 {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 8px;
+        font-size: 14px;
+      }
+      .star {
+        color: #16a34a;
+      }
+      .cstar {
+        color: #e0a100;
+      }
+      .stp {
+        display: inline-flex;
+        align-items: center;
+        height: 24px;
+        padding: 0 11px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      .st-open {
+        background: var(--indigo);
+        color: #fff;
+      }
+      .st-hold {
+        background: #f59e0b;
+        color: #1b2640;
+      }
+      .st-won {
+        background: #16a34a;
+        color: #fff;
+      }
+      .st-lost {
+        background: #dc2626;
+        color: #fff;
+      }
+      .none {
+        color: var(--muted);
+        text-align: center;
+        padding: 26px 10px;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .yn .hl,
+        .chev,
+        .fold {
+          transition: none;
+        }
+      }
+
+      .phone-note {
+        max-width: 390px;
+      }
+      .tiles {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+        margin: 4px 0 12px;
+      }
+      .tile {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 9px 10px;
+      }
+      .tile .l {
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .tile .v {
+        font-size: 18px;
+        font-weight: 800;
+        margin-top: 2px;
+      }
+      .tile .v.warn {
+        color: #c2570c;
+      }
+      .ch3 {
+        margin: 12px 0 6px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--head);
+      }
+      .chips2 {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+      .chip2 {
+        display: inline-flex;
+        gap: 8px;
+        align-items: baseline;
+        padding: 6px 10px;
+        border-radius: 999px;
+        font-size: 13px;
+        color: #fff;
+        font-weight: 700;
+      }
+      .chip2 .cv {
+        font-weight: 800;
+      }
+      .qrow {
+        display: grid;
+        grid-template-columns: 62px 1fr auto;
+        gap: 8px;
+        align-items: center;
+        margin: 6px 0;
+        font-size: 14px;
+      }
+      .qrow .track {
+        height: 12px;
+        border-radius: 99px;
+        background: var(--box);
+        overflow: hidden;
+      }
+      .qrow .fill {
+        display: block;
+        height: 100%;
+        border-radius: 99px;
+        background: var(--indigo);
+      }
+      .qrow .n {
+        color: var(--muted);
+        font-size: 13px;
+        white-space: nowrap;
+      }
+      /* real charts: bars by stage, columns by close quarter */
+      .hbar {
+        display: grid;
+        grid-template-columns: 84px 1fr auto;
+        gap: 8px;
+        align-items: center;
+        margin: 7px 0;
+        font-size: 13px;
+      }
+      .hbar .nm {
+        font-weight: 700;
+        line-height: 1.15;
+      }
+      .hbar .bar {
+        height: 22px;
+        border-radius: 6px;
+        min-width: 4px;
+      }
+      .hbar .v {
+        font-weight: 800;
+        white-space: nowrap;
+      }
+      .cols {
+        display: flex;
+        align-items: flex-end;
+        gap: 10px;
+        height: 150px;
+        padding: 4px 2px 0;
+        border-bottom: 1px solid var(--edge);
+      }
+      .cols .c {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        align-items: center;
+        height: 100%;
+        gap: 4px;
+        font-size: 11px;
+        font-weight: 800;
+      }
+      .cols .c i {
+        display: block;
+        width: 100%;
+        background: var(--indigo);
+        border-radius: 6px 6px 0 0;
+      }
+      .qlabels {
+        display: flex;
+        gap: 10px;
+        padding: 4px 2px 0;
+        font-size: 11px;
+        color: var(--muted);
+        text-align: center;
+      }
+      .qlabels span {
+        flex: 1;
+      }
+      .chartnote {
+        color: var(--muted);
+        font-size: 12px;
+        margin: 8px 2px 0;
+      }
+
+      .back {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        height: 44px;
+        padding: 0 6px;
+        border: 0;
+        background: none;
+        color: var(--indigo);
+        font-weight: 700;
+        font-size: 16px;
+      }
+      .dh {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin: 2px 2px 2px;
+      }
+      .dh .nm {
+        font-size: 24px;
+        font-weight: 800;
+        line-height: 1.15;
+      }
+      .dsub {
+        color: var(--muted);
+        font-size: 14px;
+        margin: 0 2px 10px;
+      }
+      .grid2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+      .tile {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 9px 12px;
+        min-width: 0;
+      }
+      .tile .l {
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .tile .v {
+        font-size: 16px;
+        font-weight: 800;
+        margin-top: 2px;
+      }
+      .tg {
+        display: inline-block;
+        padding: 1px 10px;
+        border-radius: 999px;
+        font-size: 13px;
+        font-weight: 700;
+        border: 1px solid currentColor;
+      }
+      .tg.ok {
+        color: #0f9d74;
+      }
+      .tg.warn {
+        color: #c2570c;
+      }
+      .tg.bad {
+        color: #dc2626;
+      }
+      .card {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 12px 14px;
+        margin-bottom: 12px;
+      }
+      .card h3 {
+        margin: 0 0 8px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--head);
+      }
+      .frow {
+        padding: 9px 0;
+        border-top: 1px solid var(--line);
+      }
+      .frow:first-of-type {
+        border-top: 0;
+      }
+      .frow .fl {
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .frow .fv {
+        font-size: 16px;
+        margin-top: 2px;
+      }
+      .yes {
+        color: #0f9d74;
+        font-weight: 800;
+      }
+      .no {
+        color: var(--muted);
+      }
+      .go {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 52px;
+        padding: 0 14px;
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        margin-bottom: 8px;
+        font-weight: 700;
+      }
+      .go b {
+        color: var(--pipe);
+      }
+      .go i {
+        width: 9px;
+        height: 9px;
+        border-right: 2.5px solid var(--muted);
+        border-top: 2.5px solid var(--muted);
+        transform: rotate(45deg);
+      }
+      .later {
+        color: var(--muted);
+        font-size: 13px;
+        font-style: italic;
+        padding: 6px 2px 14px;
+      }
+
+      /* the stage, three ways. A: the one-pill slider, scrolling sideways with the current stage in view */
+      .stgA {
+        --c: var(--indigo);
+        display: flex;
+        align-items: stretch;
+        background: var(--c);
+        border: 1px solid var(--c);
+        border-radius: 999px;
+        margin-bottom: 12px;
+        transition:
+          background 0.4s,
+          border-color 0.4s;
+      }
+      .stgA.good {
+        --c: #16a34a;
+      }
+      .stgA.bad {
+        --c: #dc2626;
+      }
+      .stgA .lb {
+        display: inline-flex;
+        align-items: center;
+        padding: 0 10px 0 14px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: #fff;
+      }
+      .stgA .scr {
+        flex: 1;
+        overflow-x: auto;
+        margin: -1px;
+        border-radius: 999px;
+        background: color-mix(in srgb, var(--c) 82%, #000);
+        border: 1px solid var(--c);
+        scrollbar-width: none;
+      }
+      .stgA .scr::-webkit-scrollbar {
+        display: none;
+      }
+      .stgA .trk {
+        display: flex;
+        padding: 3px;
+        width: max-content;
+      }
+      .stgA .st {
+        height: 37px;
+        padding: 0 14px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        white-space: nowrap;
+        color: #fff;
+      }
+      .stgA .st.ahead {
+        color: rgba(255, 255, 255, 0.4);
+      }
+      .stgA .st.on {
+        background: #fff;
+        color: var(--c);
+      }
+      .stgA .tick {
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: #fff;
+        color: var(--c);
+        font-size: 11px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+      /* B: the stage's name, big, over a bar of steps */
+      .stgB {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 12px 14px;
+        margin-bottom: 12px;
+      }
+      .stgB .top {
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+      }
+      .stgB .k {
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .stgB .now {
+        font-size: 20px;
+        font-weight: 800;
+      }
+      .stgB .of {
+        margin-left: auto;
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .steps {
+        display: flex;
+        gap: 4px;
+        margin: 10px 0 8px;
+      }
+      .steps i {
+        flex: 1;
+        height: 10px;
+        border-radius: 99px;
+        background: var(--box);
+      }
+      .steps i.f {
+        background: var(--indigo);
+      }
+      .stgB.good .steps i.f {
+        background: #16a34a;
+      }
+      .stgB.bad .steps i {
+        background: #dc2626;
+      }
+      .stgB .next {
+        color: var(--muted);
+        font-size: 13px;
+      }
+      /* C: one row that says the stage and opens the list of stages */
+      .stgC {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-height: 56px;
+        padding: 0 14px;
+        border-radius: 12px;
+        color: #fff;
+        background: var(--c2);
+        margin-bottom: 12px;
+        font-weight: 800;
+        transition: background 0.4s;
+      }
+      .stgC small {
+        font-size: 11px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        opacity: 0.85;
+        font-weight: 700;
+      }
+      .stgC .v {
+        font-size: 18px;
+      }
+      .stgC i {
+        margin-left: auto;
+        width: 9px;
+        height: 9px;
+        border-right: 2.5px solid #fff;
+        border-bottom: 2.5px solid #fff;
+        transform: rotate(45deg);
+      }
+      .stgC .pk {
+        margin-left: auto;
+        font-size: 12px;
+        opacity: 0.85;
+      }
+      .listsheet {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        margin: -4px 0 12px;
+        overflow: hidden;
+      }
+      .listsheet div {
+        padding: 13px 14px;
+        border-top: 1px solid var(--line);
+        display: flex;
+        justify-content: space-between;
+      }
+      .listsheet div:first-child {
+        border-top: 0;
+      }
+      .listsheet .cur {
+        background: var(--box);
+        font-weight: 800;
+      }
+
+      /* the locked back bar: a full-width filled button that stays at the top of the page while the deal scrolls */
+      .lock {
+        position: sticky;
+        top: -12px; /* the phone frame's own 12 px padding is taken back, so the bar sits right at the top */
+        z-index: 5;
+        margin: -12px -12px 10px;
+        padding: 10px 12px 8px;
+        background: var(--bg);
+        box-shadow: 0 1px 0 var(--line);
+      }
+      .lockbtn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        width: 100%;
+        height: 44px;
+        border: 0;
+        border-radius: 999px;
+        background: var(--indigo);
+        color: #fff;
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+      }
+      .lockbtn span {
+        font-size: 22px;
+        line-height: 1;
+        margin-top: -2px;
+      }
+
+      /* the stage control as ONE component: the coloured row and its list joined, one outline in the row's colour all round */
+      .stc {
+        --c: var(--indigo);
+        border: 2px solid var(--c);
+        border-radius: 14px;
+        overflow: hidden;
+        background: var(--card);
+        margin-bottom: 12px;
+        transition: border-color 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .stc.good {
+        --c: #16a34a;
+      }
+      .stc.bad {
+        --c: #dc2626;
+      }
+      .stc .hd {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+        min-height: 60px;
+        padding: 6px 12px 6px 16px;
+        border: 0;
+        background: var(--c);
+        color: #fff;
+        text-align: left;
+        cursor: pointer;
+        transition: background 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .stc .hd small {
+        display: block;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        opacity: 0.85;
+      }
+      .stc .hd .sv {
+        display: block;
+        font-size: 19px;
+        font-weight: 800;
+      }
+      /* the chevron: big, and it turns over as the list opens and closes */
+      .chv {
+        margin-left: auto;
+        flex: none;
+        width: 36px;
+        height: 36px;
+        position: relative;
+        border-radius: 50%;
+        transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .chv::before {
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 14px;
+        height: 14px;
+        border-right: 4px solid #fff;
+        border-bottom: 4px solid #fff;
+        border-radius: 2px;
+        transform: translate(-50%, -70%) rotate(45deg);
+      }
+      .stc.shut .chv {
+        transform: rotate(0deg);
+      }
+      .stc:not(.shut) .chv {
+        transform: rotate(180deg);
+      }
+      .chv.ring {
+        background: rgba(255, 255, 255, 0.22);
+      }
+      .stc .fold {
+        display: grid;
+        grid-template-rows: 1fr;
+        transition: grid-template-rows 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .stc.shut .fold {
+        grid-template-rows: 0fr;
+      }
+      .stc .fold > div {
+        overflow: hidden;
+        min-height: 0;
+      }
+      .stc .li {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 14px 16px;
+        border-top: 1px solid var(--line);
+        font-size: 16px;
+      }
+      .stc .li:first-child {
+        border-top: 0;
+      }
+      .stc .li.here {
+        background: color-mix(in srgb, var(--c) 12%, var(--card));
+        font-weight: 800;
+      }
+      .stc .li .ck {
+        margin-left: auto;
+        color: var(--c);
+        font-weight: 800;
+      }
+      /* B: the row you are on has a bar of the colour down its left edge */
+      .vb .li.here {
+        box-shadow: inset 5px 0 0 var(--c);
+        padding-left: 20px;
+      }
+      /* C: progress, as on the desktop slider: finished stages carry a tick in a circle, stages to come are dimmer */
+      .vc .li.done .ck {
+        display: none;
+      }
+      .vc .li .tk {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: var(--c);
+        color: #fff;
+        font-size: 12px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        order: 3;
+        margin-left: auto;
+      }
+      .vc .li.ahead {
+        color: var(--muted);
+      }
+      .mini {
+        margin: 0 0 12px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      /* the stage you are on: bold, a bar of the row's colour down its left edge (option B, chosen) */
+      .stc .li.here {
+        box-shadow: inset 5px 0 0 var(--c);
+        padding-left: 20px;
+      }
+
+      /* ===== editing on the phone (version 1) ===== */
+      .pbody {
+        position: relative;
+        flex: 1;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+      .pbody .scroll {
+        flex: 1;
+      }
+      .f {
+        padding: 9px 0;
+        border-top: 1px solid var(--line);
+      }
+      .f:first-of-type {
+        border-top: 0;
+      }
+      .f .fl {
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 5px;
+        transition: color 0.4s;
+      }
+      .f .fl .rq {
+        color: #dc2626;
+      }
+      .f.changed .fl {
+        color: var(--indigo);
+      }
+      .f.changed .in,
+      .f.changed .lk {
+        border-color: var(--indigo);
+      }
+      .in,
+      .lk {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        height: 44px;
+        padding: 0 14px;
+        border: 1px solid var(--edge);
+        border-radius: 10px;
+        background: var(--field);
+        color: var(--text);
+        font-size: 16px; /* 16 px, or the iPhone zooms the page */
+        text-align: left;
+        transition: border-color 0.4s;
+      }
+      select.in {
+        appearance: none;
+        -webkit-appearance: none;
+        background-image:
+          linear-gradient(45deg, transparent 50%, var(--muted) 50%),
+          linear-gradient(135deg, var(--muted) 50%, transparent 50%);
+        background-position:
+          calc(100% - 20px) 19px,
+          calc(100% - 14px) 19px;
+        background-size:
+          6px 6px,
+          6px 6px;
+        background-repeat: no-repeat;
+      }
+      textarea.in {
+        height: auto;
+        min-height: 96px;
+        padding: 10px 14px;
+        font-family: inherit;
+        resize: none;
+      }
+      .lk {
+        justify-content: space-between;
+        cursor: pointer;
+      }
+      .lk i {
+        width: 9px;
+        height: 9px;
+        border-right: 2.5px solid var(--muted);
+        border-top: 2.5px solid var(--muted);
+        transform: rotate(45deg);
+      }
+      .two {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+      .pl {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .pl button {
+        height: 40px;
+        padding: 0 16px;
+        border: 1px solid var(--edge);
+        border-radius: 999px;
+        background: var(--box);
+        color: var(--muted);
+        font-weight: 700;
+        font-size: 14px;
+        transition:
+          background 0.3s,
+          color 0.3s;
+      }
+      .pl button.on {
+        background: var(--indigo);
+        border-color: var(--indigo);
+        color: #fff;
+      }
+      .flags {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        padding: 9px 0;
+        border-top: 1px solid var(--line);
+      }
+      .flags .yn.changed {
+        border-color: var(--indigo);
+      }
+      .yn.warn .hl {
+        background: #f59e0b;
+        box-shadow: 0 4px 14px rgba(245, 158, 11, 0.4);
+      }
+      .yn.good .hl {
+        background: #16a34a;
+        box-shadow: 0 4px 14px rgba(22, 163, 74, 0.35);
+      }
+      .yn.warn button.on[data-v="yes"] {
+        color: #1b2640;
+      }
+      .yn.changed .lb {
+        color: var(--indigo);
+      }
+      /* the MyMo stage folds open only while MyMo is Yes (0.4 s) */
+      .mm {
+        display: grid;
+        grid-template-rows: 0fr;
+        transition: grid-template-rows 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .phone.mmon .mm {
+        grid-template-rows: 1fr;
+      }
+      .mm > div {
+        overflow: hidden;
+        min-height: 0;
+      }
+      .mm .f {
+        border-top: 0;
+        padding-top: 4px;
+      }
+      /* On hold: the amber pill beside the name; it fades in and gives its room back when off */
+      .holdp {
+        max-width: 0;
+        opacity: 0;
+        overflow: hidden;
+        padding: 0;
+        white-space: nowrap;
+        transition:
+          max-width 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+          opacity 0.4s,
+          padding 0.4s;
+      }
+      .phone.holdon .holdp {
+        max-width: 120px;
+        opacity: 1;
+        padding: 0 11px;
+      }
+      /* the stage list: a row you can tap */
+      .stc .li {
+        min-height: 52px;
+        cursor: pointer;
+      }
+      /* the locked Save bar: folds up from the bottom edge of the page when the first change is made */
+      .savewrap {
+        position: sticky;
+        bottom: -16px;
+        z-index: 6;
+        margin: 0 -12px -16px;
+        display: grid;
+        grid-template-rows: 0fr;
+        background: var(--bg);
+        box-shadow: 0 -1px 0 var(--line);
+        transition: grid-template-rows 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .phone.dirty .savewrap {
+        grid-template-rows: 1fr;
+      }
+      .savewrap > div {
+        overflow: hidden;
+        min-height: 0;
+      }
+      .savebar {
+        display: flex;
+        gap: 10px;
+        padding: 10px 12px 12px;
+      }
+      .savebar button {
+        flex: 1 1 0;
+        height: 44px;
+        border: 0;
+        border-radius: 999px;
+        color: #fff;
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+      }
+      .savebar .cancel {
+        background: var(--slate);
+      }
+      .savebar .save {
+        background: var(--indigo);
+      }
+      .savebar button[disabled] {
+        opacity: 0.55;
+      }
+      .okmsg {
+        color: var(--ok);
+        font-weight: 800;
+        padding: 0 0 8px;
+        max-height: 0;
+        opacity: 0;
+        overflow: hidden;
+        transition:
+          max-height 0.4s,
+          opacity 0.4s;
+      }
+      .phone.saved .okmsg {
+        max-height: 40px;
+        opacity: 1;
+      }
+      /* the search sheet for a person, hospital or deal: slides in from the right over the page (0.4 s), with its own locked back bar */
+      .sheet {
+        position: absolute;
+        inset: 0;
+        z-index: 8;
+        display: flex;
+        flex-direction: column;
+        padding: 12px;
+        background: var(--bg);
+        transform: translateX(105%);
+        visibility: hidden;
+        transition:
+          transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+          visibility 0s linear 0.4s;
+      }
+      .phone.sh .sheet {
+        transform: none;
+        visibility: visible;
+        transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .sheet .lockbtn {
+        flex: none;
+        margin-bottom: 10px;
+      }
+      .sheet h4 {
+        margin: 2px 2px 8px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--head);
+      }
+      .sheet .search {
+        margin-bottom: 10px;
+        flex: none;
+      }
+      .sheet .results {
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+      }
+      .rs {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 58px;
+        padding: 8px 14px;
+        border-top: 1px solid var(--line);
+        cursor: pointer;
+      }
+      .rs:first-child {
+        border-top: 0;
+      }
+      .rs b {
+        display: block;
+        font-size: 16px;
+      }
+      .rs small {
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .rs .ck2 {
+        color: var(--indigo);
+        font-weight: 800;
+      }
+      .rs.is {
+        background: color-mix(in srgb, var(--indigo) 10%, var(--card));
+      }
+      .noneL {
+        padding: 22px 14px;
+        text-align: center;
+        color: var(--muted);
+      }
+      /* leaving with unsaved changes: a question over a blurred, darkened page */
+      .askwrap {
+        position: absolute;
+        inset: 0;
+        z-index: 9;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        background: rgba(6, 11, 20, 0.55);
+        -webkit-backdrop-filter: blur(4px);
+        backdrop-filter: blur(4px);
+        opacity: 0;
+        visibility: hidden;
+        transition:
+          opacity 0.3s,
+          visibility 0s linear 0.3s;
+      }
+      .phone.ask .askwrap {
+        opacity: 1;
+        visibility: visible;
+        transition: opacity 0.3s;
+      }
+      .ask1 {
+        width: 100%;
+        padding: 18px;
+        background: var(--card);
+        border: 1px solid var(--edge);
+        border-radius: 14px;
+      }
+      .ask1 b {
+        font-size: 18px;
+      }
+      .ask1 p {
+        margin: 6px 0 14px;
+        color: var(--muted);
+        font-size: 15px;
+      }
+      .ask1 .row2 {
+        display: flex;
+        gap: 10px;
+      }
+      .ask1 button {
+        flex: 1 1 0;
+        height: 44px;
+        border: 0;
+        border-radius: 999px;
+        color: #fff;
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+      }
+      .ask1 .stay {
+        background: var(--indigo);
+      }
+      .ask1 .leave {
+        background: #dc2626;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .mm,
+        .holdp,
+        .savewrap,
+        .sheet,
+        .askwrap,
+        .okmsg {
+          transition: none;
+        }
+      }
+    </style>
+  </head>
+  <body data-theme="light">
+    <div class="sfnav">
+      <span class="app"><b>PIPE</b>LINE</span>
+      <span class="tab on">Pipeline</span>
+      <span class="tab">Opportunities &amp; Risks</span>
+      <span class="sp"></span>
+      <button type="button" class="btn" id="fullbtn">Full screen</button>
+    </div>
+
+    <details class="about" open>
+      <summary>ABOUT THIS MOCKUP</summary>
+      <p>
+        <b>Version 1, invented data only.</b>
+        <b>Editing a deal on the phone.</b>
+        The deal screen you have been using is read-only; this shows how a rep
+        changes a deal. Three phones show three moments of the same screen, and
+        all three work.
+      </p>
+      <ul>
+        <li>
+          <b>No Edit button.</b> The fields are there to change, as on the
+          desktop. Nothing is saved until Save is pressed.
+        </li>
+        <li>
+          <b>The stage list can now be picked from.</b> Tap a stage and the row
+          takes its colour and name (a draft); the list folds shut.
+        </li>
+        <li>
+          <b>The first change</b> folds a <b>locked Save / Cancel bar</b> up
+          from the bottom edge of the page; it stays there while the page
+          scrolls. Every field you have changed has its label and outline in
+          indigo. Cancel puts everything back; Save keeps it and the bar folds
+          away with “Saved.”.
+        </li>
+        <li>
+          <b>The fields</b> are the desktop's for an opportunity: people and
+          hospitals are <b>looked up</b> (tapping opens a search page that
+          slides in, with its own “‹ Back to deal” bar), quarter and year, value
+          and currency, units, brand pills, the four Yes / No sliders (On hold
+          amber, the rest green), the MyMo stage that folds open only while MyMo
+          is Yes, and the background information. Text is 16 px so the iPhone
+          does not zoom; every control is 44 px high or more.
+        </li>
+        <li>
+          <b>Leaving with unsaved changes</b> (press ‹ Back to My Pipeline on
+          phone 2) asks first: Stay or Leave.
+        </li>
+      </ul>
+      <p>
+        <b>Try it:</b> phone 1 has nothing changed: change anything and watch
+        the Save bar come up. Phone 2 is part way through a change: press Save,
+        Cancel or Back. Phone 3 has the search for the Primary HCP open: type
+        “mei” and tap a name.
+      </p>
+      <p class="muted">
+        Not shown yet: risks and ROSA (they use their own field lists, as on the
+        desktop), Chatter, Surgeon Usages, MyCase Bookings and Campaigns, the
+        error messages Salesforce sends back (they would appear above the
+        fields, as on the desktop), and fields a person is not allowed to edit
+        (shown as plain text). The list of choices (quarter, brand and so on)
+        will be read from Salesforce, not typed in.
+      </p>
+    </details>
+
+    <div class="tools">
+      <span class="lab" style="margin-left: 0">Theme</span>
+      <button type="button" class="pill on" data-theme-btn="light">
+        Light
+      </button>
+      <button type="button" class="pill" data-theme-btn="dark">Dark</button>
+    </div>
+    <div class="mocknote" id="note">
+      Mockup note: this line says what a press would do in Salesforce.
+    </div>
+    <div class="phones" id="phones"></div>
+
+    <script>
+      var LIST = [
+        "Plan",
+        "Action",
+        "Commit",
+        "1st Case",
+        "5th Case",
+        "Conversion",
+        "Unsuccessful Conversion"
+      ];
+      var QTRS = ["Q1", "Q2", "Q3", "Q4"],
+        YRS = ["2026", "2027", "2028"],
+        CURS = ["AUD", "NZD", "USD"];
+      var BRANDS = ["Persona", "NexGen", "Vanguard", "Taperloc"],
+        MMS = ["Awareness", "Trial", "Adopted"];
+      var PEOPLE = [
+        ["Dr Chris Lee", "Orthopaedic surgeon · Mater Hospital"],
+        ["Dr Mei Tan", "Orthopaedic surgeon · Epworth Richmond"],
+        ["Dr Aroha Ngata", "Orthopaedic surgeon · Wesley Hospital"],
+        ["Dr Sam Patel", "Orthopaedic surgeon · Royal Adelaide"]
+      ];
+      var HOSPS = [
+        ["Mater Hospital", "North Sydney"],
+        ["Epworth Richmond", "Richmond"],
+        ["Wesley Hospital", "Auchenflower"],
+        ["Royal Adelaide", "Adelaide"]
+      ];
+      var ROSAS = [
+        ["ROSA · Wesley Hospital", "ROSA sales opportunity"],
+        ["ROSA · Mater Hospital", "ROSA sales opportunity"]
+      ];
+      var SRC = { hcp: PEOPLE, fac: HOSPS, rosa: ROSAS };
+      var TITLE = {
+        hcp: "Primary HCP",
+        fac: "Healthcare facility",
+        rosa: "Link to ROSA deal"
+      };
+      var BASE = {
+        stage: "Commit",
+        hold: "no",
+        prio: "yes",
+        sprio: "no",
+        mymo: "no",
+        mymoStage: "Awareness",
+        hcp: "Dr Chris Lee",
+        fac: "Mater Hospital",
+        qtr: "Q1",
+        yr: "2027",
+        val: "48000",
+        cur: "AUD",
+        units: "24",
+        brands: "Persona",
+        rosa: "",
+        bg: "Wants to move both hips to the new system after the January list."
+      };
+      var P = [];
+      function copy(o) {
+        return JSON.parse(JSON.stringify(o));
+      }
+      function mk(over) {
+        var s = copy(BASE);
+        for (var k in over) s[k] = over[k];
+        return { s: s, base: copy(BASE), sheet: "", open: false, dirty: false };
+      }
+      function esc(t) {
+        return String(t)
+          .replace(/&/g, "&amp;")
+          .replace(/"/g, "&quot;")
+          .replace(/</g, "&lt;");
+      }
+      function sel(k, arr) {
+        return (
+          '<select class="in" data-k="' +
+          k +
+          '">' +
+          arr
+            .map(function (x) {
+              return "<option>" + x + "</option>";
+            })
+            .join("") +
+          "</select>"
+        );
+      }
+      function yn(k, label, tone) {
+        return (
+          '<div class="yn ' +
+          tone +
+          '" data-k="' +
+          k +
+          '"><span class="lb">' +
+          label +
+          '</span><div class="trk"><span class="hl"></span><button type="button" data-v="no">No</button><button type="button" data-v="yes">Yes</button></div></div>'
+        );
+      }
+      function field(k, label, inner, req) {
+        return (
+          '<div class="f" data-fk="' +
+          k +
+          '"><div class="fl">' +
+          label +
+          (req ? ' <span class="rq">*</span>' : "") +
+          "</div>" +
+          inner +
+          "</div>"
+        );
+      }
+      function lk(k) {
+        return (
+          '<button type="button" class="lk" data-k="' +
+          k +
+          '"><span class="lv"></span><i></i></button>'
+        );
+      }
+      function phoneHtml(i, title) {
+        var rows = LIST.map(function (x) {
+          return (
+            '<div class="li" data-v="' +
+            x +
+            '"><span>' +
+            x +
+            '</span><span class="ck"></span></div>'
+          );
+        }).join("");
+        var brands =
+          '<div class="pl" data-k="brands">' +
+          BRANDS.map(function (b) {
+            return (
+              '<button type="button" data-v="' + b + '">' + b + "</button>"
+            );
+          }).join("") +
+          "</div>";
+        return (
+          '<div class="opt"><h2>' +
+          title[0] +
+          "</h2><p>" +
+          title[1] +
+          "</p>" +
+          '<div class="phone" data-i="' +
+          i +
+          '"><div class="sfstatus">3:14</div><div class="sfbar"><span class="ham"></span><span>Pipeline Mobile</span><span class="sp"></span></div>' +
+          '<div class="pbody"><div class="scroll">' +
+          '<div class="lock"><button type="button" class="lockbtn" data-act="back"><span>‹</span> Back to My Pipeline</button></div>' +
+          '<div class="dh"><div class="nm">Dr Chris Lee</div><span class="stp st-hold holdp">On hold</span></div><div class="dsub">Opportunity · Hip</div>' +
+          '<div class="grid2"><div class="tile"><div class="l">Owner</div><div class="v">Lewis Dawson</div></div><div class="tile"><div class="l">Status</div><div class="v"><span class="stp st-open stat">Open</span></div></div></div>' +
+          '<div class="stc"><button type="button" class="hd" data-act="stages"><span><small class="sl">Stage</small><span class="sv"></span></span><span class="chv ring"></span></button><div class="fold"><div>' +
+          rows +
+          "</div></div></div>" +
+          '<div class="card"><h3>The deal</h3><div class="okmsg">Saved.</div>' +
+          field("hcp", "Primary HCP", lk("hcp"), true) +
+          field("fac", "Healthcare facility", lk("fac")) +
+          field(
+            "qtr",
+            "Expected closing quarter and year",
+            '<div class="two">' + sel("qtr", QTRS) + sel("yr", YRS) + "</div>"
+          ) +
+          field(
+            "val",
+            "Expected annual value",
+            '<div class="two"><input class="in" type="number" inputmode="decimal" data-k="val" /><select class="in" data-k="cur">' +
+              CURS.map(function (x) {
+                return "<option>" + x + "</option>";
+              }).join("") +
+              "</select></div>"
+          ) +
+          field(
+            "units",
+            "Expected annual units / cases",
+            '<input class="in" type="number" inputmode="decimal" data-k="units" />'
+          ) +
+          field("brands", "Brand", brands) +
+          '<div class="flags">' +
+          yn("hold", "On hold", "warn") +
+          yn("prio", "Rep priority", "good") +
+          yn("sprio", "State priority", "good") +
+          yn("mymo", "MyMo", "good") +
+          "</div>" +
+          '<div class="mm"><div>' +
+          field("mymoStage", "MyMo stage", sel("mymoStage", MMS)) +
+          "</div></div>" +
+          field("rosa", "Link to ROSA deal", lk("rosa")) +
+          field(
+            "bg",
+            "Background information",
+            '<textarea class="in" data-k="bg"></textarea>'
+          ) +
+          "</div>" +
+          '<div class="savewrap"><div><div class="savebar"><button type="button" class="cancel" data-act="cancel">Cancel</button><button type="button" class="save" data-act="save">Save</button></div></div></div>' +
+          "</div>" +
+          '<div class="sheet"><button type="button" class="lockbtn" data-act="closesheet"><span>‹</span> Back to deal</button><h4 class="sht"></h4><div class="search"><input class="sin" type="text" placeholder="Search by name…" /></div><div class="results"></div></div>' +
+          '<div class="askwrap"><div class="ask1"><b>Leave without saving?</b><p>Your changes to this deal have not been saved.</p><div class="row2"><button type="button" class="stay" data-act="stay">Stay</button><button type="button" class="leave" data-act="leave">Leave</button></div></div></div>' +
+          '</div><div class="sftabs"><span><i></i>Home</span><span class="on"><i></i>Pipeline</span><span><i></i>Accounts</span><span><i></i>More</span></div></div></div>'
+        );
+      }
+      function tone(st) {
+        return st === "Conversion"
+          ? "good"
+          : st === "Unsuccessful Conversion"
+            ? "bad"
+            : "";
+      }
+      function same(a, b) {
+        return String(a) === String(b);
+      }
+      function sync(i) {
+        var d = P[i],
+          s = d.s,
+          b = d.base,
+          el = document.querySelector('.phone[data-i="' + i + '"]');
+        var changedAny = false;
+        // stage row
+        var stc = el.querySelector(".stc");
+        stc.classList.remove("good", "bad");
+        if (tone(s.stage)) stc.classList.add(tone(s.stage));
+        stc.classList.toggle("shut", !d.open);
+        el.querySelector(".stc .sv").textContent = s.stage;
+        var sch = s.stage !== b.stage;
+        el.querySelector(".stc .sl").textContent = sch
+          ? "Stage · changed"
+          : "Stage";
+        changedAny = changedAny || sch;
+        Array.prototype.forEach.call(
+          el.querySelectorAll(".stc .li"),
+          function (r) {
+            var here = r.dataset.v === s.stage;
+            r.classList.toggle("here", here);
+            r.querySelector(".ck").textContent = here ? "✓" : "";
+          }
+        );
+        // fields
+        Array.prototype.forEach.call(
+          el.querySelectorAll(".f[data-fk]"),
+          function (f) {
+            var k = f.dataset.fk,
+              ch = !same(s[k], b[k]);
+            if (k === "qtr") ch = !same(s.qtr, b.qtr) || !same(s.yr, b.yr);
+            if (k === "val") ch = !same(s.val, b.val) || !same(s.cur, b.cur);
+            f.classList.toggle("changed", ch);
+            changedAny = changedAny || ch;
+          }
+        );
+        ["hold", "prio", "sprio", "mymo"].forEach(function (k) {
+          var y = el.querySelector('.yn[data-k="' + k + '"]'),
+            ch = s[k] !== b[k];
+          y.classList.toggle("changed", ch);
+          changedAny = changedAny || ch;
+          Array.prototype.forEach.call(
+            y.querySelectorAll("button"),
+            function (x) {
+              x.classList.toggle("on", x.dataset.v === s[k]);
+            }
+          );
+          var on = y.querySelector("button.on"),
+            hl = y.querySelector(".hl");
+          if (on) {
+            hl.style.left = on.offsetLeft + "px";
+            hl.style.width = on.offsetWidth + "px";
+          }
+        });
+        Array.prototype.forEach.call(
+          el.querySelectorAll('.pl[data-k="brands"] button'),
+          function (x) {
+            x.classList.toggle(
+              "on",
+              s.brands.split(",").indexOf(x.dataset.v) > -1
+            );
+          }
+        );
+        ["hcp", "fac", "rosa"].forEach(function (k) {
+          el.querySelector('.lk[data-k="' + k + '"] .lv').textContent =
+            s[k] || "Search by name…";
+          el.querySelector('.lk[data-k="' + k + '"] .lv').style.color = s[k]
+            ? ""
+            : "var(--muted)";
+        });
+        // header, status, flags on the root
+        el.classList.toggle("holdon", s.hold === "yes");
+        el.classList.toggle("mmon", s.mymo === "yes");
+        var stat = el.querySelector(".stat");
+        var st =
+          s.stage === "Conversion"
+            ? ["Closed Won", "st-won"]
+            : s.stage === "Unsuccessful Conversion"
+              ? ["Closed Lost", "st-lost"]
+              : s.hold === "yes"
+                ? ["On Hold", "st-hold"]
+                : ["Open", "st-open"];
+        stat.textContent = st[0];
+        stat.className = "stp stat " + st[1];
+        d.dirty = changedAny;
+        el.classList.toggle("dirty", changedAny);
+        if (changedAny) el.classList.remove("saved");
+        el.classList.toggle("sh", !!d.sheet);
+      }
+      function setValues(i) {
+        var el = document.querySelector('.phone[data-i="' + i + '"]'),
+          s = P[i].s;
+        Array.prototype.forEach.call(
+          el.querySelectorAll("select.in, input.in, textarea.in"),
+          function (x) {
+            x.value = s[x.dataset.k];
+          }
+        );
+      }
+      function fillSheet(i) {
+        var d = P[i],
+          el = document.querySelector('.phone[data-i="' + i + '"]'),
+          q = el.querySelector(".sin").value.toLowerCase();
+        var rows = (SRC[d.sheet] || []).filter(function (r) {
+          return (
+            r[0].toLowerCase().indexOf(q) > -1 ||
+            r[1].toLowerCase().indexOf(q) > -1
+          );
+        });
+        el.querySelector(".results").innerHTML = rows.length
+          ? rows
+              .map(function (r) {
+                return (
+                  '<div class="rs' +
+                  (d.s[d.sheet] === r[0] ? " is" : "") +
+                  '" data-name="' +
+                  esc(r[0]) +
+                  '"><span><b>' +
+                  r[0] +
+                  "</b><small>" +
+                  r[1] +
+                  '</small></span><span class="ck2">' +
+                  (d.s[d.sheet] === r[0] ? "✓" : "") +
+                  "</span></div>"
+                );
+              })
+              .join("")
+          : '<div class="noneL">No match</div>';
+      }
+      function note(t) {
+        document.getElementById("note").textContent = "Mockup note: " + t;
+      }
+      function draw() {
+        document.body.setAttribute("data-theme", S.theme);
+        var T = [
+          [
+            "1. As it opens",
+            "Nothing changed, so no Save bar. Change anything and it folds up."
+          ],
+          [
+            "2. Part way through a change",
+            "A stage picked, On hold and MyMo on, a new value: the Save bar is up."
+          ],
+          [
+            "3. Looking up a person",
+            "Tapping Primary HCP slides this page in. Type “mei”."
+          ]
+        ];
+        document.getElementById("phones").innerHTML = T.map(function (t, i) {
+          return phoneHtml(i, t);
+        }).join("");
+        Array.prototype.forEach.call(
+          document.querySelectorAll("[data-theme-btn]"),
+          function (x) {
+            x.classList.toggle("on", x.dataset.themeBtn === S.theme);
+          }
+        );
+        P = [
+          mk({}),
+          mk({
+            stage: "5th Case",
+            hold: "yes",
+            mymo: "yes",
+            mymoStage: "Trial",
+            val: "62000"
+          }),
+          mk({})
+        ];
+        P[1].open = true;
+        P[2].sheet = "hcp";
+        [0, 1, 2].forEach(function (i) {
+          setValues(i);
+          sync(i);
+        });
+        document.querySelector('.phone[data-i="2"] .sin').value = "mei";
+        document.querySelector('.phone[data-i="2"] .sht').textContent =
+          TITLE.hcp;
+        fillSheet(2);
+        // first paint without motion, then motion on
+        window.setTimeout(function () {
+          [0, 1, 2].forEach(sync);
+        }, 60);
+      }
+      var S = { theme: "light" };
+      document.addEventListener("click", function (e) {
+        var th = e.target.closest("[data-theme-btn]");
+        if (th) {
+          S.theme = th.dataset.themeBtn;
+          document.body.setAttribute("data-theme", S.theme);
+          Array.prototype.forEach.call(
+            document.querySelectorAll("[data-theme-btn]"),
+            function (x) {
+              x.classList.toggle("on", x.dataset.themeBtn === S.theme);
+            }
+          );
+          [0, 1, 2].forEach(sync);
+          return;
+        }
+        var ph = e.target.closest(".phone");
+        if (!ph) return;
+        var i = +ph.dataset.i,
+          d = P[i],
+          s = d.s;
+        var a = e.target.closest("[data-act]");
+        if (a) {
+          var act = a.dataset.act;
+          if (act === "stages") {
+            d.open = !d.open;
+            sync(i);
+          } else if (act === "back") {
+            if (d.dirty) {
+              ph.classList.add("ask");
+            } else note("this goes back to the list exactly as it was left.");
+          } else if (act === "stay") ph.classList.remove("ask");
+          else if (act === "leave") {
+            ph.classList.remove("ask");
+            d.s = copy(d.base);
+            setValues(i);
+            sync(i);
+            note(
+              "the changes are dropped and the list comes back exactly as it was left."
+            );
+          } else if (act === "cancel") {
+            d.s = copy(d.base);
+            setValues(i);
+            sync(i);
+            note(
+              "Cancel puts every field back as it was; the Save bar folds away."
+            );
+          } else if (act === "save") {
+            var sv = ph.querySelector(".save");
+            sv.disabled = true;
+            sv.textContent = "Saving…";
+            window.setTimeout(function () {
+              d.base = copy(d.s);
+              sv.disabled = false;
+              sv.textContent = "Save";
+              sync(i);
+              ph.classList.add("saved");
+              note(
+                "saved to Salesforce; the screen stays on the deal and says Saved."
+              );
+            }, 700);
+          } else if (act === "closesheet") {
+            d.sheet = "";
+            sync(i);
+          }
+          return;
+        }
+        var li = e.target.closest(".stc .li");
+        if (li) {
+          s.stage = li.dataset.v;
+          d.open = false;
+          sync(i);
+          return;
+        }
+        var yb = e.target.closest(".yn button");
+        if (yb) {
+          s[yb.closest(".yn").dataset.k] = yb.dataset.v;
+          sync(i);
+          return;
+        }
+        var pb = e.target.closest(".pl button");
+        if (pb) {
+          var cur = s.brands ? s.brands.split(",") : [],
+            at = cur.indexOf(pb.dataset.v);
+          if (at > -1) cur.splice(at, 1);
+          else cur.push(pb.dataset.v);
+          s.brands = cur.join(",");
+          sync(i);
+          return;
+        }
+        var l = e.target.closest(".lk");
+        if (l) {
+          d.sheet = l.dataset.k;
+          ph.querySelector(".sin").value = "";
+          ph.querySelector(".sht").textContent = TITLE[d.sheet];
+          fillSheet(i);
+          sync(i);
+          return;
+        }
+        var rs = e.target.closest(".rs");
+        if (rs) {
+          s[d.sheet] = rs.dataset.name;
+          d.sheet = "";
+          sync(i);
+          return;
+        }
+      });
+      document.addEventListener("input", function (e) {
+        var ph = e.target.closest(".phone");
+        if (!ph) return;
+        var i = +ph.dataset.i;
+        if (e.target.classList.contains("sin")) {
+          fillSheet(i);
+          return;
+        }
+        var k = e.target.dataset.k;
+        if (k) {
+          P[i].s[k] = e.target.value;
+          sync(i);
+        }
+      });
+      document.getElementById("fullbtn").addEventListener("click", function () {
+        note(
+          "in Salesforce this opens in a new full-screen tab without the Salesforce navigation."
+        );
+      });
+      if (location.hash.indexOf("dark") > -1) S.theme = "dark";
+      draw();
+    </script>
+  </body>
+</html>

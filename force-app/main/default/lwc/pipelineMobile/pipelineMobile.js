@@ -1,9 +1,18 @@
 import { LightningElement, wire } from "lwc";
-import { getRecord } from "lightning/uiRecordApi";
-import { getPicklistValuesByRecordType } from "lightning/uiObjectInfoApi";
+import {
+  getRecord,
+  updateRecord,
+  getRecordNotifyChange
+} from "lightning/uiRecordApi";
+import {
+  getObjectInfo,
+  getPicklistValuesByRecordType
+} from "lightning/uiObjectInfoApi";
 import SALESRISKS from "@salesforce/schema/SalesRisks__c";
 import getContext from "@salesforce/apex/PipelineController.getContext";
 import getDeals from "@salesforce/apex/PipelineController.getDeals";
+import searchLookup from "@salesforce/apex/PipelineLookupController.search";
+import searchNear from "@salesforce/apex/PipelineLookupController.searchNear";
 import {
   KINDS,
   STATUS_OPTIONS,
@@ -16,17 +25,38 @@ import {
   summaryTiles,
   stageSteps,
   stageTone,
-  detailRows
+  liveDeal,
+  formRows,
+  formFieldNames,
+  QUARTER_FIELD,
+  YEAR_FIELD
 } from "c/pipelineMobileModel";
-import { formatMoney } from "c/pipelineFormat";
+import { formatMoney, suggestYear, quarterIsPast } from "c/pipelineFormat";
 
-const MOBILE_VERSION = "0.9.2"; // shown at the foot of the screen; raised with each change that goes out
+const MOBILE_VERSION = "0.19"; // shown at the foot of the screen; raised with each change that goes out
 
-// the fields read from the deal itself for the deal screen (the rest comes with the list)
-const RECORD_FIELDS = [
-  "SalesRisks__c.UnitsCasesPerYear__c",
-  "SalesRisks__c.myMo__c"
-];
+const SLIDE_OUT_MS = 450; // a little longer than the slide itself (0.4 s in the style sheet)
+const LOOKUP_MIN = 2; // letters before a search is made, as on the desktop
+const LOOKUP_WAIT_MS = 300;
+const LOOKUP_LIMIT = 8; // the most a search returns; a full list means there are probably more
+const HOSPITAL_FIELD = "Healthcare_Facility__c";
+const SURGEON_FIELD = "Account__c";
+
+const parseErrors = (e) => {
+  const out = [];
+  const o = e && e.body && e.body.output;
+  if (o) {
+    (o.errors || []).forEach((x) => out.push(x.message));
+    Object.values(o.fieldErrors || {}).forEach((list) =>
+      list.forEach((x) => out.push(x.message))
+    );
+  }
+  if (!out.length && e && e.body && e.body.message) out.push(e.body.message);
+  if (!out.length && e && Array.isArray(e.body))
+    e.body.forEach((b) => out.push(b.message));
+  if (!out.length) out.push("The deal could not be saved.");
+  return out.map((text, key) => ({ key, text }));
+};
 
 const TYPE_OPTIONS = KINDS.map((k) => ({ value: k.kind, label: k.short }));
 
@@ -57,12 +87,24 @@ export default class PipelineMobile extends LightningElement {
 
   version = MOBILE_VERSION;
   openId = ""; // the deal being looked at; blank when the list is showing
+  dealOn = false; // the deal screen is slid in (it stays on the page a moment after sliding out)
   stagesOpen = false; // the list of stages under the stage row
+  draft = {}; // the changes not yet saved, by field (nothing is saved until Save is pressed)
+  draftNames = {}; // the names of records picked in this edit, by field
+  errors = [];
+  savedMsg = false;
+  saving = false;
+  confirming = false; // asking whether to leave with unsaved changes
+  sheetField = ""; // the lookup being searched (the search page is over the deal while this is set)
+  sheetTerm = "";
+  sheetHits = [];
+  sheetSearched = false;
   debugText = "";
   statusOptions = STATUS_OPTIONS;
   typeOptions = TYPE_OPTIONS;
 
-  @wire(getRecord, { recordId: "$openId", optionalFields: RECORD_FIELDS })
+  @wire(getObjectInfo, { objectApiName: SALESRISKS }) objectInfo;
+  @wire(getRecord, { recordId: "$openId", optionalFields: "$optionalFields" })
   record;
   @wire(getPicklistValuesByRecordType, {
     objectApiName: SALESRISKS,
@@ -70,6 +112,9 @@ export default class PipelineMobile extends LightningElement {
   })
   picklists;
 
+  get optionalFields() {
+    return formFieldNames(this.openDeal ? this.openDeal.kind : "opp");
+  }
   get recordTypeId() {
     return this.record && this.record.data
       ? this.record.data.recordTypeId
@@ -77,24 +122,17 @@ export default class PipelineMobile extends LightningElement {
   }
 
   connectedCallback() {
-    this.onViewport = () => this.fit();
+    this.onViewport = () => {
+      this.fit();
+      this.settleOuterScroll();
+    };
     window.addEventListener("resize", this.onViewport);
     if (window.visualViewport)
       window.visualViewport.addEventListener("resize", this.onViewport);
-    const filter = {
-      kinds: KINDS.map((k) => k.kind),
-      status: "both",
-      closedMonths: 12,
-      mineOnly: true
-    };
-    Promise.all([
-      getContext().catch(() => null),
-      getDeals({ filterJson: JSON.stringify(filter) })
-    ])
+    Promise.all([getContext().catch(() => null), this.fetchDeals()])
       .then(([ctx, res]) => {
         this.stageOrder = (ctx && ctx.stageOrder) || [];
-        this.deals = res.deals || [];
-        this.truncated = !!res.truncated;
+        this.takeDeals(res);
       })
       .catch((e) => {
         this.error = errorText(e);
@@ -102,6 +140,19 @@ export default class PipelineMobile extends LightningElement {
       .finally(() => {
         this.loading = false;
       });
+  }
+  fetchDeals() {
+    const filter = {
+      kinds: KINDS.map((k) => k.kind),
+      status: "both",
+      closedMonths: 12,
+      mineOnly: true
+    };
+    return getDeals({ filterJson: JSON.stringify(filter) });
+  }
+  takeDeals(res) {
+    this.deals = res.deals || [];
+    this.truncated = !!res.truncated;
   }
 
   disconnectedCallback() {
@@ -112,6 +163,31 @@ export default class PipelineMobile extends LightningElement {
   renderedCallback() {
     this.fit();
     this.lockOuterScroll();
+    this.shareLabelWidth();
+    // Salesforce puts a text box's value on as an attribute, which a text box does not show, so the Background information would stay
+    // blank. Its value is set here as a property; a box being typed in is left alone.
+    this.template.querySelectorAll("textarea[data-api]").forEach((box) => {
+      if (this.template.activeElement === box) return;
+      const want = this.valueOf(box.dataset.api);
+      const text = want === null || want === undefined ? "" : String(want);
+      if (box.value !== text) box.value = text;
+    });
+  }
+
+  /**
+   * Gives the four Yes / No sliders one label width, the width of the longest label (measured from hidden copies set in the slider's own
+   * label type, plus the slider's 34 px of padding round its label), so the No and Yes are the same size on every one.
+   */
+  shareLabelWidth() {
+    const box = this.template.querySelector(".flagbox");
+    if (!box) return;
+    let widest = 0;
+    box.querySelectorAll(".lblmeasure").forEach((s) => {
+      widest = Math.max(widest, s.getBoundingClientRect().width);
+    });
+    const value = `${Math.ceil(widest) + 34}px`;
+    if (box.style.getPropertyValue("--seg-label-width") !== value)
+      box.style.setProperty("--seg-label-width", value);
   }
 
   /**
@@ -136,7 +212,8 @@ export default class PipelineMobile extends LightningElement {
     const pull = known ? this.pull : 0;
     const height = Math.max(240, Math.floor(viewH - (raw - pull) - reserve));
     page.style.marginTop = pull ? `-${pull}px` : "";
-    page.style.setProperty("--fit-height", `${height}px`);
+    const wrap = this.template.querySelector(".wrap");
+    if (wrap) wrap.style.setProperty("--fit-height", `${height}px`);
     this.appliedPull = pull;
     this.lastMeasure = {
       top: Math.round(raw - pull),
@@ -198,7 +275,8 @@ export default class PipelineMobile extends LightningElement {
         bottom: Math.round(r.bottom),
         sh: node.scrollHeight,
         ch: node.clientHeight,
-        tf: cs.transform !== "none"
+        tf: cs.transform !== "none",
+        st: Math.round(node.scrollTop)
       });
       // the nearest ancestor that scrolls and has more to scroll is Salesforce's page scroller
       if (!scroller && scrolls && excess > 1) {
@@ -216,27 +294,78 @@ export default class PipelineMobile extends LightningElement {
    * this page can go no further (the top or the bottom) it is stopped there, not passed on.
    */
   lockOuterScroll() {
-    const page = this.template.querySelector(".page");
-    if (!page || this.lockedPage === page) return;
-    this.lockedPage = page;
-    page.addEventListener(
-      "touchstart",
-      (e) => {
-        this.touchY = e.touches[0].clientY;
-      },
-      { passive: true }
-    );
-    page.addEventListener(
-      "touchmove",
-      (e) => {
-        const dy = e.touches[0].clientY - this.touchY;
-        const atTop = page.scrollTop <= 0;
-        const atBottom =
-          page.scrollTop + page.clientHeight >= page.scrollHeight - 1;
-        if ((atTop && dy > 0) || (atBottom && dy < 0)) e.preventDefault();
-      },
-      { passive: false }
-    );
+    this.lockedPages = this.lockedPages || new WeakSet();
+    this.template.querySelectorAll(".page").forEach((page) => {
+      if (this.lockedPages.has(page)) return;
+      this.lockedPages.add(page);
+      let touchY = 0;
+      page.addEventListener(
+        "touchstart",
+        (e) => {
+          touchY = e.touches[0].clientY;
+        },
+        { passive: true }
+      );
+      page.addEventListener(
+        "touchmove",
+        (e) => {
+          const dy = e.touches[0].clientY - touchY;
+          const atTop = page.scrollTop <= 0;
+          const atBottom =
+            page.scrollTop + page.clientHeight >= page.scrollHeight - 1;
+          if ((atTop && dy > 0) || (atBottom && dy < 0)) e.preventDefault();
+        },
+        { passive: false }
+      );
+    });
+    // a touch handler on the screen makes the pressed look (:active) work on the iPhone, for everything inside it
+    const wrap = this.template.querySelector(".wrap");
+    if (wrap && this.pressWrap !== wrap) {
+      this.pressWrap = wrap;
+      wrap.addEventListener("touchstart", () => {}, { passive: true });
+      // the screen's own box never scrolls: if the browser moves it (to show a text box above the keyboard), it is put straight back, so
+      // the locked Back bar stays where it is; the pages inside scroll themselves
+      wrap.addEventListener("focusout", () => this.settleOuterScroll());
+      wrap.addEventListener("scroll", () => {
+        wrap.scrollTop = 0;
+        wrap.scrollLeft = 0;
+      });
+    }
+  }
+  /**
+   * When the keyboard opens for a text box the iPhone scrolls what is above this screen (Salesforce's own scroller, or the web view itself) to
+   * show the box, and it does not always scroll back when the keyboard closes: the whole screen then sat higher, with the locked Back bar off
+   * the top (Robert, 2026-11-07). This puts everything above the screen back at the top. Nothing above it is meant to scroll (the screen fits
+   * the space and scrolls itself), so the top is where it belongs.
+   */
+  resetOuterScroll() {
+    // not while a text box is still being typed in (the keyboard is up and the phone is showing the box)
+    const on = this.template.activeElement;
+    if (on && /^(INPUT|TEXTAREA|SELECT)$/.test(on.tagName)) return;
+    let node = this.template.host;
+    for (let i = 0; i < 25 && node; i++) {
+      const root = node.getRootNode ? node.getRootNode() : null;
+      node =
+        node.assignedSlot ||
+        node.parentElement ||
+        (root && root.host ? root.host : null);
+      if (!node) break;
+      if (node.scrollTop > 0) node.scrollTop = 0;
+    }
+    const doc = document.scrollingElement || document.documentElement;
+    if (doc && doc.scrollTop > 0) doc.scrollTop = 0;
+    if (window.scrollY > 0) window.scrollTo(0, 0);
+    // measure the space again now that everything is back in place: the height was last worked out while the screen sat higher, which left
+    // the page taller than the room (the Save and Cancel bar ended up under Salesforce's "How can I help?" bar)
+    this.calibKey = "";
+    this.fit();
+  }
+  /** After the keyboard has gone (it takes about a quarter of a second), and again a little later in case the phone is slow to settle. */
+  settleOuterScroll() {
+    // eslint-disable-next-line @lwc/lwc/no-async-operation
+    setTimeout(() => this.resetOuterScroll(), 300);
+    // eslint-disable-next-line @lwc/lwc/no-async-operation
+    setTimeout(() => this.resetOuterScroll(), 800);
   }
   /** Tapping the version line shows what the screen measured (for finding a problem on a phone); tap again to hide it. */
   handleDebug() {
@@ -248,6 +377,10 @@ export default class PipelineMobile extends LightningElement {
     this.debugText = JSON.stringify(
       {
         v: this.version,
+        winY: Math.round(window.scrollY),
+        vvTop: window.visualViewport
+          ? Math.round(window.visualViewport.offsetTop)
+          : null,
         ...this.lastMeasure,
         scroller: m.scroller,
         chain: m.chain
@@ -257,8 +390,9 @@ export default class PipelineMobile extends LightningElement {
     );
   }
 
+  /** The list stays on the page under the deal while the deal is open (the deal slides over it), so Back finds it exactly as it was left. */
   get showList() {
-    return this.ready && !this.openId;
+    return this.ready;
   }
   get showDeal() {
     return this.ready && !!this.openId && !!this.openDeal;
@@ -268,24 +402,15 @@ export default class PipelineMobile extends LightningElement {
   get openDeal() {
     return this.deals.find((d) => d.id === this.openId);
   }
+  /** The deal as it would be with the unsaved changes made: the On Hold pill, the Status tile and the stage colour follow at once. */
+  get liveDeal() {
+    return this.openDeal ? liveDeal(this.openDeal, this.draft) : undefined;
+  }
   get header() {
-    return this.openDeal ? headerOf(this.openDeal) : { name: "", sub: "" };
+    return this.liveDeal ? headerOf(this.liveDeal) : { name: "", sub: "" };
   }
   get tiles() {
-    return this.openDeal ? summaryTiles(this.openDeal) : [];
-  }
-  get recFields() {
-    const f =
-      (this.record && this.record.data && this.record.data.fields) || {};
-    const val = (n) => (f[n] ? f[n].value : null);
-    return { units: val("UnitsCasesPerYear__c"), mymo: !!val("myMo__c") };
-  }
-  get rows() {
-    if (!this.openDeal) return [];
-    return detailRows(this.openDeal, this.recFields).map((r) => ({
-      ...r,
-      cls: r.yes === null ? "fv" : r.yes ? "fv yes" : "fv no"
-    }));
+    return this.liveDeal ? summaryTiles(this.liveDeal) : [];
   }
   get goRows() {
     const d = this.openDeal;
@@ -301,7 +426,7 @@ export default class PipelineMobile extends LightningElement {
     ];
   }
   get stageNow() {
-    return (this.openDeal && this.openDeal.stage) || "–";
+    return (this.liveDeal && this.liveDeal.stage) || "–";
   }
   get stageValues() {
     const all = this.picklists && this.picklists.data;
@@ -312,42 +437,321 @@ export default class PipelineMobile extends LightningElement {
   get stageList() {
     const d = this.openDeal;
     if (!d) return [];
-    return stageSteps(this.stageValues, d.kind, d.stage).map((name) => ({
+    const now = this.stageNow;
+    return stageSteps(this.stageValues, d.kind, now).map((name) => ({
       name,
-      current: name === d.stage,
-      cls: name === d.stage ? "here" : ""
+      current: name === now,
+      cls: name === now ? "here" : ""
     }));
   }
   /** The colour of the stage row: blue, green at the won stage, red at the lost stage. */
   get stageRowCls() {
-    const tone = this.openDeal ? stageTone(this.openDeal) : "";
+    const tone = this.liveDeal ? stageTone(this.liveDeal) : "";
     return "stgC" + (tone ? ` ${tone}` : "");
   }
+  /** The whole stage component (row and list in one outline): the colour carries the outline, "shut" folds the list. */
   get stageSecCls() {
-    return "stsec" + (this.stagesOpen ? "" : " shut");
-  }
-  get stagesWord() {
-    return this.stagesOpen ? "Close" : "All stages";
+    const tone = this.liveDeal ? stageTone(this.liveDeal) : "";
+    return (
+      "stsec" + (tone ? ` ${tone}` : "") + (this.stagesOpen ? "" : " shut")
+    );
   }
   handleStages() {
     this.stagesOpen = !this.stagesOpen;
   }
-  /** Opens a deal on its own screen; the list keeps where it was (the Status, the search, the folds and how far it was scrolled). */
-  handleOpen(event) {
-    const page = this.template.querySelector(".page");
-    this.listTop = page ? page.scrollTop : 0;
+  /** Tapping a stage in the list is a draft, like any other change; the list folds shut. Nothing happens if the person may not change it. */
+  handleStagePick(event) {
+    if (!this.updateable("Stage__c")) return;
+    this.setDraft("Stage__c", event.currentTarget.dataset.name);
     this.stagesOpen = false;
+  }
+  /**
+   * Opens a deal on its own screen: it slides in from the right over the list (0.4 s, the motion standard). The list stays where it was
+   * underneath (the Status, the search, the folds and how far it was scrolled), so nothing has to be put back.
+   */
+  handleOpen(event) {
+    clearTimeout(this.leaveTimer);
+    this.stagesOpen = false;
+    this.clearDraft();
     this.openId = event.currentTarget.dataset.id;
-    this.scrollTo(0);
+    this.dealOn = true;
+    this.scrollDealTo(0);
   }
+  get dealCls() {
+    return "page dealpage" + (this.dealOn ? " on" : "");
+  }
+  /** Back to the list; with unsaved changes it asks first (Stay or Leave). */
   handleBack() {
-    this.openId = "";
-    this.scrollTo(this.listTop || 0);
+    if (!this.clean) {
+      this.confirming = true;
+      return;
+    }
+    this.leaveDeal();
   }
-  scrollTo(top) {
+  /** The deal slides off to the right; it is taken off the page once it has gone (its words stay on it while it slides). */
+  leaveDeal() {
+    this.confirming = false;
+    this.dealOn = false;
+    clearTimeout(this.leaveTimer);
+    // eslint-disable-next-line @lwc/lwc/no-async-operation
+    this.leaveTimer = setTimeout(() => {
+      if (this.dealOn) return;
+      this.clearDraft();
+      this.stagesOpen = false;
+      this.openId = "";
+    }, SLIDE_OUT_MS);
+  }
+  handleStay() {
+    this.confirming = false;
+  }
+  handleLeave() {
+    this.leaveDeal();
+  }
+
+  /* ----- editing: the fields, the draft, Save and Cancel ----- */
+  current(api) {
+    const f = this.record && this.record.data && this.record.data.fields[api];
+    return f ? f.value : null;
+  }
+  valueOf(api) {
+    return api in this.draft ? this.draft[api] : this.current(api);
+  }
+  choices(api) {
+    const all = this.picklists && this.picklists.data;
+    const f = all && all.picklistFieldValues && all.picklistFieldValues[api];
+    return f ? f.values : null;
+  }
+  updateable(api) {
+    const info = this.objectInfo && this.objectInfo.data;
+    return !!(info && info.fields[api] && info.fields[api].updateable);
+  }
+  /** The name to show for a lookup: one just picked, else the record's own related name. */
+  lookupName(api) {
+    if (api in this.draftNames) return this.draftNames[api];
+    const rel =
+      this.record &&
+      this.record.data &&
+      this.record.data.fields[api.replace(/__c$/, "__r")];
+    const name = rel && rel.value && rel.value.fields && rel.value.fields.Name;
+    return name ? name.value : "";
+  }
+  get fieldsLoaded() {
+    return !!(this.record && this.record.data);
+  }
+  get formRows() {
+    if (!this.openDeal || !this.fieldsLoaded) return [];
+    return formRows(this.openDeal.kind, {
+      draft: this.draft,
+      valueOf: (api) => this.valueOf(api),
+      choices: (api) => this.choices(api),
+      updateable: (api) => this.updateable(api),
+      lookupName: (api) => this.lookupName(api)
+    });
+  }
+  get clean() {
+    return Object.keys(this.draft).length === 0;
+  }
+  get saveBarCls() {
+    return "savewrap" + (this.clean ? "" : " on");
+  }
+  get saveWord() {
+    return this.saving ? "Saving…" : "Save";
+  }
+  get askCls() {
+    return "askwrap" + (this.confirming ? " on" : "");
+  }
+  get hasErrors() {
+    return this.errors.length > 0;
+  }
+  get savedCls() {
+    return "okmsg" + (this.savedMsg ? " on" : "");
+  }
+  clearDraft() {
+    this.draft = {};
+    this.draftNames = {};
+    this.errors = [];
+    this.savedMsg = false;
+  }
+  setDraft(api, value) {
+    const original = this.current(api);
+    const same =
+      typeof value === "boolean"
+        ? !!original === value
+        : String(original ?? "") === String(value ?? "");
+    const next = { ...this.draft };
+    if (same) delete next[api];
+    else next[api] = value;
+    this.draft = next;
+    this.savedMsg = false;
+    this.errors = [];
+  }
+  handleSelect(event) {
+    const api = event.target.dataset.api;
+    this.setDraft(api, event.target.value);
+    if (api === QUARTER_FIELD) this.suggestYearFor(event.target.value);
+  }
+  /** Picking a quarter fills in its year when there is none yet, or when its year would put the quarter in the past (as on the desktop). */
+  suggestYearFor(quarter) {
+    if (!quarter || !this.updateable(YEAR_FIELD)) return;
+    const year = this.valueOf(YEAR_FIELD);
+    const want = String(suggestYear(quarter));
+    const offered = (this.choices(YEAR_FIELD) || []).some(
+      (c) => c.value === want
+    );
+    if ((!year || quarterIsPast(quarter, year)) && offered)
+      this.setDraft(YEAR_FIELD, want);
+  }
+  handleText(event) {
+    this.setDraft(event.target.dataset.api, event.target.value);
+  }
+  handleNumber(event) {
+    const v = event.target.value;
+    this.setDraft(event.target.dataset.api, v === "" ? "" : Number(v));
+  }
+  handleFlag(event) {
+    this.setDraft(
+      event.currentTarget.dataset.api,
+      event.detail.value === "yes"
+    );
+  }
+  handleMulti(event) {
+    const { api, value } = event.currentTarget.dataset;
+    const on = this.valueOf(api) ? String(this.valueOf(api)).split(";") : [];
+    const next = on.includes(value)
+      ? on.filter((x) => x !== value)
+      : [...on, value];
+    this.setDraft(api, next.join(";"));
+  }
+  handleCancel() {
+    this.clearDraft();
+  }
+  handleSave() {
+    if (this.saving || this.clean) return;
+    const fields = { Id: this.openId };
+    Object.entries(this.draft).forEach(([k, v]) => {
+      fields[k] = v === "" ? null : v;
+    });
+    this.saving = true;
+    this.errors = [];
+    updateRecord({ fields })
+      .then(() => {
+        const id = this.openId;
+        this.draft = {};
+        this.draftNames = {};
+        this.savedMsg = true;
+        getRecordNotifyChange([{ recordId: id }]);
+        // read the deals again, quietly, so the list and the summary show what was saved
+        return this.fetchDeals().then((res) => this.takeDeals(res));
+      })
+      .catch((e) => {
+        this.errors = parseErrors(e);
+      })
+      .finally(() => {
+        this.saving = false;
+      });
+  }
+
+  /* ----- the search page for a lookup (Primary HCP, Healthcare facility, Link to ROSA deal): slides in over the deal ----- */
+  get sheetCls() {
+    return "sheet" + (this.sheetField ? " on" : "");
+  }
+  get sheetTitle() {
+    const row = this.formRows.find((r) => r.api === this.sheetField);
+    return row ? row.label : "";
+  }
+  get sheetPrompt() {
+    return !this.sheetSearched && this.sheetTerm.trim().length < LOOKUP_MIN;
+  }
+  /** A full list: say so, and ask for more of the name (Robert, 2026-11-07: teach people to search with specific words, not generic ones). */
+  get limit() {
+    return LOOKUP_LIMIT;
+  }
+  get sheetFull() {
+    return this.sheetHits.length >= LOOKUP_LIMIT;
+  }
+  get sheetNone() {
+    return this.sheetSearched && this.sheetHits.length === 0;
+  }
+  get hasSheetTerm() {
+    return this.sheetTerm !== "";
+  }
+  handleLookupOpen(event) {
+    this.sheetField = event.currentTarget.dataset.api;
+    this.sheetTerm = "";
+    this.sheetHits = [];
+    this.sheetSearched = false;
+  }
+  /** The round cross on an optional lookup takes the choice away (a draft like any other change; Save then writes it as empty). */
+  handleLookupClear(event) {
+    const api = event.currentTarget.dataset.api;
+    this.draftNames = { ...this.draftNames, [api]: "" };
+    this.setDraft(api, "");
+  }
+  handleSheetClose() {
+    this.sheetField = "";
+  }
+  handleSheetTerm(event) {
+    this.sheetTerm = event.target.value;
+    clearTimeout(this.sheetTimer);
+    const t = this.sheetTerm;
+    if (t.trim().length < LOOKUP_MIN) {
+      this.sheetHits = [];
+      this.sheetSearched = false;
+      return;
+    }
+    const field = this.sheetField;
+    // eslint-disable-next-line @lwc/lwc/no-async-operation
+    this.sheetTimer = setTimeout(() => {
+      // the hospital picker puts the chosen surgeon's own hospitals first (when their names match what was typed)
+      const call =
+        field === HOSPITAL_FIELD
+          ? searchNear({
+              fieldName: field,
+              term: t,
+              surgeonId: this.valueOf(SURGEON_FIELD) || null
+            })
+          : searchLookup({ fieldName: field, term: t });
+      call
+        .then((rows) => {
+          if (t === this.sheetTerm) {
+            this.sheetHits = this.markChosen(rows, field);
+            this.sheetSearched = true;
+          }
+        })
+        .catch(() => {
+          if (t === this.sheetTerm) {
+            this.sheetHits = [];
+            this.sheetSearched = true;
+          }
+        });
+    }, LOOKUP_WAIT_MS);
+  }
+  markChosen(rows, field) {
+    const chosen = this.valueOf(field);
+    return rows.map((r) => ({
+      id: r.id,
+      name: r.name,
+      sub: r.sub || "",
+      chosen: r.id === chosen,
+      cls: "rs" + (r.id === chosen ? " is" : "")
+    }));
+  }
+  handleSheetClear() {
+    this.sheetTerm = "";
+    this.sheetHits = [];
+    this.sheetSearched = false;
+  }
+  handleSheetPick(event) {
+    const { id, name } = event.currentTarget.dataset;
+    const field = this.sheetField;
+    this.draftNames = { ...this.draftNames, [field]: name };
+    this.setDraft(field, id);
+    this.sheetField = "";
+  }
+  scrollDealTo(top) {
     // eslint-disable-next-line @lwc/lwc/no-async-operation
     requestAnimationFrame(() => {
-      const page = this.template.querySelector(".page");
+      const page = this.template.querySelector(".dealpage");
       if (page) page.scrollTop = top;
     });
   }

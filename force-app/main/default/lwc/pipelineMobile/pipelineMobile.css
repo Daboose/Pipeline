@@ -4,6 +4,8 @@
    desktop is not around this page. One layer per rule; phone sizes: 16 px search text (or the iPhone zooms), 37 px sliders, 44 px search. */
 :host {
   display: block;
+  --seg-good: #16a34a;
+  --seg-warn: #f59e0b;
   --panel: #ffffff;
   --panel2: #eef2fa;
   --bg: #f3f3f3;
@@ -18,6 +20,13 @@
   --head: #db2777;
   color: var(--text);
   background: var(--bg);
+}
+.wrap {
+  position: relative;
+  overflow: hidden;
+  /* "clip", not only "hidden": a hidden box can still be scrolled by the browser (the iPhone does it to bring a text box into view when the
+     keyboard opens), which pushed the whole deal page up and the locked Back bar off the top of the screen (Robert, 2026-11-07) */
+  overflow: clip;
 }
 .page {
   /* this page scrolls inside itself, in the height that is left on the screen (set in fit()), so the .ctl block can stay locked at its top */
@@ -65,7 +74,8 @@
   background: var(--bg);
   box-shadow: 0 1px 0 var(--line);
 }
-.seg {
+.seg,
+.flagseg {
   display: block;
   width: 100%;
   --seg-width: 100%;
@@ -460,29 +470,40 @@
 .tg.bad {
   color: #dc2626;
 }
-/* the stage: one coloured row that names it and opens the list of stages (read only for now) */
+/* the stage as ONE component (Robert, 2026-11-07, mockup pipeline_mobile_stage_v1.html option B): the coloured row and its list of stages
+   are joined inside one outline in the row's colour (blue, green at the won stage, red at the lost stage). The list folds open and shut
+   over 0.4 s (the motion standard) and the chevron turns over with it. The stage the deal is on has a bar of the colour down its left edge. */
+.stsec {
+  --c: var(--indigo);
+  border: 2px solid var(--c);
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--panel);
+  margin-bottom: 12px;
+  transition: border-color 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.stsec.good {
+  --c: #16a34a;
+}
+.stsec.bad {
+  --c: #dc2626;
+}
 .stgC {
   display: flex;
   align-items: center;
   gap: 10px;
   width: 100%;
-  min-height: 56px;
-  padding: 6px 14px;
+  min-height: 60px;
+  padding: 6px 12px 6px 16px;
   border: 0;
-  border-radius: 12px;
-  background: var(--indigo);
+  border-radius: 0;
+  background: var(--c);
   color: #fff;
   font-family: inherit;
   text-align: left;
   cursor: pointer;
   transition: background 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
   -webkit-tap-highlight-color: transparent;
-}
-.stgC.good {
-  background: #16a34a;
-}
-.stgC.bad {
-  background: #dc2626;
 }
 .stgC .sk {
   display: flex;
@@ -496,55 +517,59 @@
   opacity: 0.85;
 }
 .stgC .sv {
-  font-size: 18px;
+  font-size: 19px;
   font-weight: 800;
 }
-.stgC .pk {
-  font-size: 12px;
-  font-weight: 700;
-  opacity: 0.85;
-}
+/* the chevron: big, no words, in a soft round button, and it turns over as the list opens and closes */
 .chev2 {
-  width: 9px;
-  height: 9px;
-  border-right: 2.5px solid #fff;
-  border-bottom: 2.5px solid #fff;
-  transform: rotate(45deg);
-  margin-top: -4px;
+  margin-left: auto;
+  flex: none;
+  width: 36px;
+  height: 36px;
+  position: relative;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.22);
+  transform: rotate(180deg);
   transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
+.chev2::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  border-right: 4px solid #fff;
+  border-bottom: 4px solid #fff;
+  border-radius: 2px;
+  transform: translate(-50%, -70%) rotate(45deg);
+}
 .stsec.shut .chev2 {
-  transform: rotate(-45deg);
-  margin-top: 0;
-}
-.stsec {
-  margin-bottom: 12px;
-}
-.stsec .fold {
-  margin-top: 6px;
+  transform: rotate(0deg);
 }
 .stsec.shut .fold {
   grid-template-rows: 0fr;
-  margin-top: 0;
-}
-.listsheet {
-  background: var(--panel);
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  overflow: hidden;
 }
 .listsheet div {
+  cursor: pointer;
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  padding: 13px 14px;
+  padding: 14px 16px;
   border-top: 1px solid var(--line);
+  font-size: 16px;
 }
 .listsheet div:first-child {
   border-top: 0;
 }
 .listsheet .here {
-  background: var(--panel2);
+  background: color-mix(in srgb, var(--c) 12%, var(--panel));
   font-weight: 800;
+  box-shadow: inset 5px 0 0 var(--c);
+  padding-left: 20px;
+}
+.listsheet .here span:last-child:not(:first-child) {
+  color: var(--c);
 }
 .card {
   background: var(--panel);
@@ -561,30 +586,14 @@
   text-transform: uppercase;
   color: var(--head);
 }
-.frow {
-  padding: 9px 0;
-  border-top: 1px solid var(--line);
-}
-.frow:first-of-type {
-  border-top: 0;
-}
 .fl {
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--muted);
-}
-.fv {
-  font-size: 16px;
-  margin-top: 2px;
-}
-.fv.yes {
-  color: #0f9d74;
-  font-weight: 800;
-}
-.fv.no {
-  color: var(--muted);
+  margin-bottom: 5px;
+  transition: color 0.4s;
 }
 .go {
   display: flex;
@@ -620,8 +629,462 @@
   margin: 0;
 }
 @media (prefers-reduced-motion: reduce) {
+  .stsec,
   .stgC,
   .chev2 {
+    transition: none;
+  }
+}
+
+/* ===== editing a deal (Robert, 2026-11-07; mockup pipeline_mobile_edit_v1.html): no Edit button, the fields are there to change; nothing is
+   saved until Save. 16 px text (or the iPhone zooms the page) and 44 px controls. ===== */
+.f {
+  padding: 9px 0;
+  border-top: 1px solid var(--line);
+}
+.okmsg + .frm .f {
+  border-top: 0;
+}
+.f.changed .fl {
+  color: var(--indigo);
+}
+.f.changed .in,
+.f.changed .lk {
+  border-color: var(--indigo);
+}
+.rq {
+  color: #dc2626;
+}
+.in,
+.lk {
+  display: block;
+  width: 100%;
+  height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--edge);
+  border-radius: 10px;
+  background: var(--pfield);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 16px;
+  text-align: left;
+  box-sizing: border-box;
+  transition: border-color 0.4s;
+}
+select.in {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 34px;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--muted) 50%),
+    linear-gradient(135deg, var(--muted) 50%, transparent 50%);
+  background-position:
+    calc(100% - 20px) 19px,
+    calc(100% - 14px) 19px;
+  background-size:
+    6px 6px,
+    6px 6px;
+  background-repeat: no-repeat;
+}
+.ta {
+  font-family: inherit;
+  height: auto;
+  min-height: 96px;
+  padding: 10px 14px;
+  resize: none;
+}
+.ro {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  background: var(--pfield);
+  border: 1px solid var(--pline);
+  border-radius: 10px;
+  color: var(--muted);
+  font-size: 16px;
+}
+.lk {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+}
+.lk .ph {
+  color: var(--muted);
+}
+.lkx {
+  flex: none;
+  width: 9px;
+  height: 9px;
+  border-right: 2.5px solid var(--muted);
+  border-top: 2.5px solid var(--muted);
+  transform: rotate(45deg);
+}
+.two {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.pls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.pl {
+  height: 40px;
+  padding: 0 16px;
+  border: 1px solid var(--edge);
+  border-radius: 999px;
+  background: var(--panel2);
+  color: var(--muted);
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 14px;
+  transition:
+    background 0.3s,
+    color 0.3s;
+}
+.pl.on {
+  background: var(--indigo);
+  border-color: var(--indigo);
+  color: #fff;
+}
+/* the four Yes / No fields: one full-width pill each, the desktop's colours (Yes turns the whole pill solid green; On hold, amber) */
+.flagbox {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.flags {
+  padding: 9px 0;
+  border-top: 1px solid var(--line);
+}
+/* the MyMo stage folds open only while MyMo is Yes (0.4 s) */
+.mm {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.mm.open {
+  grid-template-rows: 1fr;
+}
+/* the row sits inside its own wrapper, which is what folds: a row's own padding cannot be squeezed by the fold, so it would show a sliver
+   (the label of the MyMo stage showed while MyMo was No) */
+.mm > .rowin {
+  overflow: hidden;
+  min-height: 0;
+}
+.mm .f {
+  border-top: 0;
+  padding-top: 4px;
+}
+.errs {
+  border: 1px solid #dc2626;
+  color: #dc2626;
+  border-radius: 10px;
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+.okmsg {
+  color: #0f9d74;
+  font-weight: 800;
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition:
+    max-height 0.4s,
+    opacity 0.4s;
+}
+.okmsg.on {
+  max-height: 40px;
+  opacity: 1;
+  padding-bottom: 8px;
+}
+/* the locked Save / Cancel bar: folds up from the bottom edge of the page when the first change is made, and stays while the page scrolls */
+.savewrap {
+  position: sticky;
+  bottom: 0;
+  z-index: 6;
+  display: grid;
+  grid-template-rows: 0fr;
+  background: var(--bg);
+  transition: grid-template-rows 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.savewrap.on {
+  grid-template-rows: 1fr;
+  box-shadow: 0 -1px 0 var(--line);
+}
+.savein {
+  overflow: hidden;
+  min-height: 0;
+}
+.savebar {
+  display: flex;
+  gap: 10px;
+  padding: 10px 12px 12px;
+}
+.savebar button,
+.ask1 button {
+  flex: 1 1 0;
+  height: 44px;
+  border: 0;
+  border-radius: 999px;
+  color: #fff;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.savebar .cancel {
+  background: #64748b;
+}
+.savebar .save,
+.ask1 .stay {
+  background: var(--indigo);
+}
+.ask1 .leave {
+  background: #dc2626;
+}
+.savebar button[disabled] {
+  opacity: 0.55;
+}
+/* the search page for a person, hospital or deal: slides in from the right over the deal (0.4 s), with its own locked back bar */
+.sheet {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--fit-height, 100%);
+  z-index: 8;
+  display: flex;
+  flex-direction: column;
+  padding: 0 12px 12px;
+  box-sizing: border-box;
+  background: var(--bg);
+  transform: translateX(105%);
+  visibility: hidden;
+  transition:
+    transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+    visibility 0s linear 0.4s;
+}
+.sheet.on {
+  transform: none;
+  visibility: visible;
+  transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.sheet .backbtn {
+  flex: none;
+  margin-bottom: 10px;
+}
+.sht {
+  margin: 2px 2px 8px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--head);
+}
+.sheet .sbox {
+  flex: none;
+  margin-bottom: 10px;
+}
+.results {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+.rs {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 58px;
+  padding: 8px 14px;
+  border-top: 1px solid var(--line);
+  cursor: pointer;
+}
+.rs:first-child {
+  border-top: 0;
+}
+.rs b {
+  display: block;
+  font-size: 16px;
+}
+.rs small {
+  color: var(--muted);
+  font-size: 13px;
+}
+.rs.is {
+  background: color-mix(in srgb, var(--indigo) 10%, var(--panel));
+}
+.ck2 {
+  color: var(--indigo);
+  font-weight: 800;
+}
+/* leaving with unsaved changes: a question over a blurred, darkened page */
+.askwrap {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--fit-height, 100%);
+  z-index: 9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  box-sizing: border-box;
+  background: rgba(6, 11, 20, 0.55);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.3s,
+    visibility 0s linear 0.3s;
+}
+.askwrap.on {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.3s;
+}
+.ask1 {
+  width: 100%;
+  padding: 18px;
+  background: var(--panel);
+  border: 1px solid var(--edge);
+  border-radius: 14px;
+}
+.ask1 b {
+  font-size: 18px;
+}
+.ask1 p {
+  margin: 6px 0 14px;
+  color: var(--muted);
+  font-size: 15px;
+}
+.row2 {
+  display: flex;
+  gap: 10px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .mm,
+  .okmsg,
+  .savewrap,
+  .sheet,
+  .askwrap {
+    transition: none;
+  }
+}
+
+/* the four Yes / No sliders share one label width, so every No and Yes is the same size (Robert, 2026-11-07). The width is measured: these
+   hidden copies of the labels are set in the slider's own label type, the widest one sets --seg-label-width (see renderedCallback). */
+.lblmeasure {
+  position: absolute;
+  visibility: hidden;
+  white-space: nowrap;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* the cross that clears an optional lookup, on the right of the field where the chevron was */
+.lkrow {
+  position: relative;
+}
+.lk.hasx {
+  padding-right: 52px;
+}
+.lk.hasx .lkx {
+  display: none;
+}
+.lkrow .lkclear {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  width: 28px;
+  height: 28px;
+  margin-top: -14px;
+  background: var(--edge);
+}
+
+/* ===== the deal screen slides in over the list from the right, and slides off again (Robert, 2026-11-07; the motion standard, 0.4 s). The list
+   stays where it was underneath, so Back finds it exactly as it was left. ===== */
+.dealpage {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 7;
+  background: var(--bg);
+  transform: translateX(105%);
+  visibility: hidden;
+  transition:
+    transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+    visibility 0s linear 0.4s;
+}
+.dealpage.on {
+  transform: none;
+  visibility: visible;
+  transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* ===== a touch shows at once (Robert, 2026-11-07): what is pressed goes a distinct grey, or darker, the way the iPhone's own icons do, and
+   eases back when the finger lifts. ===== */
+.deal,
+.rs,
+.listsheet div,
+.lk {
+  transition:
+    background 0.3s,
+    border-color 0.4s;
+}
+.deal:active,
+.rs:active,
+.listsheet div:active {
+  background: #dde2ec;
+  transition: none;
+}
+.lk:active {
+  background: #e3e7f0;
+  transition: none;
+}
+.sechead,
+.stgC,
+.pl,
+.backbtn,
+.savebar button,
+.ask1 button,
+.xcirc {
+  transition:
+    filter 0.3s,
+    background 0.4s,
+    color 0.3s;
+}
+.sechead:active,
+.stgC:active,
+.pl:active,
+.backbtn:active,
+.savebar button:active,
+.ask1 button:active,
+.xcirc:active {
+  filter: brightness(0.86);
+  transition: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .dealpage,
+  .dealpage.on {
     transition: none;
   }
 }
