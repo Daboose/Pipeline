@@ -21,13 +21,13 @@
   transform: translateX(105%);
   visibility: hidden;
   transition:
-    transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
-    visibility 0s linear 0.4s;
+    transform var(--slide, 0.48s) cubic-bezier(0.2, 0.8, 0.2, 1),
+    visibility 0s linear var(--slide, 0.48s);
 }
 .bookingspage.on {
   transform: none;
   visibility: visible;
-  transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: transform var(--slide, 0.48s) cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 .ctl {
   position: sticky;
@@ -58,7 +58,7 @@
   text-transform: uppercase;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-  transition: filter 0.3s;
+  transition: filter var(--quick, 0.36s);
 }
 .backbtn:active {
   filter: brightness(0.86);
@@ -187,15 +187,9 @@
   font-size: 16px;
   appearance: none;
   -webkit-appearance: none;
-  background-image:
-    linear-gradient(45deg, transparent 50%, var(--muted, #5d6b85) 50%),
-    linear-gradient(135deg, var(--muted, #5d6b85) 50%, transparent 50%);
-  background-position:
-    calc(100% - 20px) 19px,
-    calc(100% - 14px) 19px;
-  background-size:
-    6px 6px,
-    6px 6px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%235d6b85' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-position: right 14px center;
+  background-size: 12px 8px;
   background-repeat: no-repeat;
 }
 .chart svg {

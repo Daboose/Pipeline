@@ -1,0 +1,33 @@
+<template>
+  <div class={wrapCls}>
+    <button
+      type="button"
+      class="hd"
+      aria-expanded={isOpen}
+      onclick={handleHead}
+    >
+      <span class="tx">
+        <small>{label}<span lwc:if={required}> *</span></small>
+        <span class={chosenCls}>{chosenText}</span>
+      </span>
+      <span class="rd"></span>
+    </button>
+    <div class="bd">
+      <div>
+        <div class="chips">
+          <template for:each={chips} for:item="c">
+            <button
+              type="button"
+              key={c.value}
+              class={c.cls}
+              data-value={c.value}
+              onclick={handleChip}
+            >
+              {c.label}
+            </button>
+          </template>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>

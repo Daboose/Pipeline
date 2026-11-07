@@ -1,0 +1,2917 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Mockup: adding a new deal from the phone (version 1)</title>
+    <style>
+      :root,
+      [data-theme="light"] {
+        --page: #e9edf4;
+        --card: #ffffff;
+        --bg: #f3f3f3;
+        --box: #eef2fa;
+        --line: #d5dcea;
+        --edge: #b3bfd6;
+        --text: #1b2640;
+        --muted: #5d6b85;
+        --pipe: #b7791f;
+        --indigo: #4f46e5;
+        --slate: #64748b;
+        --head: #db2777;
+        --field: #ffffff;
+        --ok: #0f9d74;
+      }
+      [data-theme="dark"] {
+        --page: #141e2e;
+        --card: #1a2740;
+        --bg: #141e2e;
+        --box: #20304f;
+        --line: #2f4163;
+        --edge: #5b6f93;
+        --text: #e8edf5;
+        --muted: #9fb0cc;
+        --pipe: #fdb827;
+        --indigo: #6366f1;
+        --slate: #475569;
+        --head: #f472b6;
+        --field: #11151c;
+        --ok: #4ee0b0;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--page);
+        color: var(--text);
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-size: 16px;
+      }
+      button,
+      input {
+        font-family: inherit;
+        font-size: inherit;
+        color: inherit;
+      }
+      .sp {
+        flex: 1;
+      }
+      .muted {
+        color: var(--muted);
+      }
+      .sfnav {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        height: 44px;
+        padding: 0 16px;
+        background: #0b1220;
+        color: #cdd6e6;
+        font-size: 14px;
+      }
+      .sfnav .app {
+        font-weight: 800;
+        letter-spacing: 0.14em;
+      }
+      .sfnav .app b {
+        color: #fdb827;
+      }
+      .sfnav .tab {
+        color: #9fb0cc;
+      }
+      .sfnav .tab.on {
+        color: #fff;
+        border-bottom: 2px solid #6366f1;
+        padding-bottom: 2px;
+      }
+      .btn,
+      .pill {
+        border: 0;
+        border-radius: 999px;
+        padding: 7px 16px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+        background: var(--slate);
+        color: #fff;
+      }
+      .pill.on {
+        background: var(--indigo);
+      }
+      .about {
+        margin: 14px 16px;
+        padding: 12px 18px;
+        background: var(--card);
+        border: 1px solid var(--edge);
+        border-radius: 12px;
+        line-height: 1.5;
+        max-width: 1100px;
+        font-size: 15px;
+      }
+      .about summary {
+        cursor: pointer;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        color: var(--pipe);
+      }
+      .about ul {
+        margin: 4px 0 8px;
+        padding-left: 22px;
+      }
+      .tools {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+        padding: 0 16px 10px;
+      }
+      .tools .lab {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        margin-left: 14px;
+      }
+      .tools .lab:first-child {
+        margin-left: 0;
+      }
+      .mocknote {
+        margin: 0 16px 12px;
+        padding: 8px 14px;
+        border: 1px dashed var(--edge);
+        border-radius: 10px;
+        color: var(--muted);
+        font-size: 14px;
+        font-style: italic;
+        max-width: 1100px;
+      }
+      .phones {
+        display: flex;
+        gap: 40px;
+        flex-wrap: wrap;
+        padding: 0 16px 40px;
+        align-items: flex-start;
+      }
+      .opt h2 {
+        margin: 0 0 2px;
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--head);
+      }
+      .opt p {
+        margin: 0 0 10px;
+        color: var(--muted);
+        font-size: 14px;
+        max-width: 390px;
+      }
+
+      /* the phone: 390 px wide, Salesforce's own top bar and bottom tab bar around our page */
+      .phone {
+        position: relative;
+        width: 390px;
+        height: 800px;
+        border: 10px solid #0b1220;
+        border-radius: 38px;
+        overflow: hidden;
+        background: var(--bg);
+        display: flex;
+        flex-direction: column;
+      }
+      .sfstatus {
+        height: 40px;
+        flex: none;
+        padding: 12px 0 0 28px;
+        font-size: 14px;
+        font-weight: 600;
+        background: var(--card);
+      }
+      .sfbar {
+        flex: none;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        height: 46px;
+        padding: 0 14px;
+        background: var(--card);
+        border-bottom: 1px solid var(--line);
+        font-weight: 700;
+      }
+      .sfbar .ham {
+        width: 22px;
+        height: 14px;
+        border-top: 2px solid var(--muted);
+        border-bottom: 2px solid var(--muted);
+        position: relative;
+      }
+      .sfbar .ham::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 4px;
+        border-top: 2px solid var(--muted);
+      }
+      .scroll {
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+        padding: 12px 12px 16px;
+      }
+      .sftabs {
+        flex: none;
+        display: flex;
+        height: 58px;
+        background: var(--card);
+        border-top: 1px solid var(--line);
+      }
+      .sftabs span {
+        flex: 1;
+        text-align: center;
+        padding-top: 9px;
+        font-size: 11px;
+        color: var(--muted);
+      }
+      .sftabs span.on {
+        color: var(--indigo);
+        font-weight: 700;
+      }
+      .sftabs i {
+        display: block;
+        width: 22px;
+        height: 22px;
+        margin: 0 auto 3px;
+        border-radius: 6px;
+        background: currentColor;
+        opacity: 0.35;
+      }
+
+      /* the one-pill slider (phone): full width, 37 px options (33% taller than on desktop), label end */
+      .yn {
+        display: flex;
+        align-items: stretch;
+        width: 100%;
+        background: var(--card);
+        border: 1px solid var(--edge);
+        border-radius: 999px;
+      }
+      .yn .lb {
+        display: inline-flex;
+        align-items: center;
+        padding: 0 12px 0 16px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+        white-space: nowrap;
+      }
+      .yn .trk {
+        position: relative;
+        flex: 1;
+        display: flex;
+        margin: -1px;
+        padding: 3px;
+        background: var(--box);
+        border: 1px solid var(--edge);
+        border-radius: 999px;
+      }
+      .yn .hl {
+        position: absolute;
+        top: 3px;
+        left: 0;
+        width: 0;
+        height: 37px;
+        border-radius: 999px;
+        background: var(--indigo);
+        box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35);
+        transition:
+          left 0.5s cubic-bezier(0.3, 1.35, 0.5, 1),
+          width 0.5s cubic-bezier(0.3, 1.35, 0.5, 1);
+      }
+      .yn button {
+        position: relative;
+        z-index: 1;
+        flex: 1 1 0;
+        height: 37px;
+        border: 0;
+        background: none;
+        font-weight: 700;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+        cursor: pointer;
+        white-space: nowrap;
+        transition: color 0.25s;
+      }
+      .yn button.on {
+        color: #fff;
+      }
+      .ctl {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-bottom: 12px;
+      }
+      .search {
+        position: relative;
+      }
+      .search input {
+        width: 100%;
+        height: 44px;
+        border-radius: 999px;
+        border: 1px solid var(--edge);
+        background: var(--field);
+        padding: 0 42px 0 16px;
+        font-size: 16px; /* 16 px, or the iPhone zooms the page when it is tapped */
+        outline: none;
+      }
+      .search input:focus {
+        border-color: var(--indigo);
+      }
+      .xc {
+        position: absolute;
+        right: 8px;
+        top: 7px;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        border: 0;
+        background: var(--edge);
+        cursor: pointer;
+        display: none;
+      }
+      .xc.show {
+        display: block;
+      }
+      .xc::before,
+      .xc::after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 13px;
+        height: 2px;
+        background: var(--card);
+        transform: translate(-50%, -50%) rotate(45deg);
+      }
+      .xc::after {
+        transform: translate(-50%, -50%) rotate(-45deg);
+      }
+
+      /* the type: one at a time (A) or a section each (B) */
+      .count {
+        color: var(--muted);
+        font-size: 14px;
+        margin: 2px 4px 8px;
+      }
+      .sec {
+        margin-bottom: 10px;
+      }
+      .sechead {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 11px 14px;
+        border-radius: 12px;
+        background: color-mix(in srgb, var(--head) 16%, var(--card));
+        border: 1px solid color-mix(in srgb, var(--head) 38%, var(--card));
+        margin-bottom: 8px;
+        cursor: pointer;
+      }
+      .sechead h3 {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--head);
+      }
+      .sechead .n {
+        color: var(--muted);
+        font-size: 14px;
+      }
+      .chev {
+        width: 9px;
+        height: 9px;
+        border-right: 2.5px solid var(--muted);
+        border-bottom: 2.5px solid var(--muted);
+        transform: rotate(45deg);
+        margin-top: -4px;
+        transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .sec.shut .chev {
+        transform: rotate(-45deg);
+        margin-top: 0;
+      }
+      .fold {
+        display: grid;
+        grid-template-rows: 1fr;
+        transition: grid-template-rows 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .sec.shut .fold {
+        grid-template-rows: 0fr;
+      }
+      .fold > div {
+        overflow: hidden;
+        min-height: 0;
+      }
+
+      /* a deal card: the whole card is the tap target */
+      .deal {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 12px 14px;
+        margin-bottom: 8px;
+        cursor: pointer;
+      }
+      .deal .r1 {
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+      }
+      .deal .nm {
+        font-size: 17px;
+        font-weight: 800;
+        line-height: 1.25;
+      }
+      .deal .val {
+        font-weight: 800;
+        white-space: nowrap;
+      }
+      .deal .r2 {
+        color: var(--muted);
+        font-size: 14px;
+        margin-top: 2px;
+      }
+      .deal .r3 {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 8px;
+        font-size: 14px;
+      }
+      .star {
+        color: #16a34a;
+      }
+      .cstar {
+        color: #e0a100;
+      }
+      .stp {
+        display: inline-flex;
+        align-items: center;
+        height: 24px;
+        padding: 0 11px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      .st-open {
+        background: var(--indigo);
+        color: #fff;
+      }
+      .st-hold {
+        background: #f59e0b;
+        color: #1b2640;
+      }
+      .st-won {
+        background: #16a34a;
+        color: #fff;
+      }
+      .st-lost {
+        background: #dc2626;
+        color: #fff;
+      }
+      .none {
+        color: var(--muted);
+        text-align: center;
+        padding: 26px 10px;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .yn .hl,
+        .chev,
+        .fold {
+          transition: none;
+        }
+      }
+
+      .phone-note {
+        max-width: 390px;
+      }
+      .tiles {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+        margin: 4px 0 12px;
+      }
+      .tile {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 9px 10px;
+      }
+      .tile .l {
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .tile .v {
+        font-size: 18px;
+        font-weight: 800;
+        margin-top: 2px;
+      }
+      .tile .v.warn {
+        color: #c2570c;
+      }
+      .ch3 {
+        margin: 12px 0 6px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--head);
+      }
+      .chips2 {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+      .chip2 {
+        display: inline-flex;
+        gap: 8px;
+        align-items: baseline;
+        padding: 6px 10px;
+        border-radius: 999px;
+        font-size: 13px;
+        color: #fff;
+        font-weight: 700;
+      }
+      .chip2 .cv {
+        font-weight: 800;
+      }
+      .qrow {
+        display: grid;
+        grid-template-columns: 62px 1fr auto;
+        gap: 8px;
+        align-items: center;
+        margin: 6px 0;
+        font-size: 14px;
+      }
+      .qrow .track {
+        height: 12px;
+        border-radius: 99px;
+        background: var(--box);
+        overflow: hidden;
+      }
+      .qrow .fill {
+        display: block;
+        height: 100%;
+        border-radius: 99px;
+        background: var(--indigo);
+      }
+      .qrow .n {
+        color: var(--muted);
+        font-size: 13px;
+        white-space: nowrap;
+      }
+      /* real charts: bars by stage, columns by close quarter */
+      .hbar {
+        display: grid;
+        grid-template-columns: 84px 1fr auto;
+        gap: 8px;
+        align-items: center;
+        margin: 7px 0;
+        font-size: 13px;
+      }
+      .hbar .nm {
+        font-weight: 700;
+        line-height: 1.15;
+      }
+      .hbar .bar {
+        height: 22px;
+        border-radius: 6px;
+        min-width: 4px;
+      }
+      .hbar .v {
+        font-weight: 800;
+        white-space: nowrap;
+      }
+      .cols {
+        display: flex;
+        align-items: flex-end;
+        gap: 10px;
+        height: 150px;
+        padding: 4px 2px 0;
+        border-bottom: 1px solid var(--edge);
+      }
+      .cols .c {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        align-items: center;
+        height: 100%;
+        gap: 4px;
+        font-size: 11px;
+        font-weight: 800;
+      }
+      .cols .c i {
+        display: block;
+        width: 100%;
+        background: var(--indigo);
+        border-radius: 6px 6px 0 0;
+      }
+      .qlabels {
+        display: flex;
+        gap: 10px;
+        padding: 4px 2px 0;
+        font-size: 11px;
+        color: var(--muted);
+        text-align: center;
+      }
+      .qlabels span {
+        flex: 1;
+      }
+      .chartnote {
+        color: var(--muted);
+        font-size: 12px;
+        margin: 8px 2px 0;
+      }
+
+      .back {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        height: 44px;
+        padding: 0 6px;
+        border: 0;
+        background: none;
+        color: var(--indigo);
+        font-weight: 700;
+        font-size: 16px;
+      }
+      .dh {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin: 2px 2px 2px;
+      }
+      .dh .nm {
+        font-size: 24px;
+        font-weight: 800;
+        line-height: 1.15;
+      }
+      .dsub {
+        color: var(--muted);
+        font-size: 14px;
+        margin: 0 2px 10px;
+      }
+      .grid2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+      .tile {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 9px 12px;
+        min-width: 0;
+      }
+      .tile .l {
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .tile .v {
+        font-size: 16px;
+        font-weight: 800;
+        margin-top: 2px;
+      }
+      .tg {
+        display: inline-block;
+        padding: 1px 10px;
+        border-radius: 999px;
+        font-size: 13px;
+        font-weight: 700;
+        border: 1px solid currentColor;
+      }
+      .tg.ok {
+        color: #0f9d74;
+      }
+      .tg.warn {
+        color: #c2570c;
+      }
+      .tg.bad {
+        color: #dc2626;
+      }
+      .card {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 12px 14px;
+        margin-bottom: 12px;
+      }
+      .card h3 {
+        margin: 0 0 8px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--head);
+      }
+      .frow {
+        padding: 9px 0;
+        border-top: 1px solid var(--line);
+      }
+      .frow:first-of-type {
+        border-top: 0;
+      }
+      .frow .fl {
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .frow .fv {
+        font-size: 16px;
+        margin-top: 2px;
+      }
+      .yes {
+        color: #0f9d74;
+        font-weight: 800;
+      }
+      .no {
+        color: var(--muted);
+      }
+      .go {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 52px;
+        padding: 0 14px;
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        margin-bottom: 8px;
+        font-weight: 700;
+      }
+      .go b {
+        color: var(--pipe);
+      }
+      .go i {
+        width: 9px;
+        height: 9px;
+        border-right: 2.5px solid var(--muted);
+        border-top: 2.5px solid var(--muted);
+        transform: rotate(45deg);
+      }
+      .later {
+        color: var(--muted);
+        font-size: 13px;
+        font-style: italic;
+        padding: 6px 2px 14px;
+      }
+
+      /* the stage, three ways. A: the one-pill slider, scrolling sideways with the current stage in view */
+      .stgA {
+        --c: var(--indigo);
+        display: flex;
+        align-items: stretch;
+        background: var(--c);
+        border: 1px solid var(--c);
+        border-radius: 999px;
+        margin-bottom: 12px;
+        transition:
+          background 0.4s,
+          border-color 0.4s;
+      }
+      .stgA.good {
+        --c: #16a34a;
+      }
+      .stgA.bad {
+        --c: #dc2626;
+      }
+      .stgA .lb {
+        display: inline-flex;
+        align-items: center;
+        padding: 0 10px 0 14px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: #fff;
+      }
+      .stgA .scr {
+        flex: 1;
+        overflow-x: auto;
+        margin: -1px;
+        border-radius: 999px;
+        background: color-mix(in srgb, var(--c) 82%, #000);
+        border: 1px solid var(--c);
+        scrollbar-width: none;
+      }
+      .stgA .scr::-webkit-scrollbar {
+        display: none;
+      }
+      .stgA .trk {
+        display: flex;
+        padding: 3px;
+        width: max-content;
+      }
+      .stgA .st {
+        height: 37px;
+        padding: 0 14px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        white-space: nowrap;
+        color: #fff;
+      }
+      .stgA .st.ahead {
+        color: rgba(255, 255, 255, 0.4);
+      }
+      .stgA .st.on {
+        background: #fff;
+        color: var(--c);
+      }
+      .stgA .tick {
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: #fff;
+        color: var(--c);
+        font-size: 11px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+      /* B: the stage's name, big, over a bar of steps */
+      .stgB {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 12px 14px;
+        margin-bottom: 12px;
+      }
+      .stgB .top {
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+      }
+      .stgB .k {
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .stgB .now {
+        font-size: 20px;
+        font-weight: 800;
+      }
+      .stgB .of {
+        margin-left: auto;
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .steps {
+        display: flex;
+        gap: 4px;
+        margin: 10px 0 8px;
+      }
+      .steps i {
+        flex: 1;
+        height: 10px;
+        border-radius: 99px;
+        background: var(--box);
+      }
+      .steps i.f {
+        background: var(--indigo);
+      }
+      .stgB.good .steps i.f {
+        background: #16a34a;
+      }
+      .stgB.bad .steps i {
+        background: #dc2626;
+      }
+      .stgB .next {
+        color: var(--muted);
+        font-size: 13px;
+      }
+      /* C: one row that says the stage and opens the list of stages */
+      .stgC {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-height: 56px;
+        padding: 0 14px;
+        border-radius: 12px;
+        color: #fff;
+        background: var(--c2);
+        margin-bottom: 12px;
+        font-weight: 800;
+        transition: background 0.4s;
+      }
+      .stgC small {
+        font-size: 11px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        opacity: 0.85;
+        font-weight: 700;
+      }
+      .stgC .v {
+        font-size: 18px;
+      }
+      .stgC i {
+        margin-left: auto;
+        width: 9px;
+        height: 9px;
+        border-right: 2.5px solid #fff;
+        border-bottom: 2.5px solid #fff;
+        transform: rotate(45deg);
+      }
+      .stgC .pk {
+        margin-left: auto;
+        font-size: 12px;
+        opacity: 0.85;
+      }
+      .listsheet {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        margin: -4px 0 12px;
+        overflow: hidden;
+      }
+      .listsheet div {
+        padding: 13px 14px;
+        border-top: 1px solid var(--line);
+        display: flex;
+        justify-content: space-between;
+      }
+      .listsheet div:first-child {
+        border-top: 0;
+      }
+      .listsheet .cur {
+        background: var(--box);
+        font-weight: 800;
+      }
+
+      /* the locked back bar: a full-width filled button that stays at the top of the page while the deal scrolls */
+      .lock {
+        position: sticky;
+        top: -12px; /* the phone frame's own 12 px padding is taken back, so the bar sits right at the top */
+        z-index: 5;
+        margin: -12px -12px 10px;
+        padding: 10px 12px 8px;
+        background: var(--bg);
+        box-shadow: 0 1px 0 var(--line);
+      }
+      .lockbtn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        width: 100%;
+        height: 44px;
+        border: 0;
+        border-radius: 999px;
+        background: var(--indigo);
+        color: #fff;
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+      }
+      .lockbtn span {
+        font-size: 22px;
+        line-height: 1;
+        margin-top: -2px;
+      }
+
+      /* the stage control as ONE component: the coloured row and its list joined, one outline in the row's colour all round */
+      .stc {
+        --c: var(--indigo);
+        border: 2px solid var(--c);
+        border-radius: 14px;
+        overflow: hidden;
+        background: var(--card);
+        margin-bottom: 12px;
+        transition: border-color 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .stc.good {
+        --c: #16a34a;
+      }
+      .stc.bad {
+        --c: #dc2626;
+      }
+      .stc .hd {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+        min-height: 60px;
+        padding: 6px 12px 6px 16px;
+        border: 0;
+        background: var(--c);
+        color: #fff;
+        text-align: left;
+        cursor: pointer;
+        transition: background 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .stc .hd small {
+        display: block;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        opacity: 0.85;
+      }
+      .stc .hd .sv {
+        display: block;
+        font-size: 19px;
+        font-weight: 800;
+      }
+      /* the chevron: big, and it turns over as the list opens and closes */
+      .chv {
+        margin-left: auto;
+        flex: none;
+        width: 36px;
+        height: 36px;
+        position: relative;
+        border-radius: 50%;
+        transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .chv::before {
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 14px;
+        height: 14px;
+        border-right: 4px solid #fff;
+        border-bottom: 4px solid #fff;
+        border-radius: 2px;
+        transform: translate(-50%, -70%) rotate(45deg);
+      }
+      .stc.shut .chv {
+        transform: rotate(0deg);
+      }
+      .stc:not(.shut) .chv {
+        transform: rotate(180deg);
+      }
+      .chv.ring {
+        background: rgba(255, 255, 255, 0.22);
+      }
+      .stc .fold {
+        display: grid;
+        grid-template-rows: 1fr;
+        transition: grid-template-rows 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .stc.shut .fold {
+        grid-template-rows: 0fr;
+      }
+      .stc .fold > div {
+        overflow: hidden;
+        min-height: 0;
+      }
+      .stc .li {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 14px 16px;
+        border-top: 1px solid var(--line);
+        font-size: 16px;
+      }
+      .stc .li:first-child {
+        border-top: 0;
+      }
+      .stc .li.here {
+        background: color-mix(in srgb, var(--c) 12%, var(--card));
+        font-weight: 800;
+      }
+      .stc .li .ck {
+        margin-left: auto;
+        color: var(--c);
+        font-weight: 800;
+      }
+      /* B: the row you are on has a bar of the colour down its left edge */
+      .vb .li.here {
+        box-shadow: inset 5px 0 0 var(--c);
+        padding-left: 20px;
+      }
+      /* C: progress, as on the desktop slider: finished stages carry a tick in a circle, stages to come are dimmer */
+      .vc .li.done .ck {
+        display: none;
+      }
+      .vc .li .tk {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: var(--c);
+        color: #fff;
+        font-size: 12px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        order: 3;
+        margin-left: auto;
+      }
+      .vc .li.ahead {
+        color: var(--muted);
+      }
+      .mini {
+        margin: 0 0 12px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      /* the stage you are on: bold, a bar of the row's colour down its left edge (option B, chosen) */
+      .stc .li.here {
+        box-shadow: inset 5px 0 0 var(--c);
+        padding-left: 20px;
+      }
+
+      /* ===== editing on the phone (version 1) ===== */
+      .pbody {
+        position: relative;
+        flex: 1;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+      .pbody .scroll {
+        flex: 1;
+      }
+      .f {
+        padding: 9px 0;
+        border-top: 1px solid var(--line);
+      }
+      .f:first-of-type {
+        border-top: 0;
+      }
+      .f .fl {
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 5px;
+        transition: color 0.4s;
+      }
+      .f .fl .rq {
+        color: #dc2626;
+      }
+      .f.changed .fl {
+        color: var(--indigo);
+      }
+      .f.changed .in,
+      .f.changed .lk {
+        border-color: var(--indigo);
+      }
+      .in,
+      .lk {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        height: 44px;
+        padding: 0 14px;
+        border: 1px solid var(--edge);
+        border-radius: 10px;
+        background: var(--field);
+        color: var(--text);
+        font-size: 16px; /* 16 px, or the iPhone zooms the page */
+        text-align: left;
+        transition: border-color 0.4s;
+      }
+      select.in {
+        appearance: none;
+        -webkit-appearance: none;
+        background-image:
+          linear-gradient(45deg, transparent 50%, var(--muted) 50%),
+          linear-gradient(135deg, var(--muted) 50%, transparent 50%);
+        background-position:
+          calc(100% - 20px) 19px,
+          calc(100% - 14px) 19px;
+        background-size:
+          6px 6px,
+          6px 6px;
+        background-repeat: no-repeat;
+      }
+      textarea.in {
+        height: auto;
+        min-height: 96px;
+        padding: 10px 14px;
+        font-family: inherit;
+        resize: none;
+      }
+      .lk {
+        justify-content: space-between;
+        cursor: pointer;
+      }
+      .lk i {
+        width: 9px;
+        height: 9px;
+        border-right: 2.5px solid var(--muted);
+        border-top: 2.5px solid var(--muted);
+        transform: rotate(45deg);
+      }
+      .two {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+      .pl {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .pl button {
+        height: 40px;
+        padding: 0 16px;
+        border: 1px solid var(--edge);
+        border-radius: 999px;
+        background: var(--box);
+        color: var(--muted);
+        font-weight: 700;
+        font-size: 14px;
+        transition:
+          background 0.3s,
+          color 0.3s;
+      }
+      .pl button.on {
+        background: var(--indigo);
+        border-color: var(--indigo);
+        color: #fff;
+      }
+      .flags {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        padding: 9px 0;
+        border-top: 1px solid var(--line);
+      }
+      .flags .yn.changed {
+        border-color: var(--indigo);
+      }
+      .yn.warn .hl {
+        background: #f59e0b;
+        box-shadow: 0 4px 14px rgba(245, 158, 11, 0.4);
+      }
+      .yn.good .hl {
+        background: #16a34a;
+        box-shadow: 0 4px 14px rgba(22, 163, 74, 0.35);
+      }
+      .yn.warn button.on[data-v="yes"] {
+        color: #1b2640;
+      }
+      .yn.changed .lb {
+        color: var(--indigo);
+      }
+      /* the MyMo stage folds open only while MyMo is Yes (0.4 s) */
+      .mm {
+        display: grid;
+        grid-template-rows: 0fr;
+        transition: grid-template-rows 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .phone.mmon .mm {
+        grid-template-rows: 1fr;
+      }
+      .mm > div {
+        overflow: hidden;
+        min-height: 0;
+      }
+      .mm .f {
+        border-top: 0;
+        padding-top: 4px;
+      }
+      /* On hold: the amber pill beside the name; it fades in and gives its room back when off */
+      .holdp {
+        max-width: 0;
+        opacity: 0;
+        overflow: hidden;
+        padding: 0;
+        white-space: nowrap;
+        transition:
+          max-width 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+          opacity 0.4s,
+          padding 0.4s;
+      }
+      .phone.holdon .holdp {
+        max-width: 120px;
+        opacity: 1;
+        padding: 0 11px;
+      }
+      /* the stage list: a row you can tap */
+      .stc .li {
+        min-height: 52px;
+        cursor: pointer;
+      }
+      /* the locked Save bar: folds up from the bottom edge of the page when the first change is made */
+      .savewrap {
+        position: sticky;
+        bottom: -16px;
+        z-index: 6;
+        margin: 0 -12px -16px;
+        display: grid;
+        grid-template-rows: 0fr;
+        background: var(--bg);
+        box-shadow: 0 -1px 0 var(--line);
+        transition: grid-template-rows 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .phone.dirty .savewrap {
+        grid-template-rows: 1fr;
+      }
+      .savewrap > div {
+        overflow: hidden;
+        min-height: 0;
+      }
+      .savebar {
+        display: flex;
+        gap: 10px;
+        padding: 10px 12px 12px;
+      }
+      .savebar button {
+        flex: 1 1 0;
+        height: 44px;
+        border: 0;
+        border-radius: 999px;
+        color: #fff;
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+      }
+      .savebar .cancel {
+        background: var(--slate);
+      }
+      .savebar .save {
+        background: var(--indigo);
+      }
+      .savebar button[disabled] {
+        opacity: 0.55;
+      }
+      .okmsg {
+        color: var(--ok);
+        font-weight: 800;
+        padding: 0 0 8px;
+        max-height: 0;
+        opacity: 0;
+        overflow: hidden;
+        transition:
+          max-height 0.4s,
+          opacity 0.4s;
+      }
+      .phone.saved .okmsg {
+        max-height: 40px;
+        opacity: 1;
+      }
+      /* the search sheet for a person, hospital or deal: slides in from the right over the page (0.4 s), with its own locked back bar */
+      .sheet {
+        position: absolute;
+        inset: 0;
+        z-index: 8;
+        display: flex;
+        flex-direction: column;
+        padding: 12px;
+        background: var(--bg);
+        transform: translateX(105%);
+        visibility: hidden;
+        transition:
+          transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+          visibility 0s linear 0.4s;
+      }
+      .phone.sh .sheet {
+        transform: none;
+        visibility: visible;
+        transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .sheet .lockbtn {
+        flex: none;
+        margin-bottom: 10px;
+      }
+      .sheet h4 {
+        margin: 2px 2px 8px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--head);
+      }
+      .sheet .search {
+        margin-bottom: 10px;
+        flex: none;
+      }
+      .sheet .results {
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+      }
+      .rs {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 58px;
+        padding: 8px 14px;
+        border-top: 1px solid var(--line);
+        cursor: pointer;
+      }
+      .rs:first-child {
+        border-top: 0;
+      }
+      .rs b {
+        display: block;
+        font-size: 16px;
+      }
+      .rs small {
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .rs .ck2 {
+        color: var(--indigo);
+        font-weight: 800;
+      }
+      .rs.is {
+        background: color-mix(in srgb, var(--indigo) 10%, var(--card));
+      }
+      .noneL {
+        padding: 22px 14px;
+        text-align: center;
+        color: var(--muted);
+      }
+      /* leaving with unsaved changes: a question over a blurred, darkened page */
+      .askwrap {
+        position: absolute;
+        inset: 0;
+        z-index: 9;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        background: rgba(6, 11, 20, 0.55);
+        -webkit-backdrop-filter: blur(4px);
+        backdrop-filter: blur(4px);
+        opacity: 0;
+        visibility: hidden;
+        transition:
+          opacity 0.3s,
+          visibility 0s linear 0.3s;
+      }
+      .phone.ask .askwrap {
+        opacity: 1;
+        visibility: visible;
+        transition: opacity 0.3s;
+      }
+      .ask1 {
+        width: 100%;
+        padding: 18px;
+        background: var(--card);
+        border: 1px solid var(--edge);
+        border-radius: 14px;
+      }
+      .ask1 b {
+        font-size: 18px;
+      }
+      .ask1 p {
+        margin: 6px 0 14px;
+        color: var(--muted);
+        font-size: 15px;
+      }
+      .ask1 .row2 {
+        display: flex;
+        gap: 10px;
+      }
+      .ask1 button {
+        flex: 1 1 0;
+        height: 44px;
+        border: 0;
+        border-radius: 999px;
+        color: #fff;
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+      }
+      .ask1 .stay {
+        background: var(--indigo);
+      }
+      .ask1 .leave {
+        background: #dc2626;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .mm,
+        .holdp,
+        .savewrap,
+        .sheet,
+        .askwrap,
+        .okmsg {
+          transition: none;
+        }
+      }
+
+      /* ===== Chatter on the phone (version 1) ===== */
+      .phones {
+        gap: 28px;
+      }
+      .phone.kb .pbody {
+        margin-bottom: 242px;
+      }
+      .kbd {
+        display: none;
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 300px;
+        z-index: 20;
+        background: #d1d5db;
+        color: #6b7280;
+        font-size: 13px;
+        text-align: center;
+        padding-top: 118px;
+        border-top: 1px solid #b6bcc6;
+      }
+      .phone.kb .kbd {
+        display: block;
+      }
+      .post {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 12px 14px;
+        margin-bottom: 10px;
+      }
+      .meta {
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+        font-size: 14px;
+      }
+      .meta b {
+        font-size: 15px;
+      }
+      .when {
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .txt {
+        margin-top: 4px;
+        font-size: 16px;
+        line-height: 1.4;
+        overflow-wrap: anywhere;
+      }
+      .mention {
+        color: var(--indigo);
+        font-weight: 700;
+      }
+      .reply {
+        margin: 10px 0 0 6px;
+        padding: 2px 0 2px 12px;
+        border-left: 3px solid var(--line);
+      }
+      .rbtn {
+        height: 40px;
+        margin-top: 10px;
+        padding: 0 18px;
+        border: 0;
+        border-radius: 999px;
+        background: var(--slate);
+        color: #fff;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+      }
+      .big {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        width: 100%;
+        height: 44px;
+        margin-bottom: 10px;
+        border: 0;
+        border-radius: 999px;
+        background: var(--indigo);
+        color: #fff;
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+      }
+      .compose {
+        display: block;
+        width: 100%;
+        height: 44px;
+        margin-bottom: 10px;
+        padding: 0 16px;
+        border: 1px solid var(--edge);
+        border-radius: 999px;
+        background: var(--field);
+        color: var(--muted);
+        font-size: 16px;
+        text-align: left;
+      }
+      .composebox {
+        display: none;
+        margin-bottom: 10px;
+        padding: 10px;
+        background: var(--card);
+        border: 1px solid var(--indigo);
+        border-radius: 12px;
+      }
+      .composebox textarea,
+      .wtext {
+        display: block;
+        width: 100%;
+        min-height: 96px;
+        padding: 10px 12px;
+        border: 1px solid var(--edge);
+        border-radius: 10px;
+        background: var(--field);
+        color: var(--text);
+        font-family: inherit;
+        font-size: 16px;
+        resize: none;
+      }
+      .phone.cmp .compose {
+        display: none;
+      }
+      .phone.cmp .composebox {
+        display: block;
+      }
+      .row2 {
+        display: flex;
+        gap: 10px;
+        margin-top: 10px;
+      }
+      .row2 button {
+        flex: 1 1 0;
+        height: 44px;
+        border: 0;
+        border-radius: 999px;
+        color: #fff;
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+      }
+      .row2 .c {
+        background: var(--slate);
+      }
+      .row2 .p {
+        background: var(--indigo);
+      }
+      /* B: the composer locked at the bottom of the screen */
+      .dock {
+        position: sticky;
+        bottom: -16px;
+        z-index: 6;
+        margin: 0 -12px -16px;
+        padding: 8px 12px 10px;
+        background: var(--bg);
+        box-shadow: 0 -1px 0 var(--line);
+      }
+      .dock .chip {
+        display: none;
+        margin-bottom: 6px;
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .phone.rep .dock .chip {
+        display: block;
+      }
+      .dockrow {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+      .dockrow input {
+        flex: 1;
+        min-width: 0;
+        height: 44px;
+        padding: 0 16px;
+        border: 1px solid var(--edge);
+        border-radius: 999px;
+        background: var(--field);
+        color: var(--text);
+        font-size: 16px;
+      }
+      .send {
+        flex: none;
+        width: 44px;
+        height: 44px;
+        border: 0;
+        border-radius: 50%;
+        background: var(--indigo);
+        color: #fff;
+        font-size: 20px;
+        font-weight: 800;
+        cursor: pointer;
+      }
+      /* C: the writing page: the original post (a reply only), the box, the people list, a locked Cancel / Post bar */
+      .sheet .quote {
+        flex: none;
+        margin-bottom: 8px;
+        padding: 8px 12px;
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        font-size: 14px;
+        color: var(--muted);
+        display: none;
+      }
+      .phone.isreply .sheet .quote {
+        display: block;
+      }
+      .sheet .wtext {
+        flex: 1;
+        min-height: 60px;
+      }
+      .people {
+        flex: none;
+        margin-top: 8px;
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        overflow: hidden;
+        display: none;
+      }
+      .phone.ment .people {
+        display: block;
+      }
+      .person {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        min-height: 54px;
+        padding: 4px 14px;
+        border-top: 1px solid var(--line);
+        cursor: pointer;
+      }
+      .person:first-child {
+        border-top: 0;
+      }
+      .person small {
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .sheet .row2 {
+        flex: none;
+        margin-top: 10px;
+      }
+      .go.live {
+        border-color: var(--indigo);
+      }
+      .go .sub {
+        font-weight: 400;
+        color: var(--muted);
+        font-size: 13px;
+        margin-left: 8px;
+      }
+
+      /* the Yes / No slider, drawn here for the mockup: a label end, a track, a thumb that slides (0.4 s) */
+      .sl {
+        display: flex;
+        align-items: stretch;
+        width: 100%;
+        margin-bottom: 8px;
+        background: var(--card);
+        border: 1px solid var(--edge);
+        border-radius: 999px;
+        transition:
+          background 0.4s,
+          border-color 0.4s;
+      }
+      .sl .lb {
+        display: inline-flex;
+        align-items: center;
+        min-width: 150px;
+        box-sizing: border-box;
+        padding: 0 16px 0 18px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+        white-space: nowrap;
+        transition: color 0.4s;
+      }
+      .sl .trk {
+        position: relative;
+        flex: 1;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        margin: -1px;
+        padding: 3px;
+        background: var(--box);
+        border: 1px solid var(--edge);
+        border-radius: 999px;
+        transition:
+          background 0.4s,
+          border-color 0.4s;
+      }
+      .sl .th {
+        position: absolute;
+        top: 3px;
+        left: 3px;
+        width: calc(50% - 3px);
+        height: 37px;
+        border-radius: 999px;
+        background: var(--indigo);
+        box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35);
+        transition:
+          transform 0.4s cubic-bezier(0.3, 1.35, 0.5, 1),
+          background 0.4s;
+      }
+      .sl.on .th {
+        transform: translateX(100%);
+      }
+      .sl .trk button {
+        position: relative;
+        z-index: 1;
+        height: 37px;
+        border: 0;
+        background: none;
+        font-weight: 700;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+        cursor: pointer;
+        transition: color 0.3s;
+      }
+      .sl:not(.on) .trk button[data-v="no"],
+      .sl.on .trk button[data-v="yes"] {
+        color: #fff;
+      }
+      /* NOW: when Yes, the whole pill, the label end included, turns the colour */
+      .sl.v0.on {
+        background: var(--tone);
+        border-color: var(--tone);
+      }
+      .sl.v0.on .lb {
+        color: rgba(255, 255, 255, 0.85);
+      }
+      .sl.v0.on .trk {
+        background: color-mix(in srgb, var(--tone) 78%, #000);
+        border-color: var(--tone);
+      }
+      .sl.v0.on .th {
+        background: #fff;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+      }
+      .sl.v0.on .trk button[data-v="yes"] {
+        color: var(--tone);
+      }
+      /* 1: the label end stays plain; only the thumb turns the colour (No is the blue thumb, Yes the green one) */
+      .sl.v1.on .th {
+        background: var(--tone);
+        box-shadow: 0 4px 14px color-mix(in srgb, var(--tone) 45%, transparent);
+      }
+      .sl.v1.on .trk button[data-v="yes"] {
+        color: #fff;
+      }
+      .sl.v1.warn.on .trk button[data-v="yes"] {
+        color: #1b2640;
+      }
+      /* 2: the label end stays plain; the track fills with the colour and the thumb is white */
+      .sl.v2.on .trk {
+        background: color-mix(in srgb, var(--tone) 82%, #000);
+        border-color: var(--tone);
+      }
+      .sl.v2.on .th {
+        background: #fff;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+      }
+      .sl.v2.on .trk button[data-v="yes"] {
+        color: var(--tone);
+      }
+      .sl.v2.on .trk button[data-v="no"] {
+        color: #fff;
+      }
+      .sl.good {
+        --tone: #16a34a;
+      }
+      .sl.warn {
+        --tone: #f59e0b;
+      }
+      .sl.v2.warn.on .trk button[data-v="yes"] {
+        color: #b45309;
+      }
+      /* the usage rating: a chip in the metal of the plate, the word only */
+      .rchip {
+        border-radius: 12px;
+        padding: 9px 12px;
+        color: var(--ink);
+        box-shadow:
+          inset 0 2px 1px rgba(255, 255, 255, 0.7),
+          inset 0 -3px 3px rgba(0, 0, 0, 0.25),
+          inset 0 0 0 1px rgba(0, 0, 0, 0.22),
+          0 3px 8px rgba(40, 30, 10, 0.22);
+      }
+      .rchip .l {
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        opacity: 0.8;
+      }
+      .rchip .v {
+        font-size: 16px;
+        font-weight: 900;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        margin-top: 2px;
+        white-space: nowrap;
+      }
+      .rchip.m-Platinum {
+        background: linear-gradient(135deg, #efe9d6, #c7bea3 45%, #a89d84);
+        --ink: #3a3326;
+      }
+      .rchip.m-Gold {
+        background: linear-gradient(135deg, #fff1b0, #e5cc73 40%, #c9a13e);
+        --ink: #4a3406;
+      }
+      .rchip.m-Silver {
+        background: linear-gradient(135deg, #eef1f7, #b9bec9 45%, #8e939e);
+        --ink: #23272f;
+      }
+      .rchip.m-Bronze {
+        background: linear-gradient(135deg, #f3b58c, #c98558 45%, #a66b48);
+        --ink: #3d1f0e;
+      }
+      .rchip.m-None {
+        background: #eceae8;
+        --ink: #6d6a67;
+        box-shadow: inset 0 0 0 1px #d4d1ce;
+      }
+
+      /* ===== adding a new deal from the phone (version 1) ===== */
+      .phones {
+        gap: 28px;
+      }
+      .seg3 {
+        position: relative;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        padding: 3px;
+        margin-bottom: 12px;
+        background: var(--box);
+        border: 1px solid var(--edge);
+        border-radius: 999px;
+      }
+      .seg3 .th {
+        position: absolute;
+        top: 3px;
+        left: 3px;
+        width: calc(33.333% - 2px);
+        height: 37px;
+        border-radius: 999px;
+        background: var(--indigo);
+        box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35);
+        transition: transform 0.4s cubic-bezier(0.3, 1.35, 0.5, 1);
+      }
+      .seg3.k1 .th {
+        transform: translateX(100%);
+      }
+      .seg3.k2 .th {
+        transform: translateX(200%);
+      }
+      .seg3 button {
+        position: relative;
+        z-index: 1;
+        height: 37px;
+        border: 0;
+        background: none;
+        font-weight: 700;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+        cursor: pointer;
+        transition: color 0.3s;
+      }
+      .seg3 button.on {
+        color: #fff;
+      }
+      .newpg .f {
+        padding: 9px 0;
+        border-top: 1px solid var(--line);
+      }
+      .newpg .f:first-child {
+        border-top: 0;
+      }
+      .newpg .fl {
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 5px;
+      }
+      .newpg .fl .rq {
+        color: #dc2626;
+      }
+      .in,
+      .lkb {
+        display: block;
+        width: 100%;
+        box-sizing: border-box;
+        height: 44px;
+        padding: 0 12px;
+        border: 1px solid var(--edge);
+        border-radius: 10px;
+        background: var(--field);
+        color: var(--text);
+        font-family: inherit;
+        font-size: 16px;
+        text-align: left;
+      }
+      select.in {
+        appearance: none;
+        -webkit-appearance: none;
+        padding-right: 34px;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%235d6b85' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+        background-position: right 14px center;
+        background-size: 12px 8px;
+        background-repeat: no-repeat;
+      }
+      textarea.in {
+        height: auto;
+        min-height: 84px;
+        padding: 10px 12px;
+        font-family: inherit;
+        resize: none;
+      }
+      .lkb {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        color: var(--muted);
+        cursor: pointer;
+      }
+      .lkb.set {
+        color: var(--text);
+      }
+      .lkb i {
+        width: 9px;
+        height: 9px;
+        border-right: 2.5px solid var(--muted);
+        border-top: 2.5px solid var(--muted);
+        transform: rotate(45deg);
+      }
+      .two {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+      .two.money {
+        grid-template-columns: 1.3fr 1fr;
+      }
+      .pls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .pls button {
+        height: 40px;
+        padding: 0 16px;
+        border: 1px solid var(--edge);
+        border-radius: 999px;
+        background: var(--box);
+        color: var(--muted);
+        font-weight: 700;
+        font-size: 14px;
+        cursor: pointer;
+      }
+      .pls button.on {
+        background: var(--indigo);
+        border-color: var(--indigo);
+        color: #fff;
+      }
+      .stg {
+        border: 2px solid var(--indigo);
+        border-radius: 14px;
+        overflow: hidden;
+        margin-bottom: 12px;
+        background: var(--card);
+      }
+      .stg .hd {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+        min-height: 60px;
+        padding: 6px 12px 6px 16px;
+        border: 0;
+        background: var(--indigo);
+        color: #fff;
+        text-align: left;
+        cursor: pointer;
+      }
+      .stg .hd small {
+        display: block;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        opacity: 0.85;
+      }
+      .stg .hd .sv {
+        display: block;
+        font-size: 19px;
+        font-weight: 800;
+      }
+      .stg .chv2 {
+        margin-left: auto;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.22);
+        position: relative;
+        transform: rotate(180deg);
+        transition: transform 0.4s;
+      }
+      .stg.shut .chv2 {
+        transform: none;
+      }
+      .stg .chv2::before {
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 14px;
+        height: 14px;
+        border-right: 4px solid #fff;
+        border-bottom: 4px solid #fff;
+        border-radius: 2px;
+        transform: translate(-50%, -70%) rotate(45deg);
+      }
+      .stg .lst {
+        display: grid;
+        grid-template-rows: 1fr;
+        transition: grid-template-rows 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .stg.shut .lst {
+        grid-template-rows: 0fr;
+      }
+      .stg .lst > div {
+        overflow: hidden;
+        min-height: 0;
+      }
+      .stg .li {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 16px;
+        border-top: 1px solid var(--line);
+        font-size: 16px;
+        cursor: pointer;
+      }
+      .stg .li.here {
+        background: color-mix(in srgb, var(--indigo) 12%, var(--card));
+        font-weight: 800;
+        box-shadow: inset 5px 0 0 var(--indigo);
+        padding-left: 20px;
+      }
+      .lockbar {
+        position: sticky;
+        bottom: -16px;
+        z-index: 6;
+        margin: 0 -12px -16px;
+        padding: 10px 12px 12px;
+        background: var(--bg);
+        box-shadow: 0 -1px 0 var(--line);
+        display: flex;
+        gap: 10px;
+      }
+      .lockbar button {
+        flex: 1 1 0;
+        height: 44px;
+        border: 0;
+        border-radius: 999px;
+        color: #fff;
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+      }
+      .lockbar .c {
+        background: var(--slate);
+      }
+      .lockbar .p {
+        background: var(--indigo);
+      }
+      .errs {
+        border: 1px solid #dc2626;
+        color: #dc2626;
+        border-radius: 10px;
+        padding: 8px 12px;
+        margin-bottom: 10px;
+        font-size: 14px;
+      }
+      .okb {
+        padding: 8px 12px;
+        border: 1px solid #0f9d74;
+        border-radius: 10px;
+        background: rgba(15, 157, 116, 0.1);
+        color: #0b7a5a;
+        font-weight: 700;
+        font-size: 14px;
+        margin-bottom: 10px;
+      }
+      .note3 {
+        margin: 4px 2px 10px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+      /* the list screen with a way to start (A, B or C) */
+      .addtop {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 44px;
+        margin-bottom: 10px;
+        border: 0;
+        border-radius: 999px;
+        background: var(--indigo);
+        color: #fff;
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+      }
+      .fab {
+        position: absolute;
+        right: 16px;
+        bottom: 14px;
+        z-index: 7;
+        width: 56px;
+        height: 56px;
+        border: 0;
+        border-radius: 50%;
+        background: var(--indigo);
+        color: #fff;
+        font-size: 32px;
+        line-height: 1;
+        box-shadow: 0 6px 16px rgba(79, 70, 229, 0.45);
+        cursor: pointer;
+      }
+      .sechead2 {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        width: 100%;
+        padding: 8px 8px 8px 12px;
+        margin-bottom: 8px;
+        border-radius: 12px;
+        border: 1px solid color-mix(in srgb, var(--head) 38%, var(--card));
+        background: color-mix(in srgb, var(--head) 16%, var(--card));
+      }
+      .sechead2 h2 {
+        margin: 0;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--head);
+      }
+      .sechead2 .n {
+        font-size: 12px;
+        font-weight: 800;
+        padding: 1px 9px;
+        border-radius: 999px;
+        background: var(--card);
+      }
+      .plus {
+        margin-left: auto;
+        width: 36px;
+        height: 36px;
+        border: 0;
+        border-radius: 50%;
+        background: var(--indigo);
+        color: #fff;
+        font-size: 24px;
+        line-height: 1;
+        cursor: pointer;
+        display: grid;
+        place-items: center;
+        padding: 0 0 2px;
+      }
+      .chev3 {
+        width: 9px;
+        height: 9px;
+        border-right: 2.5px solid var(--muted);
+        border-bottom: 2.5px solid var(--muted);
+        transform: rotate(-45deg);
+        margin: 0 6px 0 6px;
+      }
+    </style>
+  </head>
+  <body data-theme="light">
+    <div class="sfnav">
+      <span class="app"><b>PIPE</b>LINE</span>
+      <span class="tab on">Pipeline</span>
+      <span class="tab">Opportunities &amp; Risks</span>
+      <span class="sp"></span>
+      <button type="button" class="btn" id="fullbtn">Full screen</button>
+    </div>
+
+    <details class="about" open>
+      <summary>ABOUT THIS MOCKUP</summary>
+      <p>
+        <b>Version 1, invented data only.</b>
+        <b>Adding a new opportunity, risk or ROSA deal from the phone.</b> Until
+        now the phone only lists and edits the rep's deals; this adds the third
+        thing, creating one.
+      </p>
+      <ul>
+        <li>
+          <b>Phone 1, how a rep starts</b> (four ways; the switch above the
+          phones changes it). <b>D</b> (Robert's idea, shown first) is a bar
+          locked at the bottom of the list, one filled pill saying “+ Create new
+          pipeline”, like the “+ Add usage” button on the Usages screen; it
+          takes you straight to the New deal page (phone 2) and the page lets
+          you choose the kind. It costs the list a strip about 66 px high at the
+          bottom of the screen. The earlier three: <b>A</b> a full-width “+ New
+          deal” button at the top of the list, <b>B</b> a round “+” button
+          floating at the bottom right, <b>C</b> a round “+” on each section
+          heading (Opportunities, Risks, ROSA), which already says what kind it
+          is.
+        </li>
+        <li>
+          <b>Phone 2, the New deal page</b> (it slides in; its own “‹ Back to My
+          Pipeline” bar and a locked <b>Cancel / Create</b> bar). A slider picks
+          the kind (<b>Opportunity</b>, <b>Risk</b>, <b>ROSA</b>); for an
+          opportunity a dropdown picks the <b>portfolio</b> (Hip, Knee,
+          Extremities, CMFT). Salesforce decides the record type from the
+          person's country and that choice, as with a new usage: a rep in
+          Australia gets AU HIP, AU KNEE, AU RISK, AU ROSA and so on, and only
+          the ones their profile allows are offered. Under that are the same
+          fields as editing that kind of deal (try the slider), the stage
+          starting at the first one with the stage list to change it (a deal
+          sometimes starts further on), and the lists of brands, currencies and
+          the rest read from Salesforce for that record type. The owner is the
+          signed-in person. <b>Try it:</b> press the kind slider, tap the stage,
+          tap a person or hospital, press Create.
+        </li>
+        <li>
+          <b>Phone 3, when something is missing:</b> required fields are marked
+          * (Primary HCP, the quarter and the value on an opportunity or a risk;
+          the hospital on a ROSA deal); pressing Create with one missing shows
+          what to fill in, and Salesforce's own refusals (a quarter in the past,
+          a lookup that does not allow that person) show in the same place,
+          nothing is lost.
+        </li>
+        <li>
+          <b>Phone 4, when it works:</b> the new deal opens straight on its deal
+          screen (it slides in) with “Created.”, and the list is read again so
+          it is there when you go back.
+        </li>
+      </ul>
+      <p class="muted">
+        Not shown: the person and hospital search pages (the same sliding search
+        pages as when editing), and ROSA's three platform stages (the same as
+        editing a ROSA deal). The desktop Pipeline has no new-deal button; this
+        would be phone only unless you say otherwise. Nothing new on the server
+        is expected: it would create the record with Salesforce's own record
+        service as the signed-in person, so field access, validation rules and
+        the existing automations all run as they do on the standard page. No new
+        object, no new field.
+      </p>
+    </details>
+
+    <div class="tools">
+      <span class="lab" style="margin-left: 0">Way to start</span>
+      <button type="button" class="pill on" data-st="d">D: bottom bar</button>
+      <button type="button" class="pill" data-st="a">A: top button</button>
+      <button type="button" class="pill" data-st="b">B: floating +</button>
+      <button type="button" class="pill" data-st="c">
+        C: + on each heading
+      </button>
+    </div>
+    <div class="mocknote" id="note">
+      Mockup note: this line says what a press would do in Salesforce.
+    </div>
+    <div class="phones" id="phones"></div>
+
+    <script>
+      var S = {
+        st: "d",
+        kind: 0,
+        stageOpen: false,
+        stage: "Plan",
+        port: "Knee",
+        hcp: "",
+        fac: "",
+        yr: "2027",
+        err: []
+      };
+      var KINDS = ["opp", "risk", "rosa"];
+      var STAGES = {
+        opp: [
+          "Plan",
+          "Action",
+          "Commit",
+          "1st Case",
+          "5th Case",
+          "Conversion",
+          "Unsuccessful Conversion"
+        ],
+        risk: [
+          "Unhappy",
+          "Meeting With Competitors",
+          "1st Case Competitor",
+          "Multiple Cases Competitor",
+          "Closed Retained",
+          "Lost Business"
+        ],
+        rosa: [
+          "Sales Pipeline",
+          "Surgeon Engagement",
+          "Executive Presentation",
+          "Negotiation",
+          "Closed Won",
+          "Deal Lost"
+        ]
+      };
+      function esc(t) {
+        return String(t).replace(/&/g, "&amp;").replace(/"/g, "&quot;");
+      }
+      function back(l) {
+        return (
+          '<div class="lock"><button type="button" class="lockbtn" data-act="back"><span>‹</span> ' +
+          l +
+          "</button></div>"
+        );
+      }
+      function frame(i, inner, extra) {
+        return (
+          '<div class="phone" data-i="' +
+          i +
+          '"><div class="sfstatus">3:14</div><div class="sfbar"><span class="ham"></span><span>Pipeline Mobile</span><span class="sp"></span></div><div class="pbody"><div class="scroll">' +
+          inner +
+          "</div>" +
+          (extra || "") +
+          '</div><div class="sftabs"><span><i></i>Home</span><span class="on"><i></i>Pipeline</span><span><i></i>Accounts</span><span><i></i>More</span></div></div>'
+        );
+      }
+      function lk(k, v) {
+        return (
+          '<button type="button" class="lkb' +
+          (v ? " set" : "") +
+          '" data-act="lk" data-k="' +
+          k +
+          '"><span>' +
+          (v || "Search by name…") +
+          "</span><i></i></button>"
+        );
+      }
+      function sel(opts, v) {
+        return (
+          '<select class="in">' +
+          opts
+            .map(function (o) {
+              return (
+                "<option" + (o === v ? " selected" : "") + ">" + o + "</option>"
+              );
+            })
+            .join("") +
+          "</select>"
+        );
+      }
+      function f(label, inner, req) {
+        return (
+          '<div class="f"><div class="fl">' +
+          label +
+          (req ? ' <span class="rq">*</span>' : "") +
+          "</div>" +
+          inner +
+          "</div>"
+        );
+      }
+      function pills(arr, on) {
+        return (
+          '<div class="pls">' +
+          arr
+            .map(function (b) {
+              return (
+                '<button type="button" class="' +
+                (on.indexOf(b) > -1 ? "on" : "") +
+                '" data-act="pill">' +
+                b +
+                "</button>"
+              );
+            })
+            .join("") +
+          "</div>"
+        );
+      }
+      function sl(label, tone, on) {
+        return (
+          '<div class="sl v1 ' +
+          tone +
+          (on ? " on" : "") +
+          '"><span class="lb">' +
+          label +
+          '</span><div class="trk"><span class="th"></span><button type="button" data-v="no">No</button><button type="button" data-v="yes">Yes</button></div></div>'
+        );
+      }
+      function stage(kind) {
+        var list = STAGES[kind];
+        return (
+          '<div class="stg' +
+          (S.stageOpen ? "" : " shut") +
+          '"><button type="button" class="hd" data-act="stg"><span><small>Stage</small><span class="sv">' +
+          (list.indexOf(S.stage) > -1 ? S.stage : list[0]) +
+          '</span></span><span class="chv2"></span></button><div class="lst"><div>' +
+          list
+            .map(function (s) {
+              return (
+                '<div class="li' +
+                (s === (list.indexOf(S.stage) > -1 ? S.stage : list[0])
+                  ? " here"
+                  : "") +
+                '" data-act="pickstage" data-s="' +
+                s +
+                '"><span>' +
+                s +
+                "</span></div>"
+              );
+            })
+            .join("") +
+          "</div></div></div>"
+        );
+      }
+      function fields(kind) {
+        var o = "";
+        if (kind === "opp")
+          o =
+            f("Primary HCP", lk("hcp", S.hcp), true) +
+            f("Healthcare facility", lk("fac", S.fac)) +
+            f(
+              "Expected closing quarter and year",
+              '<div class="two">' +
+                sel(["Q1", "Q2", "Q3", "Q4"], "Q2") +
+                sel(["2026", "2027", "2028"], S.yr) +
+                "</div>",
+              true
+            ) +
+            f(
+              "Expected annual value",
+              '<div class="two money"><input class="in" type="number" inputmode="decimal" placeholder="0" /><select class="in"><option>AUD</option><option>NZD</option></select></div>',
+              true
+            ) +
+            f(
+              "Expected annual units / cases",
+              '<input class="in" type="number" inputmode="decimal" />'
+            ) +
+            f("Brand", pills(["Persona", "NexGen", "Vanguard", "Oxford"], [])) +
+            '<div class="f">' +
+            sl("On hold", "warn", false) +
+            sl("Rep priority", "good", false) +
+            sl("State priority", "good", false) +
+            sl("MyMo", "good", false) +
+            "</div>" +
+            f("Link to ROSA deal", lk("rosa", "")) +
+            f(
+              "Background information",
+              '<textarea class="in" placeholder="Give context as to why you have created this record. What are you trying to do?"></textarea>'
+            );
+        if (kind === "risk")
+          o =
+            f("Primary HCP", lk("hcp", S.hcp), true) +
+            f("Healthcare facility", lk("fac", S.fac)) +
+            f(
+              "Expected closing quarter and year",
+              '<div class="two">' +
+                sel(["Q1", "Q2", "Q3", "Q4"], "Q2") +
+                sel(["2026", "2027", "2028"], S.yr) +
+                "</div>",
+              true
+            ) +
+            f(
+              "Annual value at risk",
+              '<div class="two money"><input class="in" type="number" inputmode="decimal" placeholder="0" /><select class="in"><option>AUD</option><option>NZD</option></select></div>',
+              true
+            ) +
+            f(
+              "Portfolio",
+              pills(["Hip", "Knee", "Extremities", "CMFT"], ["Knee"])
+            ) +
+            f("Brand", pills(["Persona", "NexGen", "Vanguard", "Oxford"], [])) +
+            '<div class="f">' +
+            sl("Rep priority", "good", false) +
+            sl("State priority", "good", false) +
+            "</div>" +
+            f(
+              "Background information",
+              '<textarea class="in" placeholder="Give context as to why you have created this record."></textarea>'
+            );
+        if (kind === "rosa")
+          o =
+            f("Healthcare facility", lk("fac", S.fac), true) +
+            f("Primary HCP", lk("hcp", S.hcp)) +
+            f(
+              "ROSA deal type",
+              sel(
+                [
+                  "–",
+                  "Capital Sale",
+                  "Rental",
+                  "Placement",
+                  "ROSA-E",
+                  "ROSA-T"
+                ],
+                "–"
+              )
+            ) +
+            f("ROSA sales type", pills(["Hip", "Knee", "Shoulder"], ["Knee"])) +
+            f(
+              "ROSA growth $",
+              '<div class="two money"><input class="in" type="number" inputmode="decimal" placeholder="0" /><select class="in"><option>AUD</option><option>NZD</option></select></div>'
+            ) +
+            f(
+              "Expected closing quarter and year",
+              '<div class="two">' +
+                sel(["Q1", "Q2", "Q3", "Q4"], "Q2") +
+                sel(["2026", "2027", "2028"], S.yr) +
+                "</div>"
+            ) +
+            f("Install date", '<input class="in" type="date" />') +
+            f("Close date", '<input class="in" type="date" />') +
+            '<div class="f">' +
+            sl("Rep priority", "good", false) +
+            sl("State priority", "good", false) +
+            "</div>" +
+            f("Background information", '<textarea class="in"></textarea>');
+        return o;
+      }
+      function recordType() {
+        var k = KINDS[S.kind];
+        return k === "opp"
+          ? "AU " + S.port.toUpperCase() + " Opportunity"
+          : k === "risk"
+            ? "AU RISK"
+            : "AU ROSA Opportunity";
+      }
+      function newPage(i, withErr) {
+        var kind = KINDS[S.kind];
+        return (
+          back("Back to My Pipeline") +
+          '<div class="dh"><div class="nm">New deal</div></div><div class="dsub">Choose the kind, then fill it in.</div>' +
+          '<div class="seg3 k' +
+          S.kind +
+          '"><span class="th"></span>' +
+          ["Opportunity", "Risk", "ROSA"]
+            .map(function (n, k) {
+              return (
+                '<button type="button" class="' +
+                (k === S.kind ? "on" : "") +
+                '" data-act="kind" data-k="' +
+                k +
+                '">' +
+                n +
+                "</button>"
+              );
+            })
+            .join("") +
+          "</div>" +
+          (kind === "opp"
+            ? '<div class="f newpg" style="padding-top:0;border:0"><div class="fl">Portfolio <span class="rq">*</span></div><select class="in" data-act="port">' +
+              ["Hip", "Knee", "Extremities", "CMFT"]
+                .map(function (p) {
+                  return (
+                    "<option" +
+                    (p === S.port ? " selected" : "") +
+                    ">" +
+                    p +
+                    "</option>"
+                  );
+                })
+                .join("") +
+              "</select></div>"
+            : "") +
+          '<div class="note3">Saved as <b>' +
+          recordType() +
+          "</b>, chosen from your country and this choice. The owner is you.</div>" +
+          (withErr
+            ? '<div class="errs"><div>Primary HCP: required</div><div>Expected annual value: required</div></div>'
+            : "") +
+          stage(kind) +
+          '<div class="card newpg"><h3>The deal</h3>' +
+          fields(kind) +
+          "</div>" +
+          '<div class="lockbar"><button type="button" class="c" data-act="back">Cancel</button><button type="button" class="p" data-act="create">Create</button></div>'
+        );
+      }
+      function listScreen() {
+        var secs = [
+          ["Opportunities", 5],
+          ["Risks", 2],
+          ["ROSA", 1]
+        ];
+        var top =
+          '<div class="ctl"><div class="seg3 k0" style="margin:0 0 8px"><span class="th"></span><button type="button" class="on">Open</button><button type="button">Closed</button><button type="button">Both</button></div>' +
+          '<input class="search" placeholder="Search my deals" style="width:100%;height:44px;border-radius:999px;border:1px solid var(--edge);padding:0 16px;font-size:16px;background:var(--field);color:var(--text)" /></div>';
+        var body =
+          (S.st === "a"
+            ? '<button type="button" class="addtop" data-act="new">+ New deal</button>'
+            : "") +
+          secs
+            .map(function (s, i) {
+              return (
+                '<div class="sechead2"><h2>' +
+                s[0] +
+                '</h2><span class="n">' +
+                s[1] +
+                "</span>" +
+                (S.st === "c"
+                  ? '<button type="button" class="plus" data-act="new" data-k="' +
+                    i +
+                    '" aria-label="New ' +
+                    s[0] +
+                    '">+</button>'
+                  : '<span style="flex:1"></span>') +
+                '<span class="chev3"></span></div>'
+              );
+            })
+            .join("") +
+          '<p class="muted" style="text-align:center;margin:12px 0">Pipeline Mobile</p>';
+        var bar =
+          S.st === "d"
+            ? '<div class="lockbar"><button type="button" class="p" data-act="new">+ Create new pipeline</button></div>'
+            : "";
+        return (
+          top +
+          body +
+          bar +
+          (S.st === "b"
+            ? '<button type="button" class="fab" data-act="new" aria-label="New deal">+</button>'
+            : "")
+        );
+      }
+      function created() {
+        return (
+          back("Back to My Pipeline") +
+          '<div class="okb">Created.</div><div class="dh"><div class="nm">Dr Mei Tan</div></div><div class="dsub">Opportunity · Knee</div><div class="grid2"><div class="tile"><div class="l">Owner</div><div class="v">Lewis Dawson</div></div><div class="tile rchip m-Gold"><div class="l">Usage rating</div><div class="v" style="text-transform:uppercase;font-weight:900">Gold</div></div><div class="tile"><div class="l">Value / year</div><div class="v">A$250k</div></div><div class="tile"><div class="l">Close quarter</div><div class="v">Q2 2027</div></div><div class="tile"><div class="l">Deal age</div><div class="v">0 d</div></div><div class="tile"><div class="l">Status</div><div class="v"><span class="stp st-open">Open</span></div></div></div><div class="go live"><span>Chatter</span><span class="sub">No posts yet</span><span class="sp"></span><i></i></div><div class="go live"><span>Campaigns</span><span class="sub">In no campaign</span><span class="sp"></span><i></i></div>'
+        );
+      }
+      function draw() {
+        var ph = [
+          [
+            "1. How a rep starts",
+            "The list screen. Switch A, B or C above.",
+            frame(0, listScreen())
+          ],
+          [
+            "2. The New deal page",
+            "Try the kind slider, the stage and the lookups.",
+            frame(1, newPage(1, false))
+          ],
+          [
+            "3. When something is missing",
+            "Create with a required field empty.",
+            frame(2, newPage(2, true))
+          ],
+          [
+            "4. When it works",
+            "The new deal opens on its own screen.",
+            frame(3, created())
+          ]
+        ];
+        document.getElementById("phones").innerHTML = ph
+          .map(function (x) {
+            return (
+              '<div class="opt"><h2>' +
+              x[0] +
+              "</h2><p>" +
+              x[1] +
+              "</p>" +
+              x[2] +
+              "</div>"
+            );
+          })
+          .join("");
+        // the list fills the screen, so a locked bottom bar sits at the bottom of it even when the list is short
+        var sc0 = document.querySelector('.phone[data-i="0"] .scroll');
+        sc0.style.display = "flex";
+        sc0.style.flexDirection = "column";
+        var lb0 = sc0.querySelector(".lockbar");
+        if (lb0) lb0.style.marginTop = "auto";
+        Array.prototype.forEach.call(
+          document.querySelectorAll("[data-st]"),
+          function (x) {
+            x.classList.toggle("on", x.dataset.st === S.st);
+          }
+        );
+      }
+      function note(t) {
+        document.getElementById("note").textContent = "Mockup note: " + t;
+      }
+      document.addEventListener("click", function (e) {
+        var b = e.target.closest("[data-st]");
+        if (b) {
+          S.st = b.dataset.st;
+          draw();
+          return;
+        }
+        var sb = e.target.closest(".sl .trk button");
+        if (sb) {
+          sb.closest(".sl").classList.toggle("on", sb.dataset.v === "yes");
+          return;
+        }
+        var a = e.target.closest("[data-act]");
+        if (!a) return;
+        var act = a.dataset.act;
+        if (act === "new") {
+          if (a.dataset.k) S.kind = +a.dataset.k;
+          note(
+            "this slides the New deal page in" +
+              (a.dataset.k
+                ? " with that kind already chosen (phone 2)."
+                : " (phone 2).")
+          );
+          S.stageOpen = false;
+          draw();
+        } else if (act === "kind") {
+          S.kind = +a.dataset.k;
+          S.stage = STAGES[KINDS[S.kind]][0];
+          S.stageOpen = false;
+          draw();
+        } else if (act === "stg") {
+          S.stageOpen = !S.stageOpen;
+          draw();
+        } else if (act === "pickstage") {
+          S.stage = a.dataset.s;
+          S.stageOpen = false;
+          draw();
+        } else if (act === "lk") {
+          var k = a.dataset.k;
+          if (k === "hcp") S.hcp = S.hcp ? "" : "Dr Mei Tan";
+          else if (k === "fac") S.fac = S.fac ? "" : "Mater Hospital";
+          note(
+            "in Salesforce this slides in the search page (two letters or more); here a tap picks a sample name, another clears it."
+          );
+          draw();
+        } else if (act === "pill") a.classList.toggle("on");
+        else if (act === "create")
+          note(
+            "with the required fields filled Salesforce creates the deal and its screen opens (phone 4); with one missing the list of what to fill in shows (phone 3)."
+          );
+        else if (act === "back")
+          note(
+            "this goes back to the list (the page slides off to the right)."
+          );
+      });
+      document.addEventListener("change", function (e) {
+        if (e.target.dataset.act === "port") {
+          S.port = e.target.value;
+          draw();
+        }
+      });
+      document.getElementById("fullbtn").addEventListener("click", function () {
+        note(
+          "in Salesforce this opens in a new full-screen tab without the Salesforce navigation."
+        );
+      });
+      draw();
+    </script>
+  </body>
+</html>

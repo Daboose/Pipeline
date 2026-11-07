@@ -4,6 +4,7 @@ import getContext from "@salesforce/apex/PipelineController.getContext";
 import getDeals from "@salesforce/apex/PipelineController.getDeals";
 import { registerLdsTestWireAdapter } from "@salesforce/sfdx-lwc-jest";
 import getFeed from "@salesforce/apex/PipelineChatterController.getFeed";
+import getUsages from "@salesforce/apex/PipelineSurgeonController.getUsages";
 import getBookings from "@salesforce/apex/PipelineBookingsController.getBookings";
 import searchLookup from "@salesforce/apex/PipelineLookupController.search";
 import searchNear from "@salesforce/apex/PipelineLookupController.searchNear";
@@ -12,7 +13,11 @@ import {
   getObjectInfo,
   getPicklistValuesByRecordType
 } from "lightning/uiObjectInfoApi";
-import { FORM_FIELDS } from "c/pipelineMobileModel";
+import { FORM_FIELDS, SAVING_TIMING } from "c/pipelineMobileModel";
+
+// the saving screen shows no delay in the tests
+SAVING_TIMING.min = 0;
+SAVING_TIMING.done = 0;
 
 jest.mock(
   "@salesforce/apex/PipelineController.getContext",
@@ -71,6 +76,35 @@ jest.mock(
   { virtual: true }
 );
 
+jest.mock(
+  "@salesforce/apex/PipelineSurgeonController.getUsages",
+  () => ({ default: jest.fn() }),
+  { virtual: true }
+);
+jest.mock(
+  "@salesforce/apex/PipelineUsageController.saveUsage",
+  () => ({ default: jest.fn() }),
+  { virtual: true }
+);
+jest.mock(
+  "@salesforce/apex/PipelineUsageController.deleteUsage",
+  () => ({ default: jest.fn() }),
+  { virtual: true }
+);
+jest.mock(
+  "@salesforce/apex/PipelineUsageController.addUsage",
+  () => ({ default: jest.fn() }),
+  { virtual: true }
+);
+jest.mock(
+  "c/pipelineUsageChoices",
+  () => {
+    const { LightningElement } = require("lwc");
+    return { __esModule: true, default: class extends LightningElement {} };
+  },
+  { virtual: true }
+);
+
 const recordAdapter = registerLdsTestWireAdapter(getRecord);
 const infoAdapter = registerLdsTestWireAdapter(getObjectInfo);
 const picklistAdapter = registerLdsTestWireAdapter(
@@ -94,7 +128,7 @@ const deal = (id, o = {}) => ({
   ...o
 });
 const DEALS = [
-  deal("Chen", { value: 5000 }),
+  deal("Chen", { value: 5000, segment: "Hip" }),
   deal("Ward", { onHold: true, value: 3000 }),
   deal("Patel", { isClosed: true, stage: "Conversion", value: 9000 }),
   deal("Torres", { kind: "risk", stage: "Unhappy" }),
@@ -117,6 +151,13 @@ const FEED = [
 ];
 const make = async () => {
   getFeed.mockResolvedValue(FEED);
+  getUsages.mockResolvedValue({
+    surgeonId: "001S",
+    newest: new Date(Date.now() - 100 * 86400000).toISOString(),
+    ratings: [],
+    lines: [],
+    addable: []
+  });
   getBookings.mockResolvedValue({
     surgeonId: "001S",
     windowStart: "2025-11-01",
@@ -263,7 +304,6 @@ describe("c-pipeline-mobile", () => {
         true
       ); // the deal has slid in over the list
       expect(root(el).querySelectorAll(".dealpage .tile").length).toBe(8);
-      expect(root(el).querySelectorAll(".go.soon").length).toBe(1);
     });
 
     it("goes back to the list exactly as it was left", async () => {
@@ -420,8 +460,7 @@ describe("c-pipeline-mobile", () => {
         expect(flags.map((f) => f.heading)).toEqual([
           "On hold",
           "Rep priority",
-          "State priority",
-          "MyMo"
+          "MyMobility"
         ]);
         expect(flags[0].options[1].tone).toBe("warn");
         expect(flags[1].options[1].tone).toBe("good");
@@ -555,7 +594,7 @@ describe("c-pipeline-mobile", () => {
         ).toBe(false); // it slides off
         expect(root(el).querySelector(".page input.search")).not.toBeNull();
         // eslint-disable-next-line @lwc/lwc/no-async-operation
-        await new Promise((r) => setTimeout(r, 500));
+        await new Promise((r) => setTimeout(r, 600));
         expect(root(el).querySelector(".dname")).toBeNull(); // and is taken off the page once it has gone
       });
 
@@ -737,6 +776,126 @@ describe("c-pipeline-mobile", () => {
         screen.dispatchEvent(new CustomEvent("close"));
         await flush();
         expect(screen.open).toBe(false);
+      });
+    });
+
+    describe("Surgeon Usages", () => {
+      it("shows how fresh the usages are on the deal screen's row, and slides the Usages screen in when it is tapped", async () => {
+        const el = await make();
+        sections(el)[1].click();
+        await flush();
+        await open(el, "Chen");
+        await flush();
+        expect(getUsages).toHaveBeenCalledWith({ dealId: "Chen" });
+        const row = [...root(el).querySelectorAll(".go.live")].find((r) =>
+          r.textContent.includes("Surgeon Usages")
+        );
+        expect(row.textContent).toContain("updated 3 months ago");
+        const screen = root(el).querySelector("c-pipeline-mobile-usages");
+        expect(screen.open).toBe(false);
+        row.click();
+        await flush();
+        expect(screen.open).toBe(true);
+        screen.dispatchEvent(new CustomEvent("close"));
+        await flush();
+        expect(screen.open).toBe(false);
+      });
+
+      it("shows the surgeon's usage rating for the deal's own area in the Portfolio tile's place, in the plate's metal", async () => {
+        const el = await make();
+        getUsages.mockResolvedValue({
+          surgeonId: "001S",
+          newest: new Date(Date.now() - 100 * 86400000).toISOString(),
+          ratings: [
+            { area: "Hip", rating: "GOLD" },
+            { area: "Knee", rating: "PLATINUM" }
+          ],
+          lines: [],
+          addable: []
+        });
+        sections(el)[1].click();
+        await flush();
+        await open(el, "Chen"); // an opportunity at Hip
+        await flush();
+        const tiles = () => [...root(el).querySelectorAll(".dealpage .tile")];
+        expect(tiles().length).toBe(8);
+        const rating = tiles().find(
+          (n) => n.querySelector(".tl").textContent === "Usage rating"
+        );
+        expect(rating.querySelector(".tvv").textContent.trim()).toBe("Gold"); // the Hip rating, not the Knee one
+        expect(rating.classList.contains("m-Gold")).toBe(true);
+        expect(
+          tiles().some(
+            (n) => n.querySelector(".tl").textContent === "Portfolio"
+          )
+        ).toBe(false);
+      });
+
+      it("has no Surgeon Usages or MyCase Bookings row on a ROSA deal (as on the desktop)", async () => {
+        const el = await make();
+        sections(el)[3].click(); // ROSA
+        await flush();
+        await open(el, "Wesley");
+        await flush();
+        const rows = [...root(el).querySelectorAll(".go.live")].map(
+          (r) => r.textContent
+        );
+        expect(rows.some((t) => t.includes("Chatter"))).toBe(true);
+        expect(rows.some((t) => t.includes("Surgeon Usages"))).toBe(false);
+        expect(rows.some((t) => t.includes("MyCase Bookings"))).toBe(false);
+        expect(root(el).querySelector("c-pipeline-mobile-usages")).toBeNull();
+        const labels = [
+          ...root(el).querySelectorAll(".dealpage .tile .tl")
+        ].map((n) => n.textContent);
+        expect(labels).toContain("Portfolio"); // no surgeon, so no rating tile
+        expect(labels).not.toContain("Usage rating");
+      });
+    });
+
+    describe("a new deal", () => {
+      it("has a Create New bar at the bottom of the list that slides the New deal page in", async () => {
+        const el = await make();
+        const bar = root(el).querySelector(".newbar .newbtn");
+        expect(bar.textContent).toContain("Create New");
+        const page = root(el).querySelector("c-pipeline-mobile-new");
+        expect(page.open).toBe(false);
+        bar.click();
+        await flush();
+        expect(page.open).toBe(true);
+        page.dispatchEvent(new CustomEvent("close"));
+        await flush();
+        expect(page.open).toBe(false);
+      });
+
+      it("opens a deal just created on its own screen with Created. at the top, after reading the deals again", async () => {
+        const el = await make();
+        const page = root(el).querySelector("c-pipeline-mobile-new");
+        getDeals.mockResolvedValue({
+          deals: [...DEALS, deal("Newly", { stage: "Plan" })],
+          truncated: false
+        });
+        const before = getDeals.mock.calls.length;
+        page.dispatchEvent(new CustomEvent("created", { detail: "Newly" }));
+        await flush();
+        await flush();
+        expect(getDeals.mock.calls.length).toBe(before + 1);
+        expect(
+          root(el).querySelector(".dealpage").classList.contains("on")
+        ).toBe(true);
+        expect(root(el).querySelector(".dname").textContent).toBe("Dr Newly");
+        expect(root(el).querySelector(".createdmsg").textContent).toBe(
+          "Created."
+        );
+        expect(page.open).toBe(false);
+      });
+
+      it("has no Create bar while a deal is open (it is on the list only)", async () => {
+        const el = await make();
+        sections(el)[1].click();
+        await flush();
+        await open(el, "Chen");
+        expect(root(el).querySelectorAll(".newbar").length).toBe(1); // the list's own bar, under the deal screen
+        expect(root(el).querySelector(".dealpage .newbar")).toBeNull();
       });
     });
   });

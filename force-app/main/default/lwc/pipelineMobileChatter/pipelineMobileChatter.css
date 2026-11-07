@@ -21,13 +21,13 @@
   transform: translateX(105%);
   visibility: hidden;
   transition:
-    transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
-    visibility 0s linear 0.4s;
+    transform var(--slide, 0.48s) cubic-bezier(0.2, 0.8, 0.2, 1),
+    visibility 0s linear var(--slide, 0.48s);
 }
 .chatpage.on {
   transform: none;
   visibility: visible;
-  transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: transform var(--slide, 0.48s) cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 .ctl {
   position: sticky;
@@ -52,7 +52,7 @@
   text-transform: uppercase;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-  transition: filter 0.3s;
+  transition: filter var(--quick, 0.36s);
 }
 .backbtn:active,
 .bigbtn:active,
@@ -168,13 +168,13 @@
   transform: translateX(105%);
   visibility: hidden;
   transition:
-    transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
-    visibility 0s linear 0.4s;
+    transform var(--slide, 0.48s) cubic-bezier(0.2, 0.8, 0.2, 1),
+    visibility 0s linear var(--slide, 0.48s);
 }
 .writepage.on {
   transform: none;
   visibility: visible;
-  transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: transform var(--slide, 0.48s) cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 .writepage .backbtn {
   flex: none;

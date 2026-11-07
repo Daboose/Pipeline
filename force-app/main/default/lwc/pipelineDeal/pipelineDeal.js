@@ -52,8 +52,8 @@ const FIELDS = {
     ["OnHold__c", "On hold", "bool"],
     ["Priority__c", "Rep priority", "bool"],
     ["State_Priority__c", "State priority", "bool"],
-    ["myMo__c", "MyMo", "bool"],
-    ["myMo_Stage__c", "MyMo stage", "picklist"],
+    ["myMo__c", "MyMobility", "bool"],
+    ["myMo_Stage__c", "MyMobility stage", "picklist"],
     ["Link_To_ROSA_Deal__c", "Link to ROSA deal", "lookup"],
     ["Objective__c", "Background information", "textarea", false, true]
   ],
@@ -94,7 +94,7 @@ const FIELDS = {
   ]
 };
 const MYMO_FIELD = "myMo__c";
-const MYMO_STAGE_FIELD = "myMo_Stage__c"; // shown only while MyMo is Yes
+const MYMO_STAGE_FIELD = "myMo_Stage__c"; // shown only while MyMobility is Yes
 /** Yes turns the whole slider solid green; for On hold, a warning rather than good news, solid amber (Robert, 2026-11-07). */
 const YES_NO_GOOD = [
   { value: "no", label: "No" },
@@ -609,7 +609,7 @@ export default class PipelineDeal extends LightningElement {
     });
   }
   /**
-   * The Yes / No fields (On hold, Rep priority, State priority, MyMo) come together as one row of one-pill sliders, each
+   * The Yes / No fields (On hold, Rep priority, State priority, MyMobility) come together as one row of one-pill sliders, each
    * with its label as the left end of the pill (Robert, 2026-11-07; mockup pipeline_deal_toggles_v1.html, option B).
    */
   flagged(rows) {

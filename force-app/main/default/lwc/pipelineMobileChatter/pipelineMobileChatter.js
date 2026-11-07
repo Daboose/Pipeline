@@ -12,7 +12,7 @@ import {
   segmentsFrom
 } from "c/pipelineMobileModel";
 
-const SLIDE_OUT_MS = 450; // a little longer than the slide itself (0.4 s in the style sheet)
+const SLIDE_OUT_MS = 540; // a little longer than the slide itself (0.48 s in the style sheet)
 const MIN_LETTERS = 3; // letters after an @ before people are offered, as on the desktop
 const SEARCH_DELAY_MS = 220;
 

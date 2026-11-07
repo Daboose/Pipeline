@@ -1,0 +1,97 @@
+/* covers the whole Pipeline Mobile screen (the nearest positioned ancestor), above everything, and takes every tap while it shows */
+:host {
+  display: contents;
+}
+.over {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  background: rgba(6, 11, 20, 0.58);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity var(--quick, 0.36s),
+    visibility 0s linear var(--quick, 0.36s);
+}
+.over.show {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity var(--quick, 0.36s);
+}
+.logo {
+  filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.45));
+  animation: pulse 1.1s ease-in-out infinite;
+}
+.over.done .logo {
+  animation: none;
+}
+.word {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 30px;
+  color: #fff;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.spin {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  animation: turn 0.8s linear infinite;
+}
+.tick {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #16a34a;
+}
+.tick::before {
+  content: "";
+  width: 12px;
+  height: 7px;
+  border-left: 3px solid #fff;
+  border-bottom: 3px solid #fff;
+  transform: translateY(-2px) rotate(-45deg);
+}
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.65;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+@keyframes turn {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .logo,
+  .spin {
+    animation: none;
+  }
+  .over {
+    transition: none;
+  }
+}

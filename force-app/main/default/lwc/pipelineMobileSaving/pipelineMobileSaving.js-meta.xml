@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>68.0</apiVersion>
+    <isExposed>false</isExposed>
+    <description
+  >Pipeline Mobile: the saving screen. It dims and locks the whole phone screen while a Save, Create, Add or Delete is with Salesforce, shows the Pipeline logo with a spinner and a word, then a green tick. Used only inside Pipeline Mobile.</description>
+</LightningComponentBundle>

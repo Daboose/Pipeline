@@ -1,0 +1,787 @@
+@import "c/pipelineStyles";
+
+/* Pipeline on the phone: light colours (the Salesforce phone app is light), set here because the Pipeline root that sets them on the
+   desktop is not around this page. One layer per rule; phone sizes: 16 px search text (or the iPhone zooms), 37 px sliders, 44 px search. */
+:host {
+  display: block;
+  --ok: #0f9d74; /* the Campaigns list inside takes these from here */
+  --warn: #c2570c;
+  --bad: #dc2626;
+  --bar-primary: #2563eb; /* the bookings charts: the desktop's colours */
+  --bar-revision: #ea580c;
+  --bar-cmft: #0d9488;
+  --grid-line: rgba(93, 107, 133, 0.3);
+  --seg-good: #16a34a;
+  --seg-warn: #f59e0b;
+  --panel: #ffffff;
+  --panel2: #eef2fa;
+  --bg: #f3f3f3;
+  --line: #d5dcea;
+  --edge: #b3bfd6;
+  --text: #1b2640;
+  --muted: #5d6b85;
+  --indigo: #4f46e5;
+  --indigo2: #4338ca;
+  --pline: #d5dcea;
+  --pfield: #ffffff;
+  --head: #db2777;
+  color: var(--text);
+  background: var(--bg);
+}
+.wrap {
+  position: relative;
+  overflow: hidden;
+  /* "clip", not only "hidden": a hidden box can still be scrolled by the browser (the iPhone does it to bring a text box into view when the
+     keyboard opens), which pushed the whole deal page up and the locked Back bar off the top of the screen (Robert, 2026-11-07) */
+  overflow: clip;
+}
+.page {
+  /* this page scrolls inside itself, in the height that is left on the screen (set in fit()), so the .ctl block can stay locked at its top */
+  height: var(--fit-height, auto);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+}
+.pad {
+  /* the gap from the locked line down to the first heading is the same 8 px as the gap from the search box down to that line (.ctl's bottom padding) */
+  padding: 8px 12px 24px;
+}
+.sp {
+  flex: 1;
+}
+.err {
+  color: #dc2626;
+  font-weight: 700;
+}
+.note {
+  color: var(--muted);
+  margin: 6px 4px;
+}
+.none {
+  color: var(--muted);
+  text-align: center;
+  padding: 14px 10px;
+  margin: 0;
+}
+
+/* the controls */
+.ctl {
+  /* locked at the top of the page (Robert, 2026-11-07): the Status slider and the search stay in view while everything else scrolls
+     under them, like the locked table headings on the desktop. A solid background so the cards do not show through. */
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  /* no padding above: Salesforce already leaves about 13 px between its title line and the page, and clips anything pulled into it */
+  padding: 0 12px 8px;
+  background: var(--bg);
+  box-shadow: 0 1px 0 var(--line);
+}
+.seg,
+.flagseg {
+  display: block;
+  width: 100%;
+  --seg-width: 100%;
+  --seg-opt-flex: 1 1 0;
+  --seg-opt-height: 37px; /* 33% taller than the desktop's 28 px, for a finger */
+  --seg-track: var(--panel2);
+  --seg-line: var(--edge);
+  --seg-lab: var(--panel);
+  --seg-optx: var(--muted);
+  --seg-indigo: var(--indigo);
+  --seg-muted: var(--muted);
+  --seg-shadow: rgba(79, 70, 229, 0.35);
+}
+.typeseg {
+  margin-bottom: 12px;
+}
+.search {
+  height: 44px;
+  border-radius: 999px;
+  border: 1px solid var(--edge);
+  background: var(--pfield);
+  color: var(--text);
+  padding: 0 44px 0 16px;
+  font-size: 16px;
+  font-family: inherit;
+  outline: none;
+}
+.search:focus {
+  border-color: var(--indigo);
+}
+.sbox .sclear {
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  margin-top: -14px;
+  background: var(--edge);
+}
+
+/* the stage as ONE component (Robert, 2026-11-07, mockup pipeline_mobile_stage_v1.html option B): the coloured row and its list of stages
+   are joined inside one outline in the row's colour (blue, green at the won stage, red at the lost stage). The list folds open and shut
+   over 0.4 s (the motion standard) and the chevron turns over with it. The stage the deal is on has a bar of the colour down its left edge. */
+.stsec {
+  --c: var(--indigo);
+  border: 2px solid var(--c);
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--panel);
+  margin-bottom: 12px;
+  transition: border-color var(--slide, 0.48s) cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.stsec.good {
+  --c: #16a34a;
+}
+.stsec.bad {
+  --c: #dc2626;
+}
+.stgC {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 60px;
+  padding: 6px 12px 6px 16px;
+  border: 0;
+  border-radius: 0;
+  background: var(--c);
+  color: #fff;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--slide, 0.48s) cubic-bezier(0.2, 0.8, 0.2, 1);
+  -webkit-tap-highlight-color: transparent;
+}
+.stgC .sk {
+  display: flex;
+  flex-direction: column;
+}
+.stgC small {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  opacity: 0.85;
+}
+.stgC .sv {
+  font-size: 19px;
+  font-weight: 800;
+}
+/* the chevron: big, no words, in a soft round button, and it turns over as the list opens and closes */
+.chev2 {
+  margin-left: auto;
+  flex: none;
+  width: 36px;
+  height: 36px;
+  position: relative;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.22);
+  transform: rotate(180deg);
+  transition: transform var(--slide, 0.48s) cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.chev2::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  border-right: 4px solid #fff;
+  border-bottom: 4px solid #fff;
+  border-radius: 2px;
+  transform: translate(-50%, -70%) rotate(45deg);
+}
+.stsec.shut .chev2 {
+  transform: rotate(0deg);
+}
+.stsec.shut .fold {
+  grid-template-rows: 0fr;
+}
+.listsheet div {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-top: 1px solid var(--line);
+  font-size: 16px;
+}
+.listsheet div:first-child {
+  border-top: 0;
+}
+.listsheet .here {
+  background: color-mix(in srgb, var(--c) 12%, var(--panel));
+  font-weight: 800;
+  box-shadow: inset 5px 0 0 var(--c);
+  padding-left: 20px;
+}
+.listsheet .here span:last-child:not(:first-child) {
+  color: var(--c);
+}
+
+/* ===== editing a deal (Robert, 2026-11-07; mockup pipeline_mobile_edit_v1.html): no Edit button, the fields are there to change; nothing is
+   saved until Save. 16 px text (or the iPhone zooms the page) and 44 px controls. ===== */
+.f {
+  padding: 9px 0;
+}
+/* no lines between the fields at all, above or below Brand either (Robert, 2026-11-08), the same on the deal form and the New deal page */
+.fl {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 7px;
+  transition: color var(--slide, 0.48s);
+}
+.stgC:active,
+.listsheet div:active {
+  filter: brightness(0.86);
+  transition: none;
+}
+.listsheet div:active {
+  background: #dde2ec;
+  filter: none;
+}
+.lk:active {
+  background: #e3e7f0;
+  transition: none;
+}
+.f.changed .fl {
+  color: var(--indigo);
+}
+.f.changed .in,
+.f.changed .lk {
+  border-color: var(--indigo);
+}
+.rq {
+  color: #dc2626;
+}
+.in,
+.lk {
+  display: block;
+  width: 100%;
+  height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--edge);
+  border-radius: 10px;
+  background: var(--pfield);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 16px;
+  text-align: left;
+  box-sizing: border-box;
+  transition: border-color var(--slide, 0.48s);
+}
+select.in {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 34px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%235d6b85' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-position: right 14px center;
+  background-size: 12px 8px;
+  background-repeat: no-repeat;
+}
+.ta {
+  font-family: inherit;
+  height: auto;
+  min-height: 96px;
+  padding: 10px 14px;
+  resize: none;
+}
+.ro {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  background: var(--pfield);
+  border: 1px solid var(--pline);
+  border-radius: 10px;
+  color: var(--muted);
+  font-size: 16px;
+}
+.lk {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+}
+.lk .ph {
+  color: var(--muted);
+}
+.lkx {
+  flex: none;
+  width: 9px;
+  height: 9px;
+  border-right: 2.5px solid var(--muted);
+  border-top: 2.5px solid var(--muted);
+  transform: rotate(45deg);
+}
+.two {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.pls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.pl {
+  height: 40px;
+  padding: 0 16px;
+  border: 1px solid var(--edge);
+  border-radius: 999px;
+  background: var(--panel2);
+  color: var(--muted);
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 14px;
+  transition:
+    background var(--quick, 0.36s),
+    color var(--quick, 0.36s);
+}
+.pl.on {
+  background: var(--indigo);
+  border-color: var(--indigo);
+  color: #fff;
+}
+/* the four Yes / No fields: one full-width pill each, the desktop's colours (Yes turns the whole pill solid green; On hold, amber) */
+.flagbox {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.flags {
+  padding: 9px 0;
+}
+/* the MyMo stage folds open only while MyMo is Yes (0.4 s) */
+.mm {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--slide, 0.48s)
+    cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.mm.open {
+  grid-template-rows: 1fr;
+}
+/* the row sits inside its own wrapper, which is what folds: a row's own padding cannot be squeezed by the fold, so it would show a sliver
+   (the label of the MyMo stage showed while MyMo was No) */
+.mm > .rowin {
+  overflow: hidden;
+  min-height: 0;
+}
+.mm .f {
+  border-top: 0;
+  padding-top: 4px;
+}
+.errs {
+  border: 1px solid #dc2626;
+  color: #dc2626;
+  border-radius: 10px;
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+.okmsg {
+  color: #0f9d74;
+  font-weight: 800;
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition:
+    max-height var(--slide, 0.48s),
+    opacity var(--slide, 0.48s);
+}
+.okmsg.on {
+  max-height: 40px;
+  opacity: 1;
+  padding-bottom: 8px;
+}
+/* the locked Save / Cancel bar: folds up from the bottom edge of the page when the first change is made, and stays while the page scrolls */
+.savewrap {
+  position: sticky;
+  bottom: 0;
+  z-index: 6;
+  display: grid;
+  grid-template-rows: 0fr;
+  background: var(--bg);
+  transition: grid-template-rows var(--slide, 0.48s)
+    cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.savewrap.on {
+  grid-template-rows: 1fr;
+  box-shadow: 0 -1px 0 var(--line);
+}
+.savein {
+  overflow: hidden;
+  min-height: 0;
+}
+.savebar {
+  display: flex;
+  gap: 10px;
+  padding: 10px 12px 12px;
+}
+.savebar button,
+.ask1 button {
+  flex: 1 1 0;
+  height: 44px;
+  border: 0;
+  border-radius: 999px;
+  color: #fff;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.savebar .cancel {
+  background: #64748b;
+}
+.savebar .save,
+.ask1 .stay {
+  background: var(--indigo);
+}
+.ask1 .leave {
+  background: #dc2626;
+}
+.savebar button[disabled] {
+  opacity: 0.55;
+}
+/* the search page for a person, hospital or deal: slides in from the right over the deal (0.4 s), with its own locked back bar */
+.sheet {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--fit-height, 100%);
+  z-index: 8;
+  display: flex;
+  flex-direction: column;
+  padding: 0 12px 12px;
+  box-sizing: border-box;
+  background: var(--bg);
+  transform: translateX(105%);
+  visibility: hidden;
+  transition:
+    transform var(--slide, 0.48s) cubic-bezier(0.2, 0.8, 0.2, 1),
+    visibility 0s linear var(--slide, 0.48s);
+}
+.sheet.on {
+  transform: none;
+  visibility: visible;
+  transition: transform var(--slide, 0.48s) cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.sheet .backbtn {
+  flex: none;
+  margin-bottom: 10px;
+}
+.sht {
+  margin: 2px 2px 8px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--head);
+}
+.sheet .sbox {
+  flex: none;
+  margin-bottom: 10px;
+}
+.results {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+.rs {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 58px;
+  padding: 8px 14px;
+  border-top: 1px solid var(--line);
+  cursor: pointer;
+}
+.rs:first-child {
+  border-top: 0;
+}
+.rs b {
+  display: block;
+  font-size: 16px;
+}
+.rs small {
+  color: var(--muted);
+  font-size: 13px;
+}
+.rs.is {
+  background: color-mix(in srgb, var(--indigo) 10%, var(--panel));
+}
+.ck2 {
+  color: var(--indigo);
+  font-weight: 800;
+}
+/* leaving with unsaved changes: a question over a blurred, darkened page */
+.askwrap {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--fit-height, 100%);
+  z-index: 9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  box-sizing: border-box;
+  background: rgba(6, 11, 20, 0.55);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity var(--quick, 0.36s),
+    visibility 0s linear var(--quick, 0.36s);
+}
+.askwrap.on {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity var(--quick, 0.36s);
+}
+.ask1 {
+  width: 100%;
+  padding: 18px;
+  background: var(--panel);
+  border: 1px solid var(--edge);
+  border-radius: 14px;
+}
+.ask1 b {
+  font-size: 18px;
+}
+.ask1 p {
+  margin: 6px 0 14px;
+  color: var(--muted);
+  font-size: 15px;
+}
+.row2 {
+  display: flex;
+  gap: 10px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .mm,
+  .okmsg,
+  .savewrap,
+  .sheet,
+  .askwrap {
+    transition: none;
+  }
+}
+
+/* the four Yes / No sliders share one label width, so every No and Yes is the same size (Robert, 2026-11-07). The width is measured: these
+   hidden copies of the labels are set in the slider's own label type, the widest one sets --seg-label-width (see renderedCallback). */
+.measures {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+.lblmeasure {
+  position: absolute;
+  visibility: hidden;
+  white-space: nowrap;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* the cross that clears an optional lookup, on the right of the field where the chevron was */
+.lkrow {
+  position: relative;
+}
+.lk.hasx {
+  padding-right: 52px;
+}
+.lk.hasx .lkx {
+  display: none;
+}
+.lkrow .lkclear {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  width: 28px;
+  height: 28px;
+  margin-top: -14px;
+  background: var(--edge);
+}
+
+/* ===== the New deal page (Robert, 2026-11-08; mockup pipeline_mobile_new_v1.html): slides in over the list from the right (0.4 s) and scrolls
+   itself; a locked Cancel / Create bar at its bottom ===== */
+.newpage {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 8;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  transform: translateX(105%);
+  visibility: hidden;
+  transition:
+    transform var(--slide, 0.48s) cubic-bezier(0.2, 0.8, 0.2, 1),
+    visibility 0s linear var(--slide, 0.48s);
+}
+.newpage.on {
+  transform: none;
+  visibility: visible;
+  transition: transform var(--slide, 0.48s) cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.newpage .pad {
+  flex: 1 0 auto;
+}
+.lockbar {
+  position: sticky;
+  bottom: 0;
+  z-index: 6;
+  display: flex;
+  gap: 10px;
+  padding: 10px 12px 12px;
+  background: var(--bg);
+  box-shadow: 0 -1px 0 var(--line);
+}
+.lockbar button {
+  flex: 1 1 0;
+  height: 44px;
+  border: 0;
+  border-radius: 999px;
+  color: #fff;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: filter var(--quick, 0.36s);
+}
+.lockbar button:active {
+  filter: brightness(0.86);
+  transition: none;
+}
+.lockbar .cancel {
+  background: #64748b;
+}
+.lockbar .save {
+  background: var(--indigo);
+}
+.lockbar button[disabled] {
+  opacity: 0.55;
+}
+/* ----- what every phone screen shares with the deal screen (the same rules as pipelineMobile.css; added in 0.31 after the New deal page
+   was found to lack them: the Back button was plain, the heading was the browser's, the stage box could not fold) ----- */
+.fold {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition: grid-template-rows var(--slide, 0.48s)
+    cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.foldin {
+  overflow: hidden;
+  min-height: 0;
+}
+.bar {
+  padding: 0 12px 8px;
+}
+.backbtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  height: 44px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--indigo);
+  color: #fff;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: filter var(--quick, 0.36s);
+}
+.backbtn:active {
+  filter: brightness(0.86);
+  transition: none;
+}
+.bk {
+  font-size: 22px;
+  line-height: 1;
+  margin-top: -2px;
+}
+.dh {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 2px 2px;
+}
+.dname {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 800;
+  line-height: 1.15;
+}
+.dsub {
+  color: var(--muted);
+  font-size: 14px;
+  margin: 2px 2px 16px; /* 16 px to the kind slider (10 px before; Robert, 2026-11-08) */
+}
+
+.pf {
+  border-top: 0;
+  padding-top: 0;
+}
+.kindseg {
+  margin-bottom: 12px;
+}
+.note3 {
+  margin: 4px 2px 10px;
+  color: var(--muted);
+  font-size: 13px;
+}
+.card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+}
+h3 {
+  margin: 0 0 8px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--head);
+}
+@media (prefers-reduced-motion: reduce) {
+  .newpage,
+  .newpage.on {
+    transition: none;
+  }
+}

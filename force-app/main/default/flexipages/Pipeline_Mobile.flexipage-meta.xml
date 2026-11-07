@@ -1,12 +1,37 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <FlexiPage xmlns="http://soap.sforce.com/2006/04/metadata">
   <description
-  >Pipeline on the phone (first proof): the Lightning app page that holds the Pipeline Mobile component, shown as a tab in the Salesforce mobile app.</description>
+  >Pipeline on the phone: the Lightning app page that holds the Pipeline Mobile component, shown as a tab in the Salesforce mobile app. The component shows on a phone only; on a desktop or tablet a short message says it is for the phone.</description>
   <flexiPageRegions>
     <itemInstances>
       <componentInstance>
         <componentName>pipelineMobile</componentName>
         <identifier>c_pipelineMobile</identifier>
+        <visibilityRule>
+          <criteria>
+            <leftValue>{!$Client.formFactor}</leftValue>
+            <operator>EQUAL</operator>
+            <rightValue>Small</rightValue>
+          </criteria>
+        </visibilityRule>
+      </componentInstance>
+    </itemInstances>
+    <itemInstances>
+      <componentInstance>
+        <componentInstanceProperties>
+          <name>richTextValue</name>
+          <value
+          >&lt;p&gt;&lt;b&gt;Pipeline Mobile is for the phone.&lt;/b&gt;&lt;/p&gt;&lt;p&gt;Open it in the Salesforce mobile app. On a computer, use the Pipeline tab instead.&lt;/p&gt;</value>
+        </componentInstanceProperties>
+        <componentName>flexipage:richText</componentName>
+        <identifier>flexipage_richText</identifier>
+        <visibilityRule>
+          <criteria>
+            <leftValue>{!$Client.formFactor}</leftValue>
+            <operator>NE</operator>
+            <rightValue>Small</rightValue>
+          </criteria>
+        </visibilityRule>
       </componentInstance>
     </itemInstances>
     <name>main</name>

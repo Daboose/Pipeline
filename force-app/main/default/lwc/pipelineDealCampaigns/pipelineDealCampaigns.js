@@ -32,6 +32,8 @@ export default class PipelineDealCampaigns extends LightningElement {
    * Unset (the default), Yes stays the slider's ordinary highlight, as in the desktop flyout and the record page's Campaigns button.
    */
   @api yesTone = "";
+  /** True makes that colour only the sliding thumb, not the whole pill (the phone's Campaigns screen, 2026-11-08). */
+  @api toneThumb = false;
 
   @api
   get recordId() {

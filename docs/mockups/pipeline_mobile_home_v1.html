@@ -1,0 +1,3798 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>
+      Mockup: home list and New deal page, subtle updates (version 1)
+    </title>
+    <style>
+      :root,
+      [data-theme="light"] {
+        --page: #e9edf4;
+        --card: #ffffff;
+        --bg: #f3f3f3;
+        --box: #eef2fa;
+        --line: #d5dcea;
+        --edge: #b3bfd6;
+        --text: #1b2640;
+        --muted: #5d6b85;
+        --pipe: #b7791f;
+        --indigo: #4f46e5;
+        --slate: #64748b;
+        --head: #db2777;
+        --field: #ffffff;
+        --ok: #0f9d74;
+      }
+      [data-theme="dark"] {
+        --page: #141e2e;
+        --card: #1a2740;
+        --bg: #141e2e;
+        --box: #20304f;
+        --line: #2f4163;
+        --edge: #5b6f93;
+        --text: #e8edf5;
+        --muted: #9fb0cc;
+        --pipe: #fdb827;
+        --indigo: #6366f1;
+        --slate: #475569;
+        --head: #f472b6;
+        --field: #11151c;
+        --ok: #4ee0b0;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--page);
+        color: var(--text);
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-size: 16px;
+      }
+      button,
+      input {
+        font-family: inherit;
+        font-size: inherit;
+        color: inherit;
+      }
+      .sp {
+        flex: 1;
+      }
+      .muted {
+        color: var(--muted);
+      }
+      .sfnav {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        height: 44px;
+        padding: 0 16px;
+        background: #0b1220;
+        color: #cdd6e6;
+        font-size: 14px;
+      }
+      .sfnav .app {
+        font-weight: 800;
+        letter-spacing: 0.14em;
+      }
+      .sfnav .app b {
+        color: #fdb827;
+      }
+      .sfnav .tab {
+        color: #9fb0cc;
+      }
+      .sfnav .tab.on {
+        color: #fff;
+        border-bottom: 2px solid #6366f1;
+        padding-bottom: 2px;
+      }
+      .btn,
+      .pill {
+        border: 0;
+        border-radius: 999px;
+        padding: 7px 16px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+        background: var(--slate);
+        color: #fff;
+      }
+      .pill.on {
+        background: var(--indigo);
+      }
+      .about {
+        margin: 14px 16px;
+        padding: 12px 18px;
+        background: var(--card);
+        border: 1px solid var(--edge);
+        border-radius: 12px;
+        line-height: 1.5;
+        max-width: 1100px;
+        font-size: 15px;
+      }
+      .about summary {
+        cursor: pointer;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        color: var(--pipe);
+      }
+      .about ul {
+        margin: 4px 0 8px;
+        padding-left: 22px;
+      }
+      .tools {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+        padding: 0 16px 10px;
+      }
+      .tools .lab {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        margin-left: 14px;
+      }
+      .tools .lab:first-child {
+        margin-left: 0;
+      }
+      .mocknote {
+        margin: 0 16px 12px;
+        padding: 8px 14px;
+        border: 1px dashed var(--edge);
+        border-radius: 10px;
+        color: var(--muted);
+        font-size: 14px;
+        font-style: italic;
+        max-width: 1100px;
+      }
+      .phones {
+        display: flex;
+        gap: 40px;
+        flex-wrap: wrap;
+        padding: 0 16px 40px;
+        align-items: flex-start;
+      }
+      .opt h2 {
+        margin: 0 0 2px;
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--head);
+      }
+      .opt p {
+        margin: 0 0 10px;
+        color: var(--muted);
+        font-size: 14px;
+        max-width: 390px;
+      }
+
+      /* the phone: 390 px wide, Salesforce's own top bar and bottom tab bar around our page */
+      .phone {
+        position: relative;
+        width: 390px;
+        height: 800px;
+        border: 10px solid #0b1220;
+        border-radius: 38px;
+        overflow: hidden;
+        background: var(--bg);
+        display: flex;
+        flex-direction: column;
+      }
+      .sfstatus {
+        height: 40px;
+        flex: none;
+        padding: 12px 0 0 28px;
+        font-size: 14px;
+        font-weight: 600;
+        background: var(--card);
+      }
+      .sfbar {
+        flex: none;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        height: 46px;
+        padding: 0 14px;
+        background: var(--card);
+        border-bottom: 1px solid var(--line);
+        font-weight: 700;
+      }
+      .sfbar .ham {
+        width: 22px;
+        height: 14px;
+        border-top: 2px solid var(--muted);
+        border-bottom: 2px solid var(--muted);
+        position: relative;
+      }
+      .sfbar .ham::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 4px;
+        border-top: 2px solid var(--muted);
+      }
+      .scroll {
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+        padding: 12px 12px 16px;
+      }
+      .sftabs {
+        flex: none;
+        display: flex;
+        height: 58px;
+        background: var(--card);
+        border-top: 1px solid var(--line);
+      }
+      .sftabs span {
+        flex: 1;
+        text-align: center;
+        padding-top: 9px;
+        font-size: 11px;
+        color: var(--muted);
+      }
+      .sftabs span.on {
+        color: var(--indigo);
+        font-weight: 700;
+      }
+      .sftabs i {
+        display: block;
+        width: 22px;
+        height: 22px;
+        margin: 0 auto 3px;
+        border-radius: 6px;
+        background: currentColor;
+        opacity: 0.35;
+      }
+
+      /* the one-pill slider (phone): full width, 37 px options (33% taller than on desktop), label end */
+      .yn {
+        display: flex;
+        align-items: stretch;
+        width: 100%;
+        background: var(--card);
+        border: 1px solid var(--edge);
+        border-radius: 999px;
+      }
+      .yn .lb {
+        display: inline-flex;
+        align-items: center;
+        padding: 0 12px 0 16px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+        white-space: nowrap;
+      }
+      .yn .trk {
+        position: relative;
+        flex: 1;
+        display: flex;
+        margin: -1px;
+        padding: 3px;
+        background: var(--box);
+        border: 1px solid var(--edge);
+        border-radius: 999px;
+      }
+      .yn .hl {
+        position: absolute;
+        top: 3px;
+        left: 0;
+        width: 0;
+        height: 37px;
+        border-radius: 999px;
+        background: var(--indigo);
+        box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35);
+        transition:
+          left 0.5s cubic-bezier(0.3, 1.35, 0.5, 1),
+          width 0.5s cubic-bezier(0.3, 1.35, 0.5, 1);
+      }
+      .yn button {
+        position: relative;
+        z-index: 1;
+        flex: 1 1 0;
+        height: 37px;
+        border: 0;
+        background: none;
+        font-weight: 700;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+        cursor: pointer;
+        white-space: nowrap;
+        transition: color 0.25s;
+      }
+      .yn button.on {
+        color: #fff;
+      }
+      .ctl {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-bottom: 12px;
+      }
+      .search {
+        position: relative;
+      }
+      .search input {
+        width: 100%;
+        height: 44px;
+        border-radius: 999px;
+        border: 1px solid var(--edge);
+        background: var(--field);
+        padding: 0 42px 0 16px;
+        font-size: 16px; /* 16 px, or the iPhone zooms the page when it is tapped */
+        outline: none;
+      }
+      .search input:focus {
+        border-color: var(--indigo);
+      }
+      .xc {
+        position: absolute;
+        right: 8px;
+        top: 7px;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        border: 0;
+        background: var(--edge);
+        cursor: pointer;
+        display: none;
+      }
+      .xc.show {
+        display: block;
+      }
+      .xc::before,
+      .xc::after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 13px;
+        height: 2px;
+        background: var(--card);
+        transform: translate(-50%, -50%) rotate(45deg);
+      }
+      .xc::after {
+        transform: translate(-50%, -50%) rotate(-45deg);
+      }
+
+      /* the type: one at a time (A) or a section each (B) */
+      .count {
+        color: var(--muted);
+        font-size: 14px;
+        margin: 2px 4px 8px;
+      }
+      .sec {
+        margin-bottom: 10px;
+      }
+      .sechead {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 11px 14px;
+        border-radius: 12px;
+        background: color-mix(in srgb, var(--head) 16%, var(--card));
+        border: 1px solid color-mix(in srgb, var(--head) 38%, var(--card));
+        margin-bottom: 8px;
+        cursor: pointer;
+      }
+      .sechead h3 {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--head);
+      }
+      .sechead .n {
+        color: var(--muted);
+        font-size: 14px;
+      }
+      .chev {
+        width: 9px;
+        height: 9px;
+        border-right: 2.5px solid var(--muted);
+        border-bottom: 2.5px solid var(--muted);
+        transform: rotate(45deg);
+        margin-top: -4px;
+        transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .sec.shut .chev {
+        transform: rotate(-45deg);
+        margin-top: 0;
+      }
+      .fold {
+        display: grid;
+        grid-template-rows: 1fr;
+        transition: grid-template-rows 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .sec.shut .fold {
+        grid-template-rows: 0fr;
+      }
+      .fold > div {
+        overflow: hidden;
+        min-height: 0;
+      }
+
+      /* a deal card: the whole card is the tap target */
+      .deal {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 12px 14px;
+        margin-bottom: 8px;
+        cursor: pointer;
+      }
+      .deal .r1 {
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+      }
+      .deal .nm {
+        font-size: 17px;
+        font-weight: 800;
+        line-height: 1.25;
+      }
+      .deal .val {
+        font-weight: 800;
+        white-space: nowrap;
+      }
+      .deal .r2 {
+        color: var(--muted);
+        font-size: 14px;
+        margin-top: 2px;
+      }
+      .deal .r3 {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 8px;
+        font-size: 14px;
+      }
+      .star {
+        color: #16a34a;
+      }
+      .cstar {
+        color: #e0a100;
+      }
+      .stp {
+        display: inline-flex;
+        align-items: center;
+        height: 24px;
+        padding: 0 11px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      .st-open {
+        background: var(--indigo);
+        color: #fff;
+      }
+      .st-hold {
+        background: #f59e0b;
+        color: #1b2640;
+      }
+      .st-won {
+        background: #16a34a;
+        color: #fff;
+      }
+      .st-lost {
+        background: #dc2626;
+        color: #fff;
+      }
+      .none {
+        color: var(--muted);
+        text-align: center;
+        padding: 26px 10px;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .yn .hl,
+        .chev,
+        .fold {
+          transition: none;
+        }
+      }
+
+      .phone-note {
+        max-width: 390px;
+      }
+      .tiles {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+        margin: 4px 0 12px;
+      }
+      .tile {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 9px 10px;
+      }
+      .tile .l {
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .tile .v {
+        font-size: 18px;
+        font-weight: 800;
+        margin-top: 2px;
+      }
+      .tile .v.warn {
+        color: #c2570c;
+      }
+      .ch3 {
+        margin: 12px 0 6px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--head);
+      }
+      .chips2 {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+      .chip2 {
+        display: inline-flex;
+        gap: 8px;
+        align-items: baseline;
+        padding: 6px 10px;
+        border-radius: 999px;
+        font-size: 13px;
+        color: #fff;
+        font-weight: 700;
+      }
+      .chip2 .cv {
+        font-weight: 800;
+      }
+      .qrow {
+        display: grid;
+        grid-template-columns: 62px 1fr auto;
+        gap: 8px;
+        align-items: center;
+        margin: 6px 0;
+        font-size: 14px;
+      }
+      .qrow .track {
+        height: 12px;
+        border-radius: 99px;
+        background: var(--box);
+        overflow: hidden;
+      }
+      .qrow .fill {
+        display: block;
+        height: 100%;
+        border-radius: 99px;
+        background: var(--indigo);
+      }
+      .qrow .n {
+        color: var(--muted);
+        font-size: 13px;
+        white-space: nowrap;
+      }
+      /* real charts: bars by stage, columns by close quarter */
+      .hbar {
+        display: grid;
+        grid-template-columns: 84px 1fr auto;
+        gap: 8px;
+        align-items: center;
+        margin: 7px 0;
+        font-size: 13px;
+      }
+      .hbar .nm {
+        font-weight: 700;
+        line-height: 1.15;
+      }
+      .hbar .bar {
+        height: 22px;
+        border-radius: 6px;
+        min-width: 4px;
+      }
+      .hbar .v {
+        font-weight: 800;
+        white-space: nowrap;
+      }
+      .cols {
+        display: flex;
+        align-items: flex-end;
+        gap: 10px;
+        height: 150px;
+        padding: 4px 2px 0;
+        border-bottom: 1px solid var(--edge);
+      }
+      .cols .c {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        align-items: center;
+        height: 100%;
+        gap: 4px;
+        font-size: 11px;
+        font-weight: 800;
+      }
+      .cols .c i {
+        display: block;
+        width: 100%;
+        background: var(--indigo);
+        border-radius: 6px 6px 0 0;
+      }
+      .qlabels {
+        display: flex;
+        gap: 10px;
+        padding: 4px 2px 0;
+        font-size: 11px;
+        color: var(--muted);
+        text-align: center;
+      }
+      .qlabels span {
+        flex: 1;
+      }
+      .chartnote {
+        color: var(--muted);
+        font-size: 12px;
+        margin: 8px 2px 0;
+      }
+
+      .back {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        height: 44px;
+        padding: 0 6px;
+        border: 0;
+        background: none;
+        color: var(--indigo);
+        font-weight: 700;
+        font-size: 16px;
+      }
+      .dh {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin: 2px 2px 2px;
+      }
+      .dh .nm {
+        font-size: 24px;
+        font-weight: 800;
+        line-height: 1.15;
+      }
+      .dsub {
+        color: var(--muted);
+        font-size: 14px;
+        margin: 0 2px 10px;
+      }
+      .grid2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+      .tile {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 9px 12px;
+        min-width: 0;
+      }
+      .tile .l {
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .tile .v {
+        font-size: 16px;
+        font-weight: 800;
+        margin-top: 2px;
+      }
+      .tg {
+        display: inline-block;
+        padding: 1px 10px;
+        border-radius: 999px;
+        font-size: 13px;
+        font-weight: 700;
+        border: 1px solid currentColor;
+      }
+      .tg.ok {
+        color: #0f9d74;
+      }
+      .tg.warn {
+        color: #c2570c;
+      }
+      .tg.bad {
+        color: #dc2626;
+      }
+      .card {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 12px 14px;
+        margin-bottom: 12px;
+      }
+      .card h3 {
+        margin: 0 0 8px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--head);
+      }
+      .frow {
+        padding: 9px 0;
+        border-top: 1px solid var(--line);
+      }
+      .frow:first-of-type {
+        border-top: 0;
+      }
+      .frow .fl {
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .frow .fv {
+        font-size: 16px;
+        margin-top: 2px;
+      }
+      .yes {
+        color: #0f9d74;
+        font-weight: 800;
+      }
+      .no {
+        color: var(--muted);
+      }
+      .go {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 52px;
+        padding: 0 14px;
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        margin-bottom: 8px;
+        font-weight: 700;
+      }
+      .go b {
+        color: var(--pipe);
+      }
+      .go i {
+        width: 9px;
+        height: 9px;
+        border-right: 2.5px solid var(--muted);
+        border-top: 2.5px solid var(--muted);
+        transform: rotate(45deg);
+      }
+      .later {
+        color: var(--muted);
+        font-size: 13px;
+        font-style: italic;
+        padding: 6px 2px 14px;
+      }
+
+      /* the stage, three ways. A: the one-pill slider, scrolling sideways with the current stage in view */
+      .stgA {
+        --c: var(--indigo);
+        display: flex;
+        align-items: stretch;
+        background: var(--c);
+        border: 1px solid var(--c);
+        border-radius: 999px;
+        margin-bottom: 12px;
+        transition:
+          background 0.4s,
+          border-color 0.4s;
+      }
+      .stgA.good {
+        --c: #16a34a;
+      }
+      .stgA.bad {
+        --c: #dc2626;
+      }
+      .stgA .lb {
+        display: inline-flex;
+        align-items: center;
+        padding: 0 10px 0 14px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: #fff;
+      }
+      .stgA .scr {
+        flex: 1;
+        overflow-x: auto;
+        margin: -1px;
+        border-radius: 999px;
+        background: color-mix(in srgb, var(--c) 82%, #000);
+        border: 1px solid var(--c);
+        scrollbar-width: none;
+      }
+      .stgA .scr::-webkit-scrollbar {
+        display: none;
+      }
+      .stgA .trk {
+        display: flex;
+        padding: 3px;
+        width: max-content;
+      }
+      .stgA .st {
+        height: 37px;
+        padding: 0 14px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        white-space: nowrap;
+        color: #fff;
+      }
+      .stgA .st.ahead {
+        color: rgba(255, 255, 255, 0.4);
+      }
+      .stgA .st.on {
+        background: #fff;
+        color: var(--c);
+      }
+      .stgA .tick {
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: #fff;
+        color: var(--c);
+        font-size: 11px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+      /* B: the stage's name, big, over a bar of steps */
+      .stgB {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 12px 14px;
+        margin-bottom: 12px;
+      }
+      .stgB .top {
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+      }
+      .stgB .k {
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .stgB .now {
+        font-size: 20px;
+        font-weight: 800;
+      }
+      .stgB .of {
+        margin-left: auto;
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .steps {
+        display: flex;
+        gap: 4px;
+        margin: 10px 0 8px;
+      }
+      .steps i {
+        flex: 1;
+        height: 10px;
+        border-radius: 99px;
+        background: var(--box);
+      }
+      .steps i.f {
+        background: var(--indigo);
+      }
+      .stgB.good .steps i.f {
+        background: #16a34a;
+      }
+      .stgB.bad .steps i {
+        background: #dc2626;
+      }
+      .stgB .next {
+        color: var(--muted);
+        font-size: 13px;
+      }
+      /* C: one row that says the stage and opens the list of stages */
+      .stgC {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-height: 56px;
+        padding: 0 14px;
+        border-radius: 12px;
+        color: #fff;
+        background: var(--c2);
+        margin-bottom: 12px;
+        font-weight: 800;
+        transition: background 0.4s;
+      }
+      .stgC small {
+        font-size: 11px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        opacity: 0.85;
+        font-weight: 700;
+      }
+      .stgC .v {
+        font-size: 18px;
+      }
+      .stgC i {
+        margin-left: auto;
+        width: 9px;
+        height: 9px;
+        border-right: 2.5px solid #fff;
+        border-bottom: 2.5px solid #fff;
+        transform: rotate(45deg);
+      }
+      .stgC .pk {
+        margin-left: auto;
+        font-size: 12px;
+        opacity: 0.85;
+      }
+      .listsheet {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        margin: -4px 0 12px;
+        overflow: hidden;
+      }
+      .listsheet div {
+        padding: 13px 14px;
+        border-top: 1px solid var(--line);
+        display: flex;
+        justify-content: space-between;
+      }
+      .listsheet div:first-child {
+        border-top: 0;
+      }
+      .listsheet .cur {
+        background: var(--box);
+        font-weight: 800;
+      }
+
+      /* the locked back bar: a full-width filled button that stays at the top of the page while the deal scrolls */
+      .lock {
+        position: sticky;
+        top: -12px; /* the phone frame's own 12 px padding is taken back, so the bar sits right at the top */
+        z-index: 5;
+        margin: -12px -12px 10px;
+        padding: 10px 12px 8px;
+        background: var(--bg);
+        box-shadow: 0 1px 0 var(--line);
+      }
+      .lockbtn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        width: 100%;
+        height: 44px;
+        border: 0;
+        border-radius: 999px;
+        background: var(--indigo);
+        color: #fff;
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+      }
+      .lockbtn span {
+        font-size: 22px;
+        line-height: 1;
+        margin-top: -2px;
+      }
+
+      /* the stage control as ONE component: the coloured row and its list joined, one outline in the row's colour all round */
+      .stc {
+        --c: var(--indigo);
+        border: 2px solid var(--c);
+        border-radius: 14px;
+        overflow: hidden;
+        background: var(--card);
+        margin-bottom: 12px;
+        transition: border-color 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .stc.good {
+        --c: #16a34a;
+      }
+      .stc.bad {
+        --c: #dc2626;
+      }
+      .stc .hd {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+        min-height: 60px;
+        padding: 6px 12px 6px 16px;
+        border: 0;
+        background: var(--c);
+        color: #fff;
+        text-align: left;
+        cursor: pointer;
+        transition: background 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .stc .hd small {
+        display: block;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        opacity: 0.85;
+      }
+      .stc .hd .sv {
+        display: block;
+        font-size: 19px;
+        font-weight: 800;
+      }
+      /* the chevron: big, and it turns over as the list opens and closes */
+      .chv {
+        margin-left: auto;
+        flex: none;
+        width: 36px;
+        height: 36px;
+        position: relative;
+        border-radius: 50%;
+        transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .chv::before {
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 14px;
+        height: 14px;
+        border-right: 4px solid #fff;
+        border-bottom: 4px solid #fff;
+        border-radius: 2px;
+        transform: translate(-50%, -70%) rotate(45deg);
+      }
+      .stc.shut .chv {
+        transform: rotate(0deg);
+      }
+      .stc:not(.shut) .chv {
+        transform: rotate(180deg);
+      }
+      .chv.ring {
+        background: rgba(255, 255, 255, 0.22);
+      }
+      .stc .fold {
+        display: grid;
+        grid-template-rows: 1fr;
+        transition: grid-template-rows 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .stc.shut .fold {
+        grid-template-rows: 0fr;
+      }
+      .stc .fold > div {
+        overflow: hidden;
+        min-height: 0;
+      }
+      .stc .li {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 14px 16px;
+        border-top: 1px solid var(--line);
+        font-size: 16px;
+      }
+      .stc .li:first-child {
+        border-top: 0;
+      }
+      .stc .li.here {
+        background: color-mix(in srgb, var(--c) 12%, var(--card));
+        font-weight: 800;
+      }
+      .stc .li .ck {
+        margin-left: auto;
+        color: var(--c);
+        font-weight: 800;
+      }
+      /* B: the row you are on has a bar of the colour down its left edge */
+      .vb .li.here {
+        box-shadow: inset 5px 0 0 var(--c);
+        padding-left: 20px;
+      }
+      /* C: progress, as on the desktop slider: finished stages carry a tick in a circle, stages to come are dimmer */
+      .vc .li.done .ck {
+        display: none;
+      }
+      .vc .li .tk {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: var(--c);
+        color: #fff;
+        font-size: 12px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        order: 3;
+        margin-left: auto;
+      }
+      .vc .li.ahead {
+        color: var(--muted);
+      }
+      .mini {
+        margin: 0 0 12px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      /* the stage you are on: bold, a bar of the row's colour down its left edge (option B, chosen) */
+      .stc .li.here {
+        box-shadow: inset 5px 0 0 var(--c);
+        padding-left: 20px;
+      }
+
+      /* ===== editing on the phone (version 1) ===== */
+      .pbody {
+        position: relative;
+        flex: 1;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+      .pbody .scroll {
+        flex: 1;
+      }
+      .f {
+        padding: 9px 0;
+        border-top: 1px solid var(--line);
+      }
+      .f:first-of-type {
+        border-top: 0;
+      }
+      .f .fl {
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 5px;
+        transition: color 0.4s;
+      }
+      .f .fl .rq {
+        color: #dc2626;
+      }
+      .f.changed .fl {
+        color: var(--indigo);
+      }
+      .f.changed .in,
+      .f.changed .lk {
+        border-color: var(--indigo);
+      }
+      .in,
+      .lk {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        height: 44px;
+        padding: 0 14px;
+        border: 1px solid var(--edge);
+        border-radius: 10px;
+        background: var(--field);
+        color: var(--text);
+        font-size: 16px; /* 16 px, or the iPhone zooms the page */
+        text-align: left;
+        transition: border-color 0.4s;
+      }
+      select.in {
+        appearance: none;
+        -webkit-appearance: none;
+        background-image:
+          linear-gradient(45deg, transparent 50%, var(--muted) 50%),
+          linear-gradient(135deg, var(--muted) 50%, transparent 50%);
+        background-position:
+          calc(100% - 20px) 19px,
+          calc(100% - 14px) 19px;
+        background-size:
+          6px 6px,
+          6px 6px;
+        background-repeat: no-repeat;
+      }
+      textarea.in {
+        height: auto;
+        min-height: 96px;
+        padding: 10px 14px;
+        font-family: inherit;
+        resize: none;
+      }
+      .lk {
+        justify-content: space-between;
+        cursor: pointer;
+      }
+      .lk i {
+        width: 9px;
+        height: 9px;
+        border-right: 2.5px solid var(--muted);
+        border-top: 2.5px solid var(--muted);
+        transform: rotate(45deg);
+      }
+      .two {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+      .pl {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .pl button {
+        height: 40px;
+        padding: 0 16px;
+        border: 1px solid var(--edge);
+        border-radius: 999px;
+        background: var(--box);
+        color: var(--muted);
+        font-weight: 700;
+        font-size: 14px;
+        transition:
+          background 0.3s,
+          color 0.3s;
+      }
+      .pl button.on {
+        background: var(--indigo);
+        border-color: var(--indigo);
+        color: #fff;
+      }
+      .flags {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        padding: 9px 0;
+        border-top: 1px solid var(--line);
+      }
+      .flags .yn.changed {
+        border-color: var(--indigo);
+      }
+      .yn.warn .hl {
+        background: #f59e0b;
+        box-shadow: 0 4px 14px rgba(245, 158, 11, 0.4);
+      }
+      .yn.good .hl {
+        background: #16a34a;
+        box-shadow: 0 4px 14px rgba(22, 163, 74, 0.35);
+      }
+      .yn.warn button.on[data-v="yes"] {
+        color: #1b2640;
+      }
+      .yn.changed .lb {
+        color: var(--indigo);
+      }
+      /* the MyMo stage folds open only while MyMo is Yes (0.4 s) */
+      .mm {
+        display: grid;
+        grid-template-rows: 0fr;
+        transition: grid-template-rows 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .phone.mmon .mm {
+        grid-template-rows: 1fr;
+      }
+      .mm > div {
+        overflow: hidden;
+        min-height: 0;
+      }
+      .mm .f {
+        border-top: 0;
+        padding-top: 4px;
+      }
+      /* On hold: the amber pill beside the name; it fades in and gives its room back when off */
+      .holdp {
+        max-width: 0;
+        opacity: 0;
+        overflow: hidden;
+        padding: 0;
+        white-space: nowrap;
+        transition:
+          max-width 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+          opacity 0.4s,
+          padding 0.4s;
+      }
+      .phone.holdon .holdp {
+        max-width: 120px;
+        opacity: 1;
+        padding: 0 11px;
+      }
+      /* the stage list: a row you can tap */
+      .stc .li {
+        min-height: 52px;
+        cursor: pointer;
+      }
+      /* the locked Save bar: folds up from the bottom edge of the page when the first change is made */
+      .savewrap {
+        position: sticky;
+        bottom: -16px;
+        z-index: 6;
+        margin: 0 -12px -16px;
+        display: grid;
+        grid-template-rows: 0fr;
+        background: var(--bg);
+        box-shadow: 0 -1px 0 var(--line);
+        transition: grid-template-rows 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .phone.dirty .savewrap {
+        grid-template-rows: 1fr;
+      }
+      .savewrap > div {
+        overflow: hidden;
+        min-height: 0;
+      }
+      .savebar {
+        display: flex;
+        gap: 10px;
+        padding: 10px 12px 12px;
+      }
+      .savebar button {
+        flex: 1 1 0;
+        height: 44px;
+        border: 0;
+        border-radius: 999px;
+        color: #fff;
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+      }
+      .savebar .cancel {
+        background: var(--slate);
+      }
+      .savebar .save {
+        background: var(--indigo);
+      }
+      .savebar button[disabled] {
+        opacity: 0.55;
+      }
+      .okmsg {
+        color: var(--ok);
+        font-weight: 800;
+        padding: 0 0 8px;
+        max-height: 0;
+        opacity: 0;
+        overflow: hidden;
+        transition:
+          max-height 0.4s,
+          opacity 0.4s;
+      }
+      .phone.saved .okmsg {
+        max-height: 40px;
+        opacity: 1;
+      }
+      /* the search sheet for a person, hospital or deal: slides in from the right over the page (0.4 s), with its own locked back bar */
+      .sheet {
+        position: absolute;
+        inset: 0;
+        z-index: 8;
+        display: flex;
+        flex-direction: column;
+        padding: 12px;
+        background: var(--bg);
+        transform: translateX(105%);
+        visibility: hidden;
+        transition:
+          transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+          visibility 0s linear 0.4s;
+      }
+      .phone.sh .sheet {
+        transform: none;
+        visibility: visible;
+        transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .sheet .lockbtn {
+        flex: none;
+        margin-bottom: 10px;
+      }
+      .sheet h4 {
+        margin: 2px 2px 8px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--head);
+      }
+      .sheet .search {
+        margin-bottom: 10px;
+        flex: none;
+      }
+      .sheet .results {
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+      }
+      .rs {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 58px;
+        padding: 8px 14px;
+        border-top: 1px solid var(--line);
+        cursor: pointer;
+      }
+      .rs:first-child {
+        border-top: 0;
+      }
+      .rs b {
+        display: block;
+        font-size: 16px;
+      }
+      .rs small {
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .rs .ck2 {
+        color: var(--indigo);
+        font-weight: 800;
+      }
+      .rs.is {
+        background: color-mix(in srgb, var(--indigo) 10%, var(--card));
+      }
+      .noneL {
+        padding: 22px 14px;
+        text-align: center;
+        color: var(--muted);
+      }
+      /* leaving with unsaved changes: a question over a blurred, darkened page */
+      .askwrap {
+        position: absolute;
+        inset: 0;
+        z-index: 9;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        background: rgba(6, 11, 20, 0.55);
+        -webkit-backdrop-filter: blur(4px);
+        backdrop-filter: blur(4px);
+        opacity: 0;
+        visibility: hidden;
+        transition:
+          opacity 0.3s,
+          visibility 0s linear 0.3s;
+      }
+      .phone.ask .askwrap {
+        opacity: 1;
+        visibility: visible;
+        transition: opacity 0.3s;
+      }
+      .ask1 {
+        width: 100%;
+        padding: 18px;
+        background: var(--card);
+        border: 1px solid var(--edge);
+        border-radius: 14px;
+      }
+      .ask1 b {
+        font-size: 18px;
+      }
+      .ask1 p {
+        margin: 6px 0 14px;
+        color: var(--muted);
+        font-size: 15px;
+      }
+      .ask1 .row2 {
+        display: flex;
+        gap: 10px;
+      }
+      .ask1 button {
+        flex: 1 1 0;
+        height: 44px;
+        border: 0;
+        border-radius: 999px;
+        color: #fff;
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+      }
+      .ask1 .stay {
+        background: var(--indigo);
+      }
+      .ask1 .leave {
+        background: #dc2626;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .mm,
+        .holdp,
+        .savewrap,
+        .sheet,
+        .askwrap,
+        .okmsg {
+          transition: none;
+        }
+      }
+
+      /* ===== Chatter on the phone (version 1) ===== */
+      .phones {
+        gap: 28px;
+      }
+      .phone.kb .pbody {
+        margin-bottom: 242px;
+      }
+      .kbd {
+        display: none;
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 300px;
+        z-index: 20;
+        background: #d1d5db;
+        color: #6b7280;
+        font-size: 13px;
+        text-align: center;
+        padding-top: 118px;
+        border-top: 1px solid #b6bcc6;
+      }
+      .phone.kb .kbd {
+        display: block;
+      }
+      .post {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 12px 14px;
+        margin-bottom: 10px;
+      }
+      .meta {
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+        font-size: 14px;
+      }
+      .meta b {
+        font-size: 15px;
+      }
+      .when {
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .txt {
+        margin-top: 4px;
+        font-size: 16px;
+        line-height: 1.4;
+        overflow-wrap: anywhere;
+      }
+      .mention {
+        color: var(--indigo);
+        font-weight: 700;
+      }
+      .reply {
+        margin: 10px 0 0 6px;
+        padding: 2px 0 2px 12px;
+        border-left: 3px solid var(--line);
+      }
+      .rbtn {
+        height: 40px;
+        margin-top: 10px;
+        padding: 0 18px;
+        border: 0;
+        border-radius: 999px;
+        background: var(--slate);
+        color: #fff;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+      }
+      .big {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        width: 100%;
+        height: 44px;
+        margin-bottom: 10px;
+        border: 0;
+        border-radius: 999px;
+        background: var(--indigo);
+        color: #fff;
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+      }
+      .compose {
+        display: block;
+        width: 100%;
+        height: 44px;
+        margin-bottom: 10px;
+        padding: 0 16px;
+        border: 1px solid var(--edge);
+        border-radius: 999px;
+        background: var(--field);
+        color: var(--muted);
+        font-size: 16px;
+        text-align: left;
+      }
+      .composebox {
+        display: none;
+        margin-bottom: 10px;
+        padding: 10px;
+        background: var(--card);
+        border: 1px solid var(--indigo);
+        border-radius: 12px;
+      }
+      .composebox textarea,
+      .wtext {
+        display: block;
+        width: 100%;
+        min-height: 96px;
+        padding: 10px 12px;
+        border: 1px solid var(--edge);
+        border-radius: 10px;
+        background: var(--field);
+        color: var(--text);
+        font-family: inherit;
+        font-size: 16px;
+        resize: none;
+      }
+      .phone.cmp .compose {
+        display: none;
+      }
+      .phone.cmp .composebox {
+        display: block;
+      }
+      .row2 {
+        display: flex;
+        gap: 10px;
+        margin-top: 10px;
+      }
+      .row2 button {
+        flex: 1 1 0;
+        height: 44px;
+        border: 0;
+        border-radius: 999px;
+        color: #fff;
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+      }
+      .row2 .c {
+        background: var(--slate);
+      }
+      .row2 .p {
+        background: var(--indigo);
+      }
+      /* B: the composer locked at the bottom of the screen */
+      .dock {
+        position: sticky;
+        bottom: -16px;
+        z-index: 6;
+        margin: 0 -12px -16px;
+        padding: 8px 12px 10px;
+        background: var(--bg);
+        box-shadow: 0 -1px 0 var(--line);
+      }
+      .dock .chip {
+        display: none;
+        margin-bottom: 6px;
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .phone.rep .dock .chip {
+        display: block;
+      }
+      .dockrow {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+      .dockrow input {
+        flex: 1;
+        min-width: 0;
+        height: 44px;
+        padding: 0 16px;
+        border: 1px solid var(--edge);
+        border-radius: 999px;
+        background: var(--field);
+        color: var(--text);
+        font-size: 16px;
+      }
+      .send {
+        flex: none;
+        width: 44px;
+        height: 44px;
+        border: 0;
+        border-radius: 50%;
+        background: var(--indigo);
+        color: #fff;
+        font-size: 20px;
+        font-weight: 800;
+        cursor: pointer;
+      }
+      /* C: the writing page: the original post (a reply only), the box, the people list, a locked Cancel / Post bar */
+      .sheet .quote {
+        flex: none;
+        margin-bottom: 8px;
+        padding: 8px 12px;
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        font-size: 14px;
+        color: var(--muted);
+        display: none;
+      }
+      .phone.isreply .sheet .quote {
+        display: block;
+      }
+      .sheet .wtext {
+        flex: 1;
+        min-height: 60px;
+      }
+      .people {
+        flex: none;
+        margin-top: 8px;
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        overflow: hidden;
+        display: none;
+      }
+      .phone.ment .people {
+        display: block;
+      }
+      .person {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        min-height: 54px;
+        padding: 4px 14px;
+        border-top: 1px solid var(--line);
+        cursor: pointer;
+      }
+      .person:first-child {
+        border-top: 0;
+      }
+      .person small {
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .sheet .row2 {
+        flex: none;
+        margin-top: 10px;
+      }
+      .go.live {
+        border-color: var(--indigo);
+      }
+      .go .sub {
+        font-weight: 400;
+        color: var(--muted);
+        font-size: 13px;
+        margin-left: 8px;
+      }
+
+      /* the Yes / No slider, drawn here for the mockup: a label end, a track, a thumb that slides (0.4 s) */
+      .sl {
+        display: flex;
+        align-items: stretch;
+        width: 100%;
+        margin-bottom: 8px;
+        background: var(--card);
+        border: 1px solid var(--edge);
+        border-radius: 999px;
+        transition:
+          background 0.4s,
+          border-color 0.4s;
+      }
+      .sl .lb {
+        display: inline-flex;
+        align-items: center;
+        min-width: 150px;
+        box-sizing: border-box;
+        padding: 0 16px 0 18px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+        white-space: nowrap;
+        transition: color 0.4s;
+      }
+      .sl .trk {
+        position: relative;
+        flex: 1;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        margin: -1px;
+        padding: 3px;
+        background: var(--box);
+        border: 1px solid var(--edge);
+        border-radius: 999px;
+        transition:
+          background 0.4s,
+          border-color 0.4s;
+      }
+      .sl .th {
+        position: absolute;
+        top: 3px;
+        left: 3px;
+        width: calc(50% - 3px);
+        height: 37px;
+        border-radius: 999px;
+        background: var(--indigo);
+        box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35);
+        transition:
+          transform 0.4s cubic-bezier(0.3, 1.35, 0.5, 1),
+          background 0.4s;
+      }
+      .sl.on .th {
+        transform: translateX(100%);
+      }
+      .sl .trk button {
+        position: relative;
+        z-index: 1;
+        height: 37px;
+        border: 0;
+        background: none;
+        font-weight: 700;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+        cursor: pointer;
+        transition: color 0.3s;
+      }
+      .sl:not(.on) .trk button[data-v="no"],
+      .sl.on .trk button[data-v="yes"] {
+        color: #fff;
+      }
+      /* NOW: when Yes, the whole pill, the label end included, turns the colour */
+      .sl.v0.on {
+        background: var(--tone);
+        border-color: var(--tone);
+      }
+      .sl.v0.on .lb {
+        color: rgba(255, 255, 255, 0.85);
+      }
+      .sl.v0.on .trk {
+        background: color-mix(in srgb, var(--tone) 78%, #000);
+        border-color: var(--tone);
+      }
+      .sl.v0.on .th {
+        background: #fff;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+      }
+      .sl.v0.on .trk button[data-v="yes"] {
+        color: var(--tone);
+      }
+      /* 1: the label end stays plain; only the thumb turns the colour (No is the blue thumb, Yes the green one) */
+      .sl.v1.on .th {
+        background: var(--tone);
+        box-shadow: 0 4px 14px color-mix(in srgb, var(--tone) 45%, transparent);
+      }
+      .sl.v1.on .trk button[data-v="yes"] {
+        color: #fff;
+      }
+      .sl.v1.warn.on .trk button[data-v="yes"] {
+        color: #1b2640;
+      }
+      /* 2: the label end stays plain; the track fills with the colour and the thumb is white */
+      .sl.v2.on .trk {
+        background: color-mix(in srgb, var(--tone) 82%, #000);
+        border-color: var(--tone);
+      }
+      .sl.v2.on .th {
+        background: #fff;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+      }
+      .sl.v2.on .trk button[data-v="yes"] {
+        color: var(--tone);
+      }
+      .sl.v2.on .trk button[data-v="no"] {
+        color: #fff;
+      }
+      .sl.good {
+        --tone: #16a34a;
+      }
+      .sl.warn {
+        --tone: #f59e0b;
+      }
+      .sl.v2.warn.on .trk button[data-v="yes"] {
+        color: #b45309;
+      }
+      /* the usage rating: a chip in the metal of the plate, the word only */
+      .rchip {
+        border-radius: 12px;
+        padding: 9px 12px;
+        color: var(--ink);
+        box-shadow:
+          inset 0 2px 1px rgba(255, 255, 255, 0.7),
+          inset 0 -3px 3px rgba(0, 0, 0, 0.25),
+          inset 0 0 0 1px rgba(0, 0, 0, 0.22),
+          0 3px 8px rgba(40, 30, 10, 0.22);
+      }
+      .rchip .l {
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        opacity: 0.8;
+      }
+      .rchip .v {
+        font-size: 16px;
+        font-weight: 900;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        margin-top: 2px;
+        white-space: nowrap;
+      }
+      .rchip.m-Platinum {
+        background: linear-gradient(135deg, #efe9d6, #c7bea3 45%, #a89d84);
+        --ink: #3a3326;
+      }
+      .rchip.m-Gold {
+        background: linear-gradient(135deg, #fff1b0, #e5cc73 40%, #c9a13e);
+        --ink: #4a3406;
+      }
+      .rchip.m-Silver {
+        background: linear-gradient(135deg, #eef1f7, #b9bec9 45%, #8e939e);
+        --ink: #23272f;
+      }
+      .rchip.m-Bronze {
+        background: linear-gradient(135deg, #f3b58c, #c98558 45%, #a66b48);
+        --ink: #3d1f0e;
+      }
+      .rchip.m-None {
+        background: #eceae8;
+        --ink: #6d6a67;
+        box-shadow: inset 0 0 0 1px #d4d1ce;
+      }
+
+      /* ===== adding a new deal from the phone (version 1) ===== */
+      .phones {
+        gap: 28px;
+      }
+      .seg3 {
+        position: relative;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        padding: 3px;
+        margin-bottom: 12px;
+        background: var(--box);
+        border: 1px solid var(--edge);
+        border-radius: 999px;
+      }
+      .seg3 .th {
+        position: absolute;
+        top: 3px;
+        left: 3px;
+        width: calc(33.333% - 2px);
+        height: 37px;
+        border-radius: 999px;
+        background: var(--indigo);
+        box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35);
+        transition: transform 0.4s cubic-bezier(0.3, 1.35, 0.5, 1);
+      }
+      .seg3.k1 .th {
+        transform: translateX(100%);
+      }
+      .seg3.k2 .th {
+        transform: translateX(200%);
+      }
+      .seg3 button {
+        position: relative;
+        z-index: 1;
+        height: 37px;
+        border: 0;
+        background: none;
+        font-weight: 700;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+        cursor: pointer;
+        transition: color 0.3s;
+      }
+      .seg3 button.on {
+        color: #fff;
+      }
+      .newpg .f {
+        padding: 9px 0;
+        border-top: 1px solid var(--line);
+      }
+      .newpg .f:first-child {
+        border-top: 0;
+      }
+      .newpg .fl {
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 5px;
+      }
+      .newpg .fl .rq {
+        color: #dc2626;
+      }
+      .in,
+      .lkb {
+        display: block;
+        width: 100%;
+        box-sizing: border-box;
+        height: 44px;
+        padding: 0 12px;
+        border: 1px solid var(--edge);
+        border-radius: 10px;
+        background: var(--field);
+        color: var(--text);
+        font-family: inherit;
+        font-size: 16px;
+        text-align: left;
+      }
+      select.in {
+        appearance: none;
+        -webkit-appearance: none;
+        padding-right: 34px;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%235d6b85' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+        background-position: right 14px center;
+        background-size: 12px 8px;
+        background-repeat: no-repeat;
+      }
+      textarea.in {
+        height: auto;
+        min-height: 84px;
+        padding: 10px 12px;
+        font-family: inherit;
+        resize: none;
+      }
+      .lkb {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        color: var(--muted);
+        cursor: pointer;
+      }
+      .lkb.set {
+        color: var(--text);
+      }
+      .lkb i {
+        width: 9px;
+        height: 9px;
+        border-right: 2.5px solid var(--muted);
+        border-top: 2.5px solid var(--muted);
+        transform: rotate(45deg);
+      }
+      .two {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+      .two.money {
+        grid-template-columns: 1.3fr 1fr;
+      }
+      .pls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .pls button {
+        height: 40px;
+        padding: 0 16px;
+        border: 1px solid var(--edge);
+        border-radius: 999px;
+        background: var(--box);
+        color: var(--muted);
+        font-weight: 700;
+        font-size: 14px;
+        cursor: pointer;
+      }
+      .pls button.on {
+        background: var(--indigo);
+        border-color: var(--indigo);
+        color: #fff;
+      }
+      .stg {
+        border: 2px solid var(--indigo);
+        border-radius: 14px;
+        overflow: hidden;
+        margin-bottom: 12px;
+        background: var(--card);
+      }
+      .stg .hd {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+        min-height: 60px;
+        padding: 6px 12px 6px 16px;
+        border: 0;
+        background: var(--indigo);
+        color: #fff;
+        text-align: left;
+        cursor: pointer;
+      }
+      .stg .hd small {
+        display: block;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        opacity: 0.85;
+      }
+      .stg .hd .sv {
+        display: block;
+        font-size: 19px;
+        font-weight: 800;
+      }
+      .stg .chv2 {
+        margin-left: auto;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.22);
+        position: relative;
+        transform: rotate(180deg);
+        transition: transform 0.4s;
+      }
+      .stg.shut .chv2 {
+        transform: none;
+      }
+      .stg .chv2::before {
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 14px;
+        height: 14px;
+        border-right: 4px solid #fff;
+        border-bottom: 4px solid #fff;
+        border-radius: 2px;
+        transform: translate(-50%, -70%) rotate(45deg);
+      }
+      .stg .lst {
+        display: grid;
+        grid-template-rows: 1fr;
+        transition: grid-template-rows 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .stg.shut .lst {
+        grid-template-rows: 0fr;
+      }
+      .stg .lst > div {
+        overflow: hidden;
+        min-height: 0;
+      }
+      .stg .li {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 16px;
+        border-top: 1px solid var(--line);
+        font-size: 16px;
+        cursor: pointer;
+      }
+      .stg .li.here {
+        background: color-mix(in srgb, var(--indigo) 12%, var(--card));
+        font-weight: 800;
+        box-shadow: inset 5px 0 0 var(--indigo);
+        padding-left: 20px;
+      }
+      .lockbar {
+        position: sticky;
+        bottom: -16px;
+        z-index: 6;
+        margin: 0 -12px -16px;
+        padding: 10px 12px 12px;
+        background: var(--bg);
+        box-shadow: 0 -1px 0 var(--line);
+        display: flex;
+        gap: 10px;
+      }
+      .lockbar button {
+        flex: 1 1 0;
+        height: 44px;
+        border: 0;
+        border-radius: 999px;
+        color: #fff;
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+      }
+      .lockbar .c {
+        background: var(--slate);
+      }
+      .lockbar .p {
+        background: var(--indigo);
+      }
+      .errs {
+        border: 1px solid #dc2626;
+        color: #dc2626;
+        border-radius: 10px;
+        padding: 8px 12px;
+        margin-bottom: 10px;
+        font-size: 14px;
+      }
+      .okb {
+        padding: 8px 12px;
+        border: 1px solid #0f9d74;
+        border-radius: 10px;
+        background: rgba(15, 157, 116, 0.1);
+        color: #0b7a5a;
+        font-weight: 700;
+        font-size: 14px;
+        margin-bottom: 10px;
+      }
+      .note3 {
+        margin: 4px 2px 10px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+      /* the list screen with a way to start (A, B or C) */
+      .addtop {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 44px;
+        margin-bottom: 10px;
+        border: 0;
+        border-radius: 999px;
+        background: var(--indigo);
+        color: #fff;
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+      }
+      .fab {
+        position: absolute;
+        right: 16px;
+        bottom: 14px;
+        z-index: 7;
+        width: 56px;
+        height: 56px;
+        border: 0;
+        border-radius: 50%;
+        background: var(--indigo);
+        color: #fff;
+        font-size: 32px;
+        line-height: 1;
+        box-shadow: 0 6px 16px rgba(79, 70, 229, 0.45);
+        cursor: pointer;
+      }
+      .sechead2 {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        width: 100%;
+        padding: 8px 8px 8px 12px;
+        margin-bottom: 8px;
+        border-radius: 12px;
+        border: 1px solid color-mix(in srgb, var(--head) 38%, var(--card));
+        background: color-mix(in srgb, var(--head) 16%, var(--card));
+      }
+      .sechead2 h2 {
+        margin: 0;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--head);
+      }
+      .sechead2 .n {
+        font-size: 12px;
+        font-weight: 800;
+        padding: 1px 9px;
+        border-radius: 999px;
+        background: var(--card);
+      }
+      .plus {
+        margin-left: auto;
+        width: 36px;
+        height: 36px;
+        border: 0;
+        border-radius: 50%;
+        background: var(--indigo);
+        color: #fff;
+        font-size: 24px;
+        line-height: 1;
+        cursor: pointer;
+        display: grid;
+        place-items: center;
+        padding: 0 0 2px;
+      }
+      .chev3 {
+        width: 9px;
+        height: 9px;
+        border-right: 2.5px solid var(--muted);
+        border-bottom: 2.5px solid var(--muted);
+        transform: rotate(-45deg);
+        margin: 0 6px 0 6px;
+      }
+
+      /* ===== subtle updates: home screen and the New deal page (version 1) ===== */
+      .phones {
+        gap: 28px;
+      }
+      .grp {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .grp > h1 {
+        margin: 0;
+        font-size: 15px;
+        font-weight: 800;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--text);
+        padding-bottom: 4px;
+        border-bottom: 2px solid var(--edge);
+      }
+      .pair {
+        display: flex;
+        gap: 28px;
+      }
+      /* the home list, as built */
+      .hs {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        width: 100%;
+        padding: 11px 14px;
+        border-radius: 12px;
+        border: 1px solid color-mix(in srgb, var(--head) 38%, var(--card));
+        background: color-mix(in srgb, var(--head) 16%, var(--card));
+        margin-bottom: 8px;
+        font-family: inherit;
+        color: var(--text);
+        text-align: left;
+      }
+      .hs h2 {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--head);
+      }
+      .hs .n {
+        color: var(--muted);
+        font-size: 14px;
+      }
+      .hs .hchv {
+        width: 9px;
+        height: 9px;
+        border-right: 2.5px solid var(--muted);
+        border-bottom: 2.5px solid var(--muted);
+        transform: rotate(45deg);
+        margin: -4px 4px 0 0;
+      }
+      .hs.up .hchv {
+        transform: rotate(-135deg);
+        margin-top: 4px;
+      }
+      .hs.tall {
+        padding: 15px 14px;
+      } /* 41 px today; 49 px is 20% taller */
+      .dl {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 12px 14px;
+        margin-bottom: 8px;
+      }
+      .dl .r1 {
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+      }
+      .dl .nm {
+        font-size: 17px;
+        font-weight: 800;
+      }
+      .dl .val {
+        font-weight: 800;
+        white-space: nowrap;
+      }
+      .dl .r2 {
+        color: var(--muted);
+        font-size: 14px;
+        margin-top: 2px;
+      }
+      .dl .r3 {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 8px;
+        font-size: 14px;
+      }
+      .dl .ty {
+        font-weight: 700;
+        color: var(--head);
+      }
+      /* the New deal page */
+      .nw .f {
+        padding: 9px 0;
+        border-top: 1px solid var(--line);
+      }
+      .nw .f.pf {
+        border-top: 0;
+        padding-top: 0;
+      }
+      .nw .f:first-child {
+        border-top: 0;
+      }
+      .nw .fl {
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 5px;
+      }
+      .nw .fl .rq {
+        color: #dc2626;
+      }
+      .nw .hd1 {
+        margin: 2px 2px;
+        font-size: 32px;
+        font-weight: 800;
+        line-height: 1.15;
+      } /* the heading as it is: unstyled, so the browser's own size */
+      .nw .sub1 {
+        margin: 0 2px 10px;
+        color: var(--muted);
+        font-size: 14px;
+      }
+      .nw .seg3 {
+        margin-bottom: 12px;
+      }
+      .nw .backclear {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        width: 100%;
+        height: 44px;
+        border: 0;
+        background: none;
+        color: var(--indigo);
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      /* proposed */
+      .nw.prop .nm2 {
+        margin: 2px 2px;
+        font-size: 24px;
+        font-weight: 800;
+        line-height: 1.15;
+      }
+      .nw.prop .sub1 {
+        margin-bottom: 16px;
+      }
+      .nw.prop .f {
+        border-top: 0;
+      }
+      .nw.prop .f.brand {
+        border-top: 1px solid var(--line);
+      }
+      .nw.prop .fl {
+        margin-bottom: 7px;
+      }
+      .nw .f.brand {
+      }
+      .tg2 {
+        color: var(--muted);
+      }
+
+      /* ===== slide speed demo and the saving screen ===== */
+      .sd .pg2 {
+        position: absolute;
+        inset: 0;
+        z-index: 7;
+        background: var(--bg);
+        padding: 12px;
+        transform: translateX(105%);
+        transition: transform var(--d) cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .sd.open .pg2 {
+        transform: none;
+      }
+      .sd .stopw {
+        margin: 8px 2px 0;
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .sv-over {
+        position: absolute;
+        inset: 0;
+        z-index: 30;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 14px;
+        background: rgba(6, 11, 20, 0.58);
+        -webkit-backdrop-filter: blur(4px);
+        backdrop-filter: blur(4px);
+        opacity: 0;
+        visibility: hidden;
+        transition:
+          opacity 0.3s,
+          visibility 0s linear 0.3s;
+      }
+      .phone.saving .sv-over {
+        opacity: 1;
+        visibility: visible;
+        transition: opacity 0.3s;
+      }
+      .sv-over img {
+        width: 250px;
+        height: auto;
+        display: block;
+        filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.45));
+        animation: svpulse 1.1s ease-in-out infinite;
+      }
+      .phone.done .sv-over img {
+        animation: none;
+      }
+      .sv-logo {
+        position: relative;
+        width: 250px;
+      }
+      .sv-logo svg {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+      }
+      .sv-word {
+        color: #fff;
+        font-weight: 800;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-height: 30px;
+      }
+      .sv-tick {
+        display: none;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background: #16a34a;
+        place-items: center;
+      }
+      .sv-tick::before {
+        content: "";
+        width: 12px;
+        height: 7px;
+        border-left: 3px solid #fff;
+        border-bottom: 3px solid #fff;
+        transform: translateY(-2px) rotate(-45deg);
+      }
+      .phone.done .sv-tick {
+        display: grid;
+      }
+      .phone.done .sv-spin {
+        display: none;
+      }
+      .sv-spin {
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        border-top-color: #fff;
+        animation: svspin 0.8s linear infinite;
+      }
+      @keyframes svpulse {
+        0%,
+        100% {
+          opacity: 0.65;
+        }
+        50% {
+          opacity: 1;
+        }
+      }
+      @keyframes svspin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      .sverr {
+        border: 1px solid #dc2626;
+        color: #dc2626;
+        border-radius: 10px;
+        padding: 8px 12px;
+        margin-bottom: 10px;
+        font-size: 14px;
+      }
+      .svok {
+        padding: 8px 12px;
+        border: 1px solid #0f9d74;
+        border-radius: 10px;
+        background: rgba(15, 157, 116, 0.1);
+        color: #0b7a5a;
+        font-weight: 700;
+        font-size: 14px;
+        margin-bottom: 10px;
+      }
+      .ug .g3 {
+        display: grid;
+        grid-template-columns: 3fr 1fr;
+        gap: 8px;
+      }
+      .ug .fg {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 12px 14px;
+        margin-bottom: 10px;
+      }
+      .ug .del {
+        width: 100%;
+        height: 44px;
+        border: 0;
+        border-radius: 999px;
+        background: #dc2626;
+        color: #fff;
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: 10px;
+      }
+
+      /* ===== the Brand component: the stage control's look, closed it shows the chosen brands, open it shows the chips ===== */
+      .bc {
+        border: 2px solid var(--indigo);
+        border-radius: 14px;
+        overflow: hidden;
+        background: var(--card);
+        margin: 2px 0 4px;
+      }
+      .bc .hd {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+        min-height: 60px;
+        padding: 8px 12px 8px 16px;
+        border: 0;
+        background: var(--indigo);
+        color: #fff;
+        text-align: left;
+        cursor: pointer;
+        font-family: inherit;
+      }
+      .bc .hd .tx {
+        flex: 1;
+        min-width: 0;
+      }
+      .bc .hd small {
+        display: block;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        opacity: 0.85;
+      }
+      /* the chosen brands read exactly as the stage name does on the stage row: the same bold 19 px white words, separated by commas */
+      .bc .chosen {
+        display: block;
+        font-size: 19px;
+        font-weight: 800;
+        line-height: 1.25;
+        overflow-wrap: anywhere;
+      }
+      .bc .chosen.none {
+        font-weight: 500;
+        opacity: 0.8;
+      }
+      .bc .rd {
+        flex: none;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.22);
+        position: relative;
+        transform: rotate(180deg);
+        transition: transform var(--d, 0.48s);
+      }
+      .bc .rd::before {
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 14px;
+        height: 14px;
+        border-right: 4px solid #fff;
+        border-bottom: 4px solid #fff;
+        border-radius: 2px;
+        transform: translate(-50%, -70%) rotate(45deg);
+      }
+      .bc.shut .rd {
+        transform: none;
+      }
+      .bc .bd {
+        display: grid;
+        grid-template-rows: 1fr;
+        transition: grid-template-rows var(--d, 0.48s)
+          cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .bc.shut .bd {
+        grid-template-rows: 0fr;
+      }
+      .bc .bd > div {
+        overflow: hidden;
+        min-height: 0;
+      }
+      .bc .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        padding: 14px 14px 16px;
+      }
+      .bc .chip {
+        height: 40px;
+        padding: 0 16px;
+        border: 1px solid var(--edge);
+        border-radius: 999px;
+        background: var(--box);
+        color: var(--muted);
+        font-weight: 700;
+        font-size: 14px;
+        cursor: pointer;
+        font-family: inherit;
+        transition:
+          background 0.3s,
+          color 0.3s;
+      }
+      .bc .chip.on {
+        background: var(--indigo);
+        border-color: var(--indigo);
+        color: #fff;
+      }
+      .bf .f {
+        padding: 9px 0;
+      }
+      .bf .brandold .pls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .bf .brandold .pls button {
+        height: 40px;
+        padding: 0 16px;
+        border: 1px solid var(--edge);
+        border-radius: 999px;
+        background: var(--box);
+        color: var(--muted);
+        font-weight: 700;
+        font-size: 14px;
+      }
+      .bf .brandold .pls button.on {
+        background: var(--indigo);
+        border-color: var(--indigo);
+        color: #fff;
+      }
+      .bf .fl {
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 7px;
+      }
+      .bfnote {
+        margin: 8px 2px 0;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      /* ===== the Create New bar with the circled plus ===== */
+      .cnb {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        width: 100%;
+        height: 44px;
+        border: 0;
+        border-radius: 999px;
+        background: var(--indigo);
+        color: #fff;
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+        font-family: inherit;
+      }
+      .pc {
+        position: relative;
+        flex: none;
+        width: 24px;
+        height: 24px;
+        border: 2px solid #fff;
+        border-radius: 50%;
+        box-sizing: border-box;
+      }
+      .pc::before,
+      .pc::after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        background: #fff;
+        border-radius: 1px;
+        transform: translate(-50%, -50%);
+      }
+      .pc::before {
+        width: 10px;
+        height: 2px;
+      }
+      .pc::after {
+        width: 2px;
+        height: 10px;
+      }
+      .cn .lockbar {
+        margin-top: auto;
+      }
+      .cn .ucd {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 10px 14px;
+        margin-bottom: 8px;
+      }
+      .cn .hh {
+        margin: 12px 2px 6px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--head);
+      }
+    </style>
+  </head>
+  <body data-theme="light">
+    <div class="sfnav">
+      <span class="app"><b>PIPE</b>LINE</span>
+      <span class="tab on">Pipeline</span>
+      <span class="tab">Opportunities &amp; Risks</span>
+      <span class="sp"></span>
+      <button type="button" class="btn" id="fullbtn">Full screen</button>
+    </div>
+
+    <details class="about" open>
+      <summary>ABOUT THIS MOCKUP</summary>
+      <p>
+        <b>Version 1, invented data only.</b> The subtle changes Robert listed,
+        each shown <b>as it is today</b> (left) and <b>as proposed</b> (right)
+        so they can be compared, before anything is changed.
+      </p>
+      <ul>
+        <li>
+          <b>1. Home list: the deal's type on the second line.</b> Today a card
+          says “Commit · Q1”. Proposed: the portfolio first, “<b>Knee</b> ·
+          Commit · Q1” (Hip, Knee, Extremities or CMFT; for a risk its portfolio
+          or portfolios; a ROSA deal keeps its deal type line as it is).
+        </li>
+        <li>
+          <b>2. Home list: the section headings 20% taller.</b> Measured: a
+          heading is 41 px high today; proposed 49 px (the same text, more room
+          above and below). Charts, Opportunities, Risks and ROSA all change;
+          open or folded.
+        </li>
+        <li>
+          <b>3. The New deal page.</b> (a) <b>More room</b> between “Choose the
+          kind, then fill it in.” and the Opportunity / Risk / ROSA slider: 10
+          px today, 16 px proposed. (b)
+          <b>The lines between the fields are taken out</b>: between Primary HCP
+          and Healthcare facility, Healthcare facility and the quarter, the
+          quarter and the value, the value and the units; the line above Brand
+          stays, as you said. (c) <b>A couple of pixels more</b>
+          between each field's name and its box (5 px today, 7 px proposed). (d)
+          <b>The stage box folds</b>: it starts open, because the stage is a
+          choice you make when creating a deal (it starts at Plan, ticked), and
+          tapping a stage folds it up to just “Stage” and the name you picked,
+          like the stage row on a deal; tap the row to open it again. Today it
+          never folds (try the left phone: nothing happens). (e)
+          <b>Fixing what I left out of the page's styling</b>: the “‹ Back to My
+          Pipeline” button is a plain blue word instead of the filled blue pill
+          (shown as it is, on the left), the heading “New deal” is the browser's
+          big default instead of the 24 px heading every other screen has, and
+          the stage list lacks the fold that closes it (that is (d)). The
+          proposed side shows them as every other phone screen has them.
+        </li>
+        <li>
+          <b>4. The same on editing an existing deal</b> (the third pair;
+          Robert, 2026-11-08: the two screens should look as if one person
+          designed them). Where the fields are the same (the surgeon, the
+          hospital, the quarter, the value, the units, the brand, the sliders,
+          the link to ROSA) the proposed look is exactly the New deal page's: no
+          lines between the first fields, the line above Brand, 7 px between a
+          field's name and its box. The differences are only what must differ:
+          the New deal page starts with the kind, the portfolio and the record
+          type, and its stage box starts open; an existing deal has its stage as
+          one folded row.
+        </li>
+        <li>
+          <b>5. How fast a screen slides</b> (the first pair). Yes, it is ours
+          to set. Today every slide takes 0.40 s; proposed 0.48 s, which is 20%
+          slower. Press <b>Slide both</b> (or tap a card) and watch the two
+          phones together; <b>Back</b> slides it off again. It would be one
+          setting for the whole phone app (the screens, the search pages, the
+          folds) and the desktop would stay as it is unless you say so.
+        </li>
+        <li>
+          <b>6. The saving screen</b> (the second group). Pressing Save, Add or
+          Create dims the whole screen, puts the Pipeline logo with “Saving…” on
+          it and blocks every tap (so Back cannot be pressed by accident) until
+          Salesforce has answered. It stays for at least a second so a quick
+          save still feels like something happened. Then, depending on the
+          switches above the phones: <b>Saved ✓ first</b> (a green tick for
+          about 0.7 s, then back) or <b>straight back</b>; and if
+          <b>Salesforce refuses</b>, the screen comes back at once with its
+          message and nothing lost. It would be used for every save that is not
+          an instant toggle: saving a deal, editing a usage, adding a usage,
+          creating a deal, and <b>deleting a usage</b> (the second phone: press
+          Delete this usage, answer the question, and the same screen says
+          “Deleting…”; Robert, 2026-11-08: the operation must have happened
+          before the screen comes back). The word on it is a choice:
+          <b>Saving… / Deleting… / Creating…</b> each says what is happening, or
+          one universal <b>Updating…</b> covers all of them; the switch above
+          the phones shows both. Not for the instant ones (the Yes / No sliders,
+          MyMobility, the campaign sliders, which save as you flip themthem).
+          <b>One limit:</b> the Salesforce app's own bars (its title line, its
+          top-left arrow and the tabs at the bottom) are outside our screen, so
+          they stay undimmed and tappable; only our own Back bar and everything
+          inside the page can be locked.
+        </li>
+        <li>
+          <b>7. The Brand component</b> (the first group; Robert, 2026-11-08).
+          It takes the stage control's look: the same indigo row and round
+          chevron button. <b>Closed</b>, the row shows the chosen brands as
+          plain words, exactly as the stage row shows the stage name: the brand,
+          a comma, the next brand (or “None selected”); <b>open</b>, it unfolds
+          to the brand chips to tap (selected ones indigo, as the chips are
+          today), and folds shut again when you are done. An existing deal opens
+          with it closed. It grows a little taller when several brands are
+          chosen (the fourth phone, as on a risk), the names wrapping onto a
+          second line. <b>Height:</b> measured, today the label and the ten
+          chips of an opportunity take 175 px whether you want them or not;
+          closed, the component is 64 px (about 110 px saved on every deal
+          screen), a little more with several brands (81 px with four, the names
+          running onto a second line) and 278 px while it is open. Tap the row
+          or a chip on any of the four phones. The same component would be used
+          on the New deal page and on editing a deal.
+        </li>
+        <li>
+          <b>8. State priority is gone from the phone</b> (Robert, 2026-11-08:
+          end users do not pick it). Every sliders block in this mockup now has
+          only what an end user chooses: On hold and MyMo on an opportunity, Rep
+          priority on all three kinds (a risk and a ROSA deal have no On hold or
+          MyMo). It would come out of editing a deal and out of the New deal
+          page; the desktop still has it for the managers who use it.
+        </li>
+        <li>
+          <b>9. MyMo is now MyMobility</b> (Robert, 2026-11-08, the correct
+          terminology). The slider reads <b>MYMOBILITY</b> (one word) and its
+          stage field, which opens only while MyMobility is Yes, reads
+          <b>MyMobility stage</b>. The sliders are now drawn with the new name.
+          The slider labels all take the width of the longest one, so
+          “MYMOBILITY” changes nothing about the sizes.
+        </li>
+        <li>
+          <b>10. The bar on the home screen is “Create New”</b> (Robert,
+          2026-11-08: “deal” sounds like good news and a risk is not, and the
+          bar only ever relates to the three things on that screen:
+          Opportunities, Risks and ROSA). It has a <b>circled plus</b> on its
+          left. The first group shows today's bar, the proposal, the same
+          circled plus on the Usages screen's <b>Add usage</b> button so the two
+          match (to confirm), and the page it opens, headed <b>Create New</b> to
+          match (to confirm).
+        </li>
+        <li>
+          <b>Try it:</b> tap a stage on the right-hand New deal phone and it
+          folds. The <b>Show</b> switch scrolls the two New deal phones to the
+          same place, so the lines can be compared. Theme for dark.
+        </li>
+      </ul>
+      <p class="muted">
+        Not shown: anything else. Nothing here changes how a deal is created or
+        saved; no server code.
+      </p>
+    </details>
+
+    <div class="tools">
+      <span class="lab" style="margin-left: 0">Show (New deal)</span>
+      <button type="button" class="pill on" data-sc="0">Top of the page</button>
+      <button type="button" class="pill" data-sc="1">The fields</button>
+      <span class="lab">Slide</span>
+      <button type="button" class="pill" id="slidego">Slide both</button>
+      <span class="lab">After saving</span>
+      <button type="button" class="pill on" data-af="tick">
+        Saved ✓ first
+      </button>
+      <button type="button" class="pill" data-af="plain">Straight back</button>
+      <span class="lab">Word on it</span>
+      <button type="button" class="pill on" data-wd="specific">
+        Saving / Deleting / Creating
+      </button>
+      <button type="button" class="pill" data-wd="universal">
+        Updating (one for all)
+      </button>
+      <span class="lab">Salesforce</span>
+      <button type="button" class="pill on" data-md="ok">Accepts</button>
+      <button type="button" class="pill" data-md="fail">Refuses</button>
+      <span class="lab">Theme</span>
+      <button type="button" class="pill on" data-theme-btn="light">
+        Light
+      </button>
+      <button type="button" class="pill" data-theme-btn="dark">Dark</button>
+    </div>
+    <div class="mocknote" id="note">
+      Mockup note: the left phone of each pair is how it is today, the right one
+      is the proposal.
+    </div>
+    <div class="phones" id="phones"></div>
+
+    <script>
+      var S = {
+        theme: "light",
+        sc: 0,
+        stage: "Plan",
+        shut: false,
+        af: "tick",
+        md: "ok",
+        wd: "specific"
+      };
+      function frame(cls, inner) {
+        return (
+          '<div class="phone ' +
+          cls +
+          '"><div class="sfstatus">3:14</div><div class="sfbar"><span class="ham"></span><span>Pipeline Mobile</span><span class="sp"></span></div><div class="pbody"><div class="scroll">' +
+          inner +
+          '</div></div><div class="sftabs"><span><i></i>Home</span><span class="on"><i></i>Pipeline</span><span><i></i>Accounts</span><span><i></i>More</span></div></div>'
+        );
+      }
+      function sechead(t, n, cls, up) {
+        return (
+          '<div class="hs ' +
+          cls +
+          (up ? " up" : "") +
+          '"><h2>' +
+          t +
+          "</h2>" +
+          (n !== "" ? '<span class="n">' + n + "</span>" : "") +
+          '<span class="sp"></span><span class="hchv"></span></div>'
+        );
+      }
+      function deal(name, val, sub, ty, stage, tail, withType, star) {
+        return (
+          '<div class="dl"><div class="r1"><div class="nm">' +
+          name +
+          (star ? ' <span style="color:#16a34a">★</span>' : "") +
+          '</div><span class="sp"></span><div class="val">' +
+          val +
+          "</div></div>" +
+          (sub ? '<div class="r2">' + sub + "</div>" : "") +
+          '<div class="r3"><span>' +
+          (withType && ty ? '<span class="ty">' + ty + "</span> · " : "") +
+          stage +
+          "</span>" +
+          (tail ? '<span class="sp"></span>' + tail : "") +
+          "</div></div>"
+        );
+      }
+      function home(prop) {
+        var cls = prop ? "tall" : "";
+        var top =
+          '<div class="ctl" style="margin-bottom:8px"><div class="seg3 k0" style="margin:0 0 8px"><span class="th"></span><button type="button" class="on">Open</button><button type="button">Closed</button><button type="button">Both</button></div><input class="search" placeholder="Search my deals" style="width:100%;height:44px;border-radius:999px;border:1px solid var(--edge);padding:0 16px;font-size:16px;background:var(--field);color:var(--text)" /></div>';
+        return (
+          top +
+          sechead("Charts", "", cls, false) +
+          sechead("Opportunities", 2, cls, true) +
+          deal(
+            "Ben Treffene",
+            "A$250k",
+            "",
+            "Knee",
+            "Commit · Q1",
+            "",
+            prop,
+            false
+          ) +
+          deal(
+            "Richard Verheul",
+            "A$50k",
+            "BATHURST BASE HOSPITAL (NSW)",
+            "Hip",
+            "1st Case · Q2",
+            '<span class="stp st-hold">On Hold</span>',
+            prop,
+            true
+          ) +
+          sechead("Risks", 1, cls, true) +
+          deal(
+            "Aiden Cleary",
+            "A$250k",
+            "",
+            "Knee",
+            "Unhappy · Q2 2027",
+            "",
+            prop,
+            false
+          ) +
+          sechead("ROSA", 1, cls, false)
+        );
+      }
+      var STG = [
+        "Plan",
+        "Action",
+        "Commit",
+        "1st Case",
+        "5th Case",
+        "Conversion",
+        "Unsuccessful Conversion"
+      ];
+      /* today the list never folds (its styling is missing), so a tap on a stage changes nothing you can see; proposed, it starts open and folds to the stage name */
+      function stage(prop) {
+        return (
+          '<div class="stg' +
+          (prop && S.shut ? " shut" : "") +
+          '"><button type="button" class="hd" data-stg="hd"><span><small>Stage</small><span class="sv">' +
+          S.stage +
+          '</span></span><span class="chv2"></span></button><div class="lst"><div>' +
+          STG.map(function (s) {
+            return (
+              '<div class="li' +
+              (s === S.stage ? " here" : "") +
+              '" data-stg="' +
+              s +
+              '"><span>' +
+              s +
+              "</span>" +
+              (s === S.stage
+                ? '<span style="color:var(--indigo);font-weight:800">✓</span>'
+                : "") +
+              "</div>"
+            );
+          }).join("") +
+          "</div></div></div>"
+        );
+      }
+      function lk() {
+        return '<button type="button" class="lkb"><span>Search by name…</span><i></i></button>';
+      }
+      function sel(a, v) {
+        return (
+          '<select class="in">' +
+          a
+            .map(function (o) {
+              return (
+                "<option" + (o === v ? " selected" : "") + ">" + o + "</option>"
+              );
+            })
+            .join("") +
+          "</select>"
+        );
+      }
+      function f(label, inner, req, cls) {
+        return (
+          '<div class="f ' +
+          (cls || "") +
+          '"><div class="fl">' +
+          label +
+          (req ? ' <span class="rq">*</span>' : "") +
+          "</div>" +
+          inner +
+          "</div>"
+        );
+      }
+      function newDeal(prop) {
+        var bk = prop
+          ? '<div class="lock"><button type="button" class="lockbtn"><span>‹</span> Back to My Pipeline</button></div>'
+          : '<div class="lock"><button type="button" class="backclear">‹ Back to My Pipeline</button></div>';
+        var head = prop
+          ? '<div class="nm2">New deal</div>'
+          : '<h1 class="hd1">New deal</h1>';
+        return (
+          bk +
+          head +
+          '<p class="sub1">Choose the kind, then fill it in.</p><div class="seg3 k0"><span class="th"></span><button type="button" class="on">Opportunity</button><button type="button">Risk</button><button type="button">ROSA</button></div>' +
+          '<div class="f pf"><div class="fl">Portfolio <span class="rq">*</span></div>' +
+          sel(["Hip", "Knee", "Extremities", "CMFT"], "Knee") +
+          "</div>" +
+          '<p class="note3">Saved as <b>AU KNEE Opportunity</b>, chosen from your country and this choice. The owner is you.</p>' +
+          stage(prop) +
+          '<div class="card"><h3>The deal</h3>' +
+          f("Primary HCP", lk(), true) +
+          f("Healthcare facility", lk()) +
+          f(
+            "Expected closing quarter and year",
+            '<div class="two">' +
+              sel(["Q1", "Q2", "Q3", "Q4"], "Q2") +
+              sel(["2026", "2027"], "2027") +
+              "</div>",
+            true
+          ) +
+          f(
+            "Expected annual value",
+            '<div class="two money"><input class="in" type="number" placeholder="0" /><select class="in"><option>AUD</option></select></div>',
+            true
+          ) +
+          f(
+            "Expected annual units / cases",
+            '<input class="in" type="number" />'
+          ) +
+          f(
+            "Brand",
+            '<div class="pls"><button type="button">Persona</button><button type="button">NexGen</button><button type="button">Vanguard</button></div>',
+            false,
+            "brand"
+          ) +
+          f("Link to ROSA deal", lk()) +
+          "</div>" +
+          '<div class="lockbar"><button type="button" class="c">Cancel</button><button type="button" class="p">Create</button></div>'
+        );
+      }
+      function sl(label, tone, on) {
+        return (
+          '<div class="sl v1 ' +
+          tone +
+          (on ? " on" : "") +
+          '"><span class="lb">' +
+          label +
+          '</span><div class="trk"><span class="th"></span><button type="button" data-v="no">No</button><button type="button" data-v="yes">Yes</button></div></div>'
+        );
+      }
+      function lkset(v) {
+        return (
+          '<button type="button" class="lkb' +
+          (v ? " set" : "") +
+          '"><span>' +
+          (v || "Search by name…") +
+          "</span><i></i></button>"
+        );
+      }
+      /* an existing deal's screen: the same fields as the New deal page, filled in; the stage is one folded row */
+      function editDeal() {
+        return (
+          '<div class="lock"><button type="button" class="lockbtn"><span>‹</span> Back to My Pipeline</button></div><div class="nm2" style="margin:2px 2px;font-size:24px;font-weight:800;line-height:1.15">Ben Treffene</div><p class="sub1" style="margin:0 2px 12px;color:var(--muted);font-size:14px">Opportunity · Knee</p>' +
+          '<div class="stg shut" style="margin-bottom:12px"><button type="button" class="hd"><span><small>Stage</small><span class="sv">Commit</span></span><span class="chv2"></span></button></div>' +
+          '<div class="card"><h3>The deal</h3>' +
+          f("Primary HCP", lkset("Ben Treffene"), true) +
+          f("Healthcare facility", lkset("")) +
+          f(
+            "Expected closing quarter and year",
+            '<div class="two">' +
+              sel(["Q1", "Q2", "Q3", "Q4"], "Q1") +
+              sel(["2026", "2027"], "2027") +
+              "</div>",
+            true
+          ) +
+          f(
+            "Expected annual value",
+            '<div class="two money"><input class="in" type="number" value="250000" /><select class="in"><option>AUD</option></select></div>'
+          ) +
+          f(
+            "Expected annual units / cases",
+            '<input class="in" type="number" value="40" />'
+          ) +
+          f(
+            "Brand",
+            '<div class="pls"><button type="button" class="on">Persona</button><button type="button">NexGen</button><button type="button">Vanguard</button></div>',
+            false,
+            "brand"
+          ) +
+          '<div class="f">' +
+          sl("On hold", "warn", false) +
+          sl("Rep priority", "good", true) +
+          sl("MyMobility", "good", false) +
+          "</div>" +
+          f("Link to ROSA deal", lkset("")) +
+          "</div>" +
+          '<div class="lockbar"><button type="button" class="c">Cancel</button><button type="button" class="p" disabled style="opacity:.45">Save</button></div>'
+        );
+      }
+
+      var LOGO =
+        "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4NTgiIGhlaWdodD0iMTQ0IiB2aWV3Qm94PSIyMjUgMTEwMCA0NzcwIDgwMCIgcm9sZT0iaW1nIiBhcmlhLWxhYmVsPSJwaXBlbGluZSBwaXBlLCBibGFuayBsYWJlbCI+CjxkZWZzPgo8bGluZWFyR3JhZGllbnQgaWQ9InBsMS1nMCIgeDE9IjQwMDAiIHkxPSIxMjUwLjIyIiB4Mj0iNDAwMCIgeTI9IjE3NDkuNzgiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNjM2MzYzMiLz48c3RvcCBvZmZzZXQ9Ii4xIiBzdG9wLWNvbG9yPSIjNzM3MzcyIi8+PHN0b3Agb2Zmc2V0PSIuMjIiIHN0b3AtY29sb3I9IiNmYWZhZmEiLz48c3RvcCBvZmZzZXQ9Ii4yOCIgc3RvcC1jb2xvcj0iI2RhZGFkOSIvPjxzdG9wIG9mZnNldD0iLjQ0IiBzdG9wLWNvbG9yPSIjNTQ1NDUzIi8+PHN0b3Agb2Zmc2V0PSIuNTYiIHN0b3AtY29sb3I9IiM3Njc2NzUiLz48c3RvcCBvZmZzZXQ9Ii43IiBzdG9wLWNvbG9yPSIjNDA0MDNmIi8+PHN0b3Agb2Zmc2V0PSIuNzkiIHN0b3AtY29sb3I9IiM0ZDRkNGMiLz48c3RvcCBvZmZzZXQ9Ii45MiIgc3RvcC1jb2xvcj0iI2ExYTE5ZiIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzgwODA3ZSIvPjwvbGluZWFyR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0icGwxLWcxIiB4MT0iMzM0LjgyIiB5MT0iMTI1MC4yMiIgeDI9IjMzNC44MiIgeTI9IjE3NDkuNzgiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNjM2MzYzMiLz48c3RvcCBvZmZzZXQ9Ii4xIiBzdG9wLWNvbG9yPSIjNzM3MzcyIi8+PHN0b3Agb2Zmc2V0PSIuMjIiIHN0b3AtY29sb3I9IiNmMGYwZjAiLz48c3RvcCBvZmZzZXQ9Ii4yOCIgc3RvcC1jb2xvcj0iI2RhZGFkOSIvPjxzdG9wIG9mZnNldD0iLjQ0IiBzdG9wLWNvbG9yPSIjNTQ1NDUzIi8+PHN0b3Agb2Zmc2V0PSIuNTYiIHN0b3AtY29sb3I9IiM3Njc2NzUiLz48c3RvcCBvZmZzZXQ9Ii43IiBzdG9wLWNvbG9yPSIjNDA0MDNmIi8+PHN0b3Agb2Zmc2V0PSIuNzkiIHN0b3AtY29sb3I9IiM0ZDRkNGMiLz48c3RvcCBvZmZzZXQ9Ii45MiIgc3RvcC1jb2xvcj0iI2ExYTE5ZiIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzgwODA3ZSIvPjwvbGluZWFyR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0icGwxLWcyIiB4MT0iMzMzLjU0IiB5MT0iMTI1MC4yMiIgeDI9IjMzMy41NCIgeTI9IjE3NDkuNzgiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNiZmJmYmYiLz48c3RvcCBvZmZzZXQ9Ii4xIiBzdG9wLWNvbG9yPSIjNmY2ZjZlIi8+PHN0b3Agb2Zmc2V0PSIuMjIiIHN0b3AtY29sb3I9IiNlY2VjZWMiLz48c3RvcCBvZmZzZXQ9Ii4yOCIgc3RvcC1jb2xvcj0iI2Q2ZDZkNSIvPjxzdG9wIG9mZnNldD0iLjQ0IiBzdG9wLWNvbG9yPSIjNTA1MDRmIi8+PHN0b3Agb2Zmc2V0PSIuNTYiIHN0b3AtY29sb3I9IiM3MjcyNzEiLz48c3RvcCBvZmZzZXQ9Ii43IiBzdG9wLWNvbG9yPSIjM2QzZDNjIi8+PHN0b3Agb2Zmc2V0PSIuNzkiIHN0b3AtY29sb3I9IiM0OTQ5NDgiLz48c3RvcCBvZmZzZXQ9Ii45MiIgc3RvcC1jb2xvcj0iIzlkOWQ5YiIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzdjN2M3YSIvPjwvbGluZWFyR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0icGwxLWczIiB4MT0iMzMyLjI3IiB5MT0iMTI1MC4yMiIgeDI9IjMzMi4yNyIgeTI9IjE3NDkuNzgiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNiY2JjYmMiLz48c3RvcCBvZmZzZXQ9Ii4xIiBzdG9wLWNvbG9yPSIjNmM2YzZiIi8+PHN0b3Agb2Zmc2V0PSIuMjIiIHN0b3AtY29sb3I9IiNlOWU5ZTkiLz48c3RvcCBvZmZzZXQ9Ii4yOCIgc3RvcC1jb2xvcj0iI2QzZDNkMiIvPjxzdG9wIG9mZnNldD0iLjQ0IiBzdG9wLWNvbG9yPSIjNGQ0ZDRjIi8+PHN0b3Agb2Zmc2V0PSIuNTYiIHN0b3AtY29sb3I9IiM2ZjZmNmUiLz48c3RvcCBvZmZzZXQ9Ii43IiBzdG9wLWNvbG9yPSIjM2IzYjNhIi8+PHN0b3Agb2Zmc2V0PSIuNzkiIHN0b3AtY29sb3I9IiM0NjQ2NDUiLz48c3RvcCBvZmZzZXQ9Ii45MiIgc3RvcC1jb2xvcj0iIzlhOWE5OCIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzc5Nzk3NyIvPjwvbGluZWFyR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0icGwxLWc0IiB4MT0iMzMwLjk5IiB5MT0iMTI1MC4yMiIgeDI9IjMzMC45OSIgeTI9IjE3NDkuNzgiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNiOGI4YjgiLz48c3RvcCBvZmZzZXQ9Ii4xIiBzdG9wLWNvbG9yPSIjNjg2ODY3Ii8+PHN0b3Agb2Zmc2V0PSIuMjIiIHN0b3AtY29sb3I9IiNlNWU1ZTUiLz48c3RvcCBvZmZzZXQ9Ii4yOCIgc3RvcC1jb2xvcj0iI2NmY2ZjZSIvPjxzdG9wIG9mZnNldD0iLjQ0IiBzdG9wLWNvbG9yPSIjNDk0OTQ4Ii8+PHN0b3Agb2Zmc2V0PSIuNTYiIHN0b3AtY29sb3I9IiM2YjZiNmEiLz48c3RvcCBvZmZzZXQ9Ii43IiBzdG9wLWNvbG9yPSIjMzgzODM3Ii8+PHN0b3Agb2Zmc2V0PSIuNzkiIHN0b3AtY29sb3I9IiM0MjQyNDEiLz48c3RvcCBvZmZzZXQ9Ii45MiIgc3RvcC1jb2xvcj0iIzk2OTY5NCIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzc1NzU3MyIvPjwvbGluZWFyR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0icGwxLWc1IiB4MT0iMzI5LjcyIiB5MT0iMTI1MC4yMiIgeDI9IjMyOS43MiIgeTI9IjE3NDkuNzgiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNiNWI1YjUiLz48c3RvcCBvZmZzZXQ9Ii4xIiBzdG9wLWNvbG9yPSIjNjU2NTY0Ii8+PHN0b3Agb2Zmc2V0PSIuMjIiIHN0b3AtY29sb3I9IiNlMmUyZTIiLz48c3RvcCBvZmZzZXQ9Ii4yOCIgc3RvcC1jb2xvcj0iI2NjY2NjYiIvPjxzdG9wIG9mZnNldD0iLjQ0IiBzdG9wLWNvbG9yPSIjNDY0NjQ1Ii8+PHN0b3Agb2Zmc2V0PSIuNTYiIHN0b3AtY29sb3I9IiM2ODY4NjciLz48c3RvcCBvZmZzZXQ9Ii43IiBzdG9wLWNvbG9yPSIjMzYzNjM1Ii8+PHN0b3Agb2Zmc2V0PSIuNzkiIHN0b3AtY29sb3I9IiMzZjNmM2UiLz48c3RvcCBvZmZzZXQ9Ii45MiIgc3RvcC1jb2xvcj0iIzkzOTM5MSIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzcyNzI3MCIvPjwvbGluZWFyR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0icGwxLWc2IiB4MT0iMzI4LjQ0IiB5MT0iMTI1MC4yMiIgeDI9IjMyOC40NCIgeTI9IjE3NDkuNzgiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNiMWIxYjEiLz48c3RvcCBvZmZzZXQ9Ii4xIiBzdG9wLWNvbG9yPSIjNjE2MTYwIi8+PHN0b3Agb2Zmc2V0PSIuMjIiIHN0b3AtY29sb3I9IiNkZWRlZGUiLz48c3RvcCBvZmZzZXQ9Ii4yOCIgc3RvcC1jb2xvcj0iI2M4YzhjNyIvPjxzdG9wIG9mZnNldD0iLjQ0IiBzdG9wLWNvbG9yPSIjNDI0MjQxIi8+PHN0b3Agb2Zmc2V0PSIuNTYiIHN0b3AtY29sb3I9IiM2NDY0NjMiLz48c3RvcCBvZmZzZXQ9Ii43IiBzdG9wLWNvbG9yPSIjMzMzMzMyIi8+PHN0b3Agb2Zmc2V0PSIuNzkiIHN0b3AtY29sb3I9IiMzYjNiM2EiLz48c3RvcCBvZmZzZXQ9Ii45MiIgc3RvcC1jb2xvcj0iIzhmOGY4ZCIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzZlNmU2YyIvPjwvbGluZWFyR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0icGwxLWc3IiB4MT0iMzI3LjE3IiB5MT0iMTI1MC4yMiIgeDI9IjMyNy4xNyIgeTI9IjE3NDkuNzgiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNhZGFkYWQiLz48c3RvcCBvZmZzZXQ9Ii4xIiBzdG9wLWNvbG9yPSIjNWQ1ZDVkIi8+PHN0b3Agb2Zmc2V0PSIuMjIiIHN0b3AtY29sb3I9IiNkYWRhZGEiLz48c3RvcCBvZmZzZXQ9Ii4yOCIgc3RvcC1jb2xvcj0iI2M0YzRjMyIvPjxzdG9wIG9mZnNldD0iLjQ0IiBzdG9wLWNvbG9yPSIjM2UzZTNlIi8+PHN0b3Agb2Zmc2V0PSIuNTYiIHN0b3AtY29sb3I9IiM2MDYwNjAiLz48c3RvcCBvZmZzZXQ9Ii43IiBzdG9wLWNvbG9yPSIjMzEzMTMwIi8+PHN0b3Agb2Zmc2V0PSIuNzkiIHN0b3AtY29sb3I9IiMzNzM3MzciLz48c3RvcCBvZmZzZXQ9Ii45MiIgc3RvcC1jb2xvcj0iIzhiOGI4YSIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzZhNmE2OSIvPjwvbGluZWFyR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0icGwxLWc4IiB4MT0iMzI1Ljg5IiB5MT0iMTI1MC4yMiIgeDI9IjMyNS44OSIgeTI9IjE3NDkuNzgiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNhYWEiLz48c3RvcCBvZmZzZXQ9Ii4xIiBzdG9wLWNvbG9yPSIjNWE1YTU5Ii8+PHN0b3Agb2Zmc2V0PSIuMjIiIHN0b3AtY29sb3I9IiNkN2Q3ZDciLz48c3RvcCBvZmZzZXQ9Ii4yOCIgc3RvcC1jb2xvcj0iI2MxYzFjMCIvPjxzdG9wIG9mZnNldD0iLjQ0IiBzdG9wLWNvbG9yPSIjM2IzYjNhIi8+PHN0b3Agb2Zmc2V0PSIuNTYiIHN0b3AtY29sb3I9IiM1ZDVkNWMiLz48c3RvcCBvZmZzZXQ9Ii43IiBzdG9wLWNvbG9yPSIjMmUyZTJkIi8+PHN0b3Agb2Zmc2V0PSIuNzkiIHN0b3AtY29sb3I9IiMzNDM0MzMiLz48c3RvcCBvZmZzZXQ9Ii45MiIgc3RvcC1jb2xvcj0iIzg4ODg4NiIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzY3Njc2NSIvPjwvbGluZWFyR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0icGwxLWc5IiB4MT0iMzI0LjYxIiB5MT0iMTI1MC4yMiIgeDI9IjMyNC42MSIgeTI9IjE3NDkuNzgiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNhNmE2YTYiLz48c3RvcCBvZmZzZXQ9Ii4xIiBzdG9wLWNvbG9yPSIjNTY1NjU2Ii8+PHN0b3Agb2Zmc2V0PSIuMjIiIHN0b3AtY29sb3I9IiNkM2QzZDMiLz48c3RvcCBvZmZzZXQ9Ii4yOCIgc3RvcC1jb2xvcj0iI2JkYmRiYyIvPjxzdG9wIG9mZnNldD0iLjQ0IiBzdG9wLWNvbG9yPSIjMzczNzM3Ii8+PHN0b3Agb2Zmc2V0PSIuNTYiIHN0b3AtY29sb3I9IiM1OTU5NTkiLz48c3RvcCBvZmZzZXQ9Ii43IiBzdG9wLWNvbG9yPSIjMmMyYzJiIi8+PHN0b3Agb2Zmc2V0PSIuNzkiIHN0b3AtY29sb3I9IiMzMDMwMzAiLz48c3RvcCBvZmZzZXQ9Ii45MiIgc3RvcC1jb2xvcj0iIzg0ODQ4MyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzYzNjM2MiIvPjwvbGluZWFyR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0icGwxLWcxMCIgeDE9IjMyMy4zNCIgeTE9IjEyNTAuMjIiIHgyPSIzMjMuMzQiIHkyPSIxNzQ5Ljc4IiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjYTJhMmEyIi8+PHN0b3Agb2Zmc2V0PSIuMSIgc3RvcC1jb2xvcj0iIzUyNTI1MiIvPjxzdG9wIG9mZnNldD0iLjIyIiBzdG9wLWNvbG9yPSIjY2ZjZmNmIi8+PHN0b3Agb2Zmc2V0PSIuMjgiIHN0b3AtY29sb3I9IiNiOWI5YjgiLz48c3RvcCBvZmZzZXQ9Ii40NCIgc3RvcC1jb2xvcj0iIzMzMyIvPjxzdG9wIG9mZnNldD0iLjU2IiBzdG9wLWNvbG9yPSIjNTU1Ii8+PHN0b3Agb2Zmc2V0PSIuNyIgc3RvcC1jb2xvcj0iIzI5MjkyOCIvPjxzdG9wIG9mZnNldD0iLjc5IiBzdG9wLWNvbG9yPSIjMmMyYzJjIi8+PHN0b3Agb2Zmc2V0PSIuOTIiIHN0b3AtY29sb3I9IiM4MDgwN2YiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiM1ZjVmNWUiLz48L2xpbmVhckdyYWRpZW50Pgo8bGluZWFyR3JhZGllbnQgaWQ9InBsMS1nMTEiIHgxPSIzMjIuMDYiIHkxPSIxMjUwLjIyIiB4Mj0iMzIyLjA2IiB5Mj0iMTc0OS43OCIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzlmOWY5ZiIvPjxzdG9wIG9mZnNldD0iLjEiIHN0b3AtY29sb3I9IiM0ZjRmNGYiLz48c3RvcCBvZmZzZXQ9Ii4yMiIgc3RvcC1jb2xvcj0iI2NjYyIvPjxzdG9wIG9mZnNldD0iLjI4IiBzdG9wLWNvbG9yPSIjYjZiNmI1Ii8+PHN0b3Agb2Zmc2V0PSIuNDQiIHN0b3AtY29sb3I9IiMzMDMwMzAiLz48c3RvcCBvZmZzZXQ9Ii41NiIgc3RvcC1jb2xvcj0iIzUyNTI1MiIvPjxzdG9wIG9mZnNldD0iLjciIHN0b3AtY29sb3I9IiMyNzI3MjYiLz48c3RvcCBvZmZzZXQ9Ii43OSIgc3RvcC1jb2xvcj0iIzI5MjkyOSIvPjxzdG9wIG9mZnNldD0iLjkyIiBzdG9wLWNvbG9yPSIjN2Q3ZDdjIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjNWM1YzViIi8+PC9saW5lYXJHcmFkaWVudD4KPGxpbmVhckdyYWRpZW50IGlkPSJwbDEtZzEyIiB4MT0iMzIwLjc5IiB5MT0iMTI1MC4yMiIgeDI9IjMyMC43OSIgeTI9IjE3NDkuNzgiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiM5YjliOWIiLz48c3RvcCBvZmZzZXQ9Ii4xIiBzdG9wLWNvbG9yPSIjNGI0YjRiIi8+PHN0b3Agb2Zmc2V0PSIuMjIiIHN0b3AtY29sb3I9IiNjOGM4YzgiLz48c3RvcCBvZmZzZXQ9Ii4yOCIgc3RvcC1jb2xvcj0iI2IyYjJiMSIvPjxzdG9wIG9mZnNldD0iLjQ0IiBzdG9wLWNvbG9yPSIjMmMyYzJjIi8+PHN0b3Agb2Zmc2V0PSIuNTYiIHN0b3AtY29sb3I9IiM0ZTRlNGUiLz48c3RvcCBvZmZzZXQ9Ii43IiBzdG9wLWNvbG9yPSIjMjQyNDIzIi8+PHN0b3Agb2Zmc2V0PSIuNzkiIHN0b3AtY29sb3I9IiMyNTI1MjUiLz48c3RvcCBvZmZzZXQ9Ii45MiIgc3RvcC1jb2xvcj0iIzc5Nzk3OCIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzU4NTg1NyIvPjwvbGluZWFyR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0icGwxLWcxMyIgeDE9IjMxOS41MSIgeTE9IjEyNTAuMjIiIHgyPSIzMTkuNTEiIHkyPSIxNzQ5Ljc4IiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjOTg5ODk4Ii8+PHN0b3Agb2Zmc2V0PSIuMSIgc3RvcC1jb2xvcj0iIzQ4NDg0OCIvPjxzdG9wIG9mZnNldD0iLjIyIiBzdG9wLWNvbG9yPSIjYzVjNWM1Ii8+PHN0b3Agb2Zmc2V0PSIuMjgiIHN0b3AtY29sb3I9IiNhZmFmYWUiLz48c3RvcCBvZmZzZXQ9Ii40NCIgc3RvcC1jb2xvcj0iIzI5MjkyOSIvPjxzdG9wIG9mZnNldD0iLjU2IiBzdG9wLWNvbG9yPSIjNGI0YjRiIi8+PHN0b3Agb2Zmc2V0PSIuNyIgc3RvcC1jb2xvcj0iIzIyMjIyMSIvPjxzdG9wIG9mZnNldD0iLjc5IiBzdG9wLWNvbG9yPSIjMjIyIi8+PHN0b3Agb2Zmc2V0PSIuOTIiIHN0b3AtY29sb3I9IiM3Njc2NzUiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiM1NTU1NTQiLz48L2xpbmVhckdyYWRpZW50Pgo8bGluZWFyR3JhZGllbnQgaWQ9InBsMS1nMTQiIHgxPSIzMTguMjMiIHkxPSIxMjUwLjIyIiB4Mj0iMzE4LjIzIiB5Mj0iMTc0OS43OCIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzk0OTQ5NCIvPjxzdG9wIG9mZnNldD0iLjEiIHN0b3AtY29sb3I9IiM0NDQiLz48c3RvcCBvZmZzZXQ9Ii4yMiIgc3RvcC1jb2xvcj0iI2MxYzFjMSIvPjxzdG9wIG9mZnNldD0iLjI4IiBzdG9wLWNvbG9yPSIjYWJhYmFhIi8+PHN0b3Agb2Zmc2V0PSIuNDQiIHN0b3AtY29sb3I9IiMyNTI1MjUiLz48c3RvcCBvZmZzZXQ9Ii41NiIgc3RvcC1jb2xvcj0iIzQ3NDc0NyIvPjxzdG9wIG9mZnNldD0iLjciIHN0b3AtY29sb3I9IiMxZjFmMWUiLz48c3RvcCBvZmZzZXQ9Ii43OSIgc3RvcC1jb2xvcj0iIzFlMWUxZSIvPjxzdG9wIG9mZnNldD0iLjkyIiBzdG9wLWNvbG9yPSIjNzI3MjcxIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjNTE1MTUwIi8+PC9saW5lYXJHcmFkaWVudD4KPGxpbmVhckdyYWRpZW50IGlkPSJwbDEtZzE1IiB4MT0iMjk0LjUzIiB5MT0iMTIxNCIgeDI9IjI5NC41MyIgeTI9IjE3ODYiIGdyYWRpZW50VHJhbnNmb3JtPSJ0cmFuc2xhdGUoNTg5LjA2NzcgMzAwMCkgcm90YXRlKC0xODApIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZGVkZWRlIi8+PHN0b3Agb2Zmc2V0PSIuMSIgc3RvcC1jb2xvcj0iI2E0YTRhMiIvPjxzdG9wIG9mZnNldD0iLjIyIiBzdG9wLWNvbG9yPSIjZmZmIi8+PHN0b3Agb2Zmc2V0PSIuMjgiIHN0b3AtY29sb3I9IiNlZmVmZWUiLz48c3RvcCBvZmZzZXQ9Ii40NCIgc3RvcC1jb2xvcj0iIzhkOGQ4YiIvPjxzdG9wIG9mZnNldD0iLjU2IiBzdG9wLWNvbG9yPSIjYTZhNmE1Ii8+PHN0b3Agb2Zmc2V0PSIuNyIgc3RvcC1jb2xvcj0iIzdmN2Y3ZCIvPjxzdG9wIG9mZnNldD0iLjc5IiBzdG9wLWNvbG9yPSIjODg4ODg2Ii8+PHN0b3Agb2Zmc2V0PSIuOTIiIHN0b3AtY29sb3I9IiNjNWM1YzMiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNhZGFkYWIiLz48L2xpbmVhckdyYWRpZW50Pgo8bGluZWFyR3JhZGllbnQgaWQ9InBsMS1nMTYiIHgxPSIzMzciIHkxPSIxMjE0IiB4Mj0iMzM3IiB5Mj0iMTc4NiIgZ3JhZGllbnRUcmFuc2Zvcm09InRyYW5zbGF0ZSg2NzMuOTkyNCAzMDAwKSByb3RhdGUoLTE4MCkiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiM5MDkwOTAiLz48c3RvcCBvZmZzZXQ9Ii4xIiBzdG9wLWNvbG9yPSIjNTY1NjU1Ii8+PHN0b3Agb2Zmc2V0PSIuMjIiIHN0b3AtY29sb3I9IiNmZmYiLz48c3RvcCBvZmZzZXQ9Ii4yOCIgc3RvcC1jb2xvcj0iI2ExYTFhMCIvPjxzdG9wIG9mZnNldD0iLjQ0IiBzdG9wLWNvbG9yPSIjM2YzZjNlIi8+PHN0b3Agb2Zmc2V0PSIuNTYiIHN0b3AtY29sb3I9IiM1ODU4NTciLz48c3RvcCBvZmZzZXQ9Ii43IiBzdG9wLWNvbG9yPSIjMzEzMTMwIi8+PHN0b3Agb2Zmc2V0PSIuNzkiIHN0b3AtY29sb3I9IiMzYTNhMzkiLz48c3RvcCBvZmZzZXQ9Ii45MiIgc3RvcC1jb2xvcj0iIzc3Nzc3NiIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzVmNWY1ZSIvPjwvbGluZWFyR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0icGwxLWcxNyIgeDE9IjMxMy4yNyIgeTE9IjEyMTQiIHgyPSIzMTMuMjciIHkyPSIxNzg2IiBncmFkaWVudFRyYW5zZm9ybT0idHJhbnNsYXRlKDYyNi41MzQ0IDMwMDApIHJvdGF0ZSgtMTgwKSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjYzNjM2MzIi8+PHN0b3Agb2Zmc2V0PSIuMSIgc3RvcC1jb2xvcj0iIzczNzM3MiIvPjxzdG9wIG9mZnNldD0iLjIyIiBzdG9wLWNvbG9yPSIjZjBmMGYwIi8+PHN0b3Agb2Zmc2V0PSIuMjgiIHN0b3AtY29sb3I9IiNkYWRhZDkiLz48c3RvcCBvZmZzZXQ9Ii40NCIgc3RvcC1jb2xvcj0iIzU0NTQ1MyIvPjxzdG9wIG9mZnNldD0iLjU2IiBzdG9wLWNvbG9yPSIjNzY3Njc1Ii8+PHN0b3Agb2Zmc2V0PSIuNyIgc3RvcC1jb2xvcj0iIzQwNDAzZiIvPjxzdG9wIG9mZnNldD0iLjc5IiBzdG9wLWNvbG9yPSIjNGQ0ZDRjIi8+PHN0b3Agb2Zmc2V0PSIuOTIiIHN0b3AtY29sb3I9IiNhMWExOWYiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiM4MDgwN2UiLz48L2xpbmVhckdyYWRpZW50Pgo8bGluZWFyR3JhZGllbnQgaWQ9InBsMS1nMTgiIHgxPSItMjgzMS4zNyIgeDI9Ii0yODMxLjM3IiBncmFkaWVudFRyYW5zZm9ybT0idHJhbnNsYXRlKDQ4MzMuODA2NSkgc2NhbGUoLTEgMSkiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI2MzYzNjMyIvPjxzdG9wIG9mZnNldD0iLjEiIHN0b3AtY29sb3I9IiM3MzczNzIiLz48c3RvcCBvZmZzZXQ9Ii4yMiIgc3RvcC1jb2xvcj0iI2YwZjBmMCIvPjxzdG9wIG9mZnNldD0iLjI4IiBzdG9wLWNvbG9yPSIjZGFkYWQ5Ii8+PHN0b3Agb2Zmc2V0PSIuNDQiIHN0b3AtY29sb3I9IiM1NDU0NTMiLz48c3RvcCBvZmZzZXQ9Ii41NiIgc3RvcC1jb2xvcj0iIzc2NzY3NSIvPjxzdG9wIG9mZnNldD0iLjciIHN0b3AtY29sb3I9IiM0MDQwM2YiLz48c3RvcCBvZmZzZXQ9Ii43OSIgc3RvcC1jb2xvcj0iIzRkNGQ0YyIvPjxzdG9wIG9mZnNldD0iLjkyIiBzdG9wLWNvbG9yPSIjYTFhMTlmIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjODA4MDdlIi8+PC9saW5lYXJHcmFkaWVudD4KPGxpbmVhckdyYWRpZW50IGlkPSJwbDEtZzE5IiB4MT0iLTI4MzIuNjUiIHgyPSItMjgzMi42NSIgZ3JhZGllbnRUcmFuc2Zvcm09InRyYW5zbGF0ZSg0ODMzLjgwNjUpIHNjYWxlKC0xIDEpIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNiZmJmYmYiLz48c3RvcCBvZmZzZXQ9Ii4xIiBzdG9wLWNvbG9yPSIjNmY2ZjZlIi8+PHN0b3Agb2Zmc2V0PSIuMjIiIHN0b3AtY29sb3I9IiNlY2VjZWMiLz48c3RvcCBvZmZzZXQ9Ii4yOCIgc3RvcC1jb2xvcj0iI2Q2ZDZkNSIvPjxzdG9wIG9mZnNldD0iLjQ0IiBzdG9wLWNvbG9yPSIjNTA1MDRmIi8+PHN0b3Agb2Zmc2V0PSIuNTYiIHN0b3AtY29sb3I9IiM3MjcyNzEiLz48c3RvcCBvZmZzZXQ9Ii43IiBzdG9wLWNvbG9yPSIjM2QzZDNjIi8+PHN0b3Agb2Zmc2V0PSIuNzkiIHN0b3AtY29sb3I9IiM0OTQ5NDgiLz48c3RvcCBvZmZzZXQ9Ii45MiIgc3RvcC1jb2xvcj0iIzlkOWQ5YiIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzdjN2M3YSIvPjwvbGluZWFyR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0icGwxLWcyMCIgeDE9Ii0yODMzLjkyIiB4Mj0iLTI4MzMuOTIiIGdyYWRpZW50VHJhbnNmb3JtPSJ0cmFuc2xhdGUoNDgzMy44MDY1KSBzY2FsZSgtMSAxKSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjYmNiY2JjIi8+PHN0b3Agb2Zmc2V0PSIuMSIgc3RvcC1jb2xvcj0iIzZjNmM2YiIvPjxzdG9wIG9mZnNldD0iLjIyIiBzdG9wLWNvbG9yPSIjZTllOWU5Ii8+PHN0b3Agb2Zmc2V0PSIuMjgiIHN0b3AtY29sb3I9IiNkM2QzZDIiLz48c3RvcCBvZmZzZXQ9Ii40NCIgc3RvcC1jb2xvcj0iIzRkNGQ0YyIvPjxzdG9wIG9mZnNldD0iLjU2IiBzdG9wLWNvbG9yPSIjNmY2ZjZlIi8+PHN0b3Agb2Zmc2V0PSIuNyIgc3RvcC1jb2xvcj0iIzNiM2IzYSIvPjxzdG9wIG9mZnNldD0iLjc5IiBzdG9wLWNvbG9yPSIjNDY0NjQ1Ii8+PHN0b3Agb2Zmc2V0PSIuOTIiIHN0b3AtY29sb3I9IiM5YTlhOTgiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiM3OTc5NzciLz48L2xpbmVhckdyYWRpZW50Pgo8bGluZWFyR3JhZGllbnQgaWQ9InBsMS1nMjEiIHgxPSItMjgzNS4yIiB4Mj0iLTI4MzUuMiIgZ3JhZGllbnRUcmFuc2Zvcm09InRyYW5zbGF0ZSg0ODMzLjgwNjUpIHNjYWxlKC0xIDEpIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNiOGI4YjgiLz48c3RvcCBvZmZzZXQ9Ii4xIiBzdG9wLWNvbG9yPSIjNjg2ODY3Ii8+PHN0b3Agb2Zmc2V0PSIuMjIiIHN0b3AtY29sb3I9IiNlNWU1ZTUiLz48c3RvcCBvZmZzZXQ9Ii4yOCIgc3RvcC1jb2xvcj0iI2NmY2ZjZSIvPjxzdG9wIG9mZnNldD0iLjQ0IiBzdG9wLWNvbG9yPSIjNDk0OTQ4Ii8+PHN0b3Agb2Zmc2V0PSIuNTYiIHN0b3AtY29sb3I9IiM2YjZiNmEiLz48c3RvcCBvZmZzZXQ9Ii43IiBzdG9wLWNvbG9yPSIjMzgzODM3Ii8+PHN0b3Agb2Zmc2V0PSIuNzkiIHN0b3AtY29sb3I9IiM0MjQyNDEiLz48c3RvcCBvZmZzZXQ9Ii45MiIgc3RvcC1jb2xvcj0iIzk2OTY5NCIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzc1NzU3MyIvPjwvbGluZWFyR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0icGwxLWcyMiIgeDE9Ii0yODM2LjQ4IiB4Mj0iLTI4MzYuNDgiIGdyYWRpZW50VHJhbnNmb3JtPSJ0cmFuc2xhdGUoNDgzMy44MDY1KSBzY2FsZSgtMSAxKSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjYjViNWI1Ii8+PHN0b3Agb2Zmc2V0PSIuMSIgc3RvcC1jb2xvcj0iIzY1NjU2NCIvPjxzdG9wIG9mZnNldD0iLjIyIiBzdG9wLWNvbG9yPSIjZTJlMmUyIi8+PHN0b3Agb2Zmc2V0PSIuMjgiIHN0b3AtY29sb3I9IiNjY2NjY2IiLz48c3RvcCBvZmZzZXQ9Ii40NCIgc3RvcC1jb2xvcj0iIzQ2NDY0NSIvPjxzdG9wIG9mZnNldD0iLjU2IiBzdG9wLWNvbG9yPSIjNjg2ODY3Ii8+PHN0b3Agb2Zmc2V0PSIuNyIgc3RvcC1jb2xvcj0iIzM2MzYzNSIvPjxzdG9wIG9mZnNldD0iLjc5IiBzdG9wLWNvbG9yPSIjM2YzZjNlIi8+PHN0b3Agb2Zmc2V0PSIuOTIiIHN0b3AtY29sb3I9IiM5MzkzOTEiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiM3MjcyNzAiLz48L2xpbmVhckdyYWRpZW50Pgo8bGluZWFyR3JhZGllbnQgaWQ9InBsMS1nMjMiIHgxPSItMjgzNy43NSIgeDI9Ii0yODM3Ljc1IiBncmFkaWVudFRyYW5zZm9ybT0idHJhbnNsYXRlKDQ4MzMuODA2NSkgc2NhbGUoLTEgMSkiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI2IxYjFiMSIvPjxzdG9wIG9mZnNldD0iLjEiIHN0b3AtY29sb3I9IiM2MTYxNjAiLz48c3RvcCBvZmZzZXQ9Ii4yMiIgc3RvcC1jb2xvcj0iI2RlZGVkZSIvPjxzdG9wIG9mZnNldD0iLjI4IiBzdG9wLWNvbG9yPSIjYzhjOGM3Ii8+PHN0b3Agb2Zmc2V0PSIuNDQiIHN0b3AtY29sb3I9IiM0MjQyNDEiLz48c3RvcCBvZmZzZXQ9Ii41NiIgc3RvcC1jb2xvcj0iIzY0NjQ2MyIvPjxzdG9wIG9mZnNldD0iLjciIHN0b3AtY29sb3I9IiMzMzMzMzIiLz48c3RvcCBvZmZzZXQ9Ii43OSIgc3RvcC1jb2xvcj0iIzNiM2IzYSIvPjxzdG9wIG9mZnNldD0iLjkyIiBzdG9wLWNvbG9yPSIjOGY4ZjhkIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjNmU2ZTZjIi8+PC9saW5lYXJHcmFkaWVudD4KPGxpbmVhckdyYWRpZW50IGlkPSJwbDEtZzI0IiB4MT0iLTI4MzkuMDMiIHgyPSItMjgzOS4wMyIgZ3JhZGllbnRUcmFuc2Zvcm09InRyYW5zbGF0ZSg0ODMzLjgwNjUpIHNjYWxlKC0xIDEpIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNhZGFkYWQiLz48c3RvcCBvZmZzZXQ9Ii4xIiBzdG9wLWNvbG9yPSIjNWQ1ZDVkIi8+PHN0b3Agb2Zmc2V0PSIuMjIiIHN0b3AtY29sb3I9IiNkYWRhZGEiLz48c3RvcCBvZmZzZXQ9Ii4yOCIgc3RvcC1jb2xvcj0iI2M0YzRjMyIvPjxzdG9wIG9mZnNldD0iLjQ0IiBzdG9wLWNvbG9yPSIjM2UzZTNlIi8+PHN0b3Agb2Zmc2V0PSIuNTYiIHN0b3AtY29sb3I9IiM2MDYwNjAiLz48c3RvcCBvZmZzZXQ9Ii43IiBzdG9wLWNvbG9yPSIjMzEzMTMwIi8+PHN0b3Agb2Zmc2V0PSIuNzkiIHN0b3AtY29sb3I9IiMzNzM3MzciLz48c3RvcCBvZmZzZXQ9Ii45MiIgc3RvcC1jb2xvcj0iIzhiOGI4YSIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzZhNmE2OSIvPjwvbGluZWFyR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0icGwxLWcyNSIgeDE9Ii0yODQwLjMiIHgyPSItMjg0MC4zIiBncmFkaWVudFRyYW5zZm9ybT0idHJhbnNsYXRlKDQ4MzMuODA2NSkgc2NhbGUoLTEgMSkiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI2FhYSIvPjxzdG9wIG9mZnNldD0iLjEiIHN0b3AtY29sb3I9IiM1YTVhNTkiLz48c3RvcCBvZmZzZXQ9Ii4yMiIgc3RvcC1jb2xvcj0iI2Q3ZDdkNyIvPjxzdG9wIG9mZnNldD0iLjI4IiBzdG9wLWNvbG9yPSIjYzFjMWMwIi8+PHN0b3Agb2Zmc2V0PSIuNDQiIHN0b3AtY29sb3I9IiMzYjNiM2EiLz48c3RvcCBvZmZzZXQ9Ii41NiIgc3RvcC1jb2xvcj0iIzVkNWQ1YyIvPjxzdG9wIG9mZnNldD0iLjciIHN0b3AtY29sb3I9IiMyZTJlMmQiLz48c3RvcCBvZmZzZXQ9Ii43OSIgc3RvcC1jb2xvcj0iIzM0MzQzMyIvPjxzdG9wIG9mZnNldD0iLjkyIiBzdG9wLWNvbG9yPSIjODg4ODg2Ii8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjNjc2NzY1Ii8+PC9saW5lYXJHcmFkaWVudD4KPGxpbmVhckdyYWRpZW50IGlkPSJwbDEtZzI2IiB4MT0iLTI4NDEuNTgiIHgyPSItMjg0MS41OCIgZ3JhZGllbnRUcmFuc2Zvcm09InRyYW5zbGF0ZSg0ODMzLjgwNjUpIHNjYWxlKC0xIDEpIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNhNmE2YTYiLz48c3RvcCBvZmZzZXQ9Ii4xIiBzdG9wLWNvbG9yPSIjNTY1NjU2Ii8+PHN0b3Agb2Zmc2V0PSIuMjIiIHN0b3AtY29sb3I9IiNkM2QzZDMiLz48c3RvcCBvZmZzZXQ9Ii4yOCIgc3RvcC1jb2xvcj0iI2JkYmRiYyIvPjxzdG9wIG9mZnNldD0iLjQ0IiBzdG9wLWNvbG9yPSIjMzczNzM3Ii8+PHN0b3Agb2Zmc2V0PSIuNTYiIHN0b3AtY29sb3I9IiM1OTU5NTkiLz48c3RvcCBvZmZzZXQ9Ii43IiBzdG9wLWNvbG9yPSIjMmMyYzJiIi8+PHN0b3Agb2Zmc2V0PSIuNzkiIHN0b3AtY29sb3I9IiMzMDMwMzAiLz48c3RvcCBvZmZzZXQ9Ii45MiIgc3RvcC1jb2xvcj0iIzg0ODQ4MyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzYzNjM2MiIvPjwvbGluZWFyR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0icGwxLWcyNyIgeDE9Ii0yODQyLjg2IiB4Mj0iLTI4NDIuODYiIGdyYWRpZW50VHJhbnNmb3JtPSJ0cmFuc2xhdGUoNDgzMy44MDY1KSBzY2FsZSgtMSAxKSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjYTJhMmEyIi8+PHN0b3Agb2Zmc2V0PSIuMSIgc3RvcC1jb2xvcj0iIzUyNTI1MiIvPjxzdG9wIG9mZnNldD0iLjIyIiBzdG9wLWNvbG9yPSIjY2ZjZmNmIi8+PHN0b3Agb2Zmc2V0PSIuMjgiIHN0b3AtY29sb3I9IiNiOWI5YjgiLz48c3RvcCBvZmZzZXQ9Ii40NCIgc3RvcC1jb2xvcj0iIzMzMyIvPjxzdG9wIG9mZnNldD0iLjU2IiBzdG9wLWNvbG9yPSIjNTU1Ii8+PHN0b3Agb2Zmc2V0PSIuNyIgc3RvcC1jb2xvcj0iIzI5MjkyOCIvPjxzdG9wIG9mZnNldD0iLjc5IiBzdG9wLWNvbG9yPSIjMmMyYzJjIi8+PHN0b3Agb2Zmc2V0PSIuOTIiIHN0b3AtY29sb3I9IiM4MDgwN2YiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiM1ZjVmNWUiLz48L2xpbmVhckdyYWRpZW50Pgo8bGluZWFyR3JhZGllbnQgaWQ9InBsMS1nMjgiIHgxPSItMjg0NC4xMyIgeDI9Ii0yODQ0LjEzIiBncmFkaWVudFRyYW5zZm9ybT0idHJhbnNsYXRlKDQ4MzMuODA2NSkgc2NhbGUoLTEgMSkiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzlmOWY5ZiIvPjxzdG9wIG9mZnNldD0iLjEiIHN0b3AtY29sb3I9IiM0ZjRmNGYiLz48c3RvcCBvZmZzZXQ9Ii4yMiIgc3RvcC1jb2xvcj0iI2NjYyIvPjxzdG9wIG9mZnNldD0iLjI4IiBzdG9wLWNvbG9yPSIjYjZiNmI1Ii8+PHN0b3Agb2Zmc2V0PSIuNDQiIHN0b3AtY29sb3I9IiMzMDMwMzAiLz48c3RvcCBvZmZzZXQ9Ii41NiIgc3RvcC1jb2xvcj0iIzUyNTI1MiIvPjxzdG9wIG9mZnNldD0iLjciIHN0b3AtY29sb3I9IiMyNzI3MjYiLz48c3RvcCBvZmZzZXQ9Ii43OSIgc3RvcC1jb2xvcj0iIzI5MjkyOSIvPjxzdG9wIG9mZnNldD0iLjkyIiBzdG9wLWNvbG9yPSIjN2Q3ZDdjIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjNWM1YzViIi8+PC9saW5lYXJHcmFkaWVudD4KPGxpbmVhckdyYWRpZW50IGlkPSJwbDEtZzI5IiB4MT0iLTI4NDUuNDEiIHgyPSItMjg0NS40MSIgZ3JhZGllbnRUcmFuc2Zvcm09InRyYW5zbGF0ZSg0ODMzLjgwNjUpIHNjYWxlKC0xIDEpIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiM5YjliOWIiLz48c3RvcCBvZmZzZXQ9Ii4xIiBzdG9wLWNvbG9yPSIjNGI0YjRiIi8+PHN0b3Agb2Zmc2V0PSIuMjIiIHN0b3AtY29sb3I9IiNjOGM4YzgiLz48c3RvcCBvZmZzZXQ9Ii4yOCIgc3RvcC1jb2xvcj0iI2IyYjJiMSIvPjxzdG9wIG9mZnNldD0iLjQ0IiBzdG9wLWNvbG9yPSIjMmMyYzJjIi8+PHN0b3Agb2Zmc2V0PSIuNTYiIHN0b3AtY29sb3I9IiM0ZTRlNGUiLz48c3RvcCBvZmZzZXQ9Ii43IiBzdG9wLWNvbG9yPSIjMjQyNDIzIi8+PHN0b3Agb2Zmc2V0PSIuNzkiIHN0b3AtY29sb3I9IiMyNTI1MjUiLz48c3RvcCBvZmZzZXQ9Ii45MiIgc3RvcC1jb2xvcj0iIzc5Nzk3OCIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzU4NTg1NyIvPjwvbGluZWFyR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0icGwxLWczMCIgeDE9Ii0yODQ2LjY4IiB4Mj0iLTI4NDYuNjgiIGdyYWRpZW50VHJhbnNmb3JtPSJ0cmFuc2xhdGUoNDgzMy44MDY1KSBzY2FsZSgtMSAxKSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjOTg5ODk4Ii8+PHN0b3Agb2Zmc2V0PSIuMSIgc3RvcC1jb2xvcj0iIzQ4NDg0OCIvPjxzdG9wIG9mZnNldD0iLjIyIiBzdG9wLWNvbG9yPSIjYzVjNWM1Ii8+PHN0b3Agb2Zmc2V0PSIuMjgiIHN0b3AtY29sb3I9IiNhZmFmYWUiLz48c3RvcCBvZmZzZXQ9Ii40NCIgc3RvcC1jb2xvcj0iIzI5MjkyOSIvPjxzdG9wIG9mZnNldD0iLjU2IiBzdG9wLWNvbG9yPSIjNGI0YjRiIi8+PHN0b3Agb2Zmc2V0PSIuNyIgc3RvcC1jb2xvcj0iIzIyMjIyMSIvPjxzdG9wIG9mZnNldD0iLjc5IiBzdG9wLWNvbG9yPSIjMjIyIi8+PHN0b3Agb2Zmc2V0PSIuOTIiIHN0b3AtY29sb3I9IiM3Njc2NzUiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiM1NTU1NTQiLz48L2xpbmVhckdyYWRpZW50Pgo8bGluZWFyR3JhZGllbnQgaWQ9InBsMS1nMzEiIHgxPSItMjg0Ny45NiIgeDI9Ii0yODQ3Ljk2IiBncmFkaWVudFRyYW5zZm9ybT0idHJhbnNsYXRlKDQ4MzMuODA2NSkgc2NhbGUoLTEgMSkiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzk0OTQ5NCIvPjxzdG9wIG9mZnNldD0iLjEiIHN0b3AtY29sb3I9IiM0NDQiLz48c3RvcCBvZmZzZXQ9Ii4yMiIgc3RvcC1jb2xvcj0iI2MxYzFjMSIvPjxzdG9wIG9mZnNldD0iLjI4IiBzdG9wLWNvbG9yPSIjYWJhYmFhIi8+PHN0b3Agb2Zmc2V0PSIuNDQiIHN0b3AtY29sb3I9IiMyNTI1MjUiLz48c3RvcCBvZmZzZXQ9Ii41NiIgc3RvcC1jb2xvcj0iIzQ3NDc0NyIvPjxzdG9wIG9mZnNldD0iLjciIHN0b3AtY29sb3I9IiMxZjFmMWUiLz48c3RvcCBvZmZzZXQ9Ii43OSIgc3RvcC1jb2xvcj0iIzFlMWUxZSIvPjxzdG9wIG9mZnNldD0iLjkyIiBzdG9wLWNvbG9yPSIjNzI3MjcxIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjNTE1MTUwIi8+PC9saW5lYXJHcmFkaWVudD4KPGxpbmVhckdyYWRpZW50IGlkPSJwbDEtZzMyIiB4MT0iLTI4NzEuNjYiIHgyPSItMjg3MS42NiIgZ3JhZGllbnRUcmFuc2Zvcm09InRyYW5zbGF0ZSg0ODMzLjgwNjUpIHNjYWxlKC0xIDEpIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNkZWRlZGUiLz48c3RvcCBvZmZzZXQ9Ii4xIiBzdG9wLWNvbG9yPSIjYTRhNGEyIi8+PHN0b3Agb2Zmc2V0PSIuMjIiIHN0b3AtY29sb3I9IiNmZmYiLz48c3RvcCBvZmZzZXQ9Ii4yOCIgc3RvcC1jb2xvcj0iI2VmZWZlZSIvPjxzdG9wIG9mZnNldD0iLjQ0IiBzdG9wLWNvbG9yPSIjOGQ4ZDhiIi8+PHN0b3Agb2Zmc2V0PSIuNTYiIHN0b3AtY29sb3I9IiNhNmE2YTUiLz48c3RvcCBvZmZzZXQ9Ii43IiBzdG9wLWNvbG9yPSIjN2Y3ZjdkIi8+PHN0b3Agb2Zmc2V0PSIuNzkiIHN0b3AtY29sb3I9IiM4ODg4ODYiLz48c3RvcCBvZmZzZXQ9Ii45MiIgc3RvcC1jb2xvcj0iI2M1YzVjMyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2FkYWRhYiIvPjwvbGluZWFyR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0icGwxLWczMyIgeDE9Ii0yODI5LjIiIHgyPSItMjgyOS4yIiBncmFkaWVudFRyYW5zZm9ybT0idHJhbnNsYXRlKDQ4MzMuODA2NSkgc2NhbGUoLTEgMSkiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzkwOTA5MCIvPjxzdG9wIG9mZnNldD0iLjEiIHN0b3AtY29sb3I9IiM1NjU2NTUiLz48c3RvcCBvZmZzZXQ9Ii4yMiIgc3RvcC1jb2xvcj0iI2ZmZiIvPjxzdG9wIG9mZnNldD0iLjI4IiBzdG9wLWNvbG9yPSIjYTFhMWEwIi8+PHN0b3Agb2Zmc2V0PSIuNDQiIHN0b3AtY29sb3I9IiMzZjNmM2UiLz48c3RvcCBvZmZzZXQ9Ii41NiIgc3RvcC1jb2xvcj0iIzU4NTg1NyIvPjxzdG9wIG9mZnNldD0iLjciIHN0b3AtY29sb3I9IiMzMTMxMzAiLz48c3RvcCBvZmZzZXQ9Ii43OSIgc3RvcC1jb2xvcj0iIzNhM2EzOSIvPjxzdG9wIG9mZnNldD0iLjkyIiBzdG9wLWNvbG9yPSIjNzc3Nzc2Ii8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjNWY1ZjVlIi8+PC9saW5lYXJHcmFkaWVudD4KPGxpbmVhckdyYWRpZW50IGlkPSJwbDEtZzM0IiB4MT0iLTI4NTIuOTMiIHkxPSIxMjE0IiB4Mj0iLTI4NTIuOTMiIHkyPSIxNzg2IiBncmFkaWVudFRyYW5zZm9ybT0idHJhbnNsYXRlKDQ4MzMuODA2NSkgc2NhbGUoLTEgMSkiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI2MzYzNjMyIvPjxzdG9wIG9mZnNldD0iLjEiIHN0b3AtY29sb3I9IiM3MzczNzIiLz48c3RvcCBvZmZzZXQ9Ii4yMiIgc3RvcC1jb2xvcj0iI2YwZjBmMCIvPjxzdG9wIG9mZnNldD0iLjI4IiBzdG9wLWNvbG9yPSIjZGFkYWQ5Ii8+PHN0b3Agb2Zmc2V0PSIuNDQiIHN0b3AtY29sb3I9IiM1NDU0NTMiLz48c3RvcCBvZmZzZXQ9Ii41NiIgc3RvcC1jb2xvcj0iIzc2NzY3NSIvPjxzdG9wIG9mZnNldD0iLjciIHN0b3AtY29sb3I9IiM0MDQwM2YiLz48c3RvcCBvZmZzZXQ9Ii43OSIgc3RvcC1jb2xvcj0iIzRkNGQ0YyIvPjxzdG9wIG9mZnNldD0iLjkyIiBzdG9wLWNvbG9yPSIjYTFhMTlmIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjODA4MDdlIi8+PC9saW5lYXJHcmFkaWVudD4KPGxpbmVhckdyYWRpZW50IGlkPSJwbDEtc2hhZGUiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZmZmZmYiIHN0b3Atb3BhY2l0eT0iMC4xNiIvPjxzdG9wIG9mZnNldD0iMC4zIiBzdG9wLWNvbG9yPSIjZmZmZmZmIiBzdG9wLW9wYWNpdHk9IjAiLz48c3RvcCBvZmZzZXQ9IjAuNzUiIHN0b3AtY29sb3I9IiMwMDAwMDAiIHN0b3Atb3BhY2l0eT0iMCIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzAwMDAwMCIgc3RvcC1vcGFjaXR5PSIwLjQiLz48L2xpbmVhckdyYWRpZW50Pgo8bGluZWFyR3JhZGllbnQgaWQ9InBsMS1zMCIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIHgxPSIwIiB5MT0iMTIyMC4yNCIgeDI9IjAiIHkyPSIxNzc5Ljc2Ij48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNjM2MzYzMiLz48c3RvcCBvZmZzZXQ9Ii4xIiBzdG9wLWNvbG9yPSIjNzM3MzcyIi8+PHN0b3Agb2Zmc2V0PSIuMjIiIHN0b3AtY29sb3I9IiNmYWZhZmEiLz48c3RvcCBvZmZzZXQ9Ii4yOCIgc3RvcC1jb2xvcj0iI2RhZGFkOSIvPjxzdG9wIG9mZnNldD0iLjQ0IiBzdG9wLWNvbG9yPSIjNTQ1NDUzIi8+PHN0b3Agb2Zmc2V0PSIuNTYiIHN0b3AtY29sb3I9IiM3Njc2NzUiLz48c3RvcCBvZmZzZXQ9Ii43IiBzdG9wLWNvbG9yPSIjNDA0MDNmIi8+PHN0b3Agb2Zmc2V0PSIuNzkiIHN0b3AtY29sb3I9IiM0ZDRkNGMiLz48c3RvcCBvZmZzZXQ9Ii45MiIgc3RvcC1jb2xvcj0iI2ExYTE5ZiIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzgwODA3ZSIvPjwvbGluZWFyR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0icGwxLXMxIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgeDE9IjAiIHkxPSIxMTkwLjQ4IiB4Mj0iMCIgeTI9IjEyMzguMTAiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI2MzYzNjMyIvPjxzdG9wIG9mZnNldD0iLjEiIHN0b3AtY29sb3I9IiM3MzczNzIiLz48c3RvcCBvZmZzZXQ9Ii4yMiIgc3RvcC1jb2xvcj0iI2ZhZmFmYSIvPjxzdG9wIG9mZnNldD0iLjI4IiBzdG9wLWNvbG9yPSIjZGFkYWQ5Ii8+PHN0b3Agb2Zmc2V0PSIuNDQiIHN0b3AtY29sb3I9IiM1NDU0NTMiLz48c3RvcCBvZmZzZXQ9Ii41NiIgc3RvcC1jb2xvcj0iIzc2NzY3NSIvPjxzdG9wIG9mZnNldD0iLjciIHN0b3AtY29sb3I9IiM0MDQwM2YiLz48c3RvcCBvZmZzZXQ9Ii43OSIgc3RvcC1jb2xvcj0iIzRkNGQ0YyIvPjxzdG9wIG9mZnNldD0iLjkyIiBzdG9wLWNvbG9yPSIjYTFhMTlmIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjODA4MDdlIi8+PC9saW5lYXJHcmFkaWVudD4KPGxpbmVhckdyYWRpZW50IGlkPSJwbDEtczIiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIiB4MT0iMCIgeTE9IjE3NjEuOTAiIHgyPSIwIiB5Mj0iMTgwOS41MiI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjYzNjM2MzIi8+PHN0b3Agb2Zmc2V0PSIuMSIgc3RvcC1jb2xvcj0iIzczNzM3MiIvPjxzdG9wIG9mZnNldD0iLjIyIiBzdG9wLWNvbG9yPSIjZmFmYWZhIi8+PHN0b3Agb2Zmc2V0PSIuMjgiIHN0b3AtY29sb3I9IiNkYWRhZDkiLz48c3RvcCBvZmZzZXQ9Ii40NCIgc3RvcC1jb2xvcj0iIzU0NTQ1MyIvPjxzdG9wIG9mZnNldD0iLjU2IiBzdG9wLWNvbG9yPSIjNzY3Njc1Ii8+PHN0b3Agb2Zmc2V0PSIuNyIgc3RvcC1jb2xvcj0iIzQwNDAzZiIvPjxzdG9wIG9mZnNldD0iLjc5IiBzdG9wLWNvbG9yPSIjNGQ0ZDRjIi8+PHN0b3Agb2Zmc2V0PSIuOTIiIHN0b3AtY29sb3I9IiNhMWExOWYiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiM4MDgwN2UiLz48L2xpbmVhckdyYWRpZW50Pgo8bGluZWFyR3JhZGllbnQgaWQ9InBsMS1zMyIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiIHgxPSIwIiB5MT0iMTE2MC43MSIgeDI9IjAiIHkyPSIxMjY3Ljg2Ij48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNjM2MzYzMiLz48c3RvcCBvZmZzZXQ9Ii4xIiBzdG9wLWNvbG9yPSIjNzM3MzcyIi8+PHN0b3Agb2Zmc2V0PSIuMjIiIHN0b3AtY29sb3I9IiNmYWZhZmEiLz48c3RvcCBvZmZzZXQ9Ii4yOCIgc3RvcC1jb2xvcj0iI2RhZGFkOSIvPjxzdG9wIG9mZnNldD0iLjQ0IiBzdG9wLWNvbG9yPSIjNTQ1NDUzIi8+PHN0b3Agb2Zmc2V0PSIuNTYiIHN0b3AtY29sb3I9IiM3Njc2NzUiLz48c3RvcCBvZmZzZXQ9Ii43IiBzdG9wLWNvbG9yPSIjNDA0MDNmIi8+PHN0b3Agb2Zmc2V0PSIuNzkiIHN0b3AtY29sb3I9IiM0ZDRkNGMiLz48c3RvcCBvZmZzZXQ9Ii45MiIgc3RvcC1jb2xvcj0iI2ExYTE5ZiIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzgwODA3ZSIvPjwvbGluZWFyR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0icGwxLXM0IiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgeDE9IjAiIHkxPSIxNzMyLjE0IiB4Mj0iMCIgeTI9IjE4MzkuMjkiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI2MzYzNjMyIvPjxzdG9wIG9mZnNldD0iLjEiIHN0b3AtY29sb3I9IiM3MzczNzIiLz48c3RvcCBvZmZzZXQ9Ii4yMiIgc3RvcC1jb2xvcj0iI2ZhZmFmYSIvPjxzdG9wIG9mZnNldD0iLjI4IiBzdG9wLWNvbG9yPSIjZGFkYWQ5Ii8+PHN0b3Agb2Zmc2V0PSIuNDQiIHN0b3AtY29sb3I9IiM1NDU0NTMiLz48c3RvcCBvZmZzZXQ9Ii41NiIgc3RvcC1jb2xvcj0iIzc2NzY3NSIvPjxzdG9wIG9mZnNldD0iLjciIHN0b3AtY29sb3I9IiM0MDQwM2YiLz48c3RvcCBvZmZzZXQ9Ii43OSIgc3RvcC1jb2xvcj0iIzRkNGQ0YyIvPjxzdG9wIG9mZnNldD0iLjkyIiBzdG9wLWNvbG9yPSIjYTFhMTlmIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjODA4MDdlIi8+PC9saW5lYXJHcmFkaWVudD4KPGxpbmVhckdyYWRpZW50IGlkPSJwbDEtczUiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIiB4MT0iMCIgeTE9IjExMzAuOTUiIHgyPSIwIiB5Mj0iMTg2OS4wNSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjYzNjM2MzIi8+PHN0b3Agb2Zmc2V0PSIuMSIgc3RvcC1jb2xvcj0iIzczNzM3MiIvPjxzdG9wIG9mZnNldD0iLjIyIiBzdG9wLWNvbG9yPSIjZmFmYWZhIi8+PHN0b3Agb2Zmc2V0PSIuMjgiIHN0b3AtY29sb3I9IiNkYWRhZDkiLz48c3RvcCBvZmZzZXQ9Ii40NCIgc3RvcC1jb2xvcj0iIzU0NTQ1MyIvPjxzdG9wIG9mZnNldD0iLjU2IiBzdG9wLWNvbG9yPSIjNzY3Njc1Ii8+PHN0b3Agb2Zmc2V0PSIuNyIgc3RvcC1jb2xvcj0iIzQwNDAzZiIvPjxzdG9wIG9mZnNldD0iLjc5IiBzdG9wLWNvbG9yPSIjNGQ0ZDRjIi8+PHN0b3Agb2Zmc2V0PSIuOTIiIHN0b3AtY29sb3I9IiNhMWExOWYiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiM4MDgwN2UiLz48L2xpbmVhckdyYWRpZW50Pgo8L2RlZnM+CjxyZWN0IHg9IjI1My4zMiIgeT0iMTI1MC4yMiIgd2lkdGg9IjQ3MDIuMzgiIGhlaWdodD0iNDk5LjU2IiBmaWxsPSJ1cmwoI3BsMS1nMCkiLz4KPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMC4wMCwwKSI+CjxyZWN0IHg9IjI1My4zMiIgeT0iMTI1MC4yMiIgd2lkdGg9IjE2MyIgaGVpZ2h0PSI0OTkuNTYiIGZpbGw9InVybCgjcGwxLWcxKSIvPgo8cmVjdCB4PSIyNTMuMzIiIHk9IjEyNTAuMjIiIHdpZHRoPSIxNjAuNDUiIGhlaWdodD0iNDk5LjU2IiBmaWxsPSJ1cmwoI3BsMS1nMikiLz4KPHJlY3QgeD0iMjUzLjMyIiB5PSIxMjUwLjIyIiB3aWR0aD0iMTU3LjkiIGhlaWdodD0iNDk5LjU2IiBmaWxsPSJ1cmwoI3BsMS1nMykiLz4KPHJlY3QgeD0iMjUzLjMyIiB5PSIxMjUwLjIyIiB3aWR0aD0iMTU1LjM1IiBoZWlnaHQ9IjQ5OS41NiIgZmlsbD0idXJsKCNwbDEtZzQpIi8+CjxyZWN0IHg9IjI1My4zMiIgeT0iMTI1MC4yMiIgd2lkdGg9IjE1Mi43OSIgaGVpZ2h0PSI0OTkuNTYiIGZpbGw9InVybCgjcGwxLWc1KSIvPgo8cmVjdCB4PSIyNTMuMzIiIHk9IjEyNTAuMjIiIHdpZHRoPSIxNTAuMjQiIGhlaWdodD0iNDk5LjU2IiBmaWxsPSJ1cmwoI3BsMS1nNikiLz4KPHJlY3QgeD0iMjUzLjMyIiB5PSIxMjUwLjIyIiB3aWR0aD0iMTQ3LjY5IiBoZWlnaHQ9IjQ5OS41NiIgZmlsbD0idXJsKCNwbDEtZzcpIi8+CjxyZWN0IHg9IjI1My4zMiIgeT0iMTI1MC4yMiIgd2lkdGg9IjE0NS4xNCIgaGVpZ2h0PSI0OTkuNTYiIGZpbGw9InVybCgjcGwxLWc4KSIvPgo8cmVjdCB4PSIyNTMuMzIiIHk9IjEyNTAuMjIiIHdpZHRoPSIxNDIuNTkiIGhlaWdodD0iNDk5LjU2IiBmaWxsPSJ1cmwoI3BsMS1nOSkiLz4KPHJlY3QgeD0iMjUzLjMyIiB5PSIxMjUwLjIyIiB3aWR0aD0iMTQwLjAzIiBoZWlnaHQ9IjQ5OS41NiIgZmlsbD0idXJsKCNwbDEtZzEwKSIvPgo8cmVjdCB4PSIyNTMuMzIiIHk9IjEyNTAuMjIiIHdpZHRoPSIxMzcuNDgiIGhlaWdodD0iNDk5LjU2IiBmaWxsPSJ1cmwoI3BsMS1nMTEpIi8+CjxyZWN0IHg9IjI1My4zMiIgeT0iMTI1MC4yMiIgd2lkdGg9IjEzNC45MyIgaGVpZ2h0PSI0OTkuNTYiIGZpbGw9InVybCgjcGwxLWcxMikiLz4KPHJlY3QgeD0iMjUzLjMyIiB5PSIxMjUwLjIyIiB3aWR0aD0iMTMyLjM4IiBoZWlnaHQ9IjQ5OS41NiIgZmlsbD0idXJsKCNwbDEtZzEzKSIvPgo8cmVjdCB4PSIyNTMuMzIiIHk9IjEyNTAuMjIiIHdpZHRoPSIxMjkuODMiIGhlaWdodD0iNDk5LjU2IiBmaWxsPSJ1cmwoI3BsMS1nMTQpIi8+CjxwYXRoIGQ9Ik0yNTYuODIsMTIxNGg3NS40MmMzLjMxLDAsNiwyLjY5LDYsNnY1NjEuMDFjMCwyLjc2LTIuMjQsNS01LDVoLTc2LjQyYy0zLjMxLDAtNi0yLjY5LTYtNnYtNTYwLjAxYzAtMy4zMSwyLjY5LTYsNi02WiIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNTg5LjA2NzcgMzAwMCkgcm90YXRlKC0xODApIiBmaWxsPSJ1cmwoI3BsMS1nMTUpIi8+CjxwYXRoIGQ9Ik0zMDMuMjgsMTIxNGg2Ni40M2MzLjMxLDAsNiwyLjY5LDYsNnY1NjAuMDFjMCwzLjMxLTIuNjksNi02LDZoLTY1LjQzYy0zLjMxLDAtNi0yLjY5LTYtNnYtNTYxLjAxYzAtMi43NiwyLjI0LTUsNS01WiIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjczLjk5MjQgMzAwMCkgcm90YXRlKC0xODApIiBmaWxsPSJ1cmwoI3BsMS1nMTYpIi8+CjxwYXRoIGQ9Ik0yNjMuMSwxMjE0aDEwMS4zM2MuNTgsMCwxLjA1LjQ3LDEuMDUsMS4wNXY1NjkuOTFjMCwuNTgtLjQ3LDEuMDUtMS4wNSwxLjA1aC0xMDEuMzNjLTEuMTMsMC0yLjA1LS45Mi0yLjA1LTIuMDV2LTU2Ny45MWMwLTEuMTMuOTItMi4wNSwyLjA1LTIuMDVaIiB0cmFuc2Zvcm09InRyYW5zbGF0ZSg2MjYuNTM0NCAzMDAwKSByb3RhdGUoLTE4MCkiIGZpbGw9InVybCgjcGwxLWcxNykiLz4KPC9nPgo8ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSgtMjc5MC45OCwwKSI+CjxyZWN0IHg9Ijc1ODMuNjgiIHk9IjEyNTAuMjIiIHdpZHRoPSIxNjMiIGhlaWdodD0iNDk5LjU2IiBmaWxsPSJ1cmwoI3BsMS1nMTgpIi8+CjxyZWN0IHg9Ijc1ODYuMjMiIHk9IjEyNTAuMjIiIHdpZHRoPSIxNjAuNDUiIGhlaWdodD0iNDk5LjU2IiBmaWxsPSJ1cmwoI3BsMS1nMTkpIi8+CjxyZWN0IHg9Ijc1ODguNzgiIHk9IjEyNTAuMjIiIHdpZHRoPSIxNTcuOSIgaGVpZ2h0PSI0OTkuNTYiIGZpbGw9InVybCgjcGwxLWcyMCkiLz4KPHJlY3QgeD0iNzU5MS4zMyIgeT0iMTI1MC4yMiIgd2lkdGg9IjE1NS4zNSIgaGVpZ2h0PSI0OTkuNTYiIGZpbGw9InVybCgjcGwxLWcyMSkiLz4KPHJlY3QgeD0iNzU5My44OSIgeT0iMTI1MC4yMiIgd2lkdGg9IjE1Mi43OSIgaGVpZ2h0PSI0OTkuNTYiIGZpbGw9InVybCgjcGwxLWcyMikiLz4KPHJlY3QgeD0iNzU5Ni40NCIgeT0iMTI1MC4yMiIgd2lkdGg9IjE1MC4yNCIgaGVpZ2h0PSI0OTkuNTYiIGZpbGw9InVybCgjcGwxLWcyMykiLz4KPHJlY3QgeD0iNzU5OC45OSIgeT0iMTI1MC4yMiIgd2lkdGg9IjE0Ny42OSIgaGVpZ2h0PSI0OTkuNTYiIGZpbGw9InVybCgjcGwxLWcyNCkiLz4KPHJlY3QgeD0iNzYwMS41NCIgeT0iMTI1MC4yMiIgd2lkdGg9IjE0NS4xNCIgaGVpZ2h0PSI0OTkuNTYiIGZpbGw9InVybCgjcGwxLWcyNSkiLz4KPHJlY3QgeD0iNzYwNC4wOSIgeT0iMTI1MC4yMiIgd2lkdGg9IjE0Mi41OSIgaGVpZ2h0PSI0OTkuNTYiIGZpbGw9InVybCgjcGwxLWcyNikiLz4KPHJlY3QgeD0iNzYwNi42NSIgeT0iMTI1MC4yMiIgd2lkdGg9IjE0MC4wMyIgaGVpZ2h0PSI0OTkuNTYiIGZpbGw9InVybCgjcGwxLWcyNykiLz4KPHJlY3QgeD0iNzYwOS4yIiB5PSIxMjUwLjIyIiB3aWR0aD0iMTM3LjQ4IiBoZWlnaHQ9IjQ5OS41NiIgZmlsbD0idXJsKCNwbDEtZzI4KSIvPgo8cmVjdCB4PSI3NjExLjc1IiB5PSIxMjUwLjIyIiB3aWR0aD0iMTM0LjkzIiBoZWlnaHQ9IjQ5OS41NiIgZmlsbD0idXJsKCNwbDEtZzI5KSIvPgo8cmVjdCB4PSI3NjE0LjMiIHk9IjEyNTAuMjIiIHdpZHRoPSIxMzIuMzgiIGhlaWdodD0iNDk5LjU2IiBmaWxsPSJ1cmwoI3BsMS1nMzApIi8+CjxyZWN0IHg9Ijc2MTYuODUiIHk9IjEyNTAuMjIiIHdpZHRoPSIxMjkuODMiIGhlaWdodD0iNDk5LjU2IiBmaWxsPSJ1cmwoI3BsMS1nMzEpIi8+CjxwYXRoIGQ9Ik03NjY3Ljc1LDEyMTRoNzYuNDJjMi43NiwwLDUsMi4yNCw1LDV2NTYxLjAxYzAsMy4zMS0yLjY5LDYtNiw2aC03NS40MmMtMy4zMSwwLTYtMi42OS02LTZ2LTU2MC4wMWMwLTMuMzEsMi42OS02LDYtNloiIGZpbGw9InVybCgjcGwxLWczMikiLz4KPHBhdGggZD0iTTc2MzAuMjksMTIxNGg2NS40M2MzLjMxLDAsNiwyLjY5LDYsNnY1NjAuMDFjMCwzLjMxLTIuNjksNi02LDZoLTY2LjQzYy0yLjc2LDAtNS0yLjI0LTUtNXYtNTYxLjAxYzAtMy4zMSwyLjY5LTYsNi02WiIgZmlsbD0idXJsKCNwbDEtZzMzKSIvPgo8cGF0aCBkPSJNNzYzNi41NywxMjE0aDEwMC4zM2MxLjEzLDAsMi4wNS45MiwyLjA1LDIuMDV2NTY3LjkxYzAsMS4xMy0uOTIsMi4wNS0yLjA1LDIuMDVoLTEwMS4zM2MtLjU4LDAtMS4wNS0uNDctMS4wNS0xLjA1di01NjguOTFjMC0xLjEzLjkyLTIuMDUsMi4wNS0yLjA1WiIgZmlsbD0idXJsKCNwbDEtZzM0KSIvPgo8L2c+CjxyZWN0IHg9IjcyOS41MSIgeT0iMTIzMi4xNCIgd2lkdGg9IjIyNjEuOTAiIGhlaWdodD0iNTM1LjcxIiByeD0iMzYiIGZpbGw9IiMwZDE1MjIiLz4KPHJlY3QgeD0iNzI5LjUxIiB5PSIxMjMyLjE0IiB3aWR0aD0iMjI2MS45MCIgaGVpZ2h0PSI1MzUuNzEiIHJ4PSIzNiIgZmlsbD0idXJsKCNwbDEtc2hhZGUpIi8+CjxyZWN0IHg9IjcyOS41MSIgeT0iMTIyMC4yNCIgd2lkdGg9IjU5LjUyIiBoZWlnaHQ9IjU1OS41MiIgcng9IjIyIiBmaWxsPSJ1cmwoI3BsMS1zMCkiLz4KPHJlY3QgeD0iMjkzMS44OSIgeT0iMTIyMC4yNCIgd2lkdGg9IjU5LjUyIiBoZWlnaHQ9IjU1OS41MiIgcng9IjIyIiBmaWxsPSJ1cmwoI3BsMS1zMCkiLz4KPHJlY3QgeD0iNDAwMS40MiIgeT0iMTE5MC40OCIgd2lkdGg9IjUxMS45MCIgaGVpZ2h0PSI0Ny42MiIgcng9IjEyIiBmaWxsPSJ1cmwoI3BsMS1zMSkiLz4KPHJlY3QgeD0iNDAwMS40MiIgeT0iMTc2MS45MCIgd2lkdGg9IjUxMS45MCIgaGVpZ2h0PSI0Ny42MiIgcng9IjEyIiBmaWxsPSJ1cmwoI3BsMS1zMikiLz4KPHJlY3QgeD0iMzk2NS43MCIgeT0iMTE2MC43MSIgd2lkdGg9IjU5LjUyIiBoZWlnaHQ9IjEwNy4xNCIgcng9IjEyIiBmaWxsPSJ1cmwoI3BsMS1zMykiLz4KPHJlY3QgeD0iNDQ4OS41MSIgeT0iMTE2MC43MSIgd2lkdGg9IjU5LjUyIiBoZWlnaHQ9IjEwNy4xNCIgcng9IjEyIiBmaWxsPSJ1cmwoI3BsMS1zMykiLz4KPHJlY3QgeD0iMzk2NS43MCIgeT0iMTczMi4xNCIgd2lkdGg9IjU5LjUyIiBoZWlnaHQ9IjEwNy4xNCIgcng9IjEyIiBmaWxsPSJ1cmwoI3BsMS1zNCkiLz4KPHJlY3QgeD0iNDQ4OS41MSIgeT0iMTczMi4xNCIgd2lkdGg9IjU5LjUyIiBoZWlnaHQ9IjEwNy4xNCIgcng9IjEyIiBmaWxsPSJ1cmwoI3BsMS1zNCkiLz4KPHJlY3QgeD0iNDA2Mi44NCIgeT0iMTEzMC45NSIgd2lkdGg9IjE1NC43NiIgaGVpZ2h0PSI3MzguMTAiIHJ4PSIyMiIgZmlsbD0idXJsKCNwbDEtczUpIi8+CjxyZWN0IHg9IjQyMTcuNjEiIHk9IjExNTQuOTUiIHdpZHRoPSI1OS41MiIgaGVpZ2h0PSI2OTAuMTAiIGZpbGw9IiMxYjIzMzAiLz4KPHJlY3QgeD0iNDI3Ny4xMyIgeT0iMTEzMC45NSIgd2lkdGg9IjE1NC43NiIgaGVpZ2h0PSI3MzguMTAiIHJ4PSIyMiIgZmlsbD0idXJsKCNwbDEtczUpIi8+Cjwvc3ZnPgo=";
+      function overlay() {
+        return (
+          '<div class="sv-over"><div class="sv-logo"><img src="' +
+          LOGO +
+          '" alt="" /><svg viewBox="225 1100 4770 800" aria-hidden="true"><text x="1860" y="1500" dy="0.36em" text-anchor="middle" font-size="300" font-weight="800" letter-spacing="16"><tspan fill="#fdb827">PIPE</tspan><tspan fill="#eef3fa">LINE</tspan></text></svg></div><div class="sv-word"><span class="sv-spin"></span><span class="sv-tick"></span><span class="sv-t">Saving…</span></div></div>'
+        );
+      }
+      function frameO(cls, inner, extra) {
+        return (
+          '<div class="phone ' +
+          cls +
+          '"><div class="sfstatus">3:14</div><div class="sfbar"><span class="ham"></span><span>Pipeline Mobile</span><span class="sp"></span></div><div class="pbody"><div class="scroll">' +
+          inner +
+          "</div>" +
+          (extra || "") +
+          overlay() +
+          '</div><div class="sftabs"><span><i></i>Home</span><span class="on"><i></i>Pipeline</span><span><i></i>Accounts</span><span><i></i>More</span></div></div>'
+        );
+      }
+      /* slide speed */
+      function slidePhone(d) {
+        return (
+          '<div class="phone sd" style="--d:' +
+          d +
+          's"><div class="sfstatus">3:14</div><div class="sfbar"><span class="ham"></span><span>Pipeline Mobile</span><span class="sp"></span></div><div class="pbody"><div class="scroll">' +
+          '<div class="seg3 k0" style="margin:0 0 8px"><span class="th"></span><button type="button" class="on">Open</button><button type="button">Closed</button><button type="button">Both</button></div>' +
+          deal(
+            "Ben Treffene",
+            "A$250k",
+            "",
+            "Knee",
+            "Commit · Q1",
+            "",
+            true,
+            false
+          ) +
+          deal(
+            "Richard Verheul",
+            "A$50k",
+            "BATHURST BASE HOSPITAL (NSW)",
+            "Hip",
+            "1st Case · Q2",
+            "",
+            true,
+            true
+          ) +
+          deal(
+            "Aiden Cleary",
+            "A$250k",
+            "",
+            "Knee",
+            "Unhappy · Q2 2027",
+            "",
+            true,
+            false
+          ) +
+          '<div class="stopw">Each slide takes ' +
+          d.toFixed(2) +
+          " s</div></div>" +
+          '<div class="pg2"><div class="lock" style="margin:-12px -12px 10px"><button type="button" class="lockbtn" data-slide="back"><span>‹</span> Back to My Pipeline</button></div><div class="nm2" style="margin:2px 2px;font-size:24px;font-weight:800">Ben Treffene</div><p class="sub1" style="margin:0 2px 12px;color:var(--muted);font-size:14px">Opportunity · Knee</p><div class="grid2"><div class="tile"><div class="l">Owner</div><div class="v">Lewis Dawson</div></div><div class="tile"><div class="l">Value / year</div><div class="v">A$250k</div></div></div></div>' +
+          '</div><div class="sftabs"><span><i></i>Home</span><span class="on"><i></i>Pipeline</span><span><i></i>Accounts</span><span><i></i>More</span></div></div>'
+        );
+      }
+      /* the saving screens: a deal being edited, a usage being edited, a deal being created */
+      function editDealSave() {
+        return (
+          '<div class="slot"></div>' +
+          editDeal().replace(
+            '<button type="button" class="p" disabled style="opacity:.45">Save</button>',
+            '<button type="button" class="p" data-save="save">Save</button>'
+          )
+        );
+      }
+      function usageEdit() {
+        return (
+          '<div class="lock"><button type="button" class="lockbtn"><span>‹</span> Back to usages</button></div><div class="slot"></div><div class="nm2" style="margin:2px 2px;font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--head)">Edit usage</div><p class="sub1" style="margin:0 2px 10px;color:var(--muted);font-size:14px">Mater Hospital · Hip</p>' +
+          '<div class="ug"><div class="fg"><div class="g3" style="font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:4px"><span>Company</span><span>Cases/yr</span></div><div class="fl" style="font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px">Stems</div><div class="g3"><select class="in"><option>ZB</option></select><input class="in" type="number" value="30" /></div><div class="fl" style="font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:12px 0 5px">Cups</div><div class="g3"><select class="in"><option>ZB</option></select><input class="in" type="number" value="18" /></div></div><button type="button" class="del" data-delask="1">Delete this usage</button></div>' +
+          '<div class="lockbar" style="margin-top:auto"><button type="button" class="c">Cancel</button><button type="button" class="p" data-save="save">Save</button></div>'
+        );
+      }
+      function createDeal() {
+        return (
+          '<div class="slot"></div>' +
+          newDeal(true).replace(
+            '<button type="button" class="p">Create</button>',
+            '<button type="button" class="p" data-save="create">Create</button>'
+          )
+        );
+      }
+      var VERB = {
+        save: ["Saving…", "Saved"],
+        create: ["Creating…", "Created"],
+        del: ["Deleting…", "Deleted"]
+      };
+      function words(v) {
+        return S.wd === "universal" ? ["Updating…", "Updated"] : VERB[v];
+      }
+      function runSave(ph, verb) {
+        if (ph.classList.contains("saving")) return;
+        var w = words(verb || "save");
+        var slot = ph.querySelector(".slot");
+        if (slot) slot.innerHTML = "";
+        ph.classList.remove("done");
+        ph.querySelector(".sv-t").textContent = w[0];
+        ph.classList.add("saving");
+        setTimeout(function () {
+          if (S.md === "fail") {
+            ph.classList.remove("saving");
+            if (slot)
+              slot.innerHTML =
+                '<div class="sverr">' +
+                (verb === "del"
+                  ? "Insufficient access: you may not delete this usage"
+                  : "Close quarter is in the past") +
+                "</div>";
+            return;
+          }
+          if (S.af === "tick") {
+            ph.classList.add("done");
+            ph.querySelector(".sv-t").textContent = w[1];
+            setTimeout(function () {
+              ph.classList.remove("saving", "done");
+              if (slot)
+                slot.innerHTML = '<div class="svok">' + w[1] + ".</div>";
+            }, 750);
+          } else {
+            ph.classList.remove("saving");
+            if (slot) slot.innerHTML = '<div class="svok">' + w[1] + ".</div>";
+          }
+        }, 1100);
+      }
+
+      var BR = [
+        "LCCK",
+        "MUK",
+        "NexGen",
+        "Other",
+        "Oxford",
+        "Persona",
+        "PFJ",
+        "RHK",
+        "Vanguard",
+        "ZSS"
+      ];
+      var BSEL = {
+        today: ["Persona"],
+        closed: ["Persona"],
+        open: ["Persona", "NexGen"],
+        many: ["Persona", "NexGen", "Oxford", "Vanguard"]
+      };
+      function bcomp(key, shut) {
+        var sel = BSEL[key];
+        return (
+          '<div class="bc' +
+          (shut ? " shut" : "") +
+          '" data-bc="' +
+          key +
+          '"><button type="button" class="hd" data-bch="1"><span class="tx"><small>Brand</small><span class="chosen' +
+          (sel.length ? "" : " none") +
+          '">' +
+          (sel.length ? sel.join(", ") : "None selected") +
+          '</span></span><span class="rd"></span></button><div class="bd"><div><div class="chips">' +
+          BR.map(function (b) {
+            return (
+              '<button type="button" class="chip' +
+              (sel.indexOf(b) > -1 ? " on" : "") +
+              '" data-bchip="' +
+              b +
+              '">' +
+              b +
+              "</button>"
+            );
+          }).join("") +
+          "</div></div></div></div>"
+        );
+      }
+      function brandPhone(kind, extra) {
+        var units =
+          '<div class="f"><div class="fl">Expected annual units / cases</div><input class="in" type="number" value="40" /></div>';
+        var brand =
+          kind === "today"
+            ? '<div class="f brandold"><div class="fl">Brand</div><div class="pls">' +
+              BR.map(function (b) {
+                return (
+                  '<button type="button" class="' +
+                  (BSEL.today.indexOf(b) > -1 ? "on" : "") +
+                  '">' +
+                  b +
+                  "</button>"
+                );
+              }).join("") +
+              "</div></div>"
+            : '<div class="f">' + bcomp(kind, kind !== "open") + "</div>";
+        return (
+          '<div class="lock"><button type="button" class="lockbtn"><span>‹</span> Back to My Pipeline</button></div><div class="card bf"><h3>The deal</h3>' +
+          units +
+          brand +
+          '<div class="f">' +
+          sl("Rep priority", "good", true) +
+          "</div></div>" +
+          (extra || "")
+        );
+      }
+
+      function cnList(kind) {
+        var bar =
+          kind === "today"
+            ? '<button type="button" class="cnb" style="font-size:13px">+ Create new pipeline</button>'
+            : '<button type="button" class="cnb"><span class="pc"></span>Create New</button>';
+        return (
+          home(true).replace('<div class="ctl"', '<div class="ctl"') +
+          '<div class="lockbar">' +
+          bar +
+          "</div>"
+        );
+      }
+      function cnUsages() {
+        return (
+          '<div class="lock"><button type="button" class="lockbtn"><span>‹</span> Back to deal</button></div><div class="nm2" style="margin:2px 2px;font-size:24px;font-weight:800">Surgeon Usages</div><p class="sub1" style="margin:0 2px 10px;color:var(--muted);font-size:14px">Ben Treffene · Opportunity · Knee</p>' +
+          '<div class="fresh" style="margin:0 0 12px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--card);font-size:14px;color:var(--muted)">Usages updated 3 months ago (12 Aug 2026).</div>' +
+          '<button type="button" class="cnb" style="margin-bottom:12px"><span class="pc"></span>Add usage</button>' +
+          '<div class="hh">Mater Hospital</div><div class="ucd"><div style="font-size:17px;font-weight:800">Knee</div><div style="display:flex;gap:10px;margin-top:6px;font-size:16px"><span style="flex:1;font-weight:800;color:#b7791f">ZB</span><span style="color:var(--muted);font-size:14px">30 a year</span></div></div>'
+        );
+      }
+      function cnNew() {
+        return '<div class="lock"><button type="button" class="lockbtn"><span>‹</span> Back to My Pipeline</button></div><div class="nm2" style="margin:2px 2px;font-size:24px;font-weight:800;line-height:1.15">Create New</div><p class="sub1" style="margin:0 2px 16px;color:var(--muted);font-size:14px">Choose the kind, then fill it in.</p><div class="seg3 k0"><span class="th"></span><button type="button" class="on">Opportunity</button><button type="button">Risk</button><button type="button">ROSA</button></div>';
+      }
+
+      function draw() {
+        document.body.setAttribute("data-theme", S.theme);
+        var g = function (title, a, b, ca, cb) {
+          return (
+            '<div class="grp"><h1>' +
+            title +
+            '</h1><div class="pair"><div class="opt"><h2>' +
+            ca +
+            "</h2>" +
+            a +
+            '</div><div class="opt"><h2>' +
+            cb +
+            "</h2>" +
+            b +
+            "</div></div></div>"
+          );
+        };
+        var g1 = function (title, parts) {
+          return (
+            '<div class="grp"><h1>' +
+            title +
+            '</h1><div class="pair">' +
+            parts
+              .map(function (x) {
+                return (
+                  '<div class="opt"><h2>' + x[0] + "</h2>" + x[1] + "</div>"
+                );
+              })
+              .join("") +
+            "</div></div>"
+          );
+        };
+        document.getElementById("phones").innerHTML =
+          g1(
+            'The Create New bar (Robert: not "deal", because a risk is not a good thing)',
+            [
+              ["Today: + Create new pipeline", frame("cn", cnList("today"))],
+              [
+                "Proposed: the circled plus and Create New",
+                frame("cn", cnList("prop"))
+              ],
+              ["Proposed: the same plus on Add usage", frame("", cnUsages())],
+              ["Proposed: the page it opens", frame("", cnNew())]
+            ]
+          ) +
+          g1(
+            "The Brand component (new deal and editing a deal; opportunities and risks)",
+            [
+              [
+                "Today: the chips always showing",
+                frame("bf", brandPhone("today"))
+              ],
+              [
+                "Proposed: closed (an existing deal opens like this)",
+                frame("bf", brandPhone("closed"))
+              ],
+              [
+                "Proposed: opened to choose (tap the chips)",
+                frame("bf", brandPhone("open"))
+              ],
+              [
+                "Proposed: a risk with several brands",
+                frame("bf", brandPhone("many"))
+              ]
+            ]
+          ) +
+          g1("How fast a screen slides", [
+            ["Today: 0.40 s", slidePhone(0.4)],
+            ["Proposed: 0.48 s (20% slower)", slidePhone(0.48)]
+          ]) +
+          g1("The saving screen (Save, Add, Create)", [
+            ["Saving a deal", frameO("sv", editDealSave())],
+            [
+              "Editing a usage (try Delete this usage)",
+              frameO(
+                "sv",
+                usageEdit(),
+                '<div class="askwrap"><div class="ask1"><b>Delete this usage?</b><p>Delete the Hip usage at Mater Hospital? This cannot be undone.</p><div class="row2"><button type="button" class="stay" data-keep="1">Keep</button><button type="button" class="leave" data-delyes="1">Delete</button></div></div></div>'
+              )
+            ],
+            ["Creating a deal", frameO("nw prop sv", createDeal())]
+          ]) +
+          g(
+            "Home list",
+            frame("", home(false)),
+            frame("", home(true)),
+            "Today",
+            "Proposed: the type on the second line, headings 20% taller"
+          ) +
+          g(
+            "New deal page",
+            frame("nw", newDeal(false)),
+            frame("nw prop", newDeal(true)),
+            "Today",
+            "Proposed: room, no field lines, the Back button filled"
+          ) +
+          g(
+            "Editing an existing deal (the same fields, the same look)",
+            frame("nw", editDeal()),
+            frame("nw prop", editDeal()),
+            "Today",
+            "Proposed: the same changes as the New deal page"
+          );
+        Array.prototype.forEach.call(
+          document.querySelectorAll(".phone.cn .scroll"),
+          function (s) {
+            s.style.display = "flex";
+            s.style.flexDirection = "column";
+          }
+        );
+        Array.prototype.forEach.call(
+          document.querySelectorAll("[data-theme-btn],[data-sc]"),
+          function (x) {
+            x.classList.toggle(
+              "on",
+              (x.dataset.themeBtn && x.dataset.themeBtn === S.theme) ||
+                (x.dataset.sc !== undefined && +x.dataset.sc === S.sc)
+            );
+          }
+        );
+        Array.prototype.forEach.call(
+          document.querySelectorAll(".phone.nw .scroll"),
+          function (s) {
+            var c = s.querySelector(".card");
+            s.scrollTop = S.sc && c ? c.offsetTop - 70 : 0;
+          }
+        );
+      }
+      document.addEventListener("click", function (e) {
+        var bh = e.target.closest("[data-bch]");
+        if (bh) {
+          bh.closest(".bc").classList.toggle("shut");
+          return;
+        }
+        var bchip = e.target.closest("[data-bchip]");
+        if (bchip) {
+          var bc = bchip.closest(".bc"),
+            key = bc.dataset.bc,
+            i = BSEL[key].indexOf(bchip.dataset.bchip);
+          if (i > -1) BSEL[key].splice(i, 1);
+          else BSEL[key].push(bchip.dataset.bchip);
+          var shut = bc.classList.contains("shut");
+          var wrap = bc.parentNode;
+          wrap.innerHTML = bcomp(key, shut);
+          return;
+        }
+        var da = e.target.closest("[data-delask]");
+        if (da) {
+          da.closest(".phone").classList.add("ask");
+          return;
+        }
+        var kp = e.target.closest("[data-keep]");
+        if (kp) {
+          kp.closest(".phone").classList.remove("ask");
+          return;
+        }
+        var dy = e.target.closest("[data-delyes]");
+        if (dy) {
+          var dp = dy.closest(".phone");
+          dp.classList.remove("ask");
+          runSave(dp, "del");
+          return;
+        }
+        var sv = e.target.closest("[data-save]");
+        if (sv) {
+          runSave(sv.closest(".phone"), sv.dataset.save);
+          return;
+        }
+        if (e.target.closest(".phone.saving")) return; // the screen is dimmed and locked while it saves
+        var af = e.target.closest("[data-af],[data-md],[data-wd]");
+        if (af) {
+          if (af.dataset.af) S.af = af.dataset.af;
+          if (af.dataset.md) S.md = af.dataset.md;
+          if (af.dataset.wd) S.wd = af.dataset.wd;
+          Array.prototype.forEach.call(
+            document.querySelectorAll("[data-af],[data-md],[data-wd]"),
+            function (x) {
+              x.classList.toggle(
+                "on",
+                (x.dataset.af && x.dataset.af === S.af) ||
+                  (x.dataset.md && x.dataset.md === S.md) ||
+                  (x.dataset.wd && x.dataset.wd === S.wd)
+              );
+            }
+          );
+          return;
+        }
+        var sl = e.target.closest(".phone.sd .dl, .phone.sd [data-slide]");
+        if (sl) {
+          var ph = sl.closest(".phone");
+          ph.classList.toggle("open", !sl.dataset.slide);
+          return;
+        }
+        if (e.target.closest("#slidego")) {
+          var all = document.querySelectorAll(".phone.sd");
+          var op = !all[0].classList.contains("open");
+          Array.prototype.forEach.call(all, function (x) {
+            x.classList.toggle("open", op);
+          });
+          return;
+        }
+        var st = e.target.closest(".phone.nw.prop [data-stg]");
+        if (st) {
+          if (st.dataset.stg === "hd") S.shut = !S.shut;
+          else {
+            S.stage = st.dataset.stg;
+            S.shut = true;
+          }
+          var keep = document.querySelector(".phone.nw.prop .scroll").scrollTop;
+          draw();
+          document.querySelector(".phone.nw.prop .scroll").scrollTop = keep;
+          return;
+        }
+        var b = e.target.closest("[data-theme-btn],[data-sc]");
+        if (!b) return;
+        if (b.dataset.themeBtn) S.theme = b.dataset.themeBtn;
+        if (b.dataset.sc !== undefined) S.sc = +b.dataset.sc;
+        draw();
+      });
+      document.getElementById("fullbtn").addEventListener("click", function () {
+        document.getElementById("note").textContent =
+          "Mockup note: in Salesforce this opens in a new full-screen tab without the Salesforce navigation.";
+      });
+      draw();
+    </script>
+  </body>
+</html>

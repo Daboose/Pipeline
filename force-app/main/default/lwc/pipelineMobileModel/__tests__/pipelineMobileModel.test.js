@@ -17,8 +17,27 @@ import {
   chatterSummary,
   mentionQuery,
   insertMention,
-  segmentsFrom
+  segmentsFrom,
+  dealArea,
+  ratingPlates,
+  usageFreshness,
+  groupUsages,
+  changedLines,
+  companyOptions,
+  newDealTypes,
+  newDealChoices,
+  recordTypesFor,
+  missingRequired,
+  createFields,
+  cardType,
+  withSavingScreen,
+  SAVING_TIMING,
+  SAVING_WORDS
 } from "c/pipelineMobileModel";
+
+// the saving screen shows no delay in these tests
+SAVING_TIMING.min = 0;
+SAVING_TIMING.done = 0;
 
 const d = (id, o = {}) => ({
   id,
@@ -77,7 +96,13 @@ describe("pipelineMobileModel", () => {
     expect(
       cardOf(d("a", { isClosed: true, stage: "Conversion" }), "closed").pill
         .label
-    ).toBe("Closed Won");
+    ).toBe("Won");
+    expect(
+      cardOf(
+        d("a", { isClosed: true, stage: "Unsuccessful Conversion" }),
+        "both"
+      ).pill.label
+    ).toBe("Lost");
     expect(cardOf(d("a"), "both").pill.label).toBe("Open");
     expect(cardOf(d("a", { campaignCount: 2 }), "open").campaignStar).toBe(
       true
@@ -243,7 +268,7 @@ describe("pipelineMobileModel", () => {
         ...over
       });
 
-    it("puts the year beside the quarter, the currency beside the money, and the four Yes / No fields in one block", () => {
+    it("puts the year beside the quarter, the currency beside the money, and the three Yes / No fields in one block", () => {
       const rows = make("opp");
       expect(rows.map((r) => r.api)).toEqual([
         "Account__c",
@@ -267,8 +292,7 @@ describe("pipelineMobileModel", () => {
       expect(flags.map((f) => f.label)).toEqual([
         "On hold",
         "Rep priority",
-        "State priority",
-        "MyMo"
+        "MyMobility"
       ]);
       expect(flags[0].options[1].tone).toBe("warn");
       expect(flags[1].options[1].tone).toBe("good");
@@ -283,7 +307,7 @@ describe("pipelineMobileModel", () => {
       expect(rows[0].canClear).toBe(false); // required: swapped, never cleared
       expect(rows[1].canClear).toBe(true); // the facility is optional and has one
       const brand = rows.find((r) => r.api === "Brand__c");
-      expect(brand.options.map((o) => o.cls)).toEqual(["pl on", "pl on", "pl"]);
+      expect(brand.options.map((o) => o.on)).toEqual([true, true, false]);
       const q = rows.find((r) => r.api === "Expected_Closure_Quarter__c");
       expect(q.options.find((o) => o.selected).value).toBe("Q1");
     });
@@ -327,11 +351,10 @@ describe("pipelineMobileModel", () => {
       expect(rows.find((r) => r.isFlags).flags[0].locked).toBe(true);
     });
 
-    it("gives a risk and a ROSA deal their own fields (no On hold or MyMo on a risk)", () => {
+    it("gives a risk and a ROSA deal their own fields (no On hold or MyMobility on a risk, and no State priority on the phone)", () => {
       const risk = make("risk");
       expect(risk.find((r) => r.isFlags).flags.map((f) => f.label)).toEqual([
-        "Rep priority",
-        "State priority"
+        "Rep priority"
       ]);
       expect(make("rosa")[0].api).toBe("Healthcare_Facility__c");
     });
@@ -401,6 +424,342 @@ describe("pipelineMobileModel", () => {
       expect(segmentsFrom("hi @Priya Nairn", people)).toEqual([
         { t: "hi @Priya Nairn" }
       ]);
+    });
+  });
+
+  describe("the usage rating tile", () => {
+    it("takes the Portfolio tile's place when a rating is given, and leaves it alone otherwise", () => {
+      const keys = (rating) =>
+        summaryTiles(d("a"), Date.now(), rating).map((x) => x.key);
+      expect(keys(undefined)).toContain("portfolio");
+      expect(keys(undefined)).not.toContain("rating");
+      expect(keys("Gold")).toContain("rating");
+      expect(keys("Gold")).not.toContain("portfolio");
+      expect(keys("Gold").length).toBe(8); // a replacement, not an extra tile
+      const tile = summaryTiles(d("a"), Date.now(), "Gold")[1];
+      expect(tile).toMatchObject({
+        label: "Usage rating",
+        value: "Gold",
+        tileCls: "tile rchip m-Gold"
+      });
+      expect(summaryTiles(d("a"), Date.now(), "No rating")[1].tileCls).toBe(
+        "tile rchip m-None"
+      );
+      expect(summaryTiles(d("a"), Date.now(), "")[1]).toMatchObject({
+        value: "–",
+        tileCls: "tile rchip m-None"
+      }); // not read yet
+    });
+  });
+
+  describe("Surgeon Usages", () => {
+    const now = Date.parse("2026-11-08T10:00:00Z");
+    it("finds the deal's own area from its portfolio", () => {
+      expect(dealArea({ segment: "Hip" })).toBe("Hip");
+      expect(dealArea({ segment: "Extremities" })).toBe("Shoulder");
+      expect(dealArea({ segment: "CMFT" })).toBe("CMF");
+      expect(dealArea({ segment: "Hip;Knee" })).toBe("Hip");
+      expect(dealArea({})).toBe("");
+    });
+    it("makes the rating plates: the word, the stars, the metal, the deal's own area, and a grey plate for no rating", () => {
+      const plates = ratingPlates(
+        [
+          { area: "Hip", rating: "GOLD" },
+          { area: "Knee", rating: "PLATINUM" },
+          { area: "Shoulder", rating: "silver" },
+          { area: "CMF", rating: "" }
+        ],
+        "Hip"
+      );
+      expect(plates.map((p) => p.rank)).toEqual([
+        "Gold",
+        "Platinum",
+        "Silver",
+        "No rating"
+      ]);
+      expect(plates.map((p) => p.stars)).toEqual(["★★★", "★★★★", "★★", ""]);
+      expect(plates[0].cls).toBe("plate m-GOLD mine");
+      expect(plates[3].cls).toBe("plate m-NONE");
+      expect(plates[3].area).toBe("CMFT");
+    });
+    it("says how fresh the usages are, and warns at two years or more", () => {
+      expect(usageFreshness("", "Hip", now).row).toBe("none recorded");
+      const recent = usageFreshness("2026-08-12T00:00:00Z", "Hip", now);
+      expect(recent.old).toBe(false);
+      expect(recent.row).toBe("updated 3 months ago");
+      expect(usageFreshness("2026-11-05T00:00:00Z", "Hip", now).row).toBe(
+        "updated 3 days ago"
+      );
+      const old = usageFreshness("2023-11-14T00:00:00Z", "Hip", now);
+      expect(old.old).toBe(true);
+      expect(old.row).toBe("last updated 2 years ago");
+      expect(old.line).toContain("The Hip rating may be out of date.");
+      expect(old.note).toContain("next time you see this surgeon");
+    });
+    const LINES = [
+      {
+        usageId: "u1",
+        hospital: "Mater",
+        hospitalId: "h1",
+        portfolio: "Hip",
+        key: "stems",
+        label: "Stems",
+        company: "ZB",
+        cases: 24,
+        recordTypeId: "rt1"
+      },
+      {
+        usageId: "u1",
+        hospital: "Mater",
+        hospitalId: "h1",
+        portfolio: "Hip",
+        key: "cups",
+        label: "Cups",
+        company: "",
+        cases: null,
+        empty: true,
+        recordTypeId: "rt1"
+      },
+      {
+        usageId: "u2",
+        hospital: "Mater",
+        hospitalId: "h1",
+        portfolio: "Knee",
+        key: "knee",
+        label: "Knee",
+        company: "ZB",
+        cases: 30,
+        recordTypeId: "rt2"
+      },
+      {
+        usageId: "u3",
+        hospital: "Epworth",
+        hospitalId: "h2",
+        portfolio: "Shoulder",
+        key: "anatomical",
+        label: "Anatomical",
+        company: "",
+        cases: null,
+        empty: true,
+        recordTypeId: "rt3"
+      }
+    ];
+    it("groups the usages by hospital, one entry for each usage, leaving out a usage with nothing in it", () => {
+      const g = groupUsages(LINES);
+      expect(g.map((x) => x.hospital)).toEqual(["Mater"]); // Epworth's only usage is empty
+      expect(g[0].usages.map((u) => u.name)).toEqual(["Hip", "Knee"]);
+      expect(g[0].usages[0].lines.length).toBe(2); // the empty cups line is kept so it can be filled in
+    });
+    it("works out which lines were changed, and nothing for a change put back", () => {
+      const u = groupUsages(LINES)[0].usages[0];
+      expect(changedLines(u, {})).toEqual([]);
+      expect(changedLines(u, { stems: { cases: 30 } })).toEqual([
+        { key: "stems", company: "ZB", cases: 30 }
+      ]);
+      expect(
+        changedLines(u, { stems: { cases: 24 }, cups: { company: "Stryker" } })
+      ).toEqual([{ key: "cups", company: "Stryker", cases: null }]);
+    });
+    it("lists the companies with a dash for none and the current one even if the record type no longer offers it", () => {
+      expect(
+        companyOptions(["ZB", "Other"], "Old Co").map((o) => o.value)
+      ).toEqual(["", "Old Co", "ZB", "Other"]);
+      expect(companyOptions(["ZB"], "ZB").find((o) => o.selected).value).toBe(
+        "ZB"
+      );
+    });
+  });
+
+  describe("a new deal", () => {
+    const infos = {
+      m: { recordTypeId: "rtM", name: "Master", available: true, master: true },
+      a: { recordTypeId: "rtHip", name: "AU HIP Opportunity", available: true },
+      b: {
+        recordTypeId: "rtKnee",
+        name: "AU KNEE Opportunity",
+        available: true
+      },
+      c: { recordTypeId: "rtRisk", name: "AU RISK", available: true },
+      d: {
+        recordTypeId: "rtRosa",
+        name: "AU ROSA Opportunity",
+        available: true
+      },
+      e: { recordTypeId: "rtNz", name: "NZ KNEE Opportunity", available: true },
+      f: {
+        recordTypeId: "rtEdge",
+        name: "AU ZBEDGE Opportunity",
+        available: true
+      },
+      g: {
+        recordTypeId: "rtReg",
+        name: "REGIONAL ROSA Opportunity",
+        available: true
+      },
+      h: { recordTypeId: "rtNo", name: "AU CMFT Opportunity", available: false }
+    };
+    it("offers only the record types the person may use, as a kind and a portfolio, leaving out the special ones", () => {
+      const types = newDealTypes(infos);
+      expect(types.map((t) => t.name).sort()).toEqual([
+        "AU HIP Opportunity",
+        "AU KNEE Opportunity",
+        "AU RISK",
+        "AU ROSA Opportunity",
+        "NZ KNEE Opportunity"
+      ]);
+      expect(newDealChoices(types)).toEqual({
+        kinds: ["opp", "risk", "rosa"],
+        portfolios: ["Hip", "Knee"]
+      });
+    });
+    it("finds the record type for a kind and portfolio, and more than one for a person in two countries", () => {
+      const types = newDealTypes(infos);
+      expect(recordTypesFor(types, "opp", "Hip").map((t) => t.id)).toEqual([
+        "rtHip"
+      ]);
+      expect(
+        recordTypesFor(types, "opp", "Knee")
+          .map((t) => t.country)
+          .sort()
+      ).toEqual(["AU", "NZ"]);
+      // the person's own default first
+      const withDefault = newDealTypes({
+        ...infos,
+        e: { ...infos.e, defaultRecordTypeMapping: true }
+      });
+      expect(recordTypesFor(withDefault, "opp", "Knee")[0].country).toBe("NZ");
+      expect(recordTypesFor(types, "risk", "").map((t) => t.id)).toEqual([
+        "rtRisk"
+      ]);
+      expect(recordTypesFor(types, "rosa", "").map((t) => t.id)).toEqual([
+        "rtRosa"
+      ]);
+    });
+    it("lists what is missing: the surgeon, the quarter and the value, or the hospital for a ROSA deal", () => {
+      const has = (o) => (api) => o[api];
+      expect(missingRequired("opp", has({}))).toEqual([
+        "Primary HCP: required",
+        "Expected closing quarter: required",
+        "Expected annual value: required"
+      ]);
+      expect(
+        missingRequired(
+          "risk",
+          has({ Account__c: "001", Expected_Closure_Quarter__c: "Q2" })
+        )
+      ).toEqual(["Annual value at risk: required"]);
+      expect(missingRequired("rosa", has({}))).toEqual([
+        "Healthcare facility: required"
+      ]);
+      expect(
+        missingRequired(
+          "opp",
+          has({
+            Account__c: "001",
+            Expected_Closure_Quarter__c: "Q2",
+            AmountPerYear__c: 0
+          })
+        )
+      ).toEqual([]);
+    });
+    it("builds the fields to create with, leaving blanks out", () => {
+      expect(
+        createFields(
+          {
+            Account__c: "001",
+            Objective__c: "",
+            Priority__c: false,
+            AmountPerYear__c: 250000
+          },
+          "rtKnee"
+        )
+      ).toEqual({
+        RecordTypeId: "rtKnee",
+        Account__c: "001",
+        Priority__c: false,
+        AmountPerYear__c: 250000
+      });
+    });
+    it("stars the extra required fields in the form rows", () => {
+      const rows = formRows("opp", {
+        draft: {},
+        valueOf: () => null,
+        choices: (api) => {
+          if (api !== "Expected_Closure_Quarter__c") return null;
+          return [{ value: "Q1", label: "Q1" }];
+        },
+        updateable: () => true,
+        lookupName: () => "",
+        required: ["AmountPerYear__c", "Expected_Closure_Quarter__c"]
+      });
+      expect(rows.find((r) => r.api === "AmountPerYear__c").req).toBe(true);
+      expect(
+        rows.find((r) => r.api === "Expected_Closure_Quarter__c").req
+      ).toBe(true);
+      expect(rows.find((r) => r.api === "Healthcare_Facility__c").req).toBe(
+        false
+      );
+    });
+  });
+
+  describe("the card's type line and the saving screen (0.31)", () => {
+    it("puts the portfolio first on the card's line: Knee · Commit · Q1", () => {
+      const knee = cardOf(
+        d("a", { segment: "Knee", stage: "Commit", quarter: "Q1" }),
+        "open"
+      );
+      expect(knee.typeWord).toBe("Knee");
+      expect(knee.typeWord + knee.stageRest).toBe("Knee · Commit · Q1");
+      expect(cardType(d("a", { segment: "Hip;Knee" }))).toBe("Hip, Knee");
+      // a ROSA deal keeps its own line, with no type word
+      const rosa = cardOf(
+        d("a", { kind: "rosa", segment: "Hip", stage: "Plan", quarter: "Q2" }),
+        "open"
+      );
+      expect(rosa.typeWord).toBe("");
+      expect(rosa.stageRest).toBe("Plan · Q2");
+      // nothing known: no stray separator
+      expect(
+        cardOf(d("a", { segment: "", stage: "", quarter: "" }), "open")
+          .stageRest
+      ).toBe("");
+    });
+
+    it("runs a change under the saving screen: working, then done, then gone; the result comes through", async () => {
+      const seen = [];
+      const result = await withSavingScreen(
+        (s) => seen.push(`${s.phase}:${s.word}`),
+        SAVING_WORDS.create,
+        () => Promise.resolve(42)
+      );
+      expect(result).toBe(42);
+      expect(seen).toEqual(["working:Creating…", "done:Created", ":Created"]);
+    });
+
+    it("brings the screen back at once when Salesforce refuses, and passes the error on", async () => {
+      const seen = [];
+      await expect(
+        withSavingScreen(
+          (s) => seen.push(s.phase),
+          SAVING_WORDS.save,
+          () => Promise.reject(new Error("Close quarter is in the past"))
+        )
+      ).rejects.toThrow("Close quarter is in the past");
+      expect(seen).toEqual(["working", ""]);
+    });
+
+    it("keeps the screen up for at least the minimum time", async () => {
+      const saved = { ...SAVING_TIMING };
+      SAVING_TIMING.min = 60;
+      SAVING_TIMING.done = 0;
+      const t0 = Date.now();
+      await withSavingScreen(
+        () => {},
+        SAVING_WORDS.delete,
+        () => Promise.resolve()
+      );
+      expect(Date.now() - t0).toBeGreaterThanOrEqual(55);
+      Object.assign(SAVING_TIMING, saved);
     });
   });
 });

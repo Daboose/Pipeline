@@ -1,0 +1,123 @@
+/* the stage control's look (Robert, 2026-11-08): an indigo joined row with a round chevron button; open it folds down to the chips.
+   Colours come from the Pipeline Mobile screen (inherited); the fallbacks are the same light palette. */
+:host {
+  display: block;
+}
+.bc {
+  border: 2px solid var(--indigo, #4f46e5);
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--panel, #fff);
+  margin: 2px 0 4px;
+}
+.hd {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 60px;
+  padding: 8px 12px 8px 16px;
+  border: 0;
+  border-radius: 0;
+  background: var(--indigo, #4f46e5);
+  color: #fff;
+  text-align: left;
+  cursor: pointer;
+  font-family: inherit;
+  -webkit-tap-highlight-color: transparent;
+}
+.tx {
+  flex: 1;
+  min-width: 0;
+}
+.hd small {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  opacity: 0.85;
+}
+/* the chosen words read exactly as the stage name does on the stage row: the same bold 19 px white words, separated by commas */
+.chosen {
+  display: block;
+  font-size: 19px;
+  font-weight: 800;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+.chosen.none {
+  font-weight: 500;
+  opacity: 0.8;
+}
+.rd {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.22);
+  position: relative;
+  transform: rotate(180deg);
+  transition: transform var(--slide, 0.48s) cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.rd::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  border-right: 4px solid #fff;
+  border-bottom: 4px solid #fff;
+  border-radius: 2px;
+  transform: translate(-50%, -70%) rotate(45deg);
+}
+.bc.shut .rd {
+  transform: none;
+}
+.bd {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition: grid-template-rows var(--slide, 0.48s)
+    cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.bc.shut .bd {
+  grid-template-rows: 0fr;
+}
+.bd > div {
+  overflow: hidden;
+  min-height: 0;
+}
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 14px 14px 16px;
+}
+.chip {
+  height: 40px;
+  padding: 0 16px;
+  border: 1px solid var(--edge, #b3bfd6);
+  border-radius: 999px;
+  background: var(--panel2, #eef2fa);
+  color: var(--muted, #5d6b85);
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  transition:
+    background var(--quick, 0.36s),
+    color var(--quick, 0.36s);
+}
+.chip.on {
+  background: var(--indigo, #4f46e5);
+  border-color: var(--indigo, #4f46e5);
+  color: #fff;
+}
+@media (prefers-reduced-motion: reduce) {
+  .rd,
+  .bd,
+  .chip {
+    transition: none;
+  }
+}

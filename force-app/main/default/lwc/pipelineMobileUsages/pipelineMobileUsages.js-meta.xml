@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+  <apiVersion>68.0</apiVersion>
+  <description
+  >Pipeline Mobile: the Surgeon Usages screen of one deal on the phone. Slides in over the deal: the four rating plates, how fresh the usages are, and the usages by hospital with edit, delete and add on sliding pages. Used only inside Pipeline Mobile.</description>
+  <isExposed>false</isExposed>
+</LightningComponentBundle>

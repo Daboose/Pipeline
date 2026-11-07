@@ -26,16 +26,19 @@ import {
   stageSteps,
   stageTone,
   liveDeal,
+  dealArea,
   formRows,
   formFieldNames,
   QUARTER_FIELD,
-  YEAR_FIELD
+  YEAR_FIELD,
+  SAVING_WORDS,
+  withSavingScreen
 } from "c/pipelineMobileModel";
 import { formatMoney, suggestYear, quarterIsPast } from "c/pipelineFormat";
 
-const MOBILE_VERSION = "0.26"; // shown at the foot of the screen; raised with each change that goes out
+const MOBILE_VERSION = "0.33"; // shown at the foot of the screen; raised with each change that goes out
 
-const SLIDE_OUT_MS = 450; // a little longer than the slide itself (0.4 s in the style sheet)
+const SLIDE_OUT_MS = 540; // a little longer than the slide itself (0.48 s in the style sheet)
 const LOOKUP_MIN = 2; // letters before a search is made, as on the desktop
 const LOOKUP_WAIT_MS = 300;
 const LOOKUP_LIMIT = 8; // the most a search returns; a full list means there are probably more
@@ -89,6 +92,10 @@ export default class PipelineMobile extends LightningElement {
   openId = ""; // the deal being looked at; blank when the list is showing
   chatOn = false; // the Chatter screen is slid in over the deal
   chatSummary = ""; // "4 posts · last 2 d ago", told by the Chatter screen
+  newOn = false; // the New deal page is slid in over the list
+  createdMsg = false; // the "Created." line at the top of a deal just created
+  usagesOn = false; // the Surgeon Usages screen is slid in over the deal
+  usagesSummary = { text: "", old: false, rating: "" }; // "updated 3 months ago", told by the Usages screen
   bookingsOn = false; // the MyCase Bookings screen is slid in over the deal
   bookingsSummary = ""; // "54 cases in 12 months", told by the Bookings screen
   bookingsKey = 0; // goes up when the deal is saved, so the bookings are read again
@@ -102,6 +109,8 @@ export default class PipelineMobile extends LightningElement {
   errors = [];
   savedMsg = false;
   saving = false;
+  savePhase = ""; // the saving screen: "", "working" or "done"
+  savingWord = "";
   confirming = false; // asking whether to leave with unsaved changes
   sheetField = ""; // the lookup being searched (the search page is over the deal while this is set)
   sheetTerm = "";
@@ -184,7 +193,7 @@ export default class PipelineMobile extends LightningElement {
 
   /** The labels of every Yes / No slider on the phone: the four on the deal form and the one on each campaign. */
   get measureLabels() {
-    return ["On hold", "Rep priority", "State priority", "MyMo", "In campaign"];
+    return ["On hold", "Rep priority", "MyMobility", "In campaign"];
   }
   /**
    * Gives every Yes / No slider on the phone one label width, the width of the longest label (measured from hidden copies set in the
@@ -361,7 +370,9 @@ export default class PipelineMobile extends LightningElement {
     const on = this.template.activeElement;
     if (
       on &&
-      /^(INPUT|TEXTAREA|SELECT|C-PIPELINE-MOBILE-CHATTER)$/.test(on.tagName)
+      /^(INPUT|TEXTAREA|SELECT|C-PIPELINE-MOBILE-CHATTER|C-PIPELINE-MOBILE-NEW)$/.test(
+        on.tagName
+      )
     )
       return;
     let node = this.template.host;
@@ -432,12 +443,13 @@ export default class PipelineMobile extends LightningElement {
     return this.liveDeal ? headerOf(this.liveDeal) : { name: "", sub: "" };
   }
   get tiles() {
-    return this.liveDeal ? summaryTiles(this.liveDeal) : [];
-  }
-  get goRows() {
-    const d = this.openDeal;
-    if (!d) return [];
-    return [{ key: "usages", label: "Surgeon Usages" }];
+    if (!this.liveDeal) return [];
+    // the surgeon's usage rating takes the Portfolio tile's place on an opportunity or a risk whose portfolio is known
+    const rating =
+      this.showSurgeonRows && this.usagesArea
+        ? this.usagesSummary.rating || ""
+        : undefined;
+    return summaryTiles(this.liveDeal, Date.now(), rating);
   }
   get stageNow() {
     return (this.liveDeal && this.liveDeal.stage) || "–";
@@ -484,6 +496,9 @@ export default class PipelineMobile extends LightningElement {
    * underneath (the Status, the search, the folds and how far it was scrolled), so nothing has to be put back.
    */
   handleOpen(event) {
+    this.openDealById(event.currentTarget.dataset.id);
+  }
+  openDealById(id) {
     clearTimeout(this.leaveTimer);
     this.stagesOpen = false;
     this.clearDraft();
@@ -494,7 +509,10 @@ export default class PipelineMobile extends LightningElement {
     this.campaignsDirty = false;
     this.bookingsOn = false;
     this.bookingsSummary = "";
-    this.openId = event.currentTarget.dataset.id;
+    this.usagesOn = false;
+    this.usagesSummary = { text: "", old: false, rating: "" };
+    this.createdMsg = false;
+    this.openId = id;
     this.dealOn = true;
     this.scrollDealTo(0);
   }
@@ -515,6 +533,7 @@ export default class PipelineMobile extends LightningElement {
     this.chatOn = false;
     this.campaignsOn = false;
     this.bookingsOn = false;
+    this.usagesOn = false;
     this.dealOn = false;
     clearTimeout(this.leaveTimer);
     // eslint-disable-next-line @lwc/lwc/no-async-operation
@@ -570,6 +589,49 @@ export default class PipelineMobile extends LightningElement {
       .then((res) => this.takeDeals(res))
       .catch(() => {});
   }
+  /* ----- a new deal: the "Create new pipeline" bar slides the New deal page in; a created deal opens on its own screen ----- */
+  handleNewOpen() {
+    this.newOn = true;
+  }
+  handleNewClose() {
+    this.newOn = false;
+  }
+  /** A deal was created: the deals are read again, so it is in the list, and its own screen slides in with "Created." at the top. */
+  handleCreated(event) {
+    const id = event.detail;
+    this.newOn = false;
+    this.fetchDeals()
+      .then((res) => {
+        this.takeDeals(res);
+        this.openDealById(id);
+        this.createdMsg = true;
+      })
+      .catch((e) => {
+        this.error = errorText(e);
+      });
+  }
+
+  /* ----- Surgeon Usages: its own screen, slid in over the deal ----- */
+  /** The Surgeon Usages and MyCase Bookings rows are for an opportunity or a risk: a ROSA deal has no surgeon's usages (as on the desktop). */
+  get showSurgeonRows() {
+    return this.showDeal && this.openDeal.kind !== "rosa";
+  }
+  get usagesArea() {
+    return this.openDeal ? dealArea(this.openDeal) : "";
+  }
+  get usagesSubCls() {
+    return "gsub" + (this.usagesSummary.old ? " warn" : "");
+  }
+  handleUsagesOpen() {
+    this.usagesOn = true;
+  }
+  handleUsagesClose() {
+    this.usagesOn = false;
+  }
+  handleUsagesSummary(event) {
+    this.usagesSummary = event.detail;
+  }
+
   /* ----- MyCase Bookings: its own screen, slid in over the deal ----- */
   handleBookingsOpen() {
     this.bookingsOn = true;
@@ -662,6 +724,7 @@ export default class PipelineMobile extends LightningElement {
     else next[api] = value;
     this.draft = next;
     this.savedMsg = false;
+    this.createdMsg = false;
     this.errors = [];
   }
   handleSelect(event) {
@@ -698,8 +761,9 @@ export default class PipelineMobile extends LightningElement {
       event.detail.value === "yes"
     );
   }
-  handleMulti(event) {
-    const { api, value } = event.currentTarget.dataset;
+  handleChoice(event) {
+    const api = event.currentTarget.dataset.api;
+    const value = event.detail.value;
     const on = this.valueOf(api) ? String(this.valueOf(api)).split(";") : [];
     const next = on.includes(value)
       ? on.filter((x) => x !== value)
@@ -717,17 +781,25 @@ export default class PipelineMobile extends LightningElement {
     });
     this.saving = true;
     this.errors = [];
-    updateRecord({ fields })
-      .then(() => {
-        const id = this.openId;
-        this.draft = {};
-        this.draftNames = {};
-        this.savedMsg = true;
-        this.bookingsKey += 1; // the Primary HCP may have changed, so the bookings are read again
-        getRecordNotifyChange([{ recordId: id }]);
-        // read the deals again, quietly, so the list and the summary show what was saved
-        return this.fetchDeals().then((res) => this.takeDeals(res));
-      })
+    // the whole screen is dimmed and locked until Salesforce has answered and the deals are read again (Robert, 2026-11-08)
+    withSavingScreen(
+      (s) => {
+        this.savePhase = s.phase;
+        this.savingWord = s.word;
+      },
+      SAVING_WORDS.save,
+      () =>
+        updateRecord({ fields }).then(() => {
+          const id = this.openId;
+          this.draft = {};
+          this.draftNames = {};
+          this.savedMsg = true;
+          this.bookingsKey += 1; // the Primary HCP may have changed, so the bookings are read again
+          getRecordNotifyChange([{ recordId: id }]);
+          // read the deals again, quietly, so the list and the summary show what was saved
+          return this.fetchDeals().then((res) => this.takeDeals(res));
+        })
+    )
       .catch((e) => {
         this.errors = parseErrors(e);
       })

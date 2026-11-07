@@ -4,6 +4,8 @@
    desktop is not around this page. One layer per rule; phone sizes: 16 px search text (or the iPhone zooms), 37 px sliders, 44 px search. */
 :host {
   display: block;
+  --slide: 0.48s; /* every slide, fold and fade on the phone: 20% slower than the desktop standard 0.4 s (Robert, 2026-11-08); the child screens and the sliders inherit it */
+  --quick: 0.36s; /* the press effect and quick fades (0.3 s on the desktop) */
   --ok: #0f9d74; /* the Campaigns list inside takes these from here */
   --warn: #c2570c;
   --bad: #dc2626;
@@ -130,7 +132,7 @@
   align-items: center;
   gap: 8px;
   width: 100%;
-  padding: 11px 14px;
+  padding: 15px 14px; /* 20% taller than before (41 px to 49 px; Robert, 2026-11-08) */
   border-radius: 12px;
   border: 1px solid color-mix(in srgb, var(--head) 38%, var(--panel));
   background: color-mix(in srgb, var(--head) 16%, var(--panel));
@@ -160,7 +162,7 @@
   border-bottom: 2.5px solid var(--muted);
   transform: rotate(45deg);
   margin-top: -4px;
-  transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: transform var(--slide, 0.48s) cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 .sec.shut .chev {
   transform: rotate(-45deg);
@@ -169,7 +171,8 @@
 .fold {
   display: grid;
   grid-template-rows: 1fr;
-  transition: grid-template-rows 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: grid-template-rows var(--slide, 0.48s)
+    cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 .sec.shut .fold {
   grid-template-rows: 0fr;
@@ -212,6 +215,10 @@
   gap: 8px;
   margin-top: 8px;
   font-size: 14px;
+}
+.ty {
+  color: var(--head);
+  font-weight: 700;
 }
 .star {
   color: #16a34a;
@@ -487,7 +494,7 @@
   overflow: hidden;
   background: var(--panel);
   margin-bottom: 12px;
-  transition: border-color 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: border-color var(--slide, 0.48s) cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 .stsec.good {
   --c: #16a34a;
@@ -509,7 +516,7 @@
   font-family: inherit;
   text-align: left;
   cursor: pointer;
-  transition: background 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: background var(--slide, 0.48s) cubic-bezier(0.2, 0.8, 0.2, 1);
   -webkit-tap-highlight-color: transparent;
 }
 .stgC .sk {
@@ -537,7 +544,7 @@
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.22);
   transform: rotate(180deg);
-  transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: transform var(--slide, 0.48s) cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 .chev2::before {
   content: "";
@@ -599,8 +606,8 @@
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--muted);
-  margin-bottom: 5px;
-  transition: color 0.4s;
+  margin-bottom: 7px;
+  transition: color var(--slide, 0.48s);
 }
 .go {
   display: flex;
@@ -614,20 +621,12 @@
   margin-bottom: 8px;
   font-weight: 700;
 }
-.go.soon {
-  opacity: 0.55;
-}
 .go .badge {
   background: #1b2640;
   color: #fff;
   border-radius: 999px;
   padding: 1px 9px;
   font-size: 12px;
-}
-.soonword {
-  color: var(--muted);
-  font-size: 12px;
-  font-weight: 700;
 }
 .later {
   color: var(--muted);
@@ -647,11 +646,8 @@
    saved until Save. 16 px text (or the iPhone zooms the page) and 44 px controls. ===== */
 .f {
   padding: 9px 0;
-  border-top: 1px solid var(--line);
 }
-.okmsg + .frm .f {
-  border-top: 0;
-}
+/* no lines between the fields at all, above or below Brand either (Robert, 2026-11-08), the same on the deal form and the New deal page */
 .f.changed .fl {
   color: var(--indigo);
 }
@@ -676,21 +672,15 @@
   font-size: 16px;
   text-align: left;
   box-sizing: border-box;
-  transition: border-color 0.4s;
+  transition: border-color var(--slide, 0.48s);
 }
 select.in {
   appearance: none;
   -webkit-appearance: none;
   padding-right: 34px;
-  background-image:
-    linear-gradient(45deg, transparent 50%, var(--muted) 50%),
-    linear-gradient(135deg, var(--muted) 50%, transparent 50%);
-  background-position:
-    calc(100% - 20px) 19px,
-    calc(100% - 14px) 19px;
-  background-size:
-    6px 6px,
-    6px 6px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%235d6b85' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-position: right 14px center;
+  background-size: 12px 8px;
   background-repeat: no-repeat;
 }
 .ta {
@@ -749,8 +739,8 @@ select.in {
   font-weight: 700;
   font-size: 14px;
   transition:
-    background 0.3s,
-    color 0.3s;
+    background var(--quick, 0.36s),
+    color var(--quick, 0.36s);
 }
 .pl.on {
   background: var(--indigo);
@@ -766,19 +756,19 @@ select.in {
 }
 .flags {
   padding: 9px 0;
-  border-top: 1px solid var(--line);
 }
-/* the MyMo stage folds open only while MyMo is Yes (0.4 s) */
+/* the MyMobility stage folds open only while MyMobility is Yes (0.4 s) */
 .mm {
   display: grid;
   grid-template-rows: 0fr;
-  transition: grid-template-rows 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: grid-template-rows var(--slide, 0.48s)
+    cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 .mm.open {
   grid-template-rows: 1fr;
 }
 /* the row sits inside its own wrapper, which is what folds: a row's own padding cannot be squeezed by the fold, so it would show a sliver
-   (the label of the MyMo stage showed while MyMo was No) */
+   (the label of the MyMobility stage showed while MyMobility was No) */
 .mm > .rowin {
   overflow: hidden;
   min-height: 0;
@@ -802,8 +792,8 @@ select.in {
   opacity: 0;
   overflow: hidden;
   transition:
-    max-height 0.4s,
-    opacity 0.4s;
+    max-height var(--slide, 0.48s),
+    opacity var(--slide, 0.48s);
 }
 .okmsg.on {
   max-height: 40px;
@@ -818,7 +808,8 @@ select.in {
   display: grid;
   grid-template-rows: 0fr;
   background: var(--bg);
-  transition: grid-template-rows 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: grid-template-rows var(--slide, 0.48s)
+    cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 .savewrap.on {
   grid-template-rows: 1fr;
@@ -876,13 +867,13 @@ select.in {
   transform: translateX(105%);
   visibility: hidden;
   transition:
-    transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
-    visibility 0s linear 0.4s;
+    transform var(--slide, 0.48s) cubic-bezier(0.2, 0.8, 0.2, 1),
+    visibility 0s linear var(--slide, 0.48s);
 }
 .sheet.on {
   transform: none;
   visibility: visible;
-  transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: transform var(--slide, 0.48s) cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 .sheet .backbtn {
   flex: none;
@@ -955,13 +946,13 @@ select.in {
   opacity: 0;
   visibility: hidden;
   transition:
-    opacity 0.3s,
-    visibility 0s linear 0.3s;
+    opacity var(--quick, 0.36s),
+    visibility 0s linear var(--quick, 0.36s);
 }
 .askwrap.on {
   opacity: 1;
   visibility: visible;
-  transition: opacity 0.3s;
+  transition: opacity var(--quick, 0.36s);
 }
 .ask1 {
   width: 100%;
@@ -1044,13 +1035,13 @@ select.in {
   transform: translateX(105%);
   visibility: hidden;
   transition:
-    transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
-    visibility 0s linear 0.4s;
+    transform var(--slide, 0.48s) cubic-bezier(0.2, 0.8, 0.2, 1),
+    visibility 0s linear var(--slide, 0.48s);
 }
 .dealpage.on {
   transform: none;
   visibility: visible;
-  transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: transform var(--slide, 0.48s) cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 /* ===== a touch shows at once (Robert, 2026-11-07): what is pressed goes a distinct grey, or darker, the way the iPhone's own icons do, and
@@ -1060,8 +1051,8 @@ select.in {
 .listsheet div,
 .lk {
   transition:
-    background 0.3s,
-    border-color 0.4s;
+    background var(--quick, 0.36s),
+    border-color var(--slide, 0.48s);
 }
 .deal:active,
 .rs:active,
@@ -1081,9 +1072,9 @@ select.in {
 .ask1 button,
 .xcirc {
   transition:
-    filter 0.3s,
-    background 0.4s,
-    color 0.3s;
+    filter var(--quick, 0.36s),
+    background var(--slide, 0.48s),
+    color var(--quick, 0.36s);
 }
 .sechead:active,
 .stgC:active,
@@ -1116,12 +1107,16 @@ button.go {
 .go.live {
   border-color: var(--indigo);
   transition:
-    background 0.3s,
-    border-color 0.4s;
+    background var(--quick, 0.36s),
+    border-color var(--slide, 0.48s);
 }
 .go.live:active {
   background: #dde2ec;
   transition: none;
+}
+.gsub.warn {
+  color: #b45309;
+  font-weight: 700;
 }
 .gsub {
   font-weight: 400;
@@ -1135,4 +1130,126 @@ button.go {
   border-right: 2.5px solid var(--muted);
   border-top: 2.5px solid var(--muted);
   transform: rotate(45deg);
+}
+
+/* the surgeon's usage rating tile: the metal of the rating plates behind the word (Robert, 2026-11-08, option B) */
+.tile.rchip {
+  border: 0;
+  color: var(--ink);
+  box-shadow:
+    inset 0 2px 1px rgba(255, 255, 255, 0.7),
+    inset 0 -3px 3px rgba(0, 0, 0, 0.25),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.22),
+    0 3px 8px rgba(40, 30, 10, 0.22);
+}
+.tile.rchip .tl {
+  color: var(--ink);
+  opacity: 0.8;
+}
+.tile.rchip .tvv {
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.rchip.m-Platinum {
+  background: linear-gradient(135deg, #efe9d6, #c7bea3 45%, #a89d84);
+  --ink: #3a3326;
+}
+.rchip.m-Gold {
+  background: linear-gradient(135deg, #fff1b0, #e5cc73 40%, #c9a13e);
+  --ink: #4a3406;
+}
+.rchip.m-Silver {
+  background: linear-gradient(135deg, #eef1f7, #b9bec9 45%, #8e939e);
+  --ink: #23272f;
+}
+.rchip.m-Bronze {
+  background: linear-gradient(135deg, #f3b58c, #c98558 45%, #a66b48);
+  --ink: #3d1f0e;
+}
+.tile.rchip.m-None {
+  background: #eceae8;
+  --ink: #6d6a67;
+  box-shadow: inset 0 0 0 1px #d4d1ce;
+}
+
+/* ===== the "Create New" bar: locked at the bottom of the list, one filled pill (Robert, 2026-11-08, option D) ===== */
+.listpage {
+  display: flex;
+  flex-direction: column;
+}
+.listpage > .pad {
+  flex: 1 0 auto;
+}
+.newbar {
+  position: sticky;
+  bottom: 0;
+  z-index: 6;
+  flex: none;
+  padding: 10px 12px 12px;
+  background: var(--bg);
+  box-shadow: 0 -1px 0 var(--line);
+}
+.newbtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  height: 44px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--indigo);
+  color: #fff;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: filter var(--quick, 0.36s);
+}
+.newbtn:active {
+  filter: brightness(0.86);
+  transition: none;
+}
+.createdmsg {
+  margin: 0 0 10px;
+  padding: 8px 12px;
+  border: 1px solid #0f9d74;
+  border-radius: 10px;
+  background: rgba(15, 157, 116, 0.1);
+  color: #0b7a5a;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+/* the circled plus on a button's left (Robert, 2026-11-08): a white ring with a plus drawn exactly in the centre, two lines not a character */
+.pc {
+  position: relative;
+  flex: none;
+  width: 24px;
+  height: 24px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  box-sizing: border-box;
+}
+.pc::before,
+.pc::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  background: #fff;
+  border-radius: 1px;
+  transform: translate(-50%, -50%);
+}
+.pc::before {
+  width: 10px;
+  height: 2px;
+}
+.pc::after {
+  width: 2px;
+  height: 10px;
 }

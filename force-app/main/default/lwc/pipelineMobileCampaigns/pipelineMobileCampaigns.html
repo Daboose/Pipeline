@@ -2,7 +2,7 @@
   <div class={pageCls}>
     <div class="ctl bar">
       <button type="button" class="backbtn" onclick={handleBack}>
-        <span class="bk">&#8249;</span> Back to deal
+        <span class="bk">&#8249;</span> Back
       </button>
     </div>
     <div class="pad">
@@ -12,6 +12,7 @@
         lwc:if={recordId}
         record-id={recordId}
         yes-tone="good"
+        tone-thumb
         oncampaignschanged={handleChanged}
       ></c-pipeline-deal-campaigns>
     </div>

@@ -71,6 +71,29 @@ describe("c-pipeline-segmented", () => {
     expect(wrap().classList.contains("t-good")).toBe(false);
   });
 
+  it("colours only the thumb, not the whole pill, when toneThumb is set (the phone's sliders)", async () => {
+    const options = [
+      { value: "no", label: "No" },
+      { value: "yes", label: "Yes", tone: "good" }
+    ];
+    const el = make({
+      heading: "Rep priority",
+      value: "yes",
+      options,
+      toneThumb: true
+    });
+    await flush();
+    const wrap = el.shadowRoot.querySelector(".wrap");
+    expect(wrap.classList.contains("tt-good")).toBe(true);
+    expect(wrap.classList.contains("t-good")).toBe(false); // the label end and the track are not filled
+    el.options = [
+      { value: "no", label: "No" },
+      { value: "yes", label: "Yes", tone: "warn" }
+    ];
+    await flush();
+    expect(wrap.classList.contains("tt-warn")).toBe(true);
+  });
+
   it("ignores a press when it is disabled", async () => {
     const el = make({
       value: "no",

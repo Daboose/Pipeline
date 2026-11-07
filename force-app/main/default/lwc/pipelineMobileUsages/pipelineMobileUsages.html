@@ -1,0 +1,302 @@
+<template>
+  <div class={pageCls}>
+    <div class="ctl bar">
+      <button type="button" class="backbtn" onclick={handleBack}>
+        <span class="bk">&#8249;</span> Back
+      </button>
+    </div>
+    <div class="pad">
+      <div class="dh"><h1 class="dname">Surgeon Usages</h1></div>
+      <p class="dsub">{dealLabel}</p>
+
+      <p class="note" lwc:if={loading}>Reading the usages…</p>
+      <p class="err" lwc:if={error}>{error}</p>
+      <p class="nomsg" lwc:if={noSurgeon}>
+        This deal has no Primary HCP, so there are no usages to show.
+      </p>
+
+      <template lwc:if={hasData}>
+        <div class="plates">
+          <template for:each={plates} for:item="p">
+            <div key={p.key} class={p.cls} role="img" aria-label={p.label}>
+              <div class="coin">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path
+                    d="M12 2l3 6.8 7.4.7-5.6 4.9 1.7 7.3L12 17.9 5.5 21.7l1.7-7.3L1.6 9.5l7.4-.7z"
+                  ></path>
+                </svg>
+              </div>
+              <div class="tx">
+                <div class="area">{p.area}</div>
+                <div class="rank">{p.rank}</div>
+                <div class="stars">{p.stars}</div>
+              </div>
+            </div>
+          </template>
+        </div>
+
+        <div class={freshCls}>
+          {fresh.line}
+          <b lwc:if={fresh.note}>{fresh.note}</b>
+        </div>
+
+        <p class="okmsg" lwc:if={hasMsg}>{msg}</p>
+
+        <button
+          type="button"
+          class="addbtn"
+          lwc:if={canAdd}
+          onclick={handleAddOpen}
+        >
+          <span class="pc"></span>Add usage
+        </button>
+
+        <p class="nomsg" lwc:if={noUsages}>
+          No usages are recorded for this surgeon.
+        </p>
+        <template for:each={groups} for:item="g">
+          <div key={g.hospital}>
+            <div class="hh">{g.hospital}</div>
+            <template for:each={g.usages} for:item="u">
+              <button
+                type="button"
+                key={u.usageId}
+                class={u.cls}
+                data-id={u.usageId}
+                onclick={handleCard}
+              >
+                <div class="utop">
+                  <span>{u.name}</span><i lwc:if={u.arrow}></i>
+                </div>
+                <template for:each={u.rows} for:item="r">
+                  <div class="ln" key={r.key}>
+                    <span class={r.companyCls}>{r.company}</span>
+                    <span class="lb">{r.label}</span>
+                    <span class="n">{r.casesText}</span>
+                  </div>
+                </template>
+              </button>
+            </template>
+          </div>
+        </template>
+        <p class="foot2" lwc:if={hasData}>
+          ZB is Zimmer Biomet; the rest are competitors. A hip has two lines,
+          stems and cups, because the two can be different brands.
+        </p>
+      </template>
+    </div>
+  </div>
+
+  <div class={editCls}>
+    <button type="button" class="backbtn" onclick={handleEditClose}>
+      <span class="bk">&#8249;</span> Back
+    </button>
+    <h4>Edit usage</h4>
+    <div class="psub">{editTitle}</div>
+    <div class="errs" lwc:if={hasErrors}>
+      <template for:each={errors} for:item="e">
+        <div key={e}>{e}</div>
+      </template>
+    </div>
+    <div class="fgroup">
+      <div class="g2 gh"><span>Company</span><span>Cases/yr</span></div>
+      <template for:each={editLines} for:item="l">
+        <div class="fline" key={l.key}>
+          <div class="fl2" lwc:if={l.label}>{l.label}</div>
+          <div class="g2">
+            <select
+              class={l.coCls}
+              data-key={l.key}
+              aria-label="Company"
+              onchange={handleEditCompany}
+            >
+              <template for:each={l.options} for:item="o">
+                <option key={o.value} value={o.value} selected={o.selected}>
+                  {o.label}
+                </option>
+              </template>
+            </select>
+            <input
+              class={l.nCls}
+              type="number"
+              inputmode="numeric"
+              min="0"
+              placeholder="0"
+              aria-label="Cases per year"
+              data-key={l.key}
+              value={l.casesValue}
+              onchange={handleEditCases}
+            />
+          </div>
+        </div>
+      </template>
+    </div>
+    <button
+      type="button"
+      class="del"
+      lwc:if={canDelete}
+      onclick={handleDeleteAsk}
+    >
+      Delete this usage
+    </button>
+    <div class="spacer"></div>
+    <div class="row2">
+      <button type="button" class="c" onclick={handleEditClose}>Cancel</button>
+      <button type="button" class="p" disabled={cantSave} onclick={handleSave}>
+        Save
+      </button>
+    </div>
+  </div>
+
+  <div class={addCls}>
+    <button type="button" class="backbtn" onclick={handleAddClose}>
+      <span class="bk">&#8249;</span> Back
+    </button>
+    <h4>New usage</h4>
+    <div class="psub">
+      Choose the hospital and the portfolio, then the company and the cases a
+      year.
+    </div>
+    <div class="errs" lwc:if={hasErrors}>
+      <template for:each={errors} for:item="e">
+        <div key={e}>{e}</div>
+      </template>
+    </div>
+    <div class="fgroup">
+      <div class="fl2">Hospital</div>
+      <button
+        type="button"
+        class={hospitalCellCls}
+        onclick={handleHospitalOpen}
+      >
+        <span>{hospitalText}</span><i></i>
+      </button>
+      <div class="fl2">Portfolio</div>
+      <select class="in" aria-label="Portfolio" onchange={handleAddPortfolio}>
+        <template for:each={portfolioChoices} for:item="o">
+          <option key={o.value} value={o.value} selected={o.selected}>
+            {o.label}
+          </option>
+        </template>
+      </select>
+    </div>
+    <div class="fgroup">
+      <div class="g2 gh"><span>Company</span><span>Cases/yr</span></div>
+      <template for:each={addLines} for:item="l">
+        <div class="fline" key={l.key}>
+          <div class="fl2" lwc:if={l.label}>{l.label}</div>
+          <div class="g2">
+            <select
+              class="in"
+              data-key={l.key}
+              aria-label="Company"
+              onchange={handleAddCompany}
+            >
+              <template for:each={l.options} for:item="o">
+                <option key={o.value} value={o.value} selected={o.selected}>
+                  {o.label}
+                </option>
+              </template>
+            </select>
+            <input
+              class="in"
+              type="number"
+              inputmode="numeric"
+              min="0"
+              placeholder="0"
+              aria-label="Cases per year"
+              data-key={l.key}
+              value={l.casesValue}
+              onchange={handleAddCases}
+            />
+          </div>
+        </div>
+      </template>
+    </div>
+    <div class="note">{addRecordTypeText}</div>
+    <div class="spacer"></div>
+    <div class="row2">
+      <button type="button" class="c" onclick={handleAddClose}>Cancel</button>
+      <button
+        type="button"
+        class="p"
+        disabled={cantAdd}
+        onclick={handleAddSave}
+      >
+        Add
+      </button>
+    </div>
+  </div>
+
+  <div class={hospitalCls}>
+    <button type="button" class="backbtn" onclick={handleHospitalClose}>
+      <span class="bk">&#8249;</span> Back
+    </button>
+    <h4>Hospital</h4>
+    <div class="sbox">
+      <input
+        class="search"
+        type="search"
+        placeholder="Search by name…"
+        aria-label="Search by name"
+        value={term}
+        oninput={handleTerm}
+      />
+      <button
+        type="button"
+        class="xcirc sclear"
+        lwc:if={hasTerm}
+        aria-label="Clear the search"
+        onclick={handleTermClear}
+      ></button>
+    </div>
+    <div class="results">
+      <template for:each={hits} for:item="h">
+        <div
+          key={h.id}
+          class="rs"
+          data-id={h.id}
+          data-name={h.name}
+          onclick={handlePickHospital}
+        >
+          <b>{h.name}</b><small>{h.sub}</small>
+        </div>
+      </template>
+      <div class="rs none" lwc:if={hitsPrompt}>
+        Type part of the name, at least two letters.
+      </div>
+      <div class="rs none" lwc:if={hitsNone}>Nothing found.</div>
+      <div class="rs none" lwc:if={hitsFull}>
+        Showing the first {limit}. Type more of the name to narrow it down.
+      </div>
+    </div>
+  </div>
+
+  <div class={askCls}>
+    <div class="ask1">
+      <b>Delete this usage?</b>
+      <p>{deleteText}</p>
+      <div class="row2">
+        <button type="button" class="stay" onclick={handleDeleteKeep}>
+          Keep
+        </button>
+        <button type="button" class="leave" onclick={handleDeleteYes}>
+          Delete
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <c-pipeline-mobile-saving
+    phase={savePhase}
+    word={savingWord}
+  ></c-pipeline-mobile-saving>
+
+  <template for:each={neededRts} for:item="rt">
+    <c-pipeline-usage-choices
+      key={rt.id}
+      record-type-id={rt.id}
+      onchoices={handleChoices}
+    ></c-pipeline-usage-choices>
+  </template>
+</template>

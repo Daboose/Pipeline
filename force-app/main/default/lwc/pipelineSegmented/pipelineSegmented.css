@@ -18,9 +18,9 @@
 .choices,
 .slbl {
   transition:
-    background 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
-    border-color 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
-    color 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+    background var(--slide, 0.4s) cubic-bezier(0.2, 0.8, 0.2, 1),
+    border-color var(--slide, 0.4s) cubic-bezier(0.2, 0.8, 0.2, 1),
+    color var(--slide, 0.4s) cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 .wrap.t-good {
   background: var(--seg-good, #16a34a);
@@ -65,6 +65,27 @@
 }
 .wrap.t-warn .choices:not(.placed) .opt.on {
   background: #fff;
+}
+/* thumb-only tone (toneThumb): the label end and the track stay plain; the sliding highlight turns green (good) or amber (warn), as the
+   blue highlight does for the plain choice */
+.wrap.tt-good .pill {
+  background: var(--seg-good, #16a34a);
+  box-shadow: 0 4px 14px
+    color-mix(in srgb, var(--seg-good, #16a34a) 45%, transparent);
+}
+.wrap.tt-good .choices:not(.placed) .opt.on {
+  background: var(--seg-good, #16a34a);
+}
+.wrap.tt-warn .pill {
+  background: var(--seg-warn, #f59e0b);
+  box-shadow: 0 4px 14px
+    color-mix(in srgb, var(--seg-warn, #f59e0b) 45%, transparent);
+}
+.wrap.tt-warn .opt.on {
+  color: #1b2640;
+}
+.wrap.tt-warn .choices:not(.placed) .opt.on {
+  background: var(--seg-warn, #f59e0b);
 }
 .wrap.off {
   opacity: 0.55;

@@ -1,0 +1,808 @@
+@import "c/pipelineStyles";
+
+/* The colours come from the Pipeline Mobile screen (set on its :host and inherited); the fallbacks are the same light palette. */
+:host {
+  display: block;
+  color: var(--text, #1b2640);
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+}
+/* the screen slides in over the deal from the right and slides off again (0.4 s, the motion standard); it scrolls itself, in the height that
+   is left on the screen (--fit-height, set by Pipeline Mobile) */
+.usagespage {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--fit-height, 100%);
+  z-index: 8;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  background: var(--bg, #f3f3f3);
+  transform: translateX(105%);
+  visibility: hidden;
+  transition:
+    transform var(--slide, 0.48s) cubic-bezier(0.2, 0.8, 0.2, 1),
+    visibility 0s linear var(--slide, 0.48s);
+}
+.usagespage.on {
+  transform: none;
+  visibility: visible;
+  transition: transform var(--slide, 0.48s) cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.ctl {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  padding: 0 12px 8px;
+  background: var(--bg, #f3f3f3);
+  box-shadow: 0 1px 0 var(--line, #d5dcea);
+}
+.pad {
+  padding: 8px 12px 24px;
+}
+.backbtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  height: 44px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--indigo, #4f46e5);
+  color: #fff;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: filter var(--quick, 0.36s);
+}
+.bk {
+  font-size: 22px;
+  line-height: 1;
+  margin-top: -2px;
+}
+.dh {
+  margin: 2px 2px;
+}
+.dname {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 800;
+  line-height: 1.15;
+}
+.dsub {
+  color: var(--muted, #5d6b85);
+  font-size: 14px;
+  margin: 0 2px 10px;
+}
+.note {
+  color: var(--muted, #5d6b85);
+  text-align: center;
+  padding: 14px 10px;
+  margin: 0;
+}
+.err {
+  color: #dc2626;
+  font-weight: 700;
+  margin: 6px 2px;
+}
+.errs {
+  border: 1px solid #dc2626;
+  color: #dc2626;
+  border-radius: 10px;
+  padding: 8px 12px;
+  margin-bottom: 10px;
+  font-size: 14px;
+}
+.okmsg {
+  margin: 0 0 10px;
+  padding: 8px 12px;
+  border: 1px solid #0f9d74;
+  border-radius: 10px;
+  background: rgba(15, 157, 116, 0.1);
+  color: #0b7a5a;
+  font-weight: 700;
+  font-size: 14px;
+}
+.nomsg {
+  margin: 0 0 12px;
+  padding: 22px 14px;
+  text-align: center;
+  color: var(--muted, #5d6b85);
+  background: var(--panel, #fff);
+  border: 1px solid var(--line, #d5dcea);
+  border-radius: 12px;
+}
+
+/* ===== the rating plates: the metal plates of the Account page's Usage Card (pipelineUsageCard), copied here and adapted for the phone
+   (Robert, 2026-11-08: two by two, wide and short, a small coin beside the words so "PLATINUM" fits). Drawn in CSS only. ===== */
+.m-PLATINUM {
+  --sheet: conic-gradient(
+    from 0deg at 50% 52%,
+    #bdb49c,
+    #e2d9be 20deg,
+    #b3a88f 40deg,
+    #9f947b 60deg,
+    #aba089 80deg,
+    #a59a82 100deg,
+    #897d64 120deg,
+    #988c75 140deg,
+    #beb49f 160deg,
+    #ada28d 180deg,
+    #968b74 200deg,
+    #afa68d 220deg,
+    #c7bea3 240deg,
+    #796e58 260deg,
+    #766853 280deg,
+    #b5aa93 300deg,
+    #a89d84 320deg,
+    #978b75 340deg,
+    #bdb49c 360deg
+  );
+  --hi: #f4efe0;
+  --mid: #b3a88f;
+  --lo: #6d6250;
+  --ink: #3a3326;
+  --glow: rgba(244, 239, 224, 0.9);
+}
+.m-GOLD {
+  --sheet: conic-gradient(
+    from 0deg at 50% 52%,
+    #dfc16e,
+    #fce68b 20deg,
+    #dcb856 40deg,
+    #cea441 60deg,
+    #e0b75e 80deg,
+    #d6ae56 100deg,
+    #a37821 120deg,
+    #b78b31 140deg,
+    #edc35c 160deg,
+    #d5ab4b 180deg,
+    #ba9137 200deg,
+    #d3af4d 220deg,
+    #e5cc73 240deg,
+    #ab8327 260deg,
+    #af8629 280deg,
+    #e6be57 300deg,
+    #ddb457 320deg,
+    #c19848 340deg,
+    #dfc16e 360deg
+  );
+  --hi: #fff1b0;
+  --mid: #d6ae56;
+  --lo: #8a6513;
+  --ink: #4a3406;
+  --glow: rgba(255, 241, 176, 0.95);
+}
+.m-SILVER {
+  --sheet: conic-gradient(
+    from 0deg at 50% 52%,
+    #a3a7b1,
+    #c8cdd7 20deg,
+    #9599a2 40deg,
+    #808591 60deg,
+    #868a93 80deg,
+    #818691 100deg,
+    #676c77 120deg,
+    #777e89 140deg,
+    #a1a7b2 160deg,
+    #9096a0 180deg,
+    #7f858f 200deg,
+    #9aa0aa 220deg,
+    #a8aeb7 240deg,
+    #686c74 260deg,
+    #6c707a 280deg,
+    #9a9da7 300deg,
+    #969ba5 320deg,
+    #7e838d 340deg,
+    #a3a7b1 360deg
+  );
+  --hi: #e6eaf2;
+  --mid: #9599a2;
+  --lo: #565b66;
+  --ink: #23272f;
+  --glow: rgba(230, 234, 242, 0.95);
+}
+.m-BRONZE {
+  --sheet: conic-gradient(
+    from 0deg at 50% 52%,
+    #bc7951,
+    #e39361 20deg,
+    #ae6946 40deg,
+    #a46a47 60deg,
+    #ab6d4a 80deg,
+    #a66b48 100deg,
+    #8b5839 120deg,
+    #996240 140deg,
+    #be7f56 160deg,
+    #ad714c 180deg,
+    #9a6142 200deg,
+    #b67851 220deg,
+    #c4794f 240deg,
+    #7f4e32 260deg,
+    #855335 280deg,
+    #b87952 300deg,
+    #b2754f 320deg,
+    #9b6242 340deg,
+    #bc7951 360deg
+  );
+  --hi: #f3b58c;
+  --mid: #ad714c;
+  --lo: #6e4128;
+  --ink: #3d1f0e;
+  --glow: rgba(243, 181, 140, 0.95);
+}
+.m-NONE {
+  --sheet: linear-gradient(#eceae8, #e2dfdc);
+  --hi: #f6f5f4;
+  --mid: #cfccc9;
+  --lo: #9a9794;
+  --ink: #6d6a67;
+  --glow: rgba(255, 255, 255, 0);
+}
+.plates {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.plate {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  min-height: 0;
+  padding: 9px 10px 9px 12px;
+  border-radius: 12px;
+  color: var(--ink);
+  overflow: hidden;
+  text-align: left;
+  background:
+    repeating-radial-gradient(
+      circle at 50% 52%,
+      rgba(255, 255, 255, 0.07) 0 1px,
+      rgba(0, 0, 0, 0.06) 1px 2px
+    ),
+    var(--sheet);
+  box-shadow:
+    inset 0 2px 1px rgba(255, 255, 255, 0.75),
+    inset 0 -3px 3px rgba(0, 0, 0, 0.3),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.25),
+    0 6px 14px rgba(40, 30, 10, 0.28);
+}
+.plate.mine {
+  outline: 2px solid var(--indigo, #4f46e5);
+  outline-offset: 2px;
+}
+.plate .coin {
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--sheet);
+  box-shadow:
+    inset 0 2px 2px rgba(255, 255, 255, 0.7),
+    inset 0 -2px 3px rgba(0, 0, 0, 0.35),
+    0 0 0 2px rgba(0, 0, 0, 0.28),
+    0 0 0 3px var(--hi),
+    0 2px 5px rgba(0, 0, 0, 0.35);
+  display: grid;
+  place-items: center;
+}
+.plate .coin svg {
+  width: 18px;
+  height: 18px;
+  filter: drop-shadow(0 1px 0 rgba(255, 255, 255, 0.6))
+    drop-shadow(0 -1px 0 rgba(0, 0, 0, 0.35));
+}
+.plate .coin svg path {
+  fill: var(--hi);
+  stroke: var(--mid);
+  stroke-width: 1;
+  stroke-linejoin: round;
+}
+.plate.m-NONE {
+  background: #eceae8;
+  box-shadow: inset 0 0 0 1px #d4d1ce;
+}
+.plate.m-NONE .coin {
+  background: #f6f5f4;
+  box-shadow: inset 0 0 0 2px #cfccc9;
+}
+.plate.m-NONE .coin svg path {
+  fill: #bdbab7;
+  stroke: #a9a6a3;
+}
+.plate.m-NONE .area {
+  color: var(--muted, #5d6b85);
+}
+.plate .area {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.55);
+}
+.plate .rank {
+  font-size: 16px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  text-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.65),
+    0 -1px 0 rgba(0, 0, 0, 0.25);
+}
+.plate.m-NONE .rank {
+  font-size: 13px;
+  letter-spacing: 0.02em;
+}
+.plate .stars {
+  margin-top: 1px;
+  letter-spacing: 2px;
+  font-size: 11px;
+  min-height: 14px;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+.fresh {
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--line, #d5dcea);
+  border-radius: 10px;
+  background: var(--panel, #fff);
+  font-size: 14px;
+  color: var(--muted, #5d6b85);
+}
+.fresh.w {
+  border-color: #f59e0b;
+  background: rgba(245, 158, 11, 0.12);
+  color: var(--text, #1b2640);
+}
+.fresh b {
+  display: block;
+  margin-top: 4px;
+  color: #b45309;
+}
+.addbtn,
+.pg .del,
+.row2 button,
+.ask1 button {
+  border: 0;
+  border-radius: 999px;
+  color: #fff;
+  font-family: inherit;
+  font-weight: 800;
+  text-transform: uppercase;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: filter var(--quick, 0.36s);
+}
+.addbtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  height: 44px;
+  margin-bottom: 12px;
+  background: var(--indigo, #4f46e5);
+  font-size: 13px;
+  letter-spacing: 0.08em;
+}
+.hh {
+  margin: 14px 2px 6px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--head, #db2777);
+}
+.ucard {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  text-align: left;
+  background: var(--panel, #fff);
+  border: 1px solid var(--line, #d5dcea);
+  border-radius: 12px;
+  padding: 10px 14px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  color: var(--text, #1b2640);
+  font-family: inherit;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    background var(--quick, 0.36s),
+    border-color var(--slide, 0.48s);
+}
+.ucard:active {
+  background: #dde2ec;
+  transition: none;
+}
+.ucard.mine {
+  box-shadow: inset 5px 0 0 var(--indigo, #4f46e5);
+  padding-left: 18px;
+}
+.ucard.fixed {
+  cursor: default;
+}
+.utop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 17px;
+  font-weight: 800;
+}
+.utop i {
+  width: 9px;
+  height: 9px;
+  border-right: 2.5px solid var(--muted, #5d6b85);
+  border-top: 2.5px solid var(--muted, #5d6b85);
+  transform: rotate(45deg);
+}
+/* every line starts with the brand, bold, down the left; the product (Stems, Cups, Anatomical, Reverse) is in the middle and the cases a year
+   at the right (Robert, 2026-11-08). A Knee or CMFT line has no product: its middle is empty. */
+.ln {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 84px auto;
+  align-items: baseline;
+  gap: 10px;
+  padding: 6px 0 0;
+  font-size: 16px;
+}
+.ln .lb {
+  color: var(--muted, #5d6b85);
+  font-size: 14px;
+}
+.ln .co {
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+.ln .co.zb {
+  color: #b7791f;
+}
+.ln .n {
+  color: var(--muted, #5d6b85);
+  font-size: 14px;
+}
+.foot2 {
+  margin: 12px 2px;
+  color: var(--muted, #5d6b85);
+  font-size: 13px;
+}
+
+/* the edit page, the add page and the hospital search page slide in over the screen from the right (0.4 s), each with its own locked back
+   bar; the edit and add pages end in a locked Cancel / Save bar */
+.pg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--fit-height, 100%);
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  padding: 0 12px 12px;
+  background: var(--bg, #f3f3f3);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  transform: translateX(105%);
+  visibility: hidden;
+  transition:
+    transform var(--slide, 0.48s) cubic-bezier(0.2, 0.8, 0.2, 1),
+    visibility 0s linear var(--slide, 0.48s);
+}
+.pg.on {
+  transform: none;
+  visibility: visible;
+  transition: transform var(--slide, 0.48s) cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.pg.e,
+.pg.a {
+  z-index: 9;
+}
+.pg.h {
+  z-index: 10;
+}
+.pg .backbtn {
+  flex: none;
+  margin-bottom: 10px;
+}
+.pg h4 {
+  margin: 2px 2px 2px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--head, #db2777);
+}
+.pg .psub {
+  margin: 0 2px 10px;
+  color: var(--muted, #5d6b85);
+  font-size: 14px;
+}
+/* a group of fields: the same space above and below, whether it holds one line or two (a Knee or CMFT usage has no label above its line) */
+.fgroup {
+  background: var(--panel, #fff);
+  border: 1px solid var(--line, #d5dcea);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+}
+.fl2 {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted, #5d6b85);
+  margin: 0 0 5px;
+}
+.fgroup .fl2:not(:first-child),
+.fline + .fline {
+  margin-top: 12px;
+}
+.fline .fl2 {
+  margin-top: 0;
+}
+/* the company takes three parts of the row and the cases a year one: it is never more than four digits (Robert, 2026-11-08) */
+.g2 {
+  display: grid;
+  grid-template-columns: 3fr 1fr;
+  gap: 8px;
+}
+.gh {
+  margin-bottom: 4px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted, #5d6b85);
+}
+.in,
+.hosp {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--edge, #b3bfd6);
+  border-radius: 10px;
+  background-color: var(--pfield, #fff);
+  color: var(--text, #1b2640);
+  font-family: inherit;
+  font-size: 16px; /* 16 px, or the iPhone zooms the page */
+  transition: border-color var(--slide, 0.48s);
+}
+select.in {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 32px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%235d6b85' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-position: right 14px center;
+  background-size: 12px 8px;
+  background-repeat: no-repeat;
+}
+.in.chg {
+  border-color: var(--indigo, #4f46e5);
+}
+.hosp {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--muted, #5d6b85);
+  cursor: pointer;
+  text-align: left;
+}
+.hosp.set {
+  color: var(--text, #1b2640);
+}
+.hosp i {
+  flex: none;
+  width: 9px;
+  height: 9px;
+  border-right: 2.5px solid var(--muted, #5d6b85);
+  border-top: 2.5px solid var(--muted, #5d6b85);
+  transform: rotate(45deg);
+}
+.spacer {
+  flex: 1;
+  min-height: 8px;
+}
+.pg .del {
+  height: 44px;
+  margin: 4px 0 10px;
+  background: #dc2626;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+}
+.row2 {
+  flex: none;
+  display: flex;
+  gap: 10px;
+  margin-top: 6px;
+}
+.row2 button {
+  flex: 1 1 0;
+  height: 44px;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+}
+.row2 .c {
+  background: #64748b;
+}
+.row2 .p,
+.ask1 .stay {
+  background: var(--indigo, #4f46e5);
+}
+.ask1 .leave {
+  background: #dc2626;
+}
+.row2 button[disabled] {
+  opacity: 0.45;
+}
+.addbtn:active,
+.pg .del:active,
+.row2 button:active,
+.ask1 button:active,
+.backbtn:active {
+  filter: brightness(0.86);
+  transition: none;
+}
+.pg .note {
+  color: var(--muted, #5d6b85);
+  font-size: 13px;
+  margin: 2px 2px 8px;
+}
+/* the hospital search page */
+.sbox {
+  position: relative;
+  flex: none;
+  margin-bottom: 10px;
+}
+.search {
+  width: 100%;
+  box-sizing: border-box;
+  height: 44px;
+  border-radius: 999px;
+  border: 1px solid var(--edge, #b3bfd6);
+  background: var(--pfield, #fff);
+  color: var(--text, #1b2640);
+  padding: 0 44px 0 16px;
+  font-size: 16px;
+  font-family: inherit;
+  outline: none;
+}
+.sbox .sclear {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  width: 28px;
+  height: 28px;
+  margin-top: -14px;
+  background: var(--edge, #b3bfd6);
+}
+.results {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  background: var(--panel, #fff);
+  border: 1px solid var(--line, #d5dcea);
+  border-radius: 12px;
+}
+.rs {
+  display: block;
+  min-height: 58px;
+  padding: 8px 14px;
+  border-top: 1px solid var(--line, #d5dcea);
+  cursor: pointer;
+  transition: background var(--quick, 0.36s);
+}
+.rs:first-child {
+  border-top: 0;
+}
+.rs:active {
+  background: #dde2ec;
+  transition: none;
+}
+.rs b {
+  display: block;
+  font-size: 16px;
+}
+.rs small {
+  color: var(--muted, #5d6b85);
+  font-size: 13px;
+}
+.rs.none {
+  cursor: default;
+  color: var(--muted, #5d6b85);
+}
+/* asking before a delete: a question over a blurred, darkened page */
+.askwrap {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--fit-height, 100%);
+  z-index: 11;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  box-sizing: border-box;
+  background: rgba(6, 11, 20, 0.55);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity var(--quick, 0.36s),
+    visibility 0s linear var(--quick, 0.36s);
+}
+.askwrap.on {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity var(--quick, 0.36s);
+}
+.ask1 {
+  width: 100%;
+  padding: 18px;
+  background: var(--panel, #fff);
+  border: 1px solid var(--edge, #b3bfd6);
+  border-radius: 14px;
+}
+.ask1 b {
+  font-size: 18px;
+}
+.ask1 p {
+  margin: 6px 0 14px;
+  color: var(--muted, #5d6b85);
+  font-size: 15px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .usagespage,
+  .usagespage.on,
+  .pg,
+  .pg.on,
+  .askwrap {
+    transition: none;
+  }
+}
+
+/* the circled plus on a button's left (Robert, 2026-11-08): a white ring with a plus drawn exactly in the centre, two lines not a character */
+.pc {
+  position: relative;
+  flex: none;
+  width: 24px;
+  height: 24px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  box-sizing: border-box;
+}
+.pc::before,
+.pc::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  background: #fff;
+  border-radius: 1px;
+  transform: translate(-50%, -50%);
+}
+.pc::before {
+  width: 10px;
+  height: 2px;
+}
+.pc::after {
+  width: 2px;
+  height: 10px;
+}

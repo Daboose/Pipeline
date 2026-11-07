@@ -1,0 +1,12 @@
+<template>
+  <div class={cls} role="status" aria-live="polite">
+    <div class="logo">
+      <c-pipeline-pipe a="PIPE" b="LINE" height="42"></c-pipeline-pipe>
+    </div>
+    <div class="word">
+      <span class="tick" lwc:if={isDone}></span>
+      <span class="spin" lwc:else></span>
+      <span class="t">{word}</span>
+    </div>
+  </div>
+</template>

@@ -224,7 +224,7 @@ h3 {
 .cell.wide {
   grid-column: 1 / -1;
 }
-/* the MyMo stage folds open only while MyMo is Yes (the motion standard: 0.4 s, the same easing); it sits in a full-width row
+/* the MyMobility stage folds open only while MyMobility is Yes (the motion standard: 0.4 s, the same easing); it sits in a full-width row
    with the field at half width, so the cells after it never move sideways, and the row gap is taken back while it is closed */
 .cell.fold {
   display: grid;

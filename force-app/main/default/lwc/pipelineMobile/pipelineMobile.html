@@ -5,7 +5,7 @@
         <span key={m} class="lblmeasure">{m}</span>
       </template>
     </div>
-    <div class="page">
+    <div class="page listpage">
       <div class="ctl" lwc:if={showList}>
         <c-pipeline-segmented
           class="seg"
@@ -145,7 +145,11 @@
                       </div>
                       <div class="r2" lwc:if={c.sub}>{c.sub}</div>
                       <div class="r3">
-                        <span>{c.stageLine}</span>
+                        <span
+                          ><span class="ty" lwc:if={c.typeWord}
+                            >{c.typeWord}</span
+                          >{c.stageRest}</span
+                        >
                         <span class="sp"></span>
                         <span lwc:if={c.pill} class={c.pill.cls}
                           >{c.pill.label}</span
@@ -164,6 +168,11 @@
           <pre class="dbg" lwc:if={debugText}>{debugText}</pre>
         </template>
       </div>
+      <div class="newbar" lwc:if={showList}>
+        <button type="button" class="newbtn" onclick={handleNewOpen}>
+          <span class="pc"></span>Create New
+        </button>
+      </div>
     </div>
 
     <div class={dealCls}>
@@ -174,6 +183,7 @@
       </div>
       <div class="pad">
         <template lwc:if={showDeal}>
+          <p class="createdmsg" lwc:if={createdMsg}>Created.</p>
           <div class="dh">
             <h1 class="dname">{header.name}</h1>
             <span class="stp st-hold" lwc:if={header.onHold}>On Hold</span>
@@ -181,7 +191,7 @@
           <p class="dsub">{header.sub}</p>
           <div class="grid2">
             <template for:each={tiles} for:item="t">
-              <div class="tile" key={t.key}>
+              <div class={t.tileCls} key={t.key}>
                 <div class="tl">{t.label}</div>
                 <div class="tvv">
                   <span lwc:if={t.cls} class={t.cls}>{t.value}</span>
@@ -235,7 +245,7 @@
               <div key={f.key} class={f.wrapCls}>
                 <div class="rowin">
                   <div class={f.cls}>
-                    <div class="fl" lwc:if={f.label}>
+                    <div class="fl" lwc:if={f.showLabel}>
                       {f.label}<span class="rq" lwc:if={f.req}> *</span>
                     </div>
                     <div class="flagbox" lwc:if={f.isFlags}>
@@ -243,6 +253,7 @@
                         <c-pipeline-segmented
                           key={g.api}
                           class="flagseg"
+                          tone-thumb
                           heading={g.label}
                           label={g.label}
                           options={g.options}
@@ -345,20 +356,14 @@
                       value={f.value}
                       onchange={handleText}
                     />
-                    <div class="pls" lwc:if={f.isMulti}>
-                      <template for:each={f.options} for:item="o">
-                        <button
-                          type="button"
-                          key={o.value}
-                          class={o.cls}
-                          data-api={f.api}
-                          data-value={o.value}
-                          onclick={handleMulti}
-                        >
-                          {o.label}
-                        </button>
-                      </template>
-                    </div>
+                    <c-pipeline-mobile-choices
+                      lwc:if={f.isMulti}
+                      label={f.label}
+                      required={f.req}
+                      options={f.options}
+                      data-api={f.api}
+                      ontoggle={handleChoice}
+                    ></c-pipeline-mobile-choices>
                     <textarea
                       lwc:if={f.isTextarea}
                       class="in ta"
@@ -386,20 +391,24 @@
             <span class="gchev"></span>
           </button>
 
-          <button type="button" class="go live" onclick={handleBookingsOpen}>
-            <span>MyCase Bookings</span>
-            <span class="gsub" lwc:if={bookingsSummary}>{bookingsSummary}</span>
-            <span class="sp"></span>
-            <span class="gchev"></span>
-          </button>
-
-          <template for:each={goRows} for:item="g">
-            <div class="go soon" key={g.key} aria-disabled="true">
-              <span>{g.label}</span>
+          <template lwc:if={showSurgeonRows}>
+            <button type="button" class="go live" onclick={handleBookingsOpen}>
+              <span>MyCase Bookings</span>
+              <span class="gsub" lwc:if={bookingsSummary}
+                >{bookingsSummary}</span
+              >
               <span class="sp"></span>
-              <span class="badge" lwc:if={g.badge}>{g.badge}</span>
-              <span class="soonword">Soon</span>
-            </div>
+              <span class="gchev"></span>
+            </button>
+
+            <button type="button" class="go live" onclick={handleUsagesOpen}>
+              <span>Surgeon Usages</span>
+              <span class={usagesSubCls} lwc:if={usagesSummary.text}
+                >{usagesSummary.text}</span
+              >
+              <span class="sp"></span>
+              <span class="gchev"></span>
+            </button>
           </template>
         </template>
 
@@ -452,7 +461,7 @@
     ></c-pipeline-mobile-campaigns>
 
     <c-pipeline-mobile-bookings
-      lwc:if={showDeal}
+      lwc:if={showSurgeonRows}
       record-id={openId}
       deal-label={chatLabel}
       open={bookingsOn}
@@ -461,9 +470,27 @@
       onclose={handleBookingsClose}
     ></c-pipeline-mobile-bookings>
 
+    <c-pipeline-mobile-usages
+      lwc:if={showSurgeonRows}
+      record-id={openId}
+      deal-label={chatLabel}
+      area={usagesArea}
+      open={usagesOn}
+      refresh-key={bookingsKey}
+      onsummary={handleUsagesSummary}
+      onclose={handleUsagesClose}
+    ></c-pipeline-mobile-usages>
+
+    <c-pipeline-mobile-new
+      lwc:if={ready}
+      open={newOn}
+      onclose={handleNewClose}
+      oncreated={handleCreated}
+    ></c-pipeline-mobile-new>
+
     <div class={sheetCls}>
       <button type="button" class="backbtn" onclick={handleSheetClose}>
-        <span class="bk">&#8249;</span> Back to deal
+        <span class="bk">&#8249;</span> Back
       </button>
       <h4 class="sht">{sheetTitle}</h4>
       <div class="sbox">
@@ -518,5 +545,9 @@
         </div>
       </div>
     </div>
+    <c-pipeline-mobile-saving
+      phase={savePhase}
+      word={savingWord}
+    ></c-pipeline-mobile-saving>
   </div>
 </template>

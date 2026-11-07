@@ -220,7 +220,7 @@ describe("c-pipeline-deal", () => {
         "On hold",
         "Rep priority",
         "State priority",
-        "MyMo"
+        "MyMobility"
       ]);
       expect(sliders(el).map((x) => x.value)).toEqual([
         "no",

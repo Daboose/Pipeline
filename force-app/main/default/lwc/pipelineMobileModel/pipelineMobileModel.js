@@ -10,7 +10,8 @@ import {
   stageBand,
   STAGE_COLOURS,
   STAGE_ENDS,
-  daysSince
+  daysSince,
+  formatDate
 } from "c/pipelineFormat";
 
 /**
@@ -71,9 +72,18 @@ export function dealsOf(deals, kind, status, q) {
     .sort((a, b) => (Number(b.value) || 0) - (Number(a.value) || 0));
 }
 
+/** The portfolio words for the card's type line: Hip, Knee, Extremities, CMFT (a risk may hold several). Blank for a ROSA deal. */
+export function cardType(deal) {
+  if (deal.kind === "rosa") return "";
+  return String(deal.segment || "")
+    .split(";")
+    .filter(Boolean)
+    .join(", ");
+}
+
 /**
  * A card for the list: what to show and whether to show the status pill. A pill shows only when it says something: never "Open"
- * on an Open list; On Hold on an Open list; Closed Won or Closed Lost on a Closed list; all of them on Both.
+ * on an Open list; On Hold on an Open list; Won or Lost on a Closed list; all of them on Both.
  */
 export function cardOf(deal, status) {
   const st = dealStatus(deal);
@@ -83,10 +93,21 @@ export function cardOf(deal, status) {
     name: cardName(deal),
     sub: cardSub(deal),
     stageLine: [deal.stage, deal.quarter].filter(Boolean).join(" · "),
+    // the type comes first on the line: "Knee · Commit · Q1" (Robert, 2026-11-08); the rest follows in one piece so the spaces stay
+    typeWord: cardType(deal),
+    stageRest: [deal.stage, deal.quarter].filter(Boolean).length
+      ? `${cardType(deal) ? " · " : ""}${[deal.stage, deal.quarter].filter(Boolean).join(" · ")}`
+      : "",
     value: formatMoney(deal.value, deal.currencyCode),
     repStar: !!deal.repPriority,
     campaignStar: deal.kind !== "rosa" && deal.campaignCount > 0,
-    pill: showPill ? { label: st.label, cls: `stp st-${st.key}` } : null
+    // on a card the pill says just Won or Lost for a closed deal (Robert, 2026-11-08: "Closed Lost" looks too harsh and the list already says Closed)
+    pill: showPill
+      ? {
+          label: { won: "Won", lost: "Lost" }[st.key] || st.label,
+          cls: `stp st-${st.key}`
+        }
+      : null
   };
 }
 
@@ -200,8 +221,13 @@ export function headerOf(deal) {
   };
 }
 
-/** The summary line as tiles: Owner, Portfolio, value, close quarter, last posted and last stage move (coloured by age), age, status. */
-export function summaryTiles(deal, now = Date.now()) {
+/**
+ * The summary line as tiles: Owner, Portfolio, value, close quarter, last posted and last stage move (coloured by age), age, status.
+ * rating: the surgeon's usage rating for the deal's own area as a word (Platinum, Gold, Silver, Bronze, or "No rating"); when it is given
+ * (even blank, meaning not read yet) the Usage rating tile takes the Portfolio tile's place, because the line under the name already says the
+ * portfolio (Robert, 2026-11-08). Leave it undefined (a ROSA deal, or an unknown portfolio) and the Portfolio tile stays.
+ */
+export function summaryTiles(deal, now = Date.now(), rating) {
   const days = (n, band) => ({
     value: n === null || n === undefined ? "–" : `${n} d`,
     cls: n === null || n === undefined ? "" : `tg ${band(n)}`
@@ -244,7 +270,21 @@ export function summaryTiles(deal, now = Date.now()) {
       cls: ""
     },
     { key: "status", label: "Status", value: st.label, cls: `stp st-${st.key}` }
-  ];
+  ].map((t) => {
+    if (t.key === "portfolio" && rating !== undefined) {
+      const metal = ["Platinum", "Gold", "Silver", "Bronze"].includes(rating)
+        ? rating
+        : "None";
+      return {
+        key: "rating",
+        label: "Usage rating",
+        value: rating || "–",
+        cls: "",
+        tileCls: `tile rchip m-${metal}`
+      };
+    }
+    return { tileCls: "tile", ...t };
+  });
 }
 
 /**
@@ -287,9 +327,8 @@ export const FORM_FIELDS = {
     ["Brand__c", "Brand", "multi"],
     ["OnHold__c", "On hold", "bool"],
     ["Priority__c", "Rep priority", "bool"],
-    ["State_Priority__c", "State priority", "bool"],
-    ["myMo__c", "MyMo", "bool"],
-    ["myMo_Stage__c", "MyMo stage", "picklist"],
+    ["myMo__c", "MyMobility", "bool"],
+    ["myMo_Stage__c", "MyMobility stage", "picklist"],
     ["Link_To_ROSA_Deal__c", "Link to ROSA deal", "lookup"],
     ["Objective__c", "Background information", "textarea"]
   ],
@@ -303,7 +342,6 @@ export const FORM_FIELDS = {
     ["Portfolio__c", "Portfolio", "multi"],
     ["Brand__c", "Brand", "multi"],
     ["Priority__c", "Rep priority", "bool"],
-    ["State_Priority__c", "State priority", "bool"],
     ["Objective__c", "Background information", "textarea"]
   ],
   rosa: [
@@ -325,7 +363,6 @@ export const FORM_FIELDS = {
       "picklist"
     ],
     ["Priority__c", "Rep priority", "bool"],
-    ["State_Priority__c", "State priority", "bool"],
     ["Objective__c", "Background information", "textarea"]
   ]
 };
@@ -386,8 +423,8 @@ const readText = (api, type, value, ctx) => {
 /**
  * The rows of the phone form, in order. ctx: { valueOf(api) (the draft or else the record), draft, choices(api) (the list of
  * { value, label } for a picklist, or null), updateable(api), lookupName(api) }. The closing year sits beside its quarter and the currency
- * beside the money, when both can be changed; the four Yes / No fields come together as one block of sliders; the MyMo stage folds open
- * only while MyMo is Yes. Each row says which control to draw (isLookup, isSelect, isNumber, isDate, isMulti, isTextarea, isReadOnly, isFlags).
+ * beside the money, when both can be changed; the four Yes / No fields come together as one block of sliders; the MyMobility stage folds open
+ * only while MyMobility is Yes. ctx.required (optional) lists more fields to star as required (the New deal page). Each row says which control to draw (isLookup, isSelect, isNumber, isDate, isMulti, isTextarea, isReadOnly, isFlags).
  */
 export function formRows(kind, ctx) {
   const list = FORM_FIELDS[kind] || FORM_FIELDS.opp;
@@ -399,7 +436,7 @@ export function formRows(kind, ctx) {
       key: api,
       api,
       label,
-      req: !!req,
+      req: !!req || (ctx.required || []).includes(api),
       changed: api in ctx.draft,
       value: value === null || value === undefined ? "" : value
     };
@@ -422,7 +459,7 @@ export function formRows(kind, ctx) {
       row.options = choices.map((c) => ({
         value: c.value,
         label: c.label,
-        cls: "pl" + (on.includes(c.value) ? " on" : "")
+        on: on.includes(c.value)
       }));
       row.isMulti = true;
     } else if (control === "lookup") {
@@ -506,7 +543,9 @@ export function formRows(kind, ctx) {
       ...r,
       pairCls: r.pair ? "two" : "one",
       wrapCls: fold ? "mm" + (ctx.valueOf(MYMO_FIELD) ? " open" : "") : "frm",
-      cls: "f" + (r.changed ? " changed" : "")
+      // no field has a line over it (Robert, 2026-11-08); a multi-choice carries its own name inside
+      cls: "f" + (r.changed ? " changed" : ""),
+      showLabel: !r.isMulti
     });
   });
   return out;
@@ -592,4 +631,319 @@ export function segmentsFrom(text, mentioned) {
   const last = out[out.length - 1];
   if (last && last.t) last.t = last.t.replace(/\s+$/, "");
   return out.filter((x) => x.u || x.t);
+}
+
+/* ----- Surgeon Usages on the phone (Robert, 2026-11-08; mockup pipeline_mobile_usages_v1.html, rating plates B) ----- */
+
+/** The product lines of each portfolio, in order: [line key, label]. A hip usage holds stems and cups, a shoulder anatomical and reverse. */
+export const PORT_LINES = {
+  Hip: [
+    ["stems", "Stems"],
+    ["cups", "Cups"]
+  ],
+  Knee: [["knee", "Knee"]],
+  Shoulder: [
+    ["anatomical", "Anatomical"],
+    ["reverse", "Reverse"]
+  ],
+  CMF: [["cmft", "CMFT"]]
+};
+const PORTFOLIO_ORDER = ["Hip", "Knee", "Shoulder", "CMF"];
+const RATING_STARS = { PLATINUM: 4, GOLD: 3, SILVER: 2, BRONZE: 1 };
+/** A usage list last changed this long ago (in years) gets the out-of-date warning, as on the desktop panel. */
+export const OLD_YEARS = 2;
+const YEAR_MS = 365.25 * 86400000;
+const DAY_MS = 86400000;
+
+export const portfolioName = (p) => (p === "CMF" ? "CMFT" : p);
+
+/** The deal's own area for the usage ratings, from the deal's portfolio: Hip, Knee, Shoulder (Extremities) or CMF. Blank if unknown. */
+export function dealArea(deal) {
+  const first = String((deal && deal.segment) || "").split(";")[0];
+  return (
+    { Hip: "Hip", Knee: "Knee", Extremities: "Shoulder", CMFT: "CMF" }[first] ||
+    ""
+  );
+}
+
+/** The four rating plates: the area, the word (Platinum, Gold, Silver, Bronze or No rating), 4 to 1 stars, the metal and whether it is the deal's own area. */
+export function ratingPlates(ratings, area) {
+  return (ratings || []).map((r) => {
+    const v = String(r.rating || "").toUpperCase();
+    const known = RATING_STARS[v] !== undefined;
+    return {
+      key: r.area,
+      area: portfolioName(r.area),
+      mine: r.area === area,
+      cls: `plate m-${known ? v : "NONE"}${r.area === area ? " mine" : ""}`,
+      rank: known ? v.charAt(0) + v.slice(1).toLowerCase() : "No rating",
+      stars: known ? "★".repeat(RATING_STARS[v]) : "",
+      label: `${portfolioName(r.area)}: ${known ? v.toLowerCase() : "no rating"}`
+    };
+  });
+}
+
+/**
+ * How fresh the usages are: { old, row, line, note }. row is the short words on the deal screen's row ("updated 3 months ago", "last updated
+ * 3 years ago", "none recorded"), line the sentence on the screen, note the line for a rep when they are old. newest: the date of the
+ * most recent change to any of the surgeon's usages, or blank if there are none.
+ */
+export function usageFreshness(newest, area, now = Date.now()) {
+  if (!newest) {
+    return {
+      old: false,
+      row: "none recorded",
+      line: "No usages have been recorded for this surgeon.",
+      note: ""
+    };
+  }
+  const t = Date.parse(newest);
+  const years = (now - t) / YEAR_MS;
+  const days = Math.floor((now - t) / DAY_MS);
+  const when = formatDate(newest);
+  if (years >= OLD_YEARS) {
+    const yrs = Math.floor(years);
+    const word = `${yrs} ${yrs === 1 ? "year" : "years"} ago`;
+    return {
+      old: true,
+      row: `last updated ${word}`,
+      line: `Usages last updated ${word} (${when}).${area ? ` The ${portfolioName(area)} rating may be out of date.` : ""}`,
+      note: "Update these usages the next time you see this surgeon."
+    };
+  }
+  if (days < 60) {
+    const word = `${days} ${days === 1 ? "day" : "days"} ago`;
+    return {
+      old: false,
+      row: `updated ${word}`,
+      line: `Usages updated ${word} (${when}).`,
+      note: ""
+    };
+  }
+  const word = `${Math.round(days / 30.4)} months ago`;
+  return {
+    old: false,
+    row: `updated ${word}`,
+    line: `Usages updated ${word} (${when}).`,
+    note: ""
+  };
+}
+
+/**
+ * The usages grouped for the screen: by hospital (in the order they come), then by portfolio, one entry for each usage record (a surgeon,
+ * a hospital and a portfolio) with its lines. A usage with no data in any line is left out (nothing to show).
+ */
+export function groupUsages(lines) {
+  const byHospital = new Map();
+  (lines || []).forEach((l) => {
+    const h = l.hospital || "No hospital recorded";
+    if (!byHospital.has(h)) byHospital.set(h, new Map());
+    const usages = byHospital.get(h);
+    if (!usages.has(l.usageId))
+      usages.set(l.usageId, {
+        usageId: l.usageId,
+        hospitalId: l.hospitalId,
+        hospital: h,
+        portfolio: l.portfolio,
+        name: portfolioName(l.portfolio),
+        recordTypeId: l.recordTypeId,
+        lines: []
+      });
+    usages.get(l.usageId).lines.push({
+      key: l.key,
+      label: l.label,
+      company: l.company || "",
+      cases: l.cases === null || l.cases === undefined ? null : l.cases,
+      empty: !!l.empty
+    });
+  });
+  return [...byHospital.entries()]
+    .map(([hospital, usages]) => ({
+      hospital,
+      usages: [...usages.values()]
+        .filter((u) => u.lines.some((x) => !x.empty))
+        .sort(
+          (a, b) =>
+            PORTFOLIO_ORDER.indexOf(a.portfolio) -
+            PORTFOLIO_ORDER.indexOf(b.portfolio)
+        )
+    }))
+    .filter((g) => g.usages.length);
+}
+
+/** The lines of a usage that the person changed, ready to save: [{ key, company, cases }]. draft: { lineKey: { company?, cases? } }. */
+export function changedLines(usage, draft) {
+  const out = [];
+  usage.lines.forEach((l) => {
+    const d = draft[l.key];
+    if (!d) return;
+    const company = "company" in d ? d.company : l.company;
+    const cases = "cases" in d ? d.cases : l.cases;
+    if (
+      (company || "") !== (l.company || "") ||
+      (cases ?? null) !== (l.cases ?? null)
+    )
+      out.push({ key: l.key, company: company || null, cases: cases ?? null });
+  });
+  return out;
+}
+
+/** The options of a company list: a dash for none, the record type's own choices, and the current value if it is not among them. */
+export function companyOptions(choices, current) {
+  const list = (choices || []).slice();
+  if (current && !list.includes(current)) list.unshift(current);
+  return [{ value: "", label: "–", selected: !current }].concat(
+    list.map((v) => ({ value: v, label: v, selected: v === current }))
+  );
+}
+
+/* ----- Adding a new deal from the phone (Robert, 2026-11-08; mockup pipeline_mobile_new_v1.html, option D) ----- */
+
+export const KIND_LABELS = { opp: "Opportunity", risk: "Risk", rosa: "ROSA" };
+const NEW_PORTFOLIOS = ["Hip", "Knee", "Extremities", "CMFT"];
+
+/**
+ * What a new deal of each kind must have (Robert's walkthroughs, 2026-10-25): the surgeon, the quarter and the value on an opportunity or a
+ * risk; the hospital on a ROSA deal. [API name, label]. Salesforce still has the last word (its own rules and messages are shown too).
+ */
+export const NEW_REQUIRED = {
+  opp: [
+    ["Account__c", "Primary HCP"],
+    [QUARTER_FIELD, "Expected closing quarter"],
+    ["AmountPerYear__c", "Expected annual value"]
+  ],
+  risk: [
+    ["Account__c", "Primary HCP"],
+    [QUARTER_FIELD, "Expected closing quarter"],
+    ["AmountPerYear__c", "Annual value at risk"]
+  ],
+  rosa: [["Healthcare_Facility__c", "Healthcare facility"]]
+};
+
+/**
+ * The record types a person may use for a new deal, from the object's record type list (as Salesforce reports it to this person:
+ * { id: { recordTypeId, name, available, master } }). Each record type is named for its country and kind ("AU KNEE Opportunity", "AU RISK",
+ * "AU ROSA Opportunity"); the special ones (ZB Edge, Thai sports medicine and trauma, Regional ROSA) are not offered here. Returns
+ * [{ id, name, country, kind, portfolio }].
+ */
+export function newDealTypes(infos) {
+  const out = [];
+  const add = (r, m, kind, portfolio) =>
+    out.push({
+      id: r.recordTypeId,
+      name: r.name,
+      country: m[1],
+      kind,
+      portfolio,
+      isDefault: !!r.defaultRecordTypeMapping
+    });
+  Object.values(infos || {}).forEach((r) => {
+    if (!r || !r.available || r.master) return;
+    let m = /^([A-Z]{2}) (HIP|KNEE|EXTREMITIES|CMFT) Opportunity$/.exec(r.name);
+    if (m) {
+      const portfolio =
+        m[2] === "CMFT" ? "CMFT" : m[2].charAt(0) + m[2].slice(1).toLowerCase();
+      add(r, m, "opp", portfolio);
+      return;
+    }
+    m = /^([A-Z]{2}) RISK$/.exec(r.name);
+    if (m) {
+      add(r, m, "risk", "");
+      return;
+    }
+    m = /^([A-Z]{2}) ROSA Opportunity$/.exec(r.name);
+    if (m) add(r, m, "rosa", "");
+  });
+  return out;
+}
+
+/** The kinds (in order) and portfolios the person may create, from newDealTypes. */
+export function newDealChoices(types) {
+  const kinds = ["opp", "risk", "rosa"].filter((k) =>
+    types.some((t) => t.kind === k)
+  );
+  const portfolios = NEW_PORTFOLIOS.filter((p) =>
+    types.some((t) => t.kind === "opp" && t.portfolio === p)
+  );
+  return { kinds, portfolios };
+}
+
+/** The record types that fit a kind (and, for an opportunity, a portfolio): usually one; more than one when the person works in several countries (the person's own default first, then by name). */
+export function recordTypesFor(types, kind, portfolio) {
+  return types
+    .filter(
+      (t) => t.kind === kind && (kind !== "opp" || t.portfolio === portfolio)
+    )
+    .sort(
+      (a, b) =>
+        Number(b.isDefault) - Number(a.isDefault) ||
+        a.name.localeCompare(b.name)
+    );
+}
+
+/** What is missing from a new deal: ["Primary HCP: required", ...]. valueOf(api) gives what has been entered. */
+export function missingRequired(kind, valueOf) {
+  return (NEW_REQUIRED[kind] || [])
+    .filter(([api]) => {
+      const v = valueOf(api);
+      return v === null || v === undefined || v === "";
+    })
+    .map(([, label]) => `${label}: required`);
+}
+
+/** The fields to create the record with: the record type and everything entered (a blank is left out; Salesforce fills in its own defaults). */
+export function createFields(draft, recordTypeId) {
+  const out = { RecordTypeId: recordTypeId };
+  Object.entries(draft).forEach(([k, v]) => {
+    if (v === "" || v === null || v === undefined) return;
+    out[k] = v;
+  });
+  return out;
+}
+
+/* ----- the saving screen (Robert, 2026-11-08; mockup pipeline_mobile_home_v1.html) ----- */
+
+/** How long the saving screen stays: at least `min` ms while Salesforce works (so it never flashes), then `done` ms showing the tick. Tests set both to 0. */
+export const SAVING_TIMING = { min: 1000, done: 700 };
+
+/** The words on the saving screen, by what is being done: Saving / Saved, Creating / Created, Deleting / Deleted. */
+export const SAVING_WORDS = {
+  save: { working: "Saving…", done: "Saved" },
+  create: { working: "Creating…", done: "Created" },
+  delete: { working: "Deleting…", done: "Deleted" }
+};
+
+function wait(ms) {
+  if (!(ms > 0)) return Promise.resolve();
+  // eslint-disable-next-line @lwc/lwc/no-async-operation
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/**
+ * Runs one change under the saving screen. setPhase({ phase, word }) is called with "working" (the screen dims and locks), then, once
+ * Salesforce has answered and the minimum time has passed, "done" (the tick and the past-tense word), then "" (the screen comes back).
+ * work() returns the promise of the change. If Salesforce refuses, the screen comes back at once and the error is thrown on to the caller,
+ * so its message shows and nothing is lost. Resolves with what work() resolved with.
+ */
+export function withSavingScreen(setPhase, words, work) {
+  const started = Date.now();
+  setPhase({ phase: "working", word: words.working });
+  return Promise.resolve()
+    .then(work)
+    .then(
+      (result) =>
+        wait(Math.max(0, SAVING_TIMING.min - (Date.now() - started)))
+          .then(() => {
+            setPhase({ phase: "done", word: words.done });
+            return wait(SAVING_TIMING.done);
+          })
+          .then(() => {
+            setPhase({ phase: "", word: words.done });
+            return result;
+          }),
+      (error) => {
+        setPhase({ phase: "", word: words.working });
+        throw error;
+      }
+    );
 }

@@ -19,6 +19,9 @@ export default class PipelineSegmented extends LightningElement {
   @api label = "Choose one";
   /** True when the person may look but not change (greyed, and a press does nothing). */
   @api disabled = false;
+  /** True makes an option's tone colour only the sliding highlight (the thumb), not the whole pill: the label end and the track stay plain
+   *  (Robert, 2026-11-08: the phone's sliders). Unset, a tone fills the whole pill as before (the desktop). */
+  @api toneThumb = false;
 
   placed = false;
   animated = false;
@@ -93,7 +96,9 @@ export default class PipelineSegmented extends LightningElement {
     return (
       "wrap" +
       (this.disabled ? " off" : "") +
-      (chosen && chosen.tone ? ` t-${chosen.tone}` : "")
+      (chosen && chosen.tone
+        ? ` ${this.toneThumb ? "tt" : "t"}-${chosen.tone}`
+        : "")
     );
   }
 

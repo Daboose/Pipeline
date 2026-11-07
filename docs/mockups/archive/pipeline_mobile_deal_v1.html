@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Mockup: Pipeline on the phone, the deal screen (version 1)</title>
+    <title>Mockup: the deal screen, sliders and usage rating (version 1)</title>
     <style>
       :root,
       [data-theme="light"] {
@@ -978,6 +978,1036 @@
         background: var(--box);
         font-weight: 800;
       }
+
+      /* the locked back bar: a full-width filled button that stays at the top of the page while the deal scrolls */
+      .lock {
+        position: sticky;
+        top: -12px; /* the phone frame's own 12 px padding is taken back, so the bar sits right at the top */
+        z-index: 5;
+        margin: -12px -12px 10px;
+        padding: 10px 12px 8px;
+        background: var(--bg);
+        box-shadow: 0 1px 0 var(--line);
+      }
+      .lockbtn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        width: 100%;
+        height: 44px;
+        border: 0;
+        border-radius: 999px;
+        background: var(--indigo);
+        color: #fff;
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+      }
+      .lockbtn span {
+        font-size: 22px;
+        line-height: 1;
+        margin-top: -2px;
+      }
+
+      /* the stage control as ONE component: the coloured row and its list joined, one outline in the row's colour all round */
+      .stc {
+        --c: var(--indigo);
+        border: 2px solid var(--c);
+        border-radius: 14px;
+        overflow: hidden;
+        background: var(--card);
+        margin-bottom: 12px;
+        transition: border-color 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .stc.good {
+        --c: #16a34a;
+      }
+      .stc.bad {
+        --c: #dc2626;
+      }
+      .stc .hd {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+        min-height: 60px;
+        padding: 6px 12px 6px 16px;
+        border: 0;
+        background: var(--c);
+        color: #fff;
+        text-align: left;
+        cursor: pointer;
+        transition: background 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .stc .hd small {
+        display: block;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        opacity: 0.85;
+      }
+      .stc .hd .sv {
+        display: block;
+        font-size: 19px;
+        font-weight: 800;
+      }
+      /* the chevron: big, and it turns over as the list opens and closes */
+      .chv {
+        margin-left: auto;
+        flex: none;
+        width: 36px;
+        height: 36px;
+        position: relative;
+        border-radius: 50%;
+        transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .chv::before {
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 14px;
+        height: 14px;
+        border-right: 4px solid #fff;
+        border-bottom: 4px solid #fff;
+        border-radius: 2px;
+        transform: translate(-50%, -70%) rotate(45deg);
+      }
+      .stc.shut .chv {
+        transform: rotate(0deg);
+      }
+      .stc:not(.shut) .chv {
+        transform: rotate(180deg);
+      }
+      .chv.ring {
+        background: rgba(255, 255, 255, 0.22);
+      }
+      .stc .fold {
+        display: grid;
+        grid-template-rows: 1fr;
+        transition: grid-template-rows 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .stc.shut .fold {
+        grid-template-rows: 0fr;
+      }
+      .stc .fold > div {
+        overflow: hidden;
+        min-height: 0;
+      }
+      .stc .li {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 14px 16px;
+        border-top: 1px solid var(--line);
+        font-size: 16px;
+      }
+      .stc .li:first-child {
+        border-top: 0;
+      }
+      .stc .li.here {
+        background: color-mix(in srgb, var(--c) 12%, var(--card));
+        font-weight: 800;
+      }
+      .stc .li .ck {
+        margin-left: auto;
+        color: var(--c);
+        font-weight: 800;
+      }
+      /* B: the row you are on has a bar of the colour down its left edge */
+      .vb .li.here {
+        box-shadow: inset 5px 0 0 var(--c);
+        padding-left: 20px;
+      }
+      /* C: progress, as on the desktop slider: finished stages carry a tick in a circle, stages to come are dimmer */
+      .vc .li.done .ck {
+        display: none;
+      }
+      .vc .li .tk {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: var(--c);
+        color: #fff;
+        font-size: 12px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        order: 3;
+        margin-left: auto;
+      }
+      .vc .li.ahead {
+        color: var(--muted);
+      }
+      .mini {
+        margin: 0 0 12px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      /* the stage you are on: bold, a bar of the row's colour down its left edge (option B, chosen) */
+      .stc .li.here {
+        box-shadow: inset 5px 0 0 var(--c);
+        padding-left: 20px;
+      }
+
+      /* ===== editing on the phone (version 1) ===== */
+      .pbody {
+        position: relative;
+        flex: 1;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+      .pbody .scroll {
+        flex: 1;
+      }
+      .f {
+        padding: 9px 0;
+        border-top: 1px solid var(--line);
+      }
+      .f:first-of-type {
+        border-top: 0;
+      }
+      .f .fl {
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 5px;
+        transition: color 0.4s;
+      }
+      .f .fl .rq {
+        color: #dc2626;
+      }
+      .f.changed .fl {
+        color: var(--indigo);
+      }
+      .f.changed .in,
+      .f.changed .lk {
+        border-color: var(--indigo);
+      }
+      .in,
+      .lk {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        height: 44px;
+        padding: 0 14px;
+        border: 1px solid var(--edge);
+        border-radius: 10px;
+        background: var(--field);
+        color: var(--text);
+        font-size: 16px; /* 16 px, or the iPhone zooms the page */
+        text-align: left;
+        transition: border-color 0.4s;
+      }
+      select.in {
+        appearance: none;
+        -webkit-appearance: none;
+        background-image:
+          linear-gradient(45deg, transparent 50%, var(--muted) 50%),
+          linear-gradient(135deg, var(--muted) 50%, transparent 50%);
+        background-position:
+          calc(100% - 20px) 19px,
+          calc(100% - 14px) 19px;
+        background-size:
+          6px 6px,
+          6px 6px;
+        background-repeat: no-repeat;
+      }
+      textarea.in {
+        height: auto;
+        min-height: 96px;
+        padding: 10px 14px;
+        font-family: inherit;
+        resize: none;
+      }
+      .lk {
+        justify-content: space-between;
+        cursor: pointer;
+      }
+      .lk i {
+        width: 9px;
+        height: 9px;
+        border-right: 2.5px solid var(--muted);
+        border-top: 2.5px solid var(--muted);
+        transform: rotate(45deg);
+      }
+      .two {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+      .pl {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .pl button {
+        height: 40px;
+        padding: 0 16px;
+        border: 1px solid var(--edge);
+        border-radius: 999px;
+        background: var(--box);
+        color: var(--muted);
+        font-weight: 700;
+        font-size: 14px;
+        transition:
+          background 0.3s,
+          color 0.3s;
+      }
+      .pl button.on {
+        background: var(--indigo);
+        border-color: var(--indigo);
+        color: #fff;
+      }
+      .flags {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        padding: 9px 0;
+        border-top: 1px solid var(--line);
+      }
+      .flags .yn.changed {
+        border-color: var(--indigo);
+      }
+      .yn.warn .hl {
+        background: #f59e0b;
+        box-shadow: 0 4px 14px rgba(245, 158, 11, 0.4);
+      }
+      .yn.good .hl {
+        background: #16a34a;
+        box-shadow: 0 4px 14px rgba(22, 163, 74, 0.35);
+      }
+      .yn.warn button.on[data-v="yes"] {
+        color: #1b2640;
+      }
+      .yn.changed .lb {
+        color: var(--indigo);
+      }
+      /* the MyMo stage folds open only while MyMo is Yes (0.4 s) */
+      .mm {
+        display: grid;
+        grid-template-rows: 0fr;
+        transition: grid-template-rows 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .phone.mmon .mm {
+        grid-template-rows: 1fr;
+      }
+      .mm > div {
+        overflow: hidden;
+        min-height: 0;
+      }
+      .mm .f {
+        border-top: 0;
+        padding-top: 4px;
+      }
+      /* On hold: the amber pill beside the name; it fades in and gives its room back when off */
+      .holdp {
+        max-width: 0;
+        opacity: 0;
+        overflow: hidden;
+        padding: 0;
+        white-space: nowrap;
+        transition:
+          max-width 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+          opacity 0.4s,
+          padding 0.4s;
+      }
+      .phone.holdon .holdp {
+        max-width: 120px;
+        opacity: 1;
+        padding: 0 11px;
+      }
+      /* the stage list: a row you can tap */
+      .stc .li {
+        min-height: 52px;
+        cursor: pointer;
+      }
+      /* the locked Save bar: folds up from the bottom edge of the page when the first change is made */
+      .savewrap {
+        position: sticky;
+        bottom: -16px;
+        z-index: 6;
+        margin: 0 -12px -16px;
+        display: grid;
+        grid-template-rows: 0fr;
+        background: var(--bg);
+        box-shadow: 0 -1px 0 var(--line);
+        transition: grid-template-rows 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .phone.dirty .savewrap {
+        grid-template-rows: 1fr;
+      }
+      .savewrap > div {
+        overflow: hidden;
+        min-height: 0;
+      }
+      .savebar {
+        display: flex;
+        gap: 10px;
+        padding: 10px 12px 12px;
+      }
+      .savebar button {
+        flex: 1 1 0;
+        height: 44px;
+        border: 0;
+        border-radius: 999px;
+        color: #fff;
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+      }
+      .savebar .cancel {
+        background: var(--slate);
+      }
+      .savebar .save {
+        background: var(--indigo);
+      }
+      .savebar button[disabled] {
+        opacity: 0.55;
+      }
+      .okmsg {
+        color: var(--ok);
+        font-weight: 800;
+        padding: 0 0 8px;
+        max-height: 0;
+        opacity: 0;
+        overflow: hidden;
+        transition:
+          max-height 0.4s,
+          opacity 0.4s;
+      }
+      .phone.saved .okmsg {
+        max-height: 40px;
+        opacity: 1;
+      }
+      /* the search sheet for a person, hospital or deal: slides in from the right over the page (0.4 s), with its own locked back bar */
+      .sheet {
+        position: absolute;
+        inset: 0;
+        z-index: 8;
+        display: flex;
+        flex-direction: column;
+        padding: 12px;
+        background: var(--bg);
+        transform: translateX(105%);
+        visibility: hidden;
+        transition:
+          transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+          visibility 0s linear 0.4s;
+      }
+      .phone.sh .sheet {
+        transform: none;
+        visibility: visible;
+        transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .sheet .lockbtn {
+        flex: none;
+        margin-bottom: 10px;
+      }
+      .sheet h4 {
+        margin: 2px 2px 8px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--head);
+      }
+      .sheet .search {
+        margin-bottom: 10px;
+        flex: none;
+      }
+      .sheet .results {
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+      }
+      .rs {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 58px;
+        padding: 8px 14px;
+        border-top: 1px solid var(--line);
+        cursor: pointer;
+      }
+      .rs:first-child {
+        border-top: 0;
+      }
+      .rs b {
+        display: block;
+        font-size: 16px;
+      }
+      .rs small {
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .rs .ck2 {
+        color: var(--indigo);
+        font-weight: 800;
+      }
+      .rs.is {
+        background: color-mix(in srgb, var(--indigo) 10%, var(--card));
+      }
+      .noneL {
+        padding: 22px 14px;
+        text-align: center;
+        color: var(--muted);
+      }
+      /* leaving with unsaved changes: a question over a blurred, darkened page */
+      .askwrap {
+        position: absolute;
+        inset: 0;
+        z-index: 9;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        background: rgba(6, 11, 20, 0.55);
+        -webkit-backdrop-filter: blur(4px);
+        backdrop-filter: blur(4px);
+        opacity: 0;
+        visibility: hidden;
+        transition:
+          opacity 0.3s,
+          visibility 0s linear 0.3s;
+      }
+      .phone.ask .askwrap {
+        opacity: 1;
+        visibility: visible;
+        transition: opacity 0.3s;
+      }
+      .ask1 {
+        width: 100%;
+        padding: 18px;
+        background: var(--card);
+        border: 1px solid var(--edge);
+        border-radius: 14px;
+      }
+      .ask1 b {
+        font-size: 18px;
+      }
+      .ask1 p {
+        margin: 6px 0 14px;
+        color: var(--muted);
+        font-size: 15px;
+      }
+      .ask1 .row2 {
+        display: flex;
+        gap: 10px;
+      }
+      .ask1 button {
+        flex: 1 1 0;
+        height: 44px;
+        border: 0;
+        border-radius: 999px;
+        color: #fff;
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+      }
+      .ask1 .stay {
+        background: var(--indigo);
+      }
+      .ask1 .leave {
+        background: #dc2626;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .mm,
+        .holdp,
+        .savewrap,
+        .sheet,
+        .askwrap,
+        .okmsg {
+          transition: none;
+        }
+      }
+
+      /* ===== Chatter on the phone (version 1) ===== */
+      .phones {
+        gap: 28px;
+      }
+      .phone.kb .pbody {
+        margin-bottom: 242px;
+      }
+      .kbd {
+        display: none;
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 300px;
+        z-index: 20;
+        background: #d1d5db;
+        color: #6b7280;
+        font-size: 13px;
+        text-align: center;
+        padding-top: 118px;
+        border-top: 1px solid #b6bcc6;
+      }
+      .phone.kb .kbd {
+        display: block;
+      }
+      .post {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 12px 14px;
+        margin-bottom: 10px;
+      }
+      .meta {
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+        font-size: 14px;
+      }
+      .meta b {
+        font-size: 15px;
+      }
+      .when {
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .txt {
+        margin-top: 4px;
+        font-size: 16px;
+        line-height: 1.4;
+        overflow-wrap: anywhere;
+      }
+      .mention {
+        color: var(--indigo);
+        font-weight: 700;
+      }
+      .reply {
+        margin: 10px 0 0 6px;
+        padding: 2px 0 2px 12px;
+        border-left: 3px solid var(--line);
+      }
+      .rbtn {
+        height: 40px;
+        margin-top: 10px;
+        padding: 0 18px;
+        border: 0;
+        border-radius: 999px;
+        background: var(--slate);
+        color: #fff;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+      }
+      .big {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        width: 100%;
+        height: 44px;
+        margin-bottom: 10px;
+        border: 0;
+        border-radius: 999px;
+        background: var(--indigo);
+        color: #fff;
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+      }
+      .compose {
+        display: block;
+        width: 100%;
+        height: 44px;
+        margin-bottom: 10px;
+        padding: 0 16px;
+        border: 1px solid var(--edge);
+        border-radius: 999px;
+        background: var(--field);
+        color: var(--muted);
+        font-size: 16px;
+        text-align: left;
+      }
+      .composebox {
+        display: none;
+        margin-bottom: 10px;
+        padding: 10px;
+        background: var(--card);
+        border: 1px solid var(--indigo);
+        border-radius: 12px;
+      }
+      .composebox textarea,
+      .wtext {
+        display: block;
+        width: 100%;
+        min-height: 96px;
+        padding: 10px 12px;
+        border: 1px solid var(--edge);
+        border-radius: 10px;
+        background: var(--field);
+        color: var(--text);
+        font-family: inherit;
+        font-size: 16px;
+        resize: none;
+      }
+      .phone.cmp .compose {
+        display: none;
+      }
+      .phone.cmp .composebox {
+        display: block;
+      }
+      .row2 {
+        display: flex;
+        gap: 10px;
+        margin-top: 10px;
+      }
+      .row2 button {
+        flex: 1 1 0;
+        height: 44px;
+        border: 0;
+        border-radius: 999px;
+        color: #fff;
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+      }
+      .row2 .c {
+        background: var(--slate);
+      }
+      .row2 .p {
+        background: var(--indigo);
+      }
+      /* B: the composer locked at the bottom of the screen */
+      .dock {
+        position: sticky;
+        bottom: -16px;
+        z-index: 6;
+        margin: 0 -12px -16px;
+        padding: 8px 12px 10px;
+        background: var(--bg);
+        box-shadow: 0 -1px 0 var(--line);
+      }
+      .dock .chip {
+        display: none;
+        margin-bottom: 6px;
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .phone.rep .dock .chip {
+        display: block;
+      }
+      .dockrow {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+      .dockrow input {
+        flex: 1;
+        min-width: 0;
+        height: 44px;
+        padding: 0 16px;
+        border: 1px solid var(--edge);
+        border-radius: 999px;
+        background: var(--field);
+        color: var(--text);
+        font-size: 16px;
+      }
+      .send {
+        flex: none;
+        width: 44px;
+        height: 44px;
+        border: 0;
+        border-radius: 50%;
+        background: var(--indigo);
+        color: #fff;
+        font-size: 20px;
+        font-weight: 800;
+        cursor: pointer;
+      }
+      /* C: the writing page: the original post (a reply only), the box, the people list, a locked Cancel / Post bar */
+      .sheet .quote {
+        flex: none;
+        margin-bottom: 8px;
+        padding: 8px 12px;
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        font-size: 14px;
+        color: var(--muted);
+        display: none;
+      }
+      .phone.isreply .sheet .quote {
+        display: block;
+      }
+      .sheet .wtext {
+        flex: 1;
+        min-height: 60px;
+      }
+      .people {
+        flex: none;
+        margin-top: 8px;
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        overflow: hidden;
+        display: none;
+      }
+      .phone.ment .people {
+        display: block;
+      }
+      .person {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        min-height: 54px;
+        padding: 4px 14px;
+        border-top: 1px solid var(--line);
+        cursor: pointer;
+      }
+      .person:first-child {
+        border-top: 0;
+      }
+      .person small {
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .sheet .row2 {
+        flex: none;
+        margin-top: 10px;
+      }
+      .go.live {
+        border-color: var(--indigo);
+      }
+      .go .sub {
+        font-weight: 400;
+        color: var(--muted);
+        font-size: 13px;
+        margin-left: 8px;
+      }
+
+      /* ===== the deal screen: sliders without the fill behind the title, and the usage rating (version 1) ===== */
+      .phones {
+        gap: 28px;
+      }
+      /* the Yes / No slider, drawn here for the mockup: a label end, a track, a thumb that slides (0.4 s) */
+      .sl {
+        display: flex;
+        align-items: stretch;
+        width: 100%;
+        margin-bottom: 8px;
+        background: var(--card);
+        border: 1px solid var(--edge);
+        border-radius: 999px;
+        transition:
+          background 0.4s,
+          border-color 0.4s;
+      }
+      .sl .lb {
+        display: inline-flex;
+        align-items: center;
+        min-width: 150px;
+        box-sizing: border-box;
+        padding: 0 16px 0 18px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+        white-space: nowrap;
+        transition: color 0.4s;
+      }
+      .sl .trk {
+        position: relative;
+        flex: 1;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        margin: -1px;
+        padding: 3px;
+        background: var(--box);
+        border: 1px solid var(--edge);
+        border-radius: 999px;
+        transition:
+          background 0.4s,
+          border-color 0.4s;
+      }
+      .sl .th {
+        position: absolute;
+        top: 3px;
+        left: 3px;
+        width: calc(50% - 3px);
+        height: 37px;
+        border-radius: 999px;
+        background: var(--indigo);
+        box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35);
+        transition:
+          transform 0.4s cubic-bezier(0.3, 1.35, 0.5, 1),
+          background 0.4s;
+      }
+      .sl.on .th {
+        transform: translateX(100%);
+      }
+      .sl .trk button {
+        position: relative;
+        z-index: 1;
+        height: 37px;
+        border: 0;
+        background: none;
+        font-weight: 700;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+        cursor: pointer;
+        transition: color 0.3s;
+      }
+      .sl:not(.on) .trk button[data-v="no"],
+      .sl.on .trk button[data-v="yes"] {
+        color: #fff;
+      }
+      /* NOW: when Yes, the whole pill, the label end included, turns the colour */
+      .sl.v0.on {
+        background: var(--tone);
+        border-color: var(--tone);
+      }
+      .sl.v0.on .lb {
+        color: rgba(255, 255, 255, 0.85);
+      }
+      .sl.v0.on .trk {
+        background: color-mix(in srgb, var(--tone) 78%, #000);
+        border-color: var(--tone);
+      }
+      .sl.v0.on .th {
+        background: #fff;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+      }
+      .sl.v0.on .trk button[data-v="yes"] {
+        color: var(--tone);
+      }
+      /* 1: the label end stays plain; only the thumb turns the colour (No is the blue thumb, Yes the green one) */
+      .sl.v1.on .th {
+        background: var(--tone);
+        box-shadow: 0 4px 14px color-mix(in srgb, var(--tone) 45%, transparent);
+      }
+      .sl.v1.on .trk button[data-v="yes"] {
+        color: #fff;
+      }
+      .sl.v1.warn.on .trk button[data-v="yes"] {
+        color: #1b2640;
+      }
+      /* 2: the label end stays plain; the track fills with the colour and the thumb is white */
+      .sl.v2.on .trk {
+        background: color-mix(in srgb, var(--tone) 82%, #000);
+        border-color: var(--tone);
+      }
+      .sl.v2.on .th {
+        background: #fff;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+      }
+      .sl.v2.on .trk button[data-v="yes"] {
+        color: var(--tone);
+      }
+      .sl.v2.on .trk button[data-v="no"] {
+        color: #fff;
+      }
+      .sl.good {
+        --tone: #16a34a;
+      }
+      .sl.warn {
+        --tone: #f59e0b;
+      }
+      .sl.v2.warn.on .trk button[data-v="yes"] {
+        color: #b45309;
+      }
+      /* the usage rating: a chip in the metal of the plate, the word only */
+      .rchip {
+        border-radius: 12px;
+        padding: 9px 12px;
+        color: var(--ink);
+        box-shadow:
+          inset 0 2px 1px rgba(255, 255, 255, 0.7),
+          inset 0 -3px 3px rgba(0, 0, 0, 0.25),
+          inset 0 0 0 1px rgba(0, 0, 0, 0.22),
+          0 3px 8px rgba(40, 30, 10, 0.22);
+      }
+      .rchip .l {
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        opacity: 0.8;
+      }
+      .rchip .v {
+        font-size: 16px;
+        font-weight: 900;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        margin-top: 2px;
+        white-space: nowrap;
+      }
+      .rchip.m-Platinum {
+        background: linear-gradient(135deg, #efe9d6, #c7bea3 45%, #a89d84);
+        --ink: #3a3326;
+      }
+      .rchip.m-Gold {
+        background: linear-gradient(135deg, #fff1b0, #e5cc73 40%, #c9a13e);
+        --ink: #4a3406;
+      }
+      .rchip.m-Silver {
+        background: linear-gradient(135deg, #eef1f7, #b9bec9 45%, #8e939e);
+        --ink: #23272f;
+      }
+      .rchip.m-Bronze {
+        background: linear-gradient(135deg, #f3b58c, #c98558 45%, #a66b48);
+        --ink: #3d1f0e;
+      }
+      .rchip.m-None {
+        background: #eceae8;
+        --ink: #6d6a67;
+        box-shadow: inset 0 0 0 1px #d4d1ce;
+      }
+      .hrow {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 10px;
+        margin: 2px 2px 10px;
+      }
+      .hrow .nm {
+        font-size: 24px;
+        font-weight: 800;
+        line-height: 1.15;
+      }
+      .hrow .dsub2 {
+        color: var(--muted);
+        font-size: 14px;
+        margin-top: 2px;
+      }
+      .hrow .rchip {
+        flex: none;
+        min-width: 112px;
+      }
+      .note2 {
+        margin: 6px 2px 0;
+        color: var(--muted);
+        font-size: 13px;
+      }
     </style>
   </head>
   <body data-theme="light">
@@ -992,511 +2022,218 @@
     <details class="about" open>
       <summary>ABOUT THIS MOCKUP</summary>
       <p>
-        <b>Version 1, invented data only.</b> The <b>deal screen</b> on the
-        phone, read-only: what opens when a rep taps a card on the list. Drawn
-        at 390 px wide inside the Salesforce phone app's own bars. Top to
-        bottom:
+        <b>Version 1, invented data only.</b> Two changes to the phone's deal
+        screen, shown before anything is built.
       </p>
       <ul>
         <li>
-          <b>A “My deals” back button</b> of its own (Salesforce's own back
-          arrow leaves the Pipeline tab altogether, so ours returns to the
-          list).
+          <b>1. The Yes / No sliders without the fill behind the title</b>
+          (phone 4). Today, with Yes on, the whole pill turns solid green, label
+          end included, which looks too much like the full “Back to My Pipeline”
+          bar. Two ways to keep the label end plain: <b>Green thumb</b> (the
+          label and the track stay as they are and the thumb turns green for
+          Yes, amber for On hold; No is the blue thumb, so the pair reads blue /
+          green) or <b>Green track</b> (the track fills with the colour and the
+          thumb is white, but the label end stays plain). The switch above the
+          phones shows these and today's look. Tap any slider to flip it. The
+          same would apply to the In campaign sliders.
         </li>
         <li>
-          <b>The name</b> (the surgeon; the hospital for a ROSA deal), with the
-          amber On Hold pill when it is on hold, and the kind of deal under it.
-        </li>
-        <li>
-          <b>The summary line</b> as a grid of tiles: Owner, Portfolio, Value a
-          year, Close quarter, Last posted and Last stage move (coloured by how
-          old), Deal age and Status.
-        </li>
-        <li>
-          <b>The stage</b>, which does not fit across a phone as on the desktop
-          (seven stages). Three ways, one on each phone: <b>A.</b> the same
-          one-pill slider, scrolling sideways with the current stage in view;
-          <b>B.</b> the stage's name large over a bar of steps; <b>C.</b> one
-          coloured row that names the stage and opens the list of stages (press
-          it to see the list).
-        </li>
-        <li>
-          <b>The deal's details</b> (Primary HCP, hospital, expected closing
-          quarter and year, annual value, units, brand, and the Yes / No fields
-          as plain words), then three rows to open Surgeon Usages, MyCase
-          Bookings and Campaigns, then Chatter below (a placeholder).
-        </li>
-        <li>
-          <b>Try it:</b> <b>Deal</b> switches between an open opportunity, an
-          opportunity on hold, one won, one lost, a risk and a ROSA deal; the
-          stage colours and the pills follow. <b>Theme</b> for dark. Scroll
-          inside the phones.
+          <b>2. The surgeon's usage rating in the header</b> (phones 1 to 3): a
+          chip in the metal of the rating plates, with
+          <b>just the word</b> (Platinum, Gold, Silver or Bronze; grey “No
+          rating”) and no portfolio name, for the deal's own area. <b>A</b> puts
+          it at the right of the name, where the arrow pointed. <b>B</b> makes
+          it a tile in the grid and takes out the Portfolio tile, because
+          “Opportunity · Knee” under the name already says the portfolio. Use
+          the Rating switch to see each colour.
         </li>
       </ul>
       <p class="muted">
-        Not shown: editing (the next step: the stage tapped to change, the Yes /
-        No sliders, the fields), Chatter, and the three screens behind the rows.
-        Nothing here saves anything.
+        Not shown: how it would be built. The rating is already read for the
+        Surgeon Usages screen (the Apex that gives the usages gives the four
+        ratings), so there is nothing new on the server; a ROSA deal has no
+        surgeon, so it would show no chip. The desktop's sliders stay as they
+        are.
       </p>
     </details>
 
     <div class="tools">
-      <span class="lab" style="margin-left: 0">Deal</span>
-      <button type="button" class="pill on" data-deal="open">
-        Open opportunity
-      </button>
-      <button type="button" class="pill" data-deal="hold">On hold</button>
-      <button type="button" class="pill" data-deal="won">Won</button>
-      <button type="button" class="pill" data-deal="lost">Lost</button>
-      <button type="button" class="pill" data-deal="risk">Risk</button>
-      <button type="button" class="pill" data-deal="rosa">ROSA deal</button>
-      <span class="lab">Theme</span>
-      <button type="button" class="pill on" data-theme-btn="light">
-        Light
-      </button>
-      <button type="button" class="pill" data-theme-btn="dark">Dark</button>
+      <span class="lab" style="margin-left: 0">Sliders</span>
+      <button type="button" class="pill" data-sl="v0">Today</button>
+      <button type="button" class="pill on" data-sl="v1">Green thumb</button>
+      <button type="button" class="pill" data-sl="v2">Green track</button>
+      <span class="lab">Rating</span>
+      <button type="button" class="pill" data-r="Platinum">Platinum</button>
+      <button type="button" class="pill on" data-r="Gold">Gold</button>
+      <button type="button" class="pill" data-r="Silver">Silver</button>
+      <button type="button" class="pill" data-r="Bronze">Bronze</button>
+      <button type="button" class="pill" data-r="None">None</button>
     </div>
-    <div class="mocknote">
-      Mockup note: switch the Deal, and press the coloured stage row on the
-      right-hand phone to see the list of stages.
+    <div class="mocknote" id="note">
+      Mockup note: tap a slider on phone 4 to flip it.
     </div>
     <div class="phones" id="phones"></div>
 
     <script>
-      var S = { theme: "light", deal: "open", c: false };
-      var STAGES = {
-        opp: [
-          "Plan",
-          "Action",
-          "Commit",
-          "1st Case",
-          "5th Case",
-          "Conversion",
-          "Unsuccessful Conversion"
-        ],
-        risk: ["Unhappy", "Closed Retained", "Lost Business"],
-        rosa: ["Sales Pipeline", "Closed Won", "Deal Lost"]
-      };
-      var ENDS = {
-        opp: ["Conversion", "Unsuccessful Conversion"],
-        risk: ["Closed Retained", "Lost Business"],
-        rosa: ["Closed Won", "Deal Lost"]
-      };
-      var DEALS = {
-        open: {
-          kind: "opp",
-          name: "Dr Chris Lee",
-          sub: "Opportunity · Hip",
-          stage: "1st Case",
-          owner: "Lewis Dawson",
-          portfolio: "Hip",
-          value: "A$180k",
-          q: "Q1 2027",
-          posted: [12, "ok"],
-          moved: [45, "warn"],
-          age: "120 d",
-          state: "open",
-          hosp: "Mater Hospital",
-          yq: "Q1 2027",
-          amount: "AUD 180,000",
-          units: "24",
-          brand: "Persona",
-          flags: { hold: 0, rep: 1, state: 0, mymo: 1 },
-          camps: 1
-        },
-        hold: {
-          kind: "opp",
-          name: "Dr Tara Nguyen",
-          sub: "Opportunity · Knee",
-          stage: "Action",
-          owner: "Lewis Dawson",
-          portfolio: "Knee",
-          value: "A$90k",
-          q: "Q2 2027",
-          posted: null,
-          moved: null,
-          age: "310 d",
-          state: "hold",
-          hosp: "St Vincent's Private",
-          yq: "Q2 2027",
-          amount: "AUD 90,000",
-          units: "12",
-          brand: "Persona",
-          flags: { hold: 1, rep: 0, state: 0, mymo: 0 },
-          camps: 0
-        },
-        won: {
-          kind: "opp",
-          name: "Dr Sam Patel",
-          sub: "Opportunity · Hip",
-          stage: "Conversion",
-          owner: "Lewis Dawson",
-          portfolio: "Hip",
-          value: "A$320k",
-          q: "Q3 2026",
-          posted: null,
-          moved: null,
-          age: "402 d",
-          state: "won",
-          hosp: "Sydney Adventist",
-          yq: "Q3 2026",
-          amount: "AUD 320,000",
-          units: "40",
-          brand: "Taperloc",
-          flags: { hold: 0, rep: 0, state: 0, mymo: 0 },
-          camps: 0
-        },
-        lost: {
-          kind: "opp",
-          name: "Dr Joel Brandt",
-          sub: "Opportunity · Knee",
-          stage: "Unsuccessful Conversion",
-          owner: "Lewis Dawson",
-          portfolio: "Knee",
-          value: "A$140k",
-          q: "Q3 2026",
-          posted: null,
-          moved: null,
-          age: "377 d",
-          state: "lost",
-          hosp: "Calvary North Adelaide",
-          yq: "Q3 2026",
-          amount: "AUD 140,000",
-          units: "16",
-          brand: "Persona",
-          flags: { hold: 0, rep: 0, state: 0, mymo: 0 },
-          camps: 0
-        },
-        risk: {
-          kind: "risk",
-          name: "Dr Mia Torres",
-          sub: "Risk · Knee",
-          stage: "Unhappy",
-          owner: "Lewis Dawson",
-          portfolio: "Knee",
-          value: "A$75k",
-          q: "Q4 2026",
-          posted: [78, "warn"],
-          moved: [95, "bad"],
-          age: "210 d",
-          state: "open",
-          hosp: "Epworth Richmond",
-          yq: "Q4 2026",
-          amount: "AUD 75,000",
-          units: "",
-          brand: "Persona",
-          flags: { rep: 0, state: 1 },
-          camps: 0
-        },
-        rosa: {
-          kind: "rosa",
-          name: "Wesley Hospital",
-          sub: "ROSA opportunity · ROSA sales opportunity",
-          stage: "Sales Pipeline",
-          owner: "Lewis Dawson",
-          portfolio: "ROSA",
-          value: "A$900k",
-          q: "Q4 2026",
-          posted: [5, "ok"],
-          moved: [20, "ok"],
-          age: "88 d",
-          state: "open",
-          hosp: "Wesley Hospital",
-          yq: "Q4 2026",
-          amount: "AUD 900,000",
-          units: "",
-          brand: "",
-          flags: { rep: 1, state: 0 },
-          camps: 0
-        }
-      };
-      var LABEL = {
-        open: "Open",
-        hold: "On Hold",
-        won: "Closed Won",
-        lost: "Closed Lost"
-      };
-      function esc(s) {
-        return String(s).replace(/[&<>"]/g, function (c) {
-          return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
-        });
-      }
-      function tag(p) {
-        return p ? '<span class="tg ' + p[1] + '">' + p[0] + " d</span>" : "–";
-      }
-      function tone(d) {
-        return d.state === "won" ? "good" : d.state === "lost" ? "bad" : "";
-      }
-      var TICK = '<span class="tick">✓</span>';
-      function stageA(d) {
-        var list = STAGES[d.kind],
-          idx = list.indexOf(d.stage),
-          ends = ENDS[d.kind];
+      var S = { sl: "v1", r: "Gold" };
+      function chip(cls) {
+        var none = S.r === "None";
         return (
-          '<div class="stgA ' +
-          tone(d) +
-          '"><span class="lb">Stage</span><div class="scr"><div class="trk">' +
-          list
-            .map(function (x, i) {
-              var fin = i < idx && ends.indexOf(x) < 0;
-              return (
-                '<span class="st' +
-                (i === idx ? " on" : i > idx ? " ahead" : "") +
-                '"' +
-                (i === idx ? ' data-cur="1"' : "") +
-                ">" +
-                x +
-                (fin ? TICK : "") +
-                "</span>"
-              );
-            })
-            .join("") +
-          "</div></div></div>"
-        );
-      }
-      function stageB(d) {
-        var list = STAGES[d.kind],
-          ends = ENDS[d.kind];
-        var work = list.filter(function (x) {
-          return ends.indexOf(x) < 0;
-        });
-        var wi = work.indexOf(d.stage),
-          won = d.state === "won",
-          lost = d.state === "lost";
-        var n = won ? work.length : wi + 1;
-        var segs = work
-          .map(function (x, i) {
-            return "<i" + (i < n ? ' class="f"' : "") + "></i>";
-          })
-          .join("");
-        var of = won
-          ? "Won"
-          : lost
-            ? "Lost"
-            : "Step " + (wi + 1) + " of " + work.length;
-        var next = won
-          ? "Closed: won"
-          : lost
-            ? "Closed: lost"
-            : work[wi + 1]
-              ? "Next: " + work[wi + 1]
-              : "Next: Conversion";
-        return (
-          '<div class="stgB ' +
-          tone(d) +
-          '"><div class="top"><span class="k">Stage</span><span class="now">' +
-          d.stage +
-          '</span><span class="of">' +
-          of +
-          '</span></div><div class="steps">' +
-          segs +
-          '</div><div class="next">' +
-          next +
+          '<div class="rchip m-' +
+          S.r +
+          (cls ? " " + cls : "") +
+          '"><div class="l">Usage rating</div><div class="v">' +
+          (none ? "No rating" : S.r) +
           "</div></div>"
         );
       }
-      function stageC(d) {
-        var col =
-          d.state === "won"
-            ? "#16a34a"
-            : d.state === "lost"
-              ? "#dc2626"
-              : "var(--indigo)";
-        var sheet = S.c
-          ? '<div class="listsheet">' +
-            STAGES[d.kind]
-              .map(function (x) {
-                return (
-                  '<div class="' +
-                  (x === d.stage ? "cur" : "") +
-                  '"><span>' +
-                  x +
-                  "</span>" +
-                  (x === d.stage ? "<span>✓</span>" : "") +
-                  "</div>"
-                );
-              })
-              .join("") +
-            "</div>"
-          : "";
+      function back(l) {
         return (
-          '<div class="stgC" style="--c2:' +
-          col +
-          '" data-c="1"><div><small>Stage</small><div class="v">' +
-          d.stage +
-          '</div></div><span class="pk">' +
-          (S.c ? "Close" : "All stages") +
-          "</span><i></i></div>" +
-          sheet
+          '<div class="lock"><button type="button" class="lockbtn"><span>‹</span> ' +
+          l +
+          "</button></div>"
         );
       }
-      function row(l, v) {
+      function frame(inner) {
         return (
-          '<div class="frow"><div class="fl">' +
+          '<div class="phone"><div class="sfstatus">3:14</div><div class="sfbar"><span class="ham"></span><span>Pipeline Mobile</span><span class="sp"></span></div><div class="pbody"><div class="scroll">' +
+          inner +
+          '</div></div><div class="sftabs"><span><i></i>Home</span><span class="on"><i></i>Pipeline</span><span><i></i>Accounts</span><span><i></i>More</span></div></div>'
+        );
+      }
+      function tile(l, v) {
+        return (
+          '<div class="tile"><div class="l">' +
           l +
-          '</div><div class="fv">' +
+          '</div><div class="v">' +
           v +
           "</div></div>"
         );
       }
-      function yn(v) {
-        return v
-          ? '<span class="yes">Yes</span>'
-          : '<span class="no">No</span>';
-      }
-      function screen(d, stage) {
-        var pill =
-          d.state === "hold"
-            ? ' <span class="stp st-hold">On Hold</span>'
-            : d.state === "won" || d.state === "lost"
-              ? ' <span class="stp st-' +
-                d.state +
-                '">' +
-                LABEL[d.state] +
-                "</span>"
-              : "";
-        var tiles = [
-          ["Owner", d.owner],
-          ["Portfolio", d.portfolio],
-          ["Value / year", d.value],
-          ["Close quarter", d.q],
-          ["Last posted", tag(d.posted)],
-          ["Last stage move", tag(d.moved)],
-          ["Deal age", d.age],
-          [
-            "Status",
-            '<span class="stp st-' + d.state + '">' + LABEL[d.state] + "</span>"
-          ]
-        ];
-        var f = d.flags;
-        var fields =
-          (d.kind === "rosa"
-            ? row("Healthcare facility", esc(d.hosp))
-            : row("Primary HCP", esc(d.name)) +
-              row("Healthcare facility", esc(d.hosp))) +
-          row("Expected closing quarter and year", d.yq) +
-          row("Expected annual value", d.amount) +
-          (d.units ? row("Expected annual units / cases", d.units) : "") +
-          (d.brand ? row("Brand", d.brand) : "") +
-          (d.kind === "opp" ? row("On hold", yn(f.hold)) : "") +
-          row("Rep priority", yn(f.rep)) +
-          row("State priority", yn(f.state)) +
-          (d.kind === "opp" ? row("MyMo", yn(f.mymo)) : "");
-        var inner =
-          '<button type="button" class="back"><span style="font-size:22px;line-height:1">‹</span> My deals</button>' +
-          '<div class="dh"><div class="nm">' +
-          esc(d.name) +
-          "</div>" +
-          pill +
-          '</div><div class="dsub">' +
-          esc(d.sub) +
-          "</div>" +
-          '<div class="grid2">' +
-          tiles
-            .map(function (t) {
-              return (
-                '<div class="tile"><div class="l">' +
-                t[0] +
-                '</div><div class="v">' +
-                t[1] +
-                "</div></div>"
-              );
-            })
-            .join("") +
-          "</div>" +
-          stage +
-          '<div class="card"><h3>The deal</h3>' +
-          fields +
-          "</div>" +
-          '<div class="go"><span>Surgeon Usages</span><i></i></div><div class="go"><span>MyCase Bookings</span><i></i></div><div class="go"><span>Campaigns' +
-          (d.camps ? " <b>" + d.camps + "</b>" : "") +
-          "</span><i></i></div>" +
-          '<div class="card"><h3>Chatter</h3><div class="later">Chatter comes in a later step: it sits here, below the deal, so nobody reaches it before the deal.</div></div>';
-        return inner;
-      }
-      function frame(inner, title) {
+      var T = {
+        owner: tile("Owner", "Robert Reeves"),
+        port: tile("Portfolio", "Knee"),
+        val: tile("Value / year", "A$250k"),
+        q: tile("Close quarter", "Q2 2027"),
+        post: '<div class="tile"><div class="l">Last posted</div><div class="v"><span class="tg ok">13 d</span></div></div>',
+        mv: '<div class="tile"><div class="l">Last stage move</div><div class="v"><span class="tg ok">0 d</span></div></div>',
+        age: tile("Deal age", "13 d"),
+        st: '<div class="tile"><div class="l">Status</div><div class="v"><span class="stp st-open">Open</span></div></div>'
+      };
+      function sl(k, label, tone, on) {
         return (
-          '<div class="phone"><div class="sfstatus">3:14</div><div class="sfbar"><span class="ham"></span><span>' +
-          title +
-          '</span><span class="sp"></span></div><div class="scroll">' +
-          inner +
-          '</div><div class="sftabs"><span><i></i>Home</span><span class="on"><i></i>Pipeline</span><span><i></i>Accounts</span><span><i></i>More</span></div></div>'
+          '<div class="sl ' +
+          S.sl +
+          " " +
+          tone +
+          (on ? " on" : "") +
+          '" data-k="' +
+          k +
+          '"><span class="lb">' +
+          label +
+          '</span><div class="trk"><span class="th"></span><button type="button" data-v="no">No</button><button type="button" data-v="yes">Yes</button></div></div>'
         );
       }
       function draw() {
-        document.body.setAttribute("data-theme", S.theme);
-        var d = DEALS[S.deal];
-        var tops = Array.prototype.map.call(
-          document.querySelectorAll(".scroll"),
-          function (s) {
-            return s.scrollTop;
-          }
-        );
-        document.getElementById("phones").innerHTML =
-          '<div class="opt"><h2>A. The slider, scrolling</h2><p>The same one-pill slider, scrolling sideways.</p>' +
-          frame(screen(d, stageA(d)), "Pipeline Mobile") +
-          "</div>" +
-          '<div class="opt"><h2>B. The name over a bar of steps</h2><p>The stage in words, with a bar of steps.</p>' +
-          frame(screen(d, stageB(d)), "Pipeline Mobile") +
-          "</div>" +
-          '<div class="opt"><h2>C. One row that opens the list</h2><p>A coloured row; press it to see all the stages.</p>' +
-          frame(screen(d, stageC(d)), "Pipeline Mobile") +
-          "</div>";
+        var ph = [
+          [
+            "1. Today",
+            "The header as it is: nothing at the right of the name.",
+            frame(
+              back("Back to My Pipeline") +
+                '<div class="dh"><div class="nm">Richard Verheul</div></div><div class="dsub">Opportunity · Knee</div><div class="grid2">' +
+                [T.owner, T.port, T.val, T.q, T.post, T.mv, T.age, T.st].join(
+                  ""
+                ) +
+                "</div>"
+            )
+          ],
+          [
+            "2. Rating chip, option A",
+            "At the right of the name, where the arrow pointed.",
+            frame(
+              back("Back to My Pipeline") +
+                '<div class="hrow"><div><div class="nm">Richard Verheul</div><div class="dsub2">Opportunity · Knee</div></div>' +
+                chip() +
+                '</div><div class="grid2">' +
+                [T.owner, T.port, T.val, T.q, T.post, T.mv, T.age, T.st].join(
+                  ""
+                ) +
+                "</div>"
+            )
+          ],
+          [
+            "3. Rating tile, option B",
+            "A tile in the grid; the Portfolio tile goes (the line under the name says it).",
+            frame(
+              back("Back to My Pipeline") +
+                '<div class="dh"><div class="nm">Richard Verheul</div></div><div class="dsub">Opportunity · Knee</div><div class="grid2">' +
+                [T.owner, chip(), T.val, T.q, T.post, T.mv, T.age, T.st].join(
+                  ""
+                ) +
+                "</div>"
+            )
+          ],
+          [
+            "4. The sliders",
+            "Today, green thumb or green track (switch above). Tap to flip.",
+            frame(
+              back("Back to My Pipeline") +
+                '<div class="card"><h3>The deal</h3>' +
+                sl("hold", "On hold", "warn", false) +
+                sl("prio", "Rep priority", "good", true) +
+                sl("sprio", "State priority", "good", false) +
+                sl("mymo", "MyMo", "good", true) +
+                '</div><div class="card"><h3>Campaigns</h3><div class="mini" style="margin:0 0 8px;font-weight:700;color:var(--text)">Hip Roadshow ANZ</div>' +
+                sl("c1", "In campaign", "good", true) +
+                '<div class="mini" style="margin:8px 0;font-weight:700;color:var(--text)">Knee Update 2026</div>' +
+                sl("c2", "In campaign", "good", false) +
+                "</div>"
+            )
+          ]
+        ];
+        document.getElementById("phones").innerHTML = ph
+          .map(function (x) {
+            return (
+              '<div class="opt"><h2>' +
+              x[0] +
+              "</h2><p>" +
+              x[1] +
+              "</p>" +
+              x[2] +
+              "</div>"
+            );
+          })
+          .join("");
         Array.prototype.forEach.call(
-          document.querySelectorAll(".scroll"),
-          function (s, i) {
-            s.scrollTop = tops[i] || 0;
-          }
-        );
-        Array.prototype.forEach.call(
-          document.querySelectorAll(".stgA .scr"),
-          function (scr) {
-            var cur = scr.querySelector("[data-cur]");
-            if (cur)
-              scr.scrollLeft +=
-                cur.getBoundingClientRect().left -
-                scr.getBoundingClientRect().left -
-                70;
-          }
-        );
-        Array.prototype.forEach.call(
-          document.querySelectorAll("[data-theme-btn]"),
+          document.querySelectorAll("[data-sl],[data-r]"),
           function (x) {
-            x.classList.toggle("on", x.dataset.themeBtn === S.theme);
-          }
-        );
-        Array.prototype.forEach.call(
-          document.querySelectorAll("[data-deal]"),
-          function (x) {
-            x.classList.toggle("on", x.dataset.deal === S.deal);
+            x.classList.toggle(
+              "on",
+              (x.dataset.sl && x.dataset.sl === S.sl) ||
+                (x.dataset.r && x.dataset.r === S.r)
+            );
           }
         );
       }
       document.addEventListener("click", function (e) {
-        var t = e.target.closest("[data-theme-btn],[data-deal],[data-c]");
-        if (!t) return;
-        var d = t.dataset;
-        if (d.themeBtn) S.theme = d.themeBtn;
-        if (d.deal) {
-          S.deal = d.deal;
-          S.c = false;
+        var b = e.target.closest("[data-sl],[data-r]");
+        if (b) {
+          if (b.dataset.sl) S.sl = b.dataset.sl;
+          if (b.dataset.r) S.r = b.dataset.r;
+          draw();
+          return;
         }
-        if (d.c) S.c = !S.c;
-        draw();
+        var s = e.target.closest(".sl .trk button");
+        if (s) {
+          s.closest(".sl").classList.toggle("on", s.dataset.v === "yes");
+        }
       });
       document.getElementById("fullbtn").addEventListener("click", function () {
-        document.querySelector(".mocknote").textContent =
+        document.getElementById("note").textContent =
           "Mockup note: in Salesforce this opens in a new full-screen tab without the Salesforce navigation.";
       });
-      location.hash
-        .slice(1)
-        .split("&")
-        .forEach(function (q) {
-          var kv = q.split("=");
-          if (kv[0] === "theme") S.theme = kv[1];
-          if (kv[0] === "deal") S.deal = kv[1];
-          if (kv[0] === "c") S.c = kv[1] === "1";
-        });
       draw();
     </script>
   </body>
