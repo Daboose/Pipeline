@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+  <apiVersion>68.0</apiVersion>
+  <description
+  >Pipeline on the phone (first proof): a sales rep's own deals, opportunities, risks and ROSA, with a Status slider, a search and a folding section for each kind, and a Charts section. Placed on the Lightning app page Pipeline Mobile.</description>
+  <isExposed>true</isExposed>
+  <masterLabel>Pipeline Mobile</masterLabel>
+  <targets>
+    <target>lightning__AppPage</target>
+  </targets>
+  <targetConfigs>
+    <targetConfig targets="lightning__AppPage">
+      <supportedFormFactors>
+        <supportedFormFactor type="Small" />
+        <supportedFormFactor type="Large" />
+      </supportedFormFactors>
+    </targetConfig>
+  </targetConfigs>
+</LightningComponentBundle>

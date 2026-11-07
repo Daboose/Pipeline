@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomTab xmlns="http://soap.sforce.com/2006/04/metadata">
+  <description
+  >Pipeline: opens Pipeline on the phone (the Lightning app page Pipeline Mobile). Add it to the Salesforce mobile app's navigation menu to use it on a phone.</description>
+  <flexiPage>Pipeline_Mobile</flexiPage>
+  <label>Pipeline Mobile</label>
+  <motif>Custom5: Hospital</motif>
+</CustomTab>

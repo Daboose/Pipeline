@@ -322,6 +322,34 @@ private class PipelineControllerTest {
   }
 
   @IsTest
+  static void mineOnlyKeepsJustTheSignedInPersonsDeals() {
+    User other = otherUser();
+    insert other;
+    insert new List<SalesRisks__c>{
+      new SalesRisks__c(
+        RecordTypeId = recordTypeId('AUHIP'),
+        Stage__c = 'Plan',
+        Expected_Closure_Quarter__c = 'Q4',
+        Expected_Closing_Year__c = '2033',
+        AmountPerYear__c = 1000
+      ),
+      new SalesRisks__c(
+        RecordTypeId = recordTypeId('AUHIP'),
+        Stage__c = 'Plan',
+        Expected_Closure_Quarter__c = 'Q4',
+        Expected_Closing_Year__c = '2033',
+        AmountPerYear__c = 2000,
+        OwnerId = other.Id
+      )
+    };
+    PipelineController.DealResult mine = PipelineController.getDeals(
+      '{"kinds":["opp"],"status":"open","closedMonths":3,"mineOnly":true}'
+    );
+    System.assertEquals(1, mine.deals.size(), 'Only my own deal');
+    System.assertEquals(UserInfo.getUserId(), mine.deals[0].ownerId);
+  }
+
+  @IsTest
   static void dealsComeBackByKind() {
     List<SalesRisks__c> deals = new List<SalesRisks__c>{
       new SalesRisks__c(

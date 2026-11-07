@@ -166,4 +166,8 @@
     <tab>Pipeline_Home</tab>
     <visibility>Visible</visibility>
   </tabSettings>
+  <tabSettings>
+    <tab>Pipeline_Mobile</tab>
+    <visibility>Visible</visibility>
+  </tabSettings>
 </PermissionSet>

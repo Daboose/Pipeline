@@ -1,0 +1,1366 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>
+      Mockup: Pipeline on the phone, everything folded and a Charts section
+      (version 2)
+    </title>
+    <style>
+      :root,
+      [data-theme="light"] {
+        --page: #e9edf4;
+        --card: #ffffff;
+        --bg: #f3f3f3;
+        --box: #eef2fa;
+        --line: #d5dcea;
+        --edge: #b3bfd6;
+        --text: #1b2640;
+        --muted: #5d6b85;
+        --pipe: #b7791f;
+        --indigo: #4f46e5;
+        --slate: #64748b;
+        --head: #db2777;
+        --field: #ffffff;
+        --ok: #0f9d74;
+      }
+      [data-theme="dark"] {
+        --page: #141e2e;
+        --card: #1a2740;
+        --bg: #141e2e;
+        --box: #20304f;
+        --line: #2f4163;
+        --edge: #5b6f93;
+        --text: #e8edf5;
+        --muted: #9fb0cc;
+        --pipe: #fdb827;
+        --indigo: #6366f1;
+        --slate: #475569;
+        --head: #f472b6;
+        --field: #11151c;
+        --ok: #4ee0b0;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--page);
+        color: var(--text);
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-size: 16px;
+      }
+      button,
+      input {
+        font-family: inherit;
+        font-size: inherit;
+        color: inherit;
+      }
+      .sp {
+        flex: 1;
+      }
+      .muted {
+        color: var(--muted);
+      }
+      .sfnav {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        height: 44px;
+        padding: 0 16px;
+        background: #0b1220;
+        color: #cdd6e6;
+        font-size: 14px;
+      }
+      .sfnav .app {
+        font-weight: 800;
+        letter-spacing: 0.14em;
+      }
+      .sfnav .app b {
+        color: #fdb827;
+      }
+      .sfnav .tab {
+        color: #9fb0cc;
+      }
+      .sfnav .tab.on {
+        color: #fff;
+        border-bottom: 2px solid #6366f1;
+        padding-bottom: 2px;
+      }
+      .btn,
+      .pill {
+        border: 0;
+        border-radius: 999px;
+        padding: 7px 16px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+        background: var(--slate);
+        color: #fff;
+      }
+      .pill.on {
+        background: var(--indigo);
+      }
+      .about {
+        margin: 14px 16px;
+        padding: 12px 18px;
+        background: var(--card);
+        border: 1px solid var(--edge);
+        border-radius: 12px;
+        line-height: 1.5;
+        max-width: 1100px;
+        font-size: 15px;
+      }
+      .about summary {
+        cursor: pointer;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        color: var(--pipe);
+      }
+      .about ul {
+        margin: 4px 0 8px;
+        padding-left: 22px;
+      }
+      .tools {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+        padding: 0 16px 10px;
+      }
+      .tools .lab {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        margin-left: 14px;
+      }
+      .tools .lab:first-child {
+        margin-left: 0;
+      }
+      .mocknote {
+        margin: 0 16px 12px;
+        padding: 8px 14px;
+        border: 1px dashed var(--edge);
+        border-radius: 10px;
+        color: var(--muted);
+        font-size: 14px;
+        font-style: italic;
+        max-width: 1100px;
+      }
+      .phones {
+        display: flex;
+        gap: 40px;
+        flex-wrap: wrap;
+        padding: 0 16px 40px;
+        align-items: flex-start;
+      }
+      .opt h2 {
+        margin: 0 0 2px;
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--head);
+      }
+      .opt p {
+        margin: 0 0 10px;
+        color: var(--muted);
+        font-size: 14px;
+        max-width: 390px;
+      }
+
+      /* the phone: 390 px wide, Salesforce's own top bar and bottom tab bar around our page */
+      .phone {
+        position: relative;
+        width: 390px;
+        height: 800px;
+        border: 10px solid #0b1220;
+        border-radius: 38px;
+        overflow: hidden;
+        background: var(--bg);
+        display: flex;
+        flex-direction: column;
+      }
+      .sfstatus {
+        height: 40px;
+        flex: none;
+        padding: 12px 0 0 28px;
+        font-size: 14px;
+        font-weight: 600;
+        background: var(--card);
+      }
+      .sfbar {
+        flex: none;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        height: 46px;
+        padding: 0 14px;
+        background: var(--card);
+        border-bottom: 1px solid var(--line);
+        font-weight: 700;
+      }
+      .sfbar .ham {
+        width: 22px;
+        height: 14px;
+        border-top: 2px solid var(--muted);
+        border-bottom: 2px solid var(--muted);
+        position: relative;
+      }
+      .sfbar .ham::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 4px;
+        border-top: 2px solid var(--muted);
+      }
+      .scroll {
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+        padding: 12px 12px 16px;
+      }
+      .sftabs {
+        flex: none;
+        display: flex;
+        height: 58px;
+        background: var(--card);
+        border-top: 1px solid var(--line);
+      }
+      .sftabs span {
+        flex: 1;
+        text-align: center;
+        padding-top: 9px;
+        font-size: 11px;
+        color: var(--muted);
+      }
+      .sftabs span.on {
+        color: var(--indigo);
+        font-weight: 700;
+      }
+      .sftabs i {
+        display: block;
+        width: 22px;
+        height: 22px;
+        margin: 0 auto 3px;
+        border-radius: 6px;
+        background: currentColor;
+        opacity: 0.35;
+      }
+
+      /* the one-pill slider (phone): full width, 37 px options (33% taller than on desktop), label end */
+      .yn {
+        display: flex;
+        align-items: stretch;
+        width: 100%;
+        background: var(--card);
+        border: 1px solid var(--edge);
+        border-radius: 999px;
+      }
+      .yn .lb {
+        display: inline-flex;
+        align-items: center;
+        padding: 0 12px 0 16px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+        white-space: nowrap;
+      }
+      .yn .trk {
+        position: relative;
+        flex: 1;
+        display: flex;
+        margin: -1px;
+        padding: 3px;
+        background: var(--box);
+        border: 1px solid var(--edge);
+        border-radius: 999px;
+      }
+      .yn .hl {
+        position: absolute;
+        top: 3px;
+        left: 0;
+        width: 0;
+        height: 37px;
+        border-radius: 999px;
+        background: var(--indigo);
+        box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35);
+        transition:
+          left 0.5s cubic-bezier(0.3, 1.35, 0.5, 1),
+          width 0.5s cubic-bezier(0.3, 1.35, 0.5, 1);
+      }
+      .yn button {
+        position: relative;
+        z-index: 1;
+        flex: 1 1 0;
+        height: 37px;
+        border: 0;
+        background: none;
+        font-weight: 700;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+        cursor: pointer;
+        white-space: nowrap;
+        transition: color 0.25s;
+      }
+      .yn button.on {
+        color: #fff;
+      }
+      .ctl {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-bottom: 12px;
+      }
+      .search {
+        position: relative;
+      }
+      .search input {
+        width: 100%;
+        height: 44px;
+        border-radius: 999px;
+        border: 1px solid var(--edge);
+        background: var(--field);
+        padding: 0 42px 0 16px;
+        font-size: 16px; /* 16 px, or the iPhone zooms the page when it is tapped */
+        outline: none;
+      }
+      .search input:focus {
+        border-color: var(--indigo);
+      }
+      .xc {
+        position: absolute;
+        right: 8px;
+        top: 7px;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        border: 0;
+        background: var(--edge);
+        cursor: pointer;
+        display: none;
+      }
+      .xc.show {
+        display: block;
+      }
+      .xc::before,
+      .xc::after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 13px;
+        height: 2px;
+        background: var(--card);
+        transform: translate(-50%, -50%) rotate(45deg);
+      }
+      .xc::after {
+        transform: translate(-50%, -50%) rotate(-45deg);
+      }
+
+      /* the type: one at a time (A) or a section each (B) */
+      .count {
+        color: var(--muted);
+        font-size: 14px;
+        margin: 2px 4px 8px;
+      }
+      .sec {
+        margin-bottom: 10px;
+      }
+      .sechead {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 11px 14px;
+        border-radius: 12px;
+        background: color-mix(in srgb, var(--head) 16%, var(--card));
+        border: 1px solid color-mix(in srgb, var(--head) 38%, var(--card));
+        margin-bottom: 8px;
+        cursor: pointer;
+      }
+      .sechead h3 {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--head);
+      }
+      .sechead .n {
+        color: var(--muted);
+        font-size: 14px;
+      }
+      .chev {
+        width: 9px;
+        height: 9px;
+        border-right: 2.5px solid var(--muted);
+        border-bottom: 2.5px solid var(--muted);
+        transform: rotate(45deg);
+        margin-top: -4px;
+        transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .sec.shut .chev {
+        transform: rotate(-45deg);
+        margin-top: 0;
+      }
+      .fold {
+        display: grid;
+        grid-template-rows: 1fr;
+        transition: grid-template-rows 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .sec.shut .fold {
+        grid-template-rows: 0fr;
+      }
+      .fold > div {
+        overflow: hidden;
+        min-height: 0;
+      }
+
+      /* a deal card: the whole card is the tap target */
+      .deal {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 12px 14px;
+        margin-bottom: 8px;
+        cursor: pointer;
+      }
+      .deal .r1 {
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+      }
+      .deal .nm {
+        font-size: 17px;
+        font-weight: 800;
+        line-height: 1.25;
+      }
+      .deal .val {
+        font-weight: 800;
+        white-space: nowrap;
+      }
+      .deal .r2 {
+        color: var(--muted);
+        font-size: 14px;
+        margin-top: 2px;
+      }
+      .deal .r3 {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 8px;
+        font-size: 14px;
+      }
+      .star {
+        color: #16a34a;
+      }
+      .cstar {
+        color: #e0a100;
+      }
+      .stp {
+        display: inline-flex;
+        align-items: center;
+        height: 24px;
+        padding: 0 11px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      .st-open {
+        background: var(--indigo);
+        color: #fff;
+      }
+      .st-hold {
+        background: #f59e0b;
+        color: #1b2640;
+      }
+      .st-won {
+        background: #16a34a;
+        color: #fff;
+      }
+      .st-lost {
+        background: #dc2626;
+        color: #fff;
+      }
+      .none {
+        color: var(--muted);
+        text-align: center;
+        padding: 26px 10px;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .yn .hl,
+        .chev,
+        .fold {
+          transition: none;
+        }
+      }
+
+      .phone-note {
+        max-width: 390px;
+      }
+      .tiles {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+        margin: 4px 0 12px;
+      }
+      .tile {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 9px 10px;
+      }
+      .tile .l {
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .tile .v {
+        font-size: 18px;
+        font-weight: 800;
+        margin-top: 2px;
+      }
+      .tile .v.warn {
+        color: #c2570c;
+      }
+      .ch3 {
+        margin: 12px 0 6px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--head);
+      }
+      .chips2 {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+      .chip2 {
+        display: inline-flex;
+        gap: 8px;
+        align-items: baseline;
+        padding: 6px 10px;
+        border-radius: 999px;
+        font-size: 13px;
+        color: #fff;
+        font-weight: 700;
+      }
+      .chip2 .cv {
+        font-weight: 800;
+      }
+      .qrow {
+        display: grid;
+        grid-template-columns: 62px 1fr auto;
+        gap: 8px;
+        align-items: center;
+        margin: 6px 0;
+        font-size: 14px;
+      }
+      .qrow .track {
+        height: 12px;
+        border-radius: 99px;
+        background: var(--box);
+        overflow: hidden;
+      }
+      .qrow .fill {
+        display: block;
+        height: 100%;
+        border-radius: 99px;
+        background: var(--indigo);
+      }
+      .qrow .n {
+        color: var(--muted);
+        font-size: 13px;
+        white-space: nowrap;
+      }
+      /* real charts: bars by stage, columns by close quarter */
+      .hbar {
+        display: grid;
+        grid-template-columns: 84px 1fr auto;
+        gap: 8px;
+        align-items: center;
+        margin: 7px 0;
+        font-size: 13px;
+      }
+      .hbar .nm {
+        font-weight: 700;
+        line-height: 1.15;
+      }
+      .hbar .bar {
+        height: 22px;
+        border-radius: 6px;
+        min-width: 4px;
+      }
+      .hbar .v {
+        font-weight: 800;
+        white-space: nowrap;
+      }
+      .cols {
+        display: flex;
+        align-items: flex-end;
+        gap: 10px;
+        height: 150px;
+        padding: 4px 2px 0;
+        border-bottom: 1px solid var(--edge);
+      }
+      .cols .c {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        align-items: center;
+        height: 100%;
+        gap: 4px;
+        font-size: 11px;
+        font-weight: 800;
+      }
+      .cols .c i {
+        display: block;
+        width: 100%;
+        background: var(--indigo);
+        border-radius: 6px 6px 0 0;
+      }
+      .qlabels {
+        display: flex;
+        gap: 10px;
+        padding: 4px 2px 0;
+        font-size: 11px;
+        color: var(--muted);
+        text-align: center;
+      }
+      .qlabels span {
+        flex: 1;
+      }
+      .chartnote {
+        color: var(--muted);
+        font-size: 12px;
+        margin: 8px 2px 0;
+      }
+    </style>
+  </head>
+  <body data-theme="light">
+    <div class="sfnav">
+      <span class="app"><b>PIPE</b>LINE</span>
+      <span class="tab on">Pipeline</span>
+      <span class="tab">Opportunities &amp; Risks</span>
+      <span class="sp"></span>
+      <button type="button" class="btn" id="fullbtn">Full screen</button>
+    </div>
+
+    <details class="about" open>
+      <summary>ABOUT THIS MOCKUP</summary>
+      <p>
+        <b>Version 2, invented data only.</b> Robert chose B from version 1 (a
+        folding section for each kind of deal) and asked for two changes:
+        <b>everything is folded when the screen opens</b>, as on the desktop,
+        and there is <b>one more section to open: Charts</b>. Three phones, left
+        to right:
+      </p>
+      <ul>
+        <li>
+          <b>The opening screen:</b> the Status slider, the search box, and four
+          folded sections: Charts, Opportunities, Risks, ROSA (the counts show
+          on the headings).
+        </li>
+        <li>
+          <b>Charts open, as on the desktop:</b> what each desktop summary panel
+          shows: three figures (the deals, the revenue a year, the ones needing
+          attention), the deals <b>by stage</b> as coloured chips, and by
+          <b>expected close quarter</b> as bars.
+        </li>
+        <li>
+          <b>Charts open, as real charts:</b> the same figures, but by stage as
+          horizontal bars and by close quarter as columns.
+        </li>
+        <li>
+          <b>Try it:</b> fold and open any section; press the <b>Type</b> slider
+          inside Charts (a chart is for one kind of deal at a time, because the
+          values are never added across Opportunities, Risks and ROSA); press
+          the <b>Status</b> slider, and the charts and lists follow it. Scroll
+          inside the phones. <b>Theme</b> for dark.
+        </li>
+      </ul>
+      <p class="muted">
+        Not shown: a deal with another currency (it would be its own figure and
+        its own chart, never added together), and tapping a bar or a chip to
+        list those deals. The real charts would be drawn as small SVG pictures,
+        like the graphs in My Case Bookings.
+      </p>
+    </details>
+
+    <div class="tools">
+      <span class="lab" style="margin-left: 0">Theme</span>
+      <button type="button" class="pill on" data-theme-btn="light">
+        Light
+      </button>
+      <button type="button" class="pill" data-theme-btn="dark">Dark</button>
+    </div>
+    <div class="mocknote">
+      Mockup note: fold and open the sections; the Charts section has its own
+      Type slider.
+    </div>
+    <div class="phones" id="phones"></div>
+
+    <script>
+      var SHUT0 = { charts: true, opp: true, risk: true, rosa: true };
+      var S = {
+        theme: "light",
+        p: [
+          {
+            status: "open",
+            q: "",
+            shut: Object.assign({}, SHUT0),
+            ctype: "opp",
+            mode: "desk"
+          },
+          {
+            status: "open",
+            q: "",
+            shut: Object.assign({}, SHUT0, { charts: false }),
+            ctype: "opp",
+            mode: "desk"
+          },
+          {
+            status: "open",
+            q: "",
+            shut: Object.assign({}, SHUT0, { charts: false }),
+            ctype: "opp",
+            mode: "real"
+          }
+        ]
+      };
+      var KINDS = [
+        ["opp", "Opportunities"],
+        ["risk", "Risks"],
+        ["rosa", "ROSA"]
+      ];
+      var SHORT = { opp: "Opps", risk: "Risks", rosa: "ROSA" };
+      var STAGES = {
+        opp: [
+          "Plan",
+          "Action",
+          "Commit",
+          "1st Case",
+          "5th Case",
+          "Conversion",
+          "Unsuccessful Conversion"
+        ],
+        risk: ["Unhappy", "Closed Retained", "Lost Business"],
+        rosa: ["Sales Pipeline", "Closed Won", "Deal Lost"]
+      };
+      var COL = ["#2f80ed", "#0ea5e9", "#7c3aed", "#a855f7", "#14b8a6"];
+      var WON = { Conversion: 1, "Closed Retained": 1, "Closed Won": 1 },
+        LOST = {
+          "Unsuccessful Conversion": 1,
+          "Lost Business": 1,
+          "Deal Lost": 1
+        };
+      /* name, hospital (or deal type for ROSA), stage, quarter, value, repPriority, inCampaign, state, needs attention */
+      var DEALS = {
+        opp: [
+          [
+            "Dr Wei Ming Lim",
+            "Singapore General Hospital",
+            "Commit",
+            "Q1 2027",
+            250000,
+            1,
+            1,
+            "open",
+            0
+          ],
+          [
+            "Dr Priya Nair",
+            "Mount Elizabeth Hospital",
+            "1st Case",
+            "Q4 2026",
+            410000,
+            1,
+            0,
+            "open",
+            1
+          ],
+          [
+            "Dr Chris Lee",
+            "Mater Hospital",
+            "5th Case",
+            "Q1 2027",
+            180000,
+            0,
+            1,
+            "open",
+            0
+          ],
+          [
+            "Dr Tara Nguyen",
+            "St Vincent's Private",
+            "Action",
+            "Q2 2027",
+            90000,
+            0,
+            0,
+            "hold",
+            0
+          ],
+          [
+            "Dr Anna Ward",
+            "Royal Perth Hospital",
+            "Plan",
+            "Q3 2027",
+            60000,
+            0,
+            0,
+            "open",
+            1
+          ],
+          [
+            "Dr Ken Ito",
+            "Epworth Geelong",
+            "Commit",
+            "Q4 2026",
+            120000,
+            0,
+            0,
+            "open",
+            0
+          ],
+          [
+            "Dr Sam Patel",
+            "Sydney Adventist",
+            "Conversion",
+            "Q3 2026",
+            320000,
+            0,
+            0,
+            "won",
+            0
+          ],
+          [
+            "Dr Joel Brandt",
+            "Calvary North Adelaide",
+            "Unsuccessful Conversion",
+            "Q3 2026",
+            140000,
+            0,
+            0,
+            "lost",
+            0
+          ]
+        ],
+        risk: [
+          [
+            "Dr Mia Torres",
+            "Epworth Richmond",
+            "Unhappy",
+            "Q4 2026",
+            75000,
+            0,
+            0,
+            "open",
+            1
+          ],
+          [
+            "Dr Ben Hall",
+            "Greenslopes Private",
+            "Closed Retained",
+            "Q3 2026",
+            120000,
+            0,
+            0,
+            "won",
+            0
+          ]
+        ],
+        rosa: [
+          [
+            "Wesley Hospital",
+            "ROSA sales opportunity",
+            "Sales Pipeline",
+            "Q4 2026",
+            900000,
+            1,
+            0,
+            "open",
+            0
+          ],
+          [
+            "Calvary Hospital",
+            "ROSA sales opportunity",
+            "Deal Lost",
+            "Q3 2026",
+            650000,
+            0,
+            0,
+            "lost",
+            0
+          ]
+        ]
+      };
+      var LABEL = {
+        open: "Open",
+        hold: "On Hold",
+        won: "Closed Won",
+        lost: "Closed Lost"
+      };
+      function esc(s) {
+        return String(s).replace(/[&<>"]/g, function (c) {
+          return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
+        });
+      }
+      function money(v) {
+        return v >= 1000000
+          ? "A$" + (v / 1000000).toFixed(2).replace(/0$/, "") + "m"
+          : "A$" + Math.round(v / 1000) + "k";
+      }
+      function closed(d) {
+        return d[7] === "won" || d[7] === "lost";
+      }
+      function pass(d, status, q) {
+        if (status === "open" && closed(d)) return false;
+        if (status === "closed" && !closed(d)) return false;
+        if (q && (d[0] + " " + d[1]).toLowerCase().indexOf(q.toLowerCase()) < 0)
+          return false;
+        return true;
+      }
+      function list(kind, status, q) {
+        return DEALS[kind].filter(function (d) {
+          return pass(d, status, q);
+        });
+      }
+      function pill(d, status) {
+        if (d[7] === "open" && status !== "both") return "";
+        return '<span class="stp st-' + d[7] + '">' + LABEL[d[7]] + "</span>";
+      }
+      function card(d, status) {
+        var stars =
+          (d[5] ? ' <span class="star">★</span>' : "") +
+          (d[6] ? ' <span class="cstar">★</span>' : "");
+        return (
+          '<div class="deal"><div class="r1"><div class="nm">' +
+          esc(d[0]) +
+          stars +
+          '</div><span class="sp"></span><div class="val">' +
+          money(d[4]) +
+          '</div></div><div class="r2">' +
+          esc(d[1]) +
+          '</div><div class="r3"><span>' +
+          esc(d[2]) +
+          " · " +
+          d[3] +
+          '</span><span class="sp"></span>' +
+          pill(d, status) +
+          "</div></div>"
+        );
+      }
+      function slider(label, opts, cur, key, who) {
+        return (
+          '<div class="yn"><span class="lb">' +
+          label +
+          '</span><div class="trk"><div class="hl"></div>' +
+          opts
+            .map(function (o) {
+              return (
+                '<button type="button" class="' +
+                (o[0] === cur ? "on" : "") +
+                '" data-who="' +
+                who +
+                '" data-key="' +
+                key +
+                '" data-val="' +
+                o[0] +
+                '">' +
+                o[1] +
+                "</button>"
+              );
+            })
+            .join("") +
+          "</div></div>"
+        );
+      }
+      function search(who, q) {
+        return (
+          '<div class="search"><input type="search" placeholder="Search my deals" value="' +
+          esc(q) +
+          '" data-who="' +
+          who +
+          '" /><button type="button" class="xc' +
+          (q ? " show" : "") +
+          '" data-clear="' +
+          who +
+          '" aria-label="Clear"></button></div>'
+        );
+      }
+      var STATUS = [
+        ["open", "Open"],
+        ["closed", "Closed"],
+        ["both", "Both"]
+      ];
+      /* the charts' figures for one kind and the status chosen */
+      function figures(kind, status) {
+        var rows = list(kind, status, "");
+        var byStage = {},
+          byQ = {};
+        rows.forEach(function (d) {
+          byStage[d[2]] = byStage[d[2]] || { n: 0, v: 0 };
+          byStage[d[2]].n++;
+          byStage[d[2]].v += d[4];
+          byQ[d[3]] = byQ[d[3]] || { n: 0, v: 0 };
+          byQ[d[3]].n++;
+          byQ[d[3]].v += d[4];
+        });
+        var stages = STAGES[kind]
+          .filter(function (s) {
+            return byStage[s];
+          })
+          .map(function (s) {
+            var i = STAGES[kind].indexOf(s);
+            return {
+              name: s,
+              n: byStage[s].n,
+              v: byStage[s].v,
+              c: WON[s] ? "#16a34a" : LOST[s] ? "#dc2626" : COL[i % COL.length]
+            };
+          });
+        var qs = Object.keys(byQ)
+          .sort(function (a, b) {
+            return a.split(" ")[1] * 4 + +a[1] - (b.split(" ")[1] * 4 + +b[1]);
+          })
+          .map(function (q) {
+            return { q: q, n: byQ[q].n, v: byQ[q].v };
+          });
+        return {
+          rows: rows,
+          stages: stages,
+          qs: qs,
+          total: rows.reduce(function (a, d) {
+            return a + d[4];
+          }, 0),
+          att: rows.filter(function (d) {
+            return d[8];
+          }).length
+        };
+      }
+      function charts(p, who) {
+        var f = figures(p.ctype, p.status);
+        var word = {
+          opp: "Revenue / year",
+          risk: "Value at risk / year",
+          rosa: "ROSA value / year"
+        }[p.ctype];
+        var out =
+          '<div class="ctl" style="margin-bottom:6px">' +
+          slider(
+            "Type",
+            KINDS.map(function (k) {
+              return [k[0], SHORT[k[0]]];
+            }),
+            p.ctype,
+            "ctype",
+            who
+          ) +
+          "</div>";
+        out +=
+          '<div class="tiles"><div class="tile"><div class="l">' +
+          (p.status === "open" ? "Open deals" : "Deals shown") +
+          '</div><div class="v">' +
+          f.rows.length +
+          '</div></div><div class="tile"><div class="l">' +
+          word +
+          '</div><div class="v">' +
+          money(f.total) +
+          '</div></div><div class="tile"><div class="l">Needs attention</div><div class="v warn">' +
+          f.att +
+          "</div></div></div>";
+        if (!f.rows.length)
+          return out + '<div class="none">Nothing to chart.</div>';
+        var maxS = Math.max.apply(
+            null,
+            f.stages.map(function (s) {
+              return s.v;
+            })
+          ),
+          maxQ = Math.max.apply(
+            null,
+            f.qs.map(function (q) {
+              return q.v;
+            })
+          );
+        out += '<div class="ch3">By stage</div>';
+        if (p.mode === "desk") {
+          out +=
+            '<div class="chips2">' +
+            f.stages
+              .map(function (s) {
+                return (
+                  '<span class="chip2" style="background:' +
+                  s.c +
+                  '"><span>' +
+                  esc(s.name) +
+                  " (" +
+                  s.n +
+                  ')</span><span class="cv">' +
+                  money(s.v) +
+                  "</span></span>"
+                );
+              })
+              .join("") +
+            "</div>";
+          out +=
+            '<div class="ch3">By expected close quarter</div>' +
+            f.qs
+              .map(function (q) {
+                return (
+                  '<div class="qrow"><span>' +
+                  q.q +
+                  '</span><span class="track"><span class="fill" style="width:' +
+                  Math.round((q.v / maxQ) * 100) +
+                  '%"></span></span><span class="n">' +
+                  q.n +
+                  " · " +
+                  money(q.v) +
+                  "</span></div>"
+                );
+              })
+              .join("");
+        } else {
+          out += f.stages
+            .map(function (s) {
+              return (
+                '<div class="hbar"><span class="nm">' +
+                esc(s.name) +
+                " (" +
+                s.n +
+                ')</span><span class="bar" style="width:' +
+                Math.max(4, Math.round((s.v / maxS) * 100)) +
+                "%;background:" +
+                s.c +
+                '"></span><span class="v">' +
+                money(s.v) +
+                "</span></div>"
+              );
+            })
+            .join("");
+          out +=
+            '<div class="ch3">By expected close quarter</div><div class="cols">' +
+            f.qs
+              .map(function (q) {
+                return (
+                  '<div class="c"><span>' +
+                  money(q.v) +
+                  '</span><i style="height:' +
+                  Math.max(6, Math.round((q.v / maxQ) * 96)) +
+                  '%"></i></div>'
+                );
+              })
+              .join("") +
+            '</div><div class="qlabels">' +
+            f.qs
+              .map(function (q) {
+                return "<span>" + q.q.replace(" ", "<br>") + "</span>";
+              })
+              .join("") +
+            "</div>";
+        }
+        return (
+          out +
+          '<div class="chartnote">Values a year, in A$ here; a deal in another currency gets its own figure and chart.</div>'
+        );
+      }
+      function section(p, who, key, title, count, body) {
+        return (
+          '<div class="sec' +
+          (p.shut[key] ? " shut" : "") +
+          '"><div class="sechead" data-fold="' +
+          key +
+          '" data-who="' +
+          who +
+          '"><h3>' +
+          title +
+          "</h3>" +
+          (count === "" ? "" : '<span class="n">' + count + "</span>") +
+          '<span class="sp"></span><span class="chev"></span></div><div class="fold"><div>' +
+          body +
+          "</div></div></div>"
+        );
+      }
+      function frame(inner, title) {
+        return (
+          '<div class="phone"><div class="sfstatus">3:14</div><div class="sfbar"><span class="ham"></span><span>' +
+          title +
+          '</span><span class="sp"></span></div><div class="scroll">' +
+          inner +
+          '</div><div class="sftabs"><span><i></i>Home</span><span class="on"><i></i>Pipeline</span><span><i></i>Accounts</span><span><i></i>More</span></div></div>'
+        );
+      }
+      function phone(i, title, why) {
+        var p = S.p[i],
+          who = String(i);
+        var inner =
+          '<div class="ctl">' +
+          slider("Status", STATUS, p.status, "status", who) +
+          search(who, p.q) +
+          "</div>" +
+          section(p, who, "charts", "Charts", "", charts(p, who)) +
+          KINDS.map(function (k) {
+            var rows = list(k[0], p.status, p.q);
+            return section(
+              p,
+              who,
+              k[0],
+              k[1],
+              rows.length,
+              rows.length
+                ? rows
+                    .map(function (d) {
+                      return card(d, p.status);
+                    })
+                    .join("")
+                : '<div class="none">None.</div>'
+            );
+          }).join("");
+        return (
+          '<div class="opt"><h2>' +
+          title +
+          "</h2><p>" +
+          why +
+          "</p>" +
+          frame(inner, "My Pipeline") +
+          "</div>"
+        );
+      }
+      function place() {
+        Array.prototype.forEach.call(
+          document.querySelectorAll(".yn"),
+          function (yn) {
+            var on = yn.querySelector("button.on"),
+              hl = yn.querySelector(".hl");
+            if (!on || !hl || !on.offsetWidth) return;
+            hl.style.left = on.offsetLeft + "px";
+            hl.style.width = on.offsetWidth + "px";
+          }
+        );
+      }
+      function draw(keepFocus) {
+        document.body.setAttribute("data-theme", S.theme);
+        var f = document.activeElement,
+          who = f && f.dataset && f.dataset.who,
+          pos = f && f.selectionStart;
+        var tops = Array.prototype.map.call(
+          document.querySelectorAll(".scroll"),
+          function (s) {
+            return s.scrollTop;
+          }
+        );
+        document.getElementById("phones").innerHTML =
+          phone(
+            0,
+            "The opening screen",
+            "Everything folded: Charts, Opportunities, Risks, ROSA."
+          ) +
+          phone(
+            1,
+            "Charts open, as the desktop",
+            "Figures, stage chips and quarter bars."
+          ) +
+          phone(
+            2,
+            "Charts open, as real charts",
+            "Figures, stage bars and quarter columns."
+          );
+        Array.prototype.forEach.call(
+          document.querySelectorAll(".scroll"),
+          function (s, i) {
+            s.scrollTop = tops[i] || 0;
+          }
+        );
+        place();
+        Array.prototype.forEach.call(
+          document.querySelectorAll("[data-theme-btn]"),
+          function (x) {
+            x.classList.toggle("on", x.dataset.themeBtn === S.theme);
+          }
+        );
+        if (keepFocus && who) {
+          var inp = document.querySelector('input[data-who="' + who + '"]');
+          if (inp) {
+            inp.focus();
+            try {
+              inp.setSelectionRange(pos, pos);
+            } catch (e) {}
+          }
+        }
+      }
+      document.addEventListener("click", function (e) {
+        var t = e.target.closest(
+          "[data-theme-btn],[data-val],[data-fold],[data-clear]"
+        );
+        if (!t) return;
+        var d = t.dataset;
+        if (d.themeBtn) {
+          S.theme = d.themeBtn;
+          draw();
+          return;
+        }
+        if (d.val) {
+          S.p[+d.who][d.key] = d.val;
+          draw();
+          return;
+        }
+        if (d.clear) {
+          S.p[+d.clear].q = "";
+          draw();
+          return;
+        }
+        if (d.fold) {
+          var p = S.p[+d.who];
+          p.shut[d.fold] = !p.shut[d.fold];
+          t.closest(".sec").classList.toggle("shut", !!p.shut[d.fold]);
+        }
+      });
+      document.addEventListener("input", function (e) {
+        var t = e.target;
+        if (t.matches && t.matches("input[data-who]")) {
+          S.p[+t.dataset.who].q = t.value;
+          draw(true);
+        }
+      });
+      window.addEventListener("resize", place);
+      document.getElementById("fullbtn").addEventListener("click", function () {
+        document.querySelector(".mocknote").textContent =
+          "Mockup note: in Salesforce this opens in a new full-screen tab without the Salesforce navigation.";
+      });
+      location.hash
+        .slice(1)
+        .split("&")
+        .forEach(function (q) {
+          var kv = q.split("=");
+          if (kv[0] === "theme") S.theme = kv[1];
+          if (kv[0] === "status")
+            S.p.forEach(function (p) {
+              p.status = kv[1];
+            });
+          if (kv[0] === "type")
+            S.p.forEach(function (p) {
+              p.ctype = kv[1];
+            });
+        });
+      draw();
+    </script>
+  </body>
+</html>

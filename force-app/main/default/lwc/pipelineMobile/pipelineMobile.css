@@ -1,0 +1,627 @@
+@import "c/pipelineStyles";
+
+/* Pipeline on the phone: light colours (the Salesforce phone app is light), set here because the Pipeline root that sets them on the
+   desktop is not around this page. One layer per rule; phone sizes: 16 px search text (or the iPhone zooms), 37 px sliders, 44 px search. */
+:host {
+  display: block;
+  --panel: #ffffff;
+  --panel2: #eef2fa;
+  --bg: #f3f3f3;
+  --line: #d5dcea;
+  --edge: #b3bfd6;
+  --text: #1b2640;
+  --muted: #5d6b85;
+  --indigo: #4f46e5;
+  --indigo2: #4338ca;
+  --pline: #d5dcea;
+  --pfield: #ffffff;
+  --head: #db2777;
+  color: var(--text);
+  background: var(--bg);
+}
+.page {
+  /* this page scrolls inside itself, in the height that is left on the screen (set in fit()), so the .ctl block can stay locked at its top */
+  height: var(--fit-height, auto);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+}
+.pad {
+  /* the gap from the locked line down to the first heading is the same 8 px as the gap from the search box down to that line (.ctl's bottom padding) */
+  padding: 8px 12px 24px;
+}
+.sp {
+  flex: 1;
+}
+.err {
+  color: #dc2626;
+  font-weight: 700;
+}
+.note {
+  color: var(--muted);
+  margin: 6px 4px;
+}
+.none {
+  color: var(--muted);
+  text-align: center;
+  padding: 14px 10px;
+  margin: 0;
+}
+
+/* the controls */
+.ctl {
+  /* locked at the top of the page (Robert, 2026-11-07): the Status slider and the search stay in view while everything else scrolls
+     under them, like the locked table headings on the desktop. A solid background so the cards do not show through. */
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  /* no padding above: Salesforce already leaves about 13 px between its title line and the page, and clips anything pulled into it */
+  padding: 0 12px 8px;
+  background: var(--bg);
+  box-shadow: 0 1px 0 var(--line);
+}
+.seg {
+  display: block;
+  width: 100%;
+  --seg-width: 100%;
+  --seg-opt-flex: 1 1 0;
+  --seg-opt-height: 37px; /* 33% taller than the desktop's 28 px, for a finger */
+  --seg-track: var(--panel2);
+  --seg-line: var(--edge);
+  --seg-lab: var(--panel);
+  --seg-optx: var(--muted);
+  --seg-indigo: var(--indigo);
+  --seg-muted: var(--muted);
+  --seg-shadow: rgba(79, 70, 229, 0.35);
+}
+.typeseg {
+  margin-bottom: 12px;
+}
+.search {
+  height: 44px;
+  border-radius: 999px;
+  border: 1px solid var(--edge);
+  background: var(--pfield);
+  color: var(--text);
+  padding: 0 44px 0 16px;
+  font-size: 16px;
+  font-family: inherit;
+  outline: none;
+}
+.search:focus {
+  border-color: var(--indigo);
+}
+.sbox .sclear {
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  margin-top: -14px;
+  background: var(--edge);
+}
+
+/* a section: a heading that folds the body (0.4 s, the standard easing) */
+.sec {
+  margin-bottom: 10px;
+}
+.sechead {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 11px 14px;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--head) 38%, var(--panel));
+  background: color-mix(in srgb, var(--head) 16%, var(--panel));
+  margin-bottom: 8px;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  color: var(--text);
+  -webkit-tap-highlight-color: transparent;
+}
+.sechead h2 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--head);
+}
+.sechead .n {
+  color: var(--muted);
+  font-size: 14px;
+}
+.chev {
+  width: 9px;
+  height: 9px;
+  border-right: 2.5px solid var(--muted);
+  border-bottom: 2.5px solid var(--muted);
+  transform: rotate(45deg);
+  margin-top: -4px;
+  transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.sec.shut .chev {
+  transform: rotate(-45deg);
+  margin-top: 0;
+}
+.fold {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition: grid-template-rows 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.sec.shut .fold {
+  grid-template-rows: 0fr;
+}
+.foldin {
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* a deal card */
+.deal {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 8px;
+}
+.r1 {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.deal .nm {
+  font-size: 17px;
+  font-weight: 800;
+  line-height: 1.25;
+}
+.val {
+  font-weight: 800;
+  white-space: nowrap;
+}
+.r2 {
+  color: var(--muted);
+  font-size: 14px;
+  margin-top: 2px;
+}
+.r3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  font-size: 14px;
+}
+.star {
+  color: #16a34a;
+}
+.cstar {
+  color: #e0a100;
+}
+.stp {
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  padding: 0 11px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.stp.st-open {
+  background: var(--indigo);
+  color: #fff;
+}
+.stp.st-hold {
+  background: #f59e0b;
+  color: #1b2640;
+}
+.stp.st-won {
+  background: #16a34a;
+  color: #fff;
+}
+.stp.st-lost {
+  background: #dc2626;
+  color: #fff;
+}
+.stp.st-closed {
+  background: #64748b;
+  color: #fff;
+}
+
+/* the charts */
+.block {
+  margin-bottom: 8px;
+}
+.cur {
+  margin: 4px 2px 6px;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+}
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin: 4px 0 12px;
+}
+.tile {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 9px 10px;
+  min-width: 0;
+}
+.tl {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.tv {
+  font-size: 18px;
+  font-weight: 800;
+  margin-top: 2px;
+}
+.tv.warn {
+  color: #c2570c;
+}
+.ch3 {
+  margin: 12px 0 6px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--head);
+}
+.hbar {
+  display: grid;
+  grid-template-columns: 96px 1fr auto;
+  gap: 8px;
+  align-items: center;
+  margin: 7px 0;
+  font-size: 13px;
+}
+.hbar .nm {
+  font-weight: 700;
+  line-height: 1.15;
+}
+.hbar .bar {
+  display: block;
+  height: 22px;
+  border-radius: 6px;
+  min-width: 4px;
+}
+.hbar .v {
+  font-weight: 800;
+  white-space: nowrap;
+}
+.plot {
+  overflow-x: auto;
+}
+.cols {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  height: 150px;
+  padding: 4px 2px 0;
+  border-bottom: 1px solid var(--edge);
+}
+.c {
+  flex: 0 0 64px; /* a column keeps its width, so one or two quarters read as columns and not as one big block */
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  height: 100%;
+  gap: 4px;
+}
+.cv {
+  font-size: 11px;
+  font-weight: 800;
+}
+.c i {
+  display: block;
+  width: 100%;
+  background: var(--indigo);
+  border-radius: 6px 6px 0 0;
+}
+.qlabels {
+  display: flex;
+  gap: 10px;
+  padding: 4px 2px 0;
+  font-size: 11px;
+  color: var(--muted);
+  text-align: center;
+}
+.qlabels span {
+  flex: 0 0 64px;
+}
+.cnote {
+  color: var(--muted);
+  font-size: 12px;
+  margin: 8px 2px 0;
+}
+.ver {
+  color: var(--muted);
+  font-size: 12px;
+  text-align: center;
+  margin: 14px 0 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  .chev,
+  .fold {
+    transition: none;
+  }
+}
+
+.dbg {
+  margin: 8px 0 0;
+  padding: 8px;
+  max-height: 260px;
+  overflow: auto;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-size: 10px;
+  line-height: 1.3;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+/* ----- the deal screen (mockup pipeline_mobile_deal_v2.html, the stage as option C) ----- */
+.bar {
+  /* the locked back bar: a full-width filled button at the top of every screen after the list, so people tap it and not Salesforce's
+     own top left arrow (which leaves the Pipeline page altogether) */
+  padding: 0 12px 8px;
+}
+.backbtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  height: 44px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--indigo);
+  color: #fff;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.bk {
+  font-size: 22px;
+  line-height: 1;
+  margin-top: -2px;
+}
+.deal {
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.dh {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 2px 2px;
+}
+.dname {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 800;
+  line-height: 1.15;
+}
+.dsub {
+  color: var(--muted);
+  font-size: 14px;
+  margin: 2px 2px 10px;
+}
+.grid2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.grid2 .tile {
+  padding: 9px 12px;
+}
+.tvv {
+  font-size: 16px;
+  font-weight: 800;
+  margin-top: 2px;
+  min-height: 24px;
+}
+.tg {
+  display: inline-block;
+  padding: 1px 10px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  border: 1px solid currentColor;
+}
+.tg.ok {
+  color: #0f9d74;
+}
+.tg.warn {
+  color: #c2570c;
+}
+.tg.bad {
+  color: #dc2626;
+}
+/* the stage: one coloured row that names it and opens the list of stages (read only for now) */
+.stgC {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 56px;
+  padding: 6px 14px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--indigo);
+  color: #fff;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+  -webkit-tap-highlight-color: transparent;
+}
+.stgC.good {
+  background: #16a34a;
+}
+.stgC.bad {
+  background: #dc2626;
+}
+.stgC .sk {
+  display: flex;
+  flex-direction: column;
+}
+.stgC small {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  opacity: 0.85;
+}
+.stgC .sv {
+  font-size: 18px;
+  font-weight: 800;
+}
+.stgC .pk {
+  font-size: 12px;
+  font-weight: 700;
+  opacity: 0.85;
+}
+.chev2 {
+  width: 9px;
+  height: 9px;
+  border-right: 2.5px solid #fff;
+  border-bottom: 2.5px solid #fff;
+  transform: rotate(45deg);
+  margin-top: -4px;
+  transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.stsec.shut .chev2 {
+  transform: rotate(-45deg);
+  margin-top: 0;
+}
+.stsec {
+  margin-bottom: 12px;
+}
+.stsec .fold {
+  margin-top: 6px;
+}
+.stsec.shut .fold {
+  grid-template-rows: 0fr;
+  margin-top: 0;
+}
+.listsheet {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.listsheet div {
+  display: flex;
+  justify-content: space-between;
+  padding: 13px 14px;
+  border-top: 1px solid var(--line);
+}
+.listsheet div:first-child {
+  border-top: 0;
+}
+.listsheet .here {
+  background: var(--panel2);
+  font-weight: 800;
+}
+.card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+}
+.card h3 {
+  margin: 0 0 8px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--head);
+}
+.frow {
+  padding: 9px 0;
+  border-top: 1px solid var(--line);
+}
+.frow:first-of-type {
+  border-top: 0;
+}
+.fl {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.fv {
+  font-size: 16px;
+  margin-top: 2px;
+}
+.fv.yes {
+  color: #0f9d74;
+  font-weight: 800;
+}
+.fv.no {
+  color: var(--muted);
+}
+.go {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 52px;
+  padding: 0 14px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  margin-bottom: 8px;
+  font-weight: 700;
+}
+.go.soon {
+  opacity: 0.55;
+}
+.go .badge {
+  background: #1b2640;
+  color: #fff;
+  border-radius: 999px;
+  padding: 1px 9px;
+  font-size: 12px;
+}
+.soonword {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+.later {
+  color: var(--muted);
+  font-size: 13px;
+  font-style: italic;
+  margin: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  .stgC,
+  .chev2 {
+    transition: none;
+  }
+}

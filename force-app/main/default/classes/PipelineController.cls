@@ -122,6 +122,7 @@ public with sharing class PipelineController {
     public Integer closedMonths; // how far back closed deals go; 999 or more means all
     public String teamId;
     public Boolean below;
+    public Boolean mineOnly; // only the signed-in person's own deals, even for a manager (the phone shows a rep's view of their own pipeline)
   }
 
   @AuraEnabled
@@ -185,6 +186,9 @@ public with sharing class PipelineController {
     Id me = UserInfo.getUserId();
     PipelineScope.Scope scope = PipelineScope.resolve(me, f.teamId, f.below);
     Set<Id> ownerIds = scope.ownerIds;
+    if (f.mineOnly == true) {
+      ownerIds = new Set<Id>{ me };
+    }
 
     List<String> kindTests = new List<String>();
     Set<String> kinds = new Set<String>(

@@ -1,0 +1,242 @@
+<template>
+  <div class="page">
+    <div class="ctl bar" lwc:if={showDeal}>
+      <button type="button" class="backbtn" onclick={handleBack}>
+        <span class="bk">&#8249;</span> Back to My Pipeline
+      </button>
+    </div>
+    <div class="ctl" lwc:if={showList}>
+      <c-pipeline-segmented
+        class="seg"
+        heading="Status"
+        label="Open, Closed or Both"
+        options={statusOptions}
+        value={status}
+        onchange={handleStatus}
+      ></c-pipeline-segmented>
+      <div class="sbox">
+        <input
+          class="search"
+          type="search"
+          placeholder="Search my deals"
+          aria-label="Search my deals"
+          value={q}
+          oninput={handleSearch}
+        />
+        <button
+          type="button"
+          class="xcirc sclear"
+          lwc:if={hasSearch}
+          aria-label="Clear the search"
+          onclick={handleClear}
+        ></button>
+      </div>
+    </div>
+    <div class="pad">
+      <p class="err" lwc:if={error}>{error}</p>
+      <p class="note" lwc:if={loading}>Reading your deals…</p>
+      <template lwc:if={showList}>
+        <p class="note" lwc:if={truncated}>
+          More deals match than can be shown.
+        </p>
+
+        <section class={chartsCls}>
+          <button
+            type="button"
+            class="sechead"
+            data-key="charts"
+            aria-expanded={chartsOpen}
+            onclick={handleFold}
+          >
+            <h2>Charts</h2>
+            <span class="sp"></span>
+            <span class="chev"></span>
+          </button>
+          <div class="fold">
+            <div class="foldin">
+              <c-pipeline-segmented
+                class="seg typeseg"
+                heading="Type"
+                label="Opportunities, Risks or ROSA"
+                options={typeOptions}
+                value={chartKind}
+                onchange={handleChartKind}
+              ></c-pipeline-segmented>
+              <p class="none" lwc:if={noChartDeals}>Nothing to chart.</p>
+              <template for:each={chartBlocks} for:item="b">
+                <div class="block" key={b.key}>
+                  <h3 class="cur" lwc:if={b.showCode}>{b.code}</h3>
+                  <div class="tiles">
+                    <template for:each={b.tiles} for:item="t">
+                      <div class="tile" key={t.key}>
+                        <div class="tl">{t.label}</div>
+                        <div class={t.cls}>{t.value}</div>
+                      </div>
+                    </template>
+                  </div>
+                  <h3 class="ch3">By stage</h3>
+                  <template for:each={b.stages} for:item="s">
+                    <div class="hbar" key={s.name}>
+                      <span class="nm">{s.label}</span>
+                      <span class="bar" style={s.barStyle}></span>
+                      <span class="v">{s.valueText}</span>
+                    </div>
+                  </template>
+                  <h3 class="ch3">By expected close quarter</h3>
+                  <div class="plot">
+                    <div class="cols">
+                      <template for:each={b.quarters} for:item="q">
+                        <div class="c" key={q.quarter}>
+                          <span class="cv">{q.valueText}</span>
+                          <i style={q.colStyle}></i>
+                        </div>
+                      </template>
+                    </div>
+                    <div class="qlabels">
+                      <template for:each={b.quarters} for:item="q">
+                        <span key={q.quarter}>{q.quarter}</span>
+                      </template>
+                    </div>
+                  </div>
+                  <p class="cnote">Values a year, in {b.currencyNote}.</p>
+                </div>
+              </template>
+            </div>
+          </div>
+        </section>
+
+        <template for:each={sections} for:item="s">
+          <section key={s.kind} class={s.cls}>
+            <button
+              type="button"
+              class="sechead"
+              data-key={s.kind}
+              aria-expanded={s.open}
+              onclick={handleFold}
+            >
+              <h2>{s.label}</h2>
+              <span class="n">{s.count}</span>
+              <span class="sp"></span>
+              <span class="chev"></span>
+            </button>
+            <div class="fold">
+              <div class="foldin">
+                <p class="none" lwc:if={s.empty}>None.</p>
+                <template for:each={s.cards} for:item="c">
+                  <div
+                    class="deal"
+                    key={c.id}
+                    data-id={c.id}
+                    role="button"
+                    tabindex="0"
+                    onclick={handleOpen}
+                  >
+                    <div class="r1">
+                      <div class="nm">
+                        {c.name}<span class="star" lwc:if={c.repStar}
+                          >&nbsp;★</span
+                        ><span class="cstar" lwc:if={c.campaignStar}
+                          >&nbsp;★</span
+                        >
+                      </div>
+                      <span class="sp"></span>
+                      <div class="val">{c.value}</div>
+                    </div>
+                    <div class="r2" lwc:if={c.sub}>{c.sub}</div>
+                    <div class="r3">
+                      <span>{c.stageLine}</span>
+                      <span class="sp"></span>
+                      <span lwc:if={c.pill} class={c.pill.cls}
+                        >{c.pill.label}</span
+                      >
+                    </div>
+                  </div>
+                </template>
+              </div>
+            </div>
+          </section>
+        </template>
+      </template>
+
+      <template lwc:if={showDeal}>
+        <div class="dh">
+          <h1 class="dname">{header.name}</h1>
+          <span class="stp st-hold" lwc:if={header.onHold}>On Hold</span>
+        </div>
+        <p class="dsub">{header.sub}</p>
+        <div class="grid2">
+          <template for:each={tiles} for:item="t">
+            <div class="tile" key={t.key}>
+              <div class="tl">{t.label}</div>
+              <div class="tvv">
+                <span lwc:if={t.cls} class={t.cls}>{t.value}</span>
+                <template lwc:else>{t.value}</template>
+              </div>
+            </div>
+          </template>
+        </div>
+
+        <div class={stageSecCls}>
+          <button
+            type="button"
+            class={stageRowCls}
+            aria-expanded={stagesOpen}
+            onclick={handleStages}
+          >
+            <span class="sk">
+              <small>Stage</small>
+              <span class="sv">{stageNow}</span>
+            </span>
+            <span class="sp"></span>
+            <span class="pk">{stagesWord}</span>
+            <span class="chev2"></span>
+          </button>
+          <div class="fold">
+            <div class="foldin">
+              <div class="listsheet">
+                <template for:each={stageList} for:item="g">
+                  <div key={g.name} class={g.cls}>
+                    <span>{g.name}</span
+                    ><span lwc:if={g.current}>&#10003;</span>
+                  </div>
+                </template>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <section class="card">
+          <h3>The deal</h3>
+          <template for:each={rows} for:item="r">
+            <div class="frow" key={r.key}>
+              <div class="fl">{r.label}</div>
+              <div class={r.cls}>{r.text}</div>
+            </div>
+          </template>
+        </section>
+
+        <template for:each={goRows} for:item="g">
+          <div class="go soon" key={g.key} aria-disabled="true">
+            <span>{g.label}</span>
+            <span class="sp"></span>
+            <span class="badge" lwc:if={g.badge}>{g.badge}</span>
+            <span class="soonword">Soon</span>
+          </div>
+        </template>
+
+        <section class="card">
+          <h3>Chatter</h3>
+          <p class="later">
+            Chatter comes in a later step. It will sit here, below the deal, so
+            nobody reaches it before the deal.
+          </p>
+        </section>
+      </template>
+
+      <template lwc:if={ready}>
+        <p class="ver" onclick={handleDebug}>Pipeline Mobile {version}</p>
+        <pre class="dbg" lwc:if={debugText}>{debugText}</pre>
+      </template>
+    </div>
+  </div>
+</template>
