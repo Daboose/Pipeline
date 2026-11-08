@@ -1,0 +1,489 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Mockup: the filter control as a pill (version 1)</title>
+    <style>
+      :root,
+      [data-theme="light"] {
+        --page: #e9edf4;
+        --card: #fff;
+        --bg: #f3f5fa;
+        --line: #d5dcea;
+        --edge: #b3bfd6;
+        --text: #1b2640;
+        --muted: #5d6b85;
+        --pipe: #b7791f;
+        --indigo: #4f46e5;
+        --slate: #64748b;
+        --warn: #b45309;
+        --field: #fff;
+        --seg-track: #e3e8f4;
+        --seg-line: #c4cde2;
+        --seg-lab: #fff;
+        --seg-muted: #5d6b85;
+        --seg-indigo: #4f46e5;
+      }
+      [data-theme="dark"] {
+        --page: #141e2e;
+        --card: #1a2740;
+        --bg: #141e2e;
+        --line: #2f4163;
+        --edge: #5b6f93;
+        --text: #e8edf5;
+        --muted: #9fb0cc;
+        --pipe: #fdb827;
+        --indigo: #6366f1;
+        --slate: #475569;
+        --warn: #fbbf24;
+        --field: #20304f;
+        --seg-track: #243452;
+        --seg-line: #3a4e75;
+        --seg-lab: #1a2740;
+        --seg-muted: #9fb0cc;
+        --seg-indigo: #6366f1;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--page);
+        color: var(--text);
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-size: 15px;
+      }
+      button {
+        font-family: inherit;
+        color: inherit;
+      }
+      .sfnav {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        height: 44px;
+        padding: 0 16px;
+        background: #0b1220;
+        color: #cdd6e6;
+        font-size: 14px;
+      }
+      .sfnav .app {
+        font-weight: 800;
+        letter-spacing: 0.14em;
+      }
+      .sfnav .app b {
+        color: #fdb827;
+      }
+      .sfnav .tab {
+        color: #9fb0cc;
+      }
+      .sfnav .tab.on {
+        color: #fff;
+        border-bottom: 2px solid #6366f1;
+        padding-bottom: 2px;
+      }
+      .sp {
+        flex: 1;
+      }
+      .btn,
+      .pill {
+        border: 0;
+        border-radius: 999px;
+        padding: 7px 16px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+        background: var(--slate);
+        color: #fff;
+      }
+      .pill.on {
+        background: var(--indigo);
+      }
+      .about {
+        margin: 14px 16px;
+        padding: 12px 18px;
+        background: var(--card);
+        border: 1px solid var(--edge);
+        border-radius: 12px;
+        line-height: 1.5;
+        max-width: 1100px;
+      }
+      .about summary {
+        cursor: pointer;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        color: var(--pipe);
+      }
+      .about ul {
+        margin: 4px 0 8px;
+        padding-left: 22px;
+      }
+      .tools {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        padding: 0 16px 10px;
+      }
+      .tools .lab {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+      .grp {
+        padding: 0 16px 24px;
+      }
+      .grp > h1 {
+        margin: 18px 0 10px;
+        font-size: 14px;
+        font-weight: 800;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        border-bottom: 2px solid var(--edge);
+        padding-bottom: 6px;
+      }
+      .note {
+        color: var(--muted);
+        font-size: 14px;
+        margin: 0 0 10px;
+        max-width: 900px;
+      }
+      /* a stand-in for Pipeline's top bar */
+      .bar {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 14px;
+        background: var(--bg);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        margin-bottom: 12px;
+      }
+      .bar .cap {
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+        width: 150px;
+        flex: none;
+      }
+      .chg {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        height: 36px;
+        padding: 0 20px;
+        border: 0;
+        border-radius: 999px;
+        background: var(--indigo);
+        color: #fff;
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      .chg i {
+        width: 8px;
+        height: 8px;
+        border-right: 2px solid currentColor;
+        border-bottom: 2px solid currentColor;
+        transform: rotate(45deg);
+        margin-top: -3px;
+      }
+      .full {
+        width: 36px;
+        height: 36px;
+        border: 0;
+        border-radius: 10px;
+        background: var(--indigo);
+        color: #fff;
+        font-size: 16px;
+      }
+      /* TODAY */
+      .fbtn {
+        height: 36px;
+        min-width: 210px;
+        max-width: 300px;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 0 14px;
+        border-radius: 8px;
+        border: 1px solid var(--line);
+        background: var(--field);
+        color: var(--text);
+        font-size: 15px;
+        text-align: left;
+        cursor: pointer;
+      }
+      .fbtn .nm {
+        flex: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .fbtn .star {
+        color: var(--pipe);
+      }
+      .fbtn .tag {
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--warn);
+      }
+      .fbtn .car {
+        width: 8px;
+        height: 8px;
+        margin-top: -3px;
+        border-right: 2px solid var(--muted);
+        border-bottom: 2px solid var(--muted);
+        transform: rotate(45deg);
+      }
+      /* PROPOSED: the Campaign Management pill, copied */
+      .fwrap {
+        display: flex;
+        align-items: stretch;
+        width: fit-content;
+        flex: none;
+        border-radius: 999px;
+        background: var(--seg-lab);
+        border: 1px solid var(--seg-line);
+        cursor: pointer;
+      }
+      .fslbl {
+        display: inline-flex;
+        align-items: center;
+        padding: 0 16px 0 18px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--seg-muted);
+        white-space: nowrap;
+      }
+      .ffield {
+        position: relative;
+        display: flex;
+        align-items: center;
+        margin: -1px -1px -1px 0;
+        padding: 3px;
+        border-radius: 999px;
+        background: var(--seg-track);
+        border: 1px solid var(--seg-line);
+      }
+      .fwrap:hover .ffield,
+      .fwrap:focus-visible .ffield {
+        box-shadow: 0 0 0 2px var(--seg-indigo);
+      }
+      .fwrap:focus-visible {
+        outline: none;
+      }
+      .fval {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        height: 28px;
+        min-width: 120px;
+        max-width: 300px;
+        padding: 0 40px 0 14px;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        white-space: nowrap;
+      }
+      .fval .nm {
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .fval .star {
+        color: var(--pipe);
+        font-size: 13px;
+        letter-spacing: 0;
+      }
+      .fval .tag {
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        color: var(--warn);
+        padding-left: 4px;
+      }
+      .ffield::after {
+        content: "";
+        position: absolute;
+        right: 16px;
+        top: 50%;
+        width: 7px;
+        height: 7px;
+        border-right: 2px solid var(--seg-indigo);
+        border-bottom: 2px solid var(--seg-indigo);
+        transform: translateY(-70%) rotate(45deg);
+        pointer-events: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="sfnav">
+      <span class="app"><b>PIPE</b>LINE</span
+      ><span class="tab on">Pipeline</span
+      ><span class="tab">Opportunities &amp; Risks</span>
+      <span class="sp"></span
+      ><button type="button" class="btn" id="fullbtn">Full screen</button>
+    </div>
+    <details class="about" open>
+      <summary>ABOUT THIS MOCKUP</summary>
+      <p>
+        <b>Version 1, invented data only.</b> Robert's request (2026-11-08): the
+        saved-filter control in Pipeline's top bar (the one that shows a name
+        such as "Brenton Buller WA") should look like the pills in Sales
+        Campaign Management ("MANAGER | ALL MANAGERS ⌄"). Only the look changes;
+        it still opens the same Your filters panel when clicked.
+      </p>
+      <ul>
+        <li>
+          <b>1. Today and proposed in Pipeline's top bar,</b> next to Change
+          selection and Full screen, so you can judge the size and the fit.
+        </li>
+        <li>
+          <b>2. The proposed pill in each state it can be in:</b> a plain
+          filter; the default filter (amber star); changed since it was loaded
+          (amber CHANGED); a very long name (cut with …); and no filter chosen
+          yet ("Filters").
+        </li>
+        <li>
+          <b>Choices to confirm:</b> the small label on the left says
+          <b>FILTER</b>; the name is in capitals like the Campaign pills, so
+          "Brenton Buller WA" reads BRENTON BULLER WA; the pill is the same
+          height as Change selection (36 px), so the bar stays level.
+        </li>
+        <li>
+          <b>Try it:</b> the Light / Dark buttons change the theme; hover or tab
+          to a pill to see its focus ring.
+        </li>
+        <li>
+          <b>Not shown yet:</b> nothing is built. The Your filters panel, the
+          Change selection panel and everything else are unchanged and not
+          drawn.
+        </li>
+      </ul>
+    </details>
+    <div class="tools">
+      <span class="lab">Theme</span>
+      <button type="button" class="pill on" data-t="light">Light</button>
+      <button type="button" class="pill" data-t="dark">Dark</button>
+    </div>
+    <div class="grp">
+      <h1>1. In the top bar</h1>
+      <div class="bar">
+        <span class="cap">Today</span><span class="sp"></span>
+        <button type="button" class="fbtn">
+          <span class="nm">Brenton Buller WA</span><span class="car"></span>
+        </button>
+        <button type="button" class="chg">Change selection <i></i></button
+        ><button type="button" class="full">⛶</button>
+      </div>
+      <div class="bar">
+        <span class="cap">Proposed</span><span class="sp"></span>
+        <div class="fwrap" tabindex="0">
+          <span class="fslbl">Filter</span
+          ><span class="ffield"
+            ><span class="fval"
+              ><span class="nm">Brenton Buller WA</span></span
+            ></span
+          >
+        </div>
+        <button type="button" class="chg">Change selection <i></i></button
+        ><button type="button" class="full">⛶</button>
+      </div>
+      <h1>2. The proposed pill in each state</h1>
+      <p class="note">
+        Left to right in each row is exactly what would show; the row name on
+        the left is only for this page.
+      </p>
+      <div class="bar">
+        <span class="cap">A plain filter</span>
+        <div class="fwrap" tabindex="0">
+          <span class="fslbl">Filter</span
+          ><span class="ffield"
+            ><span class="fval"
+              ><span class="nm">Brenton Buller WA</span></span
+            ></span
+          >
+        </div>
+      </div>
+      <div class="bar">
+        <span class="cap">The default filter</span>
+        <div class="fwrap" tabindex="0">
+          <span class="fslbl">Filter</span
+          ><span class="ffield"
+            ><span class="fval"
+              ><span class="star">★</span
+              ><span class="nm">My team AU</span></span
+            ></span
+          >
+        </div>
+      </div>
+      <div class="bar">
+        <span class="cap">Changed since loaded</span>
+        <div class="fwrap" tabindex="0">
+          <span class="fslbl">Filter</span
+          ><span class="ffield"
+            ><span class="fval"
+              ><span class="nm">Brenton Buller WA</span
+              ><span class="tag">CHANGED</span></span
+            ></span
+          >
+        </div>
+      </div>
+      <div class="bar">
+        <span class="cap">A very long name</span>
+        <div class="fwrap" tabindex="0">
+          <span class="fslbl">Filter</span
+          ><span class="ffield"
+            ><span class="fval"
+              ><span class="nm"
+                >Western Australia hips and knees with the big hospital group
+                and the extremities team</span
+              ></span
+            ></span
+          >
+        </div>
+      </div>
+      <div class="bar">
+        <span class="cap">No filter chosen</span>
+        <div class="fwrap" tabindex="0">
+          <span class="fslbl">Filter</span
+          ><span class="ffield"
+            ><span class="fval"><span class="nm">Filters</span></span></span
+          >
+        </div>
+      </div>
+    </div>
+    <script>
+      function setTheme(t) {
+        document.body.setAttribute("data-theme", t);
+        document.documentElement.setAttribute("data-theme", t);
+        document.querySelectorAll("[data-t]").forEach(function (x) {
+          x.classList.toggle("on", x.dataset.t === t);
+        });
+      }
+      document.addEventListener("click", function (e) {
+        var b = e.target.closest("[data-t]");
+        if (b) setTheme(b.dataset.t);
+        if (
+          e.target.id === "fullbtn" &&
+          document.documentElement.requestFullscreen
+        )
+          document.documentElement.requestFullscreen();
+      });
+      setTheme(location.hash === "#dark" ? "dark" : "light");
+    </script>
+  </body>
+</html>

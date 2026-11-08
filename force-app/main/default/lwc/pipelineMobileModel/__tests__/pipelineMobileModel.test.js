@@ -799,6 +799,27 @@ describe("pipelineMobileModel", () => {
       ).toBe("");
     });
 
+    it("keeps the quarter and year on an open or won deal's line, and drops them from a lost deal's", () => {
+      const line = (extra) =>
+        cardOf(
+          d("a", {
+            segment: "Knee",
+            stage: "Commit",
+            quarter: "Q1 2027",
+            ...extra
+          }),
+          "both"
+        );
+      expect(line({}).stageRest).toBe(" · Commit · Q1 2027");
+      expect(line({ onHold: true }).stageRest).toBe(" · Commit · Q1 2027");
+      const won = line({ isClosed: true, stage: "Conversion" });
+      expect(won.stageRest).toContain("Q1 2027");
+      const lost = line({ isClosed: true, stage: "Unsuccessful Conversion" });
+      expect(lost.stageRest).toBe(" · Unsuccessful Conversion");
+      expect(lost.stageLine).toBe("Unsuccessful Conversion");
+      expect(lost.pill.label).toBe("Lost");
+    });
+
     it("runs a change under the saving screen: working, then done, then gone; the result comes through", async () => {
       const seen = [];
       const result = await withSavingScreen(

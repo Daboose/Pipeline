@@ -384,50 +384,105 @@
 
 /* the filter box and Change selection, in the top row beside Full screen */
 /* the filters button: the filter you are on (star if it is your default), CHANGED if the screen no longer matches it */
-.fbtn {
+/* the saved-filter control as the one-pill look of Sales Campaign Management ("FILTER | NAME ⌄"; Robert, 2026-11-08, mockup
+   docs/mockups/pipeline_filter_pill_v1.html): a white capsule holding the small label and a darker capsule with the filter's name.
+   It is a button that opens the Your filters panel. It is as tall as the bar (--barh), so the row stays level. */
+.fpill {
+  --seg-lab: var(--panel);
+  --seg-track: var(--panel2);
+  --seg-line: var(--edge);
+  --seg-muted: var(--muted);
+  --seg-indigo: var(--indigo);
+  display: flex;
+  align-items: stretch;
+  flex: none;
+  min-width: 0;
+  max-width: 380px;
   height: var(--barh);
-  min-width: 210px;
-  max-width: 300px;
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  padding: 0 14px;
-  border-radius: 8px;
-  border: 1px solid var(--pline);
-  background: var(--pfield);
+  padding: 0;
+  border-radius: 999px;
+  background: var(--seg-lab);
+  border: 1px solid var(--seg-line);
   color: var(--text);
-  font-size: 15px;
+  font: inherit;
   text-align: left;
   cursor: pointer;
 }
-.fbtn .nm {
-  flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.fplab {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 16px 0 18px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--seg-muted);
   white-space: nowrap;
 }
-.fbtn .star {
+.fpfield {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  margin: -1px -1px -1px 0;
+  padding: 3px;
+  border-radius: 999px;
+  background: var(--seg-track);
+  border: 1px solid var(--seg-line);
+}
+.fpfield::after {
+  content: "";
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  width: 7px;
+  height: 7px;
+  border-right: 2px solid var(--seg-indigo);
+  border-bottom: 2px solid var(--seg-indigo);
+  transform: translateY(-70%) rotate(45deg);
+  pointer-events: none;
+}
+.fpill:focus-visible {
+  outline: none;
+}
+.fpill:focus-visible .fpfield {
+  box-shadow: 0 0 0 2px var(--seg-indigo);
+}
+.fpval {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 120px;
+  max-width: 100%;
+  height: calc(var(--barh) - 8px);
+  padding: 0 40px 0 14px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.fpval .nm {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.fpval .star {
+  flex: none;
+  font-size: 13px;
+  letter-spacing: 0;
   color: var(--pipe);
 }
-.fbtn .chg {
-  font-size: 11px;
+.fpval .tag {
+  flex: none;
+  font-size: 10px;
   font-weight: 800;
   letter-spacing: 0.08em;
-  text-transform: uppercase;
   color: var(--warn);
 }
-.fbtn .car {
-  flex: none;
-  width: 8px;
-  height: 8px;
-  margin-top: -3px;
-  border-right: 2px solid var(--muted);
-  border-bottom: 2px solid var(--muted);
-  transform: rotate(45deg);
-}
 @media (hover: hover) {
-  .fbtn:hover {
-    border-color: var(--indigo2);
+  .fpill:hover .fpfield {
+    box-shadow: 0 0 0 2px var(--seg-indigo);
   }
 }
 .change {

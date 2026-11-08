@@ -37,7 +37,7 @@ import {
 } from "c/pipelineMobileModel";
 import { formatMoney, suggestYear, quarterIsPast } from "c/pipelineFormat";
 
-const MOBILE_VERSION = "0.41"; // shown at the foot of the screen; raised with each change that goes out
+const MOBILE_VERSION = "0.42"; // shown at the foot of the screen; raised with each change that goes out
 
 const SLIDE_OUT_MS = 540; // a little longer than the slide itself (0.48 s in the style sheet)
 const LOOKUP_MIN = 2; // letters before a search is made, as on the desktop

@@ -44,16 +44,20 @@
       <span class="sp" lwc:if={showViewToggle}></span>
       <button
         type="button"
-        class="fbtn"
+        class="fpill"
         lwc:if={ready}
         onclick={handleFiltersToggle}
         aria-haspopup="dialog"
         title="Your filters"
       >
-        <span class="star" lwc:if={filterIsDefault}>★</span>
-        <span class="nm">{filterButtonLabel}</span>
-        <span class="chg" lwc:if={filterChanged}>Changed</span>
-        <span class="car"></span>
+        <span class="fplab">Filter</span>
+        <span class="fpfield">
+          <span class="fpval">
+            <span class="star" lwc:if={filterIsDefault}>★</span>
+            <span class="nm">{filterButtonLabel}</span>
+            <span class="tag" lwc:if={filterChanged}>Changed</span>
+          </span>
+        </span>
       </button>
       <button
         type="button"

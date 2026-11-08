@@ -88,15 +88,18 @@ export function cardType(deal) {
 export function cardOf(deal, status) {
   const st = dealStatus(deal);
   const showPill = status === "both" || st.key !== "open";
+  // a lost deal drops the quarter and year from its line: it is too long and no longer matters (Robert, 2026-11-08); open and won keep it
+  const when = st.key === "lost" ? "" : deal.quarter;
+  const rest = [deal.stage, when].filter(Boolean);
   return {
     id: deal.id,
     name: cardName(deal),
     sub: cardSub(deal),
-    stageLine: [deal.stage, deal.quarter].filter(Boolean).join(" · "),
-    // the type comes first on the line: "Knee · Commit · Q1" (Robert, 2026-11-08); the rest follows in one piece so the spaces stay
+    stageLine: rest.join(" · "),
+    // the type comes first on the line: "Knee · Commit · Q1 2027" (Robert, 2026-11-08); the rest follows in one piece so the spaces stay
     typeWord: cardType(deal),
-    stageRest: [deal.stage, deal.quarter].filter(Boolean).length
-      ? `${cardType(deal) ? " · " : ""}${[deal.stage, deal.quarter].filter(Boolean).join(" · ")}`
+    stageRest: rest.length
+      ? `${cardType(deal) ? " · " : ""}${rest.join(" · ")}`
       : "",
     value: formatMoney(deal.value, deal.currencyCode),
     repStar: !!deal.repPriority,
