@@ -19,8 +19,8 @@
           <input
             class="search"
             type="search"
-            placeholder="Search my deals"
-            aria-label="Search my deals"
+            placeholder="Search my pipeline records"
+            aria-label="Search my pipeline records"
             value={q}
             oninput={handleSearch}
           />
@@ -191,7 +191,27 @@
           <p class="dsub">{header.sub}</p>
           <div class="grid2">
             <template for:each={tiles} for:item="t">
-              <div class={t.tileCls} key={t.key}>
+              <div
+                lwc:if={t.isPlate}
+                class={t.tileCls}
+                key={t.key}
+                role="img"
+                aria-label={t.aria}
+              >
+                <div class="coin">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path
+                      d="M12 2l3 6.8 7.4.7-5.6 4.9 1.7 7.3L12 17.9 5.5 21.7l1.7-7.3L1.6 9.5l7.4-.7z"
+                    ></path>
+                  </svg>
+                </div>
+                <div class="tx">
+                  <div class="area">{t.label}</div>
+                  <div class="rank">{t.value}</div>
+                  <div class="stars">{t.stars}</div>
+                </div>
+              </div>
+              <div lwc:else class={t.tileCls} key={t.key}>
                 <div class="tl">{t.label}</div>
                 <div class="tvv">
                   <span lwc:if={t.cls} class={t.cls}>{t.value}</span>
@@ -236,7 +256,6 @@
           <template for:each={formSections} for:item="s">
             <section lwc:if={s.isCard} key={s.key} class={s.cardCls}>
               <template lwc:if={s.first}>
-                <h3>The deal</h3>
                 <div class="errs" lwc:if={hasErrors}>
                   <template for:each={errors} for:item="e">
                     <div key={e.key}>{e.text}</div>

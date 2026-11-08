@@ -461,14 +461,21 @@ describe("pipelineMobileModel", () => {
       expect(tile).toMatchObject({
         label: "Usage rating",
         value: "Gold",
-        tileCls: "tile rchip m-Gold"
+        isPlate: true,
+        stars: "\u2605\u2605\u2605",
+        tileCls: "plate tilep m-GOLD"
       });
-      expect(summaryTiles(d("a"), Date.now(), "No rating")[1].tileCls).toBe(
-        "tile rchip m-None"
+      expect(summaryTiles(d("a"), Date.now(), "Platinum")[1].stars).toBe(
+        "\u2605\u2605\u2605\u2605"
       );
+      expect(summaryTiles(d("a"), Date.now(), "No rating")[1]).toMatchObject({
+        value: "No rating",
+        stars: "",
+        tileCls: "plate tilep m-NONE"
+      });
       expect(summaryTiles(d("a"), Date.now(), "")[1]).toMatchObject({
-        value: "–",
-        tileCls: "tile rchip m-None"
+        value: "No rating",
+        tileCls: "plate tilep m-NONE"
       }); // not read yet
     });
   });
@@ -758,7 +765,13 @@ describe("pipelineMobileModel", () => {
       ]);
       expect(formSections([r("a")]).length).toBe(1);
       expect(formSections([])).toEqual([
-        { key: "card-0", isCard: true, first: true, cardCls: "card", rows: [] }
+        {
+          key: "card-0",
+          isCard: true,
+          first: true,
+          cardCls: "card plain",
+          rows: []
+        }
       ]);
     });
   });

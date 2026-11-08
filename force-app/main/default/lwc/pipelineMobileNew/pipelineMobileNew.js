@@ -14,6 +14,7 @@ import {
   QUARTER_FIELD,
   YEAR_FIELD,
   formRows,
+  formSections,
   liveDeal,
   stageSteps,
   stageTone,
@@ -273,6 +274,10 @@ export default class PipelineMobileNew extends LightningElement {
       if (def) next.CurrencyIsoCode = def;
     }
     this.draft = next;
+  }
+  /** The form's rows grouped into sections with the opening boxes between them (the same as the deal screen). */
+  get formSections() {
+    return formSections(this.formRows);
   }
   get formRows() {
     if (!this.picklistData) return [];

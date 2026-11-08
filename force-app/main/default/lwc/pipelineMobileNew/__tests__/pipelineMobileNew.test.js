@@ -244,6 +244,33 @@ describe("c-pipeline-mobile-new", () => {
     );
   });
 
+  it("has no section heading, and keeps the Brand box between two sections, as wide as the Stage", async () => {
+    const el = await make();
+    await set(el, 'select[aria-label="Portfolio"]', "Knee");
+    picklistAdapter.emit({
+      picklistFieldValues: {
+        ...PICKS.picklistFieldValues,
+        Brand__c: {
+          values: [
+            { value: "Persona", label: "Persona" },
+            { value: "Arcos", label: "Arcos" }
+          ]
+        }
+      }
+    });
+    await wait();
+    const cards = [...root(el).querySelectorAll("section.card")];
+    expect(cards.length).toBe(2);
+    const brand = root(el).querySelector("c-pipeline-mobile-choices");
+    expect(
+      root(el).querySelector(".card c-pipeline-mobile-choices")
+    ).toBeNull();
+    expect(cards[0].nextElementSibling).toBe(brand);
+    expect(brand.nextElementSibling).toBe(cards[1]);
+    expect(root(el).querySelector(".card h3")).toBeNull();
+    expect(root(el).textContent).not.toContain("The deal");
+  });
+
   it("asks which record type when the person may use more than one for the same choice", async () => {
     const el = await make({ ...RTS, e: RT("rtNzKnee", "NZ KNEE Opportunity") });
     await set(el, 'select[aria-label="Portfolio"]', "Knee");

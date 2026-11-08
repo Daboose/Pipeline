@@ -774,6 +774,10 @@ select.in {
   padding: 12px 14px;
   margin-bottom: 12px;
 }
+/* a section has no heading: its first field starts at the top */
+.card.plain > .frm:first-child .rowin > div {
+  padding-top: 0;
+}
 h3 {
   margin: 0 0 8px;
   font-size: 12px;

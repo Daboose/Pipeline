@@ -1157,45 +1157,233 @@ button.go {
   transform: rotate(45deg);
 }
 
-/* the surgeon's usage rating tile: the metal of the rating plates behind the word (Robert, 2026-11-08, option B) */
-.tile.rchip {
-  border: 0;
+/* the surgeon's usage rating: the very same metal plate as the Surgeon Usages screen (Robert, 2026-11-08, Proposal A of
+   docs/mockups/pipeline_mobile_rating_plate_v1.html), in the Portfolio tile's place, drawn in CSS only. The look is copied from
+   pipelineMobileUsages.css; change both together. */
+.m-PLATINUM {
+  --sheet: conic-gradient(
+    from 0deg at 50% 52%,
+    #bdb49c,
+    #e2d9be 20deg,
+    #b3a88f 40deg,
+    #9f947b 60deg,
+    #aba089 80deg,
+    #a59a82 100deg,
+    #897d64 120deg,
+    #988c75 140deg,
+    #beb49f 160deg,
+    #ada28d 180deg,
+    #968b74 200deg,
+    #afa68d 220deg,
+    #c7bea3 240deg,
+    #796e58 260deg,
+    #766853 280deg,
+    #b5aa93 300deg,
+    #a89d84 320deg,
+    #978b75 340deg,
+    #bdb49c 360deg
+  );
+  --hi: #f4efe0;
+  --mid: #b3a88f;
+  --lo: #6d6250;
+  --ink: #3a3326;
+  --glow: rgba(244, 239, 224, 0.9);
+}
+.m-GOLD {
+  --sheet: conic-gradient(
+    from 0deg at 50% 52%,
+    #dfc16e,
+    #fce68b 20deg,
+    #dcb856 40deg,
+    #cea441 60deg,
+    #e0b75e 80deg,
+    #d6ae56 100deg,
+    #a37821 120deg,
+    #b78b31 140deg,
+    #edc35c 160deg,
+    #d5ab4b 180deg,
+    #ba9137 200deg,
+    #d3af4d 220deg,
+    #e5cc73 240deg,
+    #ab8327 260deg,
+    #af8629 280deg,
+    #e6be57 300deg,
+    #ddb457 320deg,
+    #c19848 340deg,
+    #dfc16e 360deg
+  );
+  --hi: #fff1b0;
+  --mid: #d6ae56;
+  --lo: #8a6513;
+  --ink: #4a3406;
+  --glow: rgba(255, 241, 176, 0.95);
+}
+.m-SILVER {
+  --sheet: conic-gradient(
+    from 0deg at 50% 52%,
+    #a3a7b1,
+    #c8cdd7 20deg,
+    #9599a2 40deg,
+    #808591 60deg,
+    #868a93 80deg,
+    #818691 100deg,
+    #676c77 120deg,
+    #777e89 140deg,
+    #a1a7b2 160deg,
+    #9096a0 180deg,
+    #7f858f 200deg,
+    #9aa0aa 220deg,
+    #a8aeb7 240deg,
+    #686c74 260deg,
+    #6c707a 280deg,
+    #9a9da7 300deg,
+    #969ba5 320deg,
+    #7e838d 340deg,
+    #a3a7b1 360deg
+  );
+  --hi: #e6eaf2;
+  --mid: #9599a2;
+  --lo: #565b66;
+  --ink: #23272f;
+  --glow: rgba(230, 234, 242, 0.95);
+}
+.m-BRONZE {
+  --sheet: conic-gradient(
+    from 0deg at 50% 52%,
+    #bc7951,
+    #e39361 20deg,
+    #ae6946 40deg,
+    #a46a47 60deg,
+    #ab6d4a 80deg,
+    #a66b48 100deg,
+    #8b5839 120deg,
+    #996240 140deg,
+    #be7f56 160deg,
+    #ad714c 180deg,
+    #9a6142 200deg,
+    #b67851 220deg,
+    #c4794f 240deg,
+    #7f4e32 260deg,
+    #855335 280deg,
+    #b87952 300deg,
+    #b2754f 320deg,
+    #9b6242 340deg,
+    #bc7951 360deg
+  );
+  --hi: #f3b58c;
+  --mid: #ad714c;
+  --lo: #6e4128;
+  --ink: #3d1f0e;
+  --glow: rgba(243, 181, 140, 0.95);
+}
+.m-NONE {
+  --sheet: linear-gradient(#eceae8, #e2dfdc);
+  --hi: #f6f5f4;
+  --mid: #cfccc9;
+  --lo: #9a9794;
+  --ink: #6d6a67;
+  --glow: rgba(255, 255, 255, 0);
+}
+.plate {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  min-height: 0;
+  padding: 9px 10px 9px 12px;
+  border-radius: 12px;
   color: var(--ink);
+  overflow: hidden;
+  text-align: left;
+  background:
+    repeating-radial-gradient(
+      circle at 50% 52%,
+      rgba(255, 255, 255, 0.07) 0 1px,
+      rgba(0, 0, 0, 0.06) 1px 2px
+    ),
+    var(--sheet);
   box-shadow:
-    inset 0 2px 1px rgba(255, 255, 255, 0.7),
-    inset 0 -3px 3px rgba(0, 0, 0, 0.25),
-    inset 0 0 0 1px rgba(0, 0, 0, 0.22),
-    0 3px 8px rgba(40, 30, 10, 0.22);
+    inset 0 2px 1px rgba(255, 255, 255, 0.75),
+    inset 0 -3px 3px rgba(0, 0, 0, 0.3),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.25),
+    0 6px 14px rgba(40, 30, 10, 0.28);
 }
-.tile.rchip .tl {
-  color: var(--ink);
-  opacity: 0.8;
+.plate .coin {
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--sheet);
+  box-shadow:
+    inset 0 2px 2px rgba(255, 255, 255, 0.7),
+    inset 0 -2px 3px rgba(0, 0, 0, 0.35),
+    0 0 0 2px rgba(0, 0, 0, 0.28),
+    0 0 0 3px var(--hi),
+    0 2px 5px rgba(0, 0, 0, 0.35);
+  display: grid;
+  place-items: center;
 }
-.tile.rchip .tvv {
+.plate .coin svg {
+  width: 18px;
+  height: 18px;
+  filter: drop-shadow(0 1px 0 rgba(255, 255, 255, 0.6))
+    drop-shadow(0 -1px 0 rgba(0, 0, 0, 0.35));
+}
+.plate .coin svg path {
+  fill: var(--hi);
+  stroke: var(--mid);
+  stroke-width: 1;
+  stroke-linejoin: round;
+}
+.plate.m-NONE {
+  background: #eceae8;
+  box-shadow: inset 0 0 0 1px #d4d1ce;
+}
+.plate.m-NONE .coin {
+  background: #f6f5f4;
+  box-shadow: inset 0 0 0 2px #cfccc9;
+}
+.plate.m-NONE .coin svg path {
+  fill: #bdbab7;
+  stroke: #a9a6a3;
+}
+.plate.m-NONE .area {
+  color: var(--muted, #5d6b85);
+}
+.plate .area {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.55);
+}
+.plate .rank {
+  font-size: 16px;
   font-weight: 900;
   letter-spacing: 0.04em;
   text-transform: uppercase;
+  white-space: nowrap;
+  text-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.65),
+    0 -1px 0 rgba(0, 0, 0, 0.25);
 }
-.rchip.m-Platinum {
-  background: linear-gradient(135deg, #efe9d6, #c7bea3 45%, #a89d84);
-  --ink: #3a3326;
+.plate.m-NONE .rank {
+  font-size: 13px;
+  letter-spacing: 0.02em;
 }
-.rchip.m-Gold {
-  background: linear-gradient(135deg, #fff1b0, #e5cc73 40%, #c9a13e);
-  --ink: #4a3406;
+.plate .stars {
+  margin-top: 1px;
+  letter-spacing: 2px;
+  font-size: 11px;
+  min-height: 14px;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);
 }
-.rchip.m-Silver {
-  background: linear-gradient(135deg, #eef1f7, #b9bec9 45%, #8e939e);
-  --ink: #23272f;
+.plate.tilep {
+  min-width: 0;
 }
-.rchip.m-Bronze {
-  background: linear-gradient(135deg, #f3b58c, #c98558 45%, #a66b48);
-  --ink: #3d1f0e;
-}
-.tile.rchip.m-None {
-  background: #eceae8;
-  --ink: #6d6a67;
-  box-shadow: inset 0 0 0 1px #d4d1ce;
+.plate .tx {
+  min-width: 0;
 }
 
 /* ===== the "Create New" bar: locked at the bottom of the list, one filled pill (Robert, 2026-11-08, option D) ===== */

@@ -491,9 +491,10 @@ describe("c-pipeline-mobile", () => {
         // the order on the screen: section, Brand box, section
         expect(cards[0].nextElementSibling).toBe(brand);
         expect(brand.nextElementSibling).toBe(cards[1]);
-        // only the first section carries the heading
-        expect(cards[0].querySelector("h3")).not.toBeNull();
+        // no section has a heading ("The deal" is gone)
+        expect(cards[0].querySelector("h3")).toBeNull();
         expect(cards[1].querySelector("h3")).toBeNull();
+        expect(root(el).textContent).not.toContain("The deal");
         // sorted A to Z
         expect(brand.options.map((o) => o.label)).toEqual(["Arcos", "Persona"]);
       });
@@ -848,16 +849,23 @@ describe("c-pipeline-mobile", () => {
         await flush();
         await open(el, "Chen"); // an opportunity at Hip
         await flush();
-        const tiles = () => [...root(el).querySelectorAll(".dealpage .tile")];
+        const tiles = () => [
+          ...root(el).querySelectorAll(".dealpage .tile, .dealpage .plate")
+        ];
         expect(tiles().length).toBe(8);
-        const rating = tiles().find(
-          (n) => n.querySelector(".tl").textContent === "Usage rating"
+        const rating = root(el).querySelector(".dealpage .plate");
+        expect(rating.querySelector(".area").textContent).toBe("Usage rating");
+        expect(rating.querySelector(".rank").textContent.trim()).toBe("Gold"); // the Hip rating, not the Knee one
+        expect(rating.querySelector(".stars").textContent).toBe(
+          "\u2605\u2605\u2605"
         );
-        expect(rating.querySelector(".tvv").textContent.trim()).toBe("Gold"); // the Hip rating, not the Knee one
-        expect(rating.classList.contains("m-Gold")).toBe(true);
+        expect(rating.querySelector(".coin svg")).not.toBeNull();
+        expect(rating.classList.contains("m-GOLD")).toBe(true);
         expect(
           tiles().some(
-            (n) => n.querySelector(".tl").textContent === "Portfolio"
+            (n) =>
+              n.querySelector(".tl") &&
+              n.querySelector(".tl").textContent === "Portfolio"
           )
         ).toBe(false);
       });

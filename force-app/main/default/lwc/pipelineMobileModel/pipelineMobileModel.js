@@ -221,6 +221,9 @@ export function headerOf(deal) {
   };
 }
 
+/** The number of stars on a rating plate, as on the Surgeon Usages screen. */
+const RATING_STARS = { PLATINUM: 4, GOLD: 3, SILVER: 2, BRONZE: 1 };
+
 /**
  * The summary line as tiles: Owner, Portfolio, value, close quarter, last posted and last stage move (coloured by age), age, status.
  * rating: the surgeon's usage rating for the deal's own area as a word (Platinum, Gold, Silver, Bronze, or "No rating"); when it is given
@@ -272,15 +275,21 @@ export function summaryTiles(deal, now = Date.now(), rating) {
     { key: "status", label: "Status", value: st.label, cls: `stp st-${st.key}` }
   ].map((t) => {
     if (t.key === "portfolio" && rating !== undefined) {
-      const metal = ["Platinum", "Gold", "Silver", "Bronze"].includes(rating)
-        ? rating
-        : "None";
+      // the same metal plate as the Surgeon Usages screen (see ratingPlates)
+      const up = String(rating || "").toUpperCase();
+      const known = RATING_STARS[up] !== undefined;
+      const word = known
+        ? up.charAt(0) + up.slice(1).toLowerCase()
+        : "No rating";
       return {
         key: "rating",
         label: "Usage rating",
-        value: rating || "–",
+        value: word,
         cls: "",
-        tileCls: `tile rchip m-${metal}`
+        isPlate: true,
+        stars: known ? "\u2605".repeat(RATING_STARS[up]) : "",
+        aria: `Usage rating: ${word.toLowerCase()}`,
+        tileCls: `plate tilep m-${known ? up : "NONE"}`
       };
     }
     return { tileCls: "tile", ...t };
@@ -561,8 +570,8 @@ export function formRows(kind, ctx) {
 /**
  * The form's rows grouped into blocks for the deal screen (Robert, 2026-11-08; mockup pipeline_mobile_sections_v1.html): the plain fields sit in
  * sections (cards); a box that opens (Brand, a risk's Portfolio, the ROSA sales type) is never inside a section, it sits between two so it is as
- * wide as the Stage box. Returns [{ key, isCard, first, rows }, { key, isBox, row }, ...]; "first" marks the section that carries the heading
- * "The deal" and the messages (the second section has no heading). With no rows yet there is one empty first section.
+ * wide as the Stage box. Returns [{ key, isCard, first, rows }, { key, isBox, row }, ...]; "first" marks the section that carries the messages
+ * (no section has a heading). With no rows yet there is one empty first section.
  */
 export function formSections(rows) {
   const out = [];
@@ -580,7 +589,7 @@ export function formSections(rows) {
         first: !out.some((s) => s.isCard),
         rows: []
       };
-      card.cardCls = card.first ? "card" : "card plain";
+      card.cardCls = "card plain"; // no section has a heading (Robert, 2026-11-08: "The deal" is a bad word); each starts at its first field
       out.push(card);
     }
     card.rows.push(r);
@@ -592,7 +601,7 @@ export function formSections(rows) {
           key: "card-0",
           isCard: true,
           first: true,
-          cardCls: "card",
+          cardCls: "card plain",
           rows: []
         }
       ];
@@ -696,7 +705,6 @@ export const PORT_LINES = {
   CMF: [["cmft", "CMFT"]]
 };
 const PORTFOLIO_ORDER = ["Hip", "Knee", "Shoulder", "CMF"];
-const RATING_STARS = { PLATINUM: 4, GOLD: 3, SILVER: 2, BRONZE: 1 };
 /** A usage list last changed this long ago (in years) gets the out-of-date warning, as on the desktop panel. */
 export const OLD_YEARS = 2;
 const YEAR_MS = 365.25 * 86400000;

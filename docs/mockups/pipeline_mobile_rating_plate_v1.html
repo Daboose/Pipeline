@@ -1,0 +1,827 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Mockup: the usage rating plate on a deal (version 1)</title>
+    <style>
+      :root,
+      [data-theme="light"] {
+        --page: #e9edf4;
+        --card: #fff;
+        --bg: #f3f3f3;
+        --box: #eef2fa;
+        --line: #d5dcea;
+        --edge: #b3bfd6;
+        --text: #1b2640;
+        --muted: #5d6b85;
+        --pipe: #b7791f;
+        --indigo: #4f46e5;
+        --slate: #64748b;
+        --head: #db2777;
+        --panel: #fff;
+        --ink: #1b2640;
+      }
+      [data-theme="dark"] {
+        --page: #141e2e;
+        --card: #1a2740;
+        --bg: #141e2e;
+        --box: #20304f;
+        --line: #2f4163;
+        --edge: #5b6f93;
+        --text: #e8edf5;
+        --muted: #9fb0cc;
+        --pipe: #fdb827;
+        --indigo: #6366f1;
+        --slate: #475569;
+        --head: #f472b6;
+        --panel: #1a2740;
+        --ink: #e8edf5;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--page);
+        color: var(--text);
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-size: 16px;
+      }
+      button {
+        font-family: inherit;
+        font-size: inherit;
+        color: inherit;
+      }
+      .sfnav {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        height: 44px;
+        padding: 0 16px;
+        background: #0b1220;
+        color: #cdd6e6;
+        font-size: 14px;
+      }
+      .sfnav .app {
+        font-weight: 800;
+        letter-spacing: 0.14em;
+      }
+      .sfnav .app b {
+        color: #fdb827;
+      }
+      .sfnav .tab {
+        color: #9fb0cc;
+      }
+      .sfnav .tab.on {
+        color: #fff;
+        border-bottom: 2px solid #6366f1;
+        padding-bottom: 2px;
+      }
+      .sp {
+        flex: 1;
+      }
+      .btn,
+      .pill {
+        border: 0;
+        border-radius: 999px;
+        padding: 7px 16px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+        background: var(--slate);
+        color: #fff;
+      }
+      .pill.on {
+        background: var(--indigo);
+      }
+      .about {
+        margin: 14px 16px;
+        padding: 12px 18px;
+        background: var(--card);
+        border: 1px solid var(--edge);
+        border-radius: 12px;
+        line-height: 1.5;
+        max-width: 1100px;
+        font-size: 15px;
+      }
+      .about summary {
+        cursor: pointer;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        color: var(--pipe);
+      }
+      .about ul {
+        margin: 4px 0 8px;
+        padding-left: 22px;
+      }
+      .tools {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+        padding: 0 16px 10px;
+      }
+      .tools .lab {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+      .grp {
+        padding: 0 16px;
+      }
+      .grp > h1 {
+        margin: 18px 0 10px;
+        font-size: 14px;
+        font-weight: 800;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        border-bottom: 2px solid var(--edge);
+        padding-bottom: 6px;
+      }
+      .phones {
+        display: flex;
+        gap: 40px;
+        flex-wrap: wrap;
+        padding: 0 0 30px;
+        align-items: flex-start;
+      }
+      .opt h2 {
+        margin: 0 0 2px;
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--head);
+      }
+      .opt p {
+        margin: 0 0 10px;
+        color: var(--muted);
+        font-size: 14px;
+        max-width: 390px;
+      }
+      .phone {
+        position: relative;
+        width: 390px;
+        height: 760px;
+        border: 10px solid #0b1220;
+        border-radius: 38px;
+        overflow: hidden;
+        background: var(--bg);
+        display: flex;
+        flex-direction: column;
+      }
+      .sfstatus {
+        height: 40px;
+        flex: none;
+        padding: 12px 0 0 28px;
+        font-size: 14px;
+        font-weight: 600;
+        background: var(--card);
+      }
+      .sfbar {
+        flex: none;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        height: 46px;
+        padding: 0 14px;
+        background: var(--card);
+        border-bottom: 1px solid var(--line);
+        font-weight: 700;
+      }
+      .scroll {
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+        padding: 12px 12px 16px;
+      }
+      .sftabs {
+        flex: none;
+        display: flex;
+        height: 58px;
+        background: var(--card);
+        border-top: 1px solid var(--line);
+      }
+      .sftabs span {
+        flex: 1;
+        text-align: center;
+        padding-top: 9px;
+        font-size: 11px;
+        color: var(--muted);
+      }
+      .sftabs span.on {
+        color: var(--indigo);
+        font-weight: 700;
+      }
+      /* the deal screen as built */
+      .dname {
+        font-size: 22px;
+        font-weight: 800;
+      }
+      .dsub {
+        color: var(--muted);
+        font-size: 14px;
+        margin: 2px 0 10px;
+      }
+      .stbox {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 10px 14px;
+        margin-bottom: 10px;
+        font-weight: 800;
+        color: var(--head);
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        font-size: 13px;
+      }
+      .stbox span {
+        float: right;
+        color: var(--text);
+        text-transform: none;
+        letter-spacing: 0;
+        font-size: 15px;
+      }
+      .grid2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+      .tile {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 9px 12px;
+        min-width: 0;
+      }
+      .tl {
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .tvv {
+        font-size: 16px;
+        font-weight: 800;
+        margin-top: 2px;
+        min-height: 24px;
+      }
+      .tile.rchip {
+        border: 0;
+        color: var(--ink);
+        box-shadow:
+          inset 0 2px 1px rgba(255, 255, 255, 0.7),
+          inset 0 -3px 3px rgba(0, 0, 0, 0.25),
+          inset 0 0 0 1px rgba(0, 0, 0, 0.22),
+          0 3px 8px rgba(40, 30, 10, 0.22);
+      }
+      .tile.rchip .tl {
+        color: var(--ink);
+        opacity: 0.8;
+      }
+      .tile.rchip .tvv {
+        font-weight: 900;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+      .rchip.m-Platinum {
+        background: linear-gradient(135deg, #efe9d6, #c7bea3 45%, #a89d84);
+        --ink: #3a3326;
+      }
+      .rchip.m-Gold {
+        background: linear-gradient(135deg, #fff1b0, #e5cc73 40%, #c9a13e);
+        --ink: #4a3406;
+      }
+      .rchip.m-Silver {
+        background: linear-gradient(135deg, #eef1f7, #b9bec9 45%, #8e939e);
+        --ink: #23272f;
+      }
+      .rchip.m-Bronze {
+        background: linear-gradient(135deg, #f3b58c, #c98558 45%, #a66b48);
+        --ink: #3d1f0e;
+      }
+      .usg {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 11px 14px;
+        font-weight: 800;
+        color: var(--head);
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        font-size: 13px;
+      }
+      /* the plates exactly as on the Usages screen */
+      .m-PLATINUM {
+        --sheet: conic-gradient(
+          from 0deg at 50% 52%,
+          #bdb49c,
+          #e2d9be 20deg,
+          #b3a88f 40deg,
+          #9f947b 60deg,
+          #aba089 80deg,
+          #a59a82 100deg,
+          #897d64 120deg,
+          #988c75 140deg,
+          #beb49f 160deg,
+          #ada28d 180deg,
+          #968b74 200deg,
+          #afa68d 220deg,
+          #c7bea3 240deg,
+          #796e58 260deg,
+          #766853 280deg,
+          #b5aa93 300deg,
+          #a89d84 320deg,
+          #978b75 340deg,
+          #bdb49c 360deg
+        );
+        --hi: #f4efe0;
+        --mid: #b3a88f;
+        --lo: #6d6250;
+        --ink: #3a3326;
+        --glow: rgba(244, 239, 224, 0.9);
+      }
+      .m-GOLD {
+        --sheet: conic-gradient(
+          from 0deg at 50% 52%,
+          #dfc16e,
+          #fce68b 20deg,
+          #dcb856 40deg,
+          #cea441 60deg,
+          #e0b75e 80deg,
+          #d6ae56 100deg,
+          #a37821 120deg,
+          #b78b31 140deg,
+          #edc35c 160deg,
+          #d5ab4b 180deg,
+          #ba9137 200deg,
+          #d3af4d 220deg,
+          #e5cc73 240deg,
+          #ab8327 260deg,
+          #af8629 280deg,
+          #e6be57 300deg,
+          #ddb457 320deg,
+          #c19848 340deg,
+          #dfc16e 360deg
+        );
+        --hi: #fff1b0;
+        --mid: #d6ae56;
+        --lo: #8a6513;
+        --ink: #4a3406;
+        --glow: rgba(255, 241, 176, 0.95);
+      }
+      .m-SILVER {
+        --sheet: conic-gradient(
+          from 0deg at 50% 52%,
+          #a3a7b1,
+          #c8cdd7 20deg,
+          #9599a2 40deg,
+          #808591 60deg,
+          #868a93 80deg,
+          #818691 100deg,
+          #676c77 120deg,
+          #777e89 140deg,
+          #a1a7b2 160deg,
+          #9096a0 180deg,
+          #7f858f 200deg,
+          #9aa0aa 220deg,
+          #a8aeb7 240deg,
+          #686c74 260deg,
+          #6c707a 280deg,
+          #9a9da7 300deg,
+          #969ba5 320deg,
+          #7e838d 340deg,
+          #a3a7b1 360deg
+        );
+        --hi: #e6eaf2;
+        --mid: #9599a2;
+        --lo: #565b66;
+        --ink: #23272f;
+        --glow: rgba(230, 234, 242, 0.95);
+      }
+      .m-BRONZE {
+        --sheet: conic-gradient(
+          from 0deg at 50% 52%,
+          #bc7951,
+          #e39361 20deg,
+          #ae6946 40deg,
+          #a46a47 60deg,
+          #ab6d4a 80deg,
+          #a66b48 100deg,
+          #8b5839 120deg,
+          #996240 140deg,
+          #be7f56 160deg,
+          #ad714c 180deg,
+          #9a6142 200deg,
+          #b67851 220deg,
+          #c4794f 240deg,
+          #7f4e32 260deg,
+          #855335 280deg,
+          #b87952 300deg,
+          #b2754f 320deg,
+          #9b6242 340deg,
+          #bc7951 360deg
+        );
+        --hi: #f3b58c;
+        --mid: #ad714c;
+        --lo: #6e4128;
+        --ink: #3d1f0e;
+        --glow: rgba(243, 181, 140, 0.95);
+      }
+      .m-NONE {
+        --sheet: linear-gradient(#eceae8, #e2dfdc);
+        --hi: #f6f5f4;
+        --mid: #cfccc9;
+        --lo: #9a9794;
+        --ink: #6d6a67;
+        --glow: rgba(255, 255, 255, 0);
+      }
+      .plate {
+        position: relative;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 10px;
+        min-height: 0;
+        padding: 9px 10px 9px 12px;
+        border-radius: 12px;
+        color: var(--ink);
+        overflow: hidden;
+        text-align: left;
+        background:
+          repeating-radial-gradient(
+            circle at 50% 52%,
+            rgba(255, 255, 255, 0.07) 0 1px,
+            rgba(0, 0, 0, 0.06) 1px 2px
+          ),
+          var(--sheet);
+        box-shadow:
+          inset 0 2px 1px rgba(255, 255, 255, 0.75),
+          inset 0 -3px 3px rgba(0, 0, 0, 0.3),
+          inset 0 0 0 1px rgba(0, 0, 0, 0.25),
+          0 6px 14px rgba(40, 30, 10, 0.28);
+      }
+      .plate.mine {
+        outline: 2px solid var(--indigo, #4f46e5);
+        outline-offset: 2px;
+      }
+      .plate .coin {
+        flex: none;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background: var(--sheet);
+        box-shadow:
+          inset 0 2px 2px rgba(255, 255, 255, 0.7),
+          inset 0 -2px 3px rgba(0, 0, 0, 0.35),
+          0 0 0 2px rgba(0, 0, 0, 0.28),
+          0 0 0 3px var(--hi),
+          0 2px 5px rgba(0, 0, 0, 0.35);
+        display: grid;
+        place-items: center;
+      }
+      .plate .coin svg {
+        width: 18px;
+        height: 18px;
+        filter: drop-shadow(0 1px 0 rgba(255, 255, 255, 0.6))
+          drop-shadow(0 -1px 0 rgba(0, 0, 0, 0.35));
+      }
+      .plate .coin svg path {
+        fill: var(--hi);
+        stroke: var(--mid);
+        stroke-width: 1;
+        stroke-linejoin: round;
+      }
+      .plate.m-NONE {
+        background: #eceae8;
+        box-shadow: inset 0 0 0 1px #d4d1ce;
+      }
+      .plate.m-NONE .coin {
+        background: #f6f5f4;
+        box-shadow: inset 0 0 0 2px #cfccc9;
+      }
+      .plate.m-NONE .coin svg path {
+        fill: #bdbab7;
+        stroke: #a9a6a3;
+      }
+      .plate.m-NONE .area {
+        color: var(--muted, #5d6b85);
+      }
+      .plate .area {
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        text-shadow: 0 1px 0 rgba(255, 255, 255, 0.55);
+      }
+      .plate .rank {
+        font-size: 16px;
+        font-weight: 900;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        white-space: nowrap;
+        text-shadow:
+          0 1px 0 rgba(255, 255, 255, 0.65),
+          0 -1px 0 rgba(0, 0, 0, 0.25);
+      }
+      .plate.m-NONE .rank {
+        font-size: 13px;
+        letter-spacing: 0.02em;
+      }
+      .plate .stars {
+        margin-top: 1px;
+        letter-spacing: 2px;
+        font-size: 11px;
+        min-height: 14px;
+        text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);
+      }
+      /* where the plate sits on the deal screen */
+      .tilep.plate {
+        padding: 9px 10px 9px 12px;
+        min-width: 0;
+      }
+      .tilep.plate .tx {
+        min-width: 0;
+      }
+      .widep.plate {
+        padding: 10px 14px;
+        gap: 14px;
+        margin-bottom: 12px;
+      }
+      .widep .tx {
+        flex: 1;
+      }
+      .widep .stars {
+        position: absolute;
+        right: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 16px;
+        letter-spacing: 3px;
+        margin: 0;
+      }
+      .widep .coin {
+        width: 38px;
+        height: 38px;
+      }
+      .widep .coin svg {
+        width: 23px;
+        height: 23px;
+      }
+      .widep .rank {
+        font-size: 20px;
+      }
+      .none-note {
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .guide {
+        outline: 2px dashed #3b82f6;
+      }
+    </style>
+  </head>
+  <body data-theme="light">
+    <div class="sfnav">
+      <span class="app"><b>PIPE</b>LINE</span>
+      <span class="tab on">Pipeline</span>
+      <span class="tab">Opportunities &amp; Risks</span>
+      <span class="sp"></span>
+      <button type="button" class="btn" id="fullbtn">Full screen</button>
+    </div>
+    <details class="about" open>
+      <summary>ABOUT THIS MOCKUP</summary>
+      <p>
+        <b>Version 1, invented data only.</b> Robert's question (2026-11-08):
+        the Usages screen draws the rating as a real metal plate (brushed metal,
+        a coin with a star, the stars), but the rating on the deal screen is
+        only a flat coloured tile. This page shows the deal screen with the
+        <b>very same plate</b>. The plate here is the real one, copied from the
+        Usages screen.
+      </p>
+      <ul>
+        <li><b>1. Today.</b> The flat tile in the Portfolio tile's place.</li>
+        <li>
+          <b>2. Proposal A: the plate in the tile's place.</b> The same size and
+          position as the tile today, so nothing else on the deal screen moves.
+          The plate fits in the tile's row height, stars included.
+        </li>
+        <li>
+          <b>3. Proposal B: one wide plate under the stage.</b> The rating gets
+          a whole row, so it stands out and the stars sit on the right. The
+          Portfolio tile stays where it is, because the plate no longer takes
+          its place.
+        </li>
+        <li>
+          <b>4. All the metals,</b> in Proposal A, so you can see Platinum,
+          Gold, Silver, Bronze and No rating.
+        </li>
+        <li>
+          <b>Try it:</b> the Light / Dark buttons change the theme; the Metal
+          buttons change the rating on the phones in sections 1, 2 and 3.
+        </li>
+        <li>
+          <b>Not shown yet:</b> nothing is built. The Usages screen is not
+          changed. A tap on the plate does nothing in this mockup; if you want a
+          tap to open Surgeon Usages, say so.
+        </li>
+      </ul>
+    </details>
+    <div class="tools">
+      <span class="lab">Theme</span>
+      <button type="button" class="pill on" data-theme-btn="light">
+        Light
+      </button>
+      <button type="button" class="pill" data-theme-btn="dark">Dark</button>
+      <span class="lab" style="margin-left: 14px">Metal</span>
+      <button type="button" class="pill" data-metal="Platinum">Platinum</button>
+      <button type="button" class="pill on" data-metal="Gold">Gold</button>
+      <button type="button" class="pill" data-metal="Silver">Silver</button>
+      <button type="button" class="pill" data-metal="Bronze">Bronze</button>
+      <button type="button" class="pill" data-metal="None">No rating</button>
+    </div>
+    <div class="grp" id="app"></div>
+    <script>
+      var STARS = { Platinum: 4, Gold: 3, Silver: 2, Bronze: 1, None: 0 };
+      var metal = "Gold";
+      var STAR =
+        '<div class="coin"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3 6.8 7.4.7-5.6 4.9 1.7 7.3L12 17.9 5.5 21.7l1.7-7.3L1.6 9.5l7.4-.7z"></path></svg></div>';
+      function plate(m, extra, label) {
+        var up = m.toUpperCase(),
+          none = m === "None";
+        return (
+          '<div class="plate m-' +
+          (none ? "NONE" : up) +
+          " " +
+          extra +
+          '" role="img">' +
+          STAR +
+          '<div class="tx"><div class="area">' +
+          label +
+          '</div><div class="rank">' +
+          (none ? "No rating" : m) +
+          "</div>" +
+          '<div class="stars">' +
+          "★".repeat(STARS[m]) +
+          "</div></div></div>"
+        );
+      }
+      function tile(l, v) {
+        return (
+          '<div class="tile"><div class="tl">' +
+          l +
+          '</div><div class="tvv">' +
+          v +
+          "</div></div>"
+        );
+      }
+      function oldTile(m) {
+        return (
+          '<div class="tile rchip m-' +
+          m +
+          '"><div class="tl">Usage rating</div><div class="tvv">' +
+          (m === "None" ? "–" : m) +
+          "</div></div>"
+        );
+      }
+      function head() {
+        return (
+          '<div class="dname">Dr Mei Tan</div><div class="dsub">Knee · Commit · Q1</div>' +
+          '<div class="stbox">Stage <span>Commit / Contract</span></div>'
+        );
+      }
+      function rest() {
+        return (
+          tile("Value", "A$250,000") +
+          tile("Close quarter", "Q1 2027") +
+          tile("Last posted", "12 d") +
+          tile("Last stage move", "31 d") +
+          tile("Deal age", "142 d") +
+          tile("Status", "Open")
+        );
+      }
+      function screen(kind, m) {
+        var t = "";
+        if (kind === "old")
+          t =
+            '<div class="grid2">' +
+            tile("Owner", "Sam Rowe") +
+            oldTile(m) +
+            rest() +
+            "</div>";
+        if (kind === "A")
+          t =
+            '<div class="grid2">' +
+            tile("Owner", "Sam Rowe") +
+            plate(m, "tilep", "Usage rating") +
+            rest() +
+            "</div>";
+        if (kind === "B")
+          t =
+            '<div class="grid2">' +
+            tile("Owner", "Sam Rowe") +
+            tile("Portfolio", "Knee") +
+            tile("Value", "A$250,000") +
+            tile("Close quarter", "Q1 2027") +
+            "</div>" +
+            plate(m, "widep", "Knee usage rating") +
+            '<div class="grid2">' +
+            tile("Last posted", "12 d") +
+            tile("Last stage move", "31 d") +
+            tile("Deal age", "142 d") +
+            tile("Status", "Open") +
+            "</div>";
+        return (
+          head() +
+          t +
+          '<div class="usg">Surgeon usages <span style="float:right;color:var(--text);letter-spacing:0;text-transform:none;font-weight:700">updated 3 months ago ›</span></div>'
+        );
+      }
+      function phone(body) {
+        return (
+          '<div class="phone"><div class="sfstatus">8:45</div><div class="sfbar">☰ Pipeline Mobile</div><div class="scroll">' +
+          body +
+          '</div><div class="sftabs"><span>Accounts</span><span>myCase</span><span>Cases</span><span class="on">Menu</span></div></div>'
+        );
+      }
+      function opt(h, p, kind, m) {
+        return (
+          '<div class="opt"><h2>' +
+          h +
+          "</h2><p>" +
+          p +
+          "</p>" +
+          phone(screen(kind, m)) +
+          "</div>"
+        );
+      }
+      function draw() {
+        var all = ["Platinum", "Gold", "Silver", "Bronze", "None"];
+        document.getElementById("app").innerHTML =
+          '<h1>1 to 3. The deal screen, three ways</h1><div class="phones">' +
+          opt(
+            "1. Today",
+            "A flat coloured tile. The metal is only a colour behind the word.",
+            "old",
+            metal
+          ) +
+          opt(
+            "2. Proposal A",
+            "The Usages plate in the tile's place. Nothing else moves.",
+            "A",
+            metal
+          ) +
+          opt(
+            "3. Proposal B",
+            "One wide plate under the stage; the stars sit on the right.",
+            "B",
+            metal
+          ) +
+          "</div>" +
+          '<h1>4. Proposal A with every metal</h1><div class="phones" style="gap:14px">' +
+          all
+            .map(function (m) {
+              return (
+                '<div class="opt">' +
+                '<div style="width:178px">' +
+                plate(m, "tilep", "Usage rating") +
+                "</div></div>"
+              );
+            })
+            .join("") +
+          "</div>";
+      }
+      document.addEventListener("click", function (e) {
+        var b = e.target.closest("[data-theme-btn]");
+        if (b) {
+          document.body.setAttribute("data-theme", b.dataset.themeBtn);
+          document.querySelectorAll("[data-theme-btn]").forEach(function (x) {
+            x.classList.toggle("on", x === b);
+          });
+          return;
+        }
+        var m = e.target.closest("[data-metal]");
+        if (m) {
+          metal = m.dataset.metal;
+          document.querySelectorAll("[data-metal]").forEach(function (x) {
+            x.classList.toggle("on", x === m);
+          });
+          draw();
+          return;
+        }
+        if (e.target.id === "fullbtn") {
+          var d = document.documentElement;
+          if (d.requestFullscreen) d.requestFullscreen();
+        }
+      });
+      draw();
+    </script>
+  </body>
+</html>
