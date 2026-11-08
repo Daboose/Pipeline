@@ -37,7 +37,7 @@ import {
 } from "c/pipelineMobileModel";
 import { formatMoney, suggestYear, quarterIsPast } from "c/pipelineFormat";
 
-const MOBILE_VERSION = "0.42"; // shown at the foot of the screen; raised with each change that goes out
+const MOBILE_VERSION = "0.43"; // shown at the foot of the screen; raised with each change that goes out
 
 const SLIDE_OUT_MS = 540; // a little longer than the slide itself (0.48 s in the style sheet)
 const LOOKUP_MIN = 2; // letters before a search is made, as on the desktop
@@ -147,6 +147,13 @@ export default class PipelineMobile extends LightningElement {
     window.addEventListener("resize", this.onViewport);
     if (window.visualViewport)
       window.visualViewport.addEventListener("resize", this.onViewport);
+    // The Salesforce app keeps this page alive when it is put away, so coming back to it reads the deals again (quietly, no please-wait)
+    this.onReturn = () => {
+      if (document.visibilityState !== "hidden") this.refreshDeals();
+    };
+    document.addEventListener("visibilitychange", this.onReturn);
+    window.addEventListener("pageshow", this.onReturn);
+    window.addEventListener("focus", this.onReturn);
     Promise.all([getContext().catch(() => null), this.fetchDeals()])
       .then(([ctx, res]) => {
         this.stageOrder = (ctx && ctx.stageOrder) || [];
@@ -168,12 +175,29 @@ export default class PipelineMobile extends LightningElement {
     };
     return getDeals({ filterJson: JSON.stringify(filter) });
   }
+  /** Reads the deals again without covering the screen. Only while the list is showing (a deal being edited or a new one being typed is left alone), and not twice within 2 seconds. */
+  refreshDeals() {
+    if (this.loading || this.openId || this.newOn || this.refreshing) return;
+    const now = Date.now();
+    if (now - (this.lastRefresh || 0) < 2000) return;
+    this.lastRefresh = now;
+    this.refreshing = true;
+    this.fetchDeals()
+      .then((res) => this.takeDeals(res))
+      .catch(() => {})
+      .finally(() => {
+        this.refreshing = false;
+      });
+  }
   takeDeals(res) {
     this.deals = res.deals || [];
     this.truncated = !!res.truncated;
   }
 
   disconnectedCallback() {
+    document.removeEventListener("visibilitychange", this.onReturn);
+    window.removeEventListener("pageshow", this.onReturn);
+    window.removeEventListener("focus", this.onReturn);
     window.removeEventListener("resize", this.onViewport);
     if (window.visualViewport)
       window.visualViewport.removeEventListener("resize", this.onViewport);
@@ -543,6 +567,7 @@ export default class PipelineMobile extends LightningElement {
       this.clearDraft();
       this.stagesOpen = false;
       this.openId = "";
+      this.refreshDeals(); // back at the list: read the deals again, so work done elsewhere shows
     }, SLIDE_OUT_MS);
   }
   /* ----- Chatter: its own screen, slid in over the deal ----- */

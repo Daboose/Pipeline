@@ -220,6 +220,24 @@ describe("c-pipeline-mobile", () => {
     expect(pills).toEqual(["On Hold"]);
   });
 
+  it("reads the deals again, quietly, when the person comes back to the app, so a deal made elsewhere shows", async () => {
+    const el = await make();
+    expect(heads(el)[1]).toBe("Opportunities 2");
+    const extra = { ...DEALS.find((d) => d.id === "Chen"), id: "NewOne" };
+    getDeals.mockResolvedValue({ deals: [...DEALS, extra], truncated: false });
+    const before = getDeals.mock.calls.length;
+    document.dispatchEvent(new CustomEvent("visibilitychange"));
+    await flush();
+    expect(getDeals.mock.calls.length).toBe(before + 1);
+    expect(heads(el)[1]).toBe("Opportunities 3");
+    // the please-wait cover is not used for this
+    expect(root(el).querySelector(".loading")).toBeNull();
+    // a second signal straight after (focus as well as visibility) does not read again
+    window.dispatchEvent(new CustomEvent("focus"));
+    await flush();
+    expect(getDeals.mock.calls.length).toBe(before + 1);
+  });
+
   it("opens and folds a section with a tap", async () => {
     const el = await make();
     const head = root(el).querySelectorAll(".sechead")[1];
