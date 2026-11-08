@@ -106,6 +106,8 @@ private class PipelineLookupControllerTest {
       LastName = 'Zznear',
       PersonMailingCountry = 'Australia',
       PersonMailingCountryCode = 'AU',
+      PersonMailingState = 'New South Wales',
+      PersonMailingStateCode = 'NSW',
       RecordTypeId = physicianRt
     );
     insert doctor;

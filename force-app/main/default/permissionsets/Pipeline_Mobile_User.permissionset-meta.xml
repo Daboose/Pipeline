@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<PermissionSet xmlns="http://soap.sforce.com/2006/04/metadata">
+  <description
+  >Pipeline: shows the Pipeline Mobile tab, so a person can use Pipeline on the Salesforce mobile app. Needs Pipeline User too. Give it only to the people trying the phone app; take it away to switch the phone app off for them. Gives no other access.</description>
+  <hasActivationRequired>false</hasActivationRequired>
+  <label>Pipeline Mobile User</label>
+  <tabSettings>
+    <tab>Pipeline_Mobile</tab>
+    <visibility>Visible</visibility>
+  </tabSettings>
+</PermissionSet>

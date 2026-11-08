@@ -53,6 +53,11 @@ private class PipelineCampaignControllerTest {
       PersonMailingCountryCode = country,
       RecordTypeId = rt(Account.SObjectType, type)
     );
+    if (country == 'AU') {
+      // PROD has an Account rule "State Is Required" for AU that UAT and DEV do not switch on
+      a.PersonMailingState = 'New South Wales';
+      a.PersonMailingStateCode = 'NSW';
+    }
     // an org's duplicate rule must not stop test surgeons being created
     Database.DMLOptions opts = new Database.DMLOptions();
     opts.duplicateRuleHeader.allowSave = true;
