@@ -1,0 +1,548 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Mockup: the Team picker chevrons (version 1)</title>
+    <style>
+      :root,
+      [data-theme="light"] {
+        --page: #e9edf4;
+        --card: #fff;
+        --line: #d5dcea;
+        --edge: #b3bfd6;
+        --text: #1b2640;
+        --muted: #5d6b85;
+        --pipe: #b7791f;
+        --indigo: #4f46e5;
+        --slate: #64748b;
+        --ppanel: #fff;
+        --pbox: #f3f5fa;
+        --pfield: #fff;
+        --pline: #d5dcea;
+        --ptext: #1b2640;
+        --chev: #3b4a6b;
+        --chevhov: #d9e0f3;
+        --chevhovsel: #6f6bf0;
+      }
+      [data-theme="dark"] {
+        --page: #141e2e;
+        --card: #1a2740;
+        --line: #2f4163;
+        --edge: #5b6f93;
+        --text: #e8edf5;
+        --muted: #9fb0cc;
+        --pipe: #fdb827;
+        --indigo: #6366f1;
+        --slate: #475569;
+        --ppanel: #171b24;
+        --pbox: #1e232e;
+        --pfield: #11151c;
+        --pline: #2c3444;
+        --ptext: #e8edf5;
+        --chev: #c7d2fe;
+        --chevhov: #3b4a6e;
+        --chevhovsel: #8184f5;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--page);
+        color: var(--text);
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-size: 15px;
+      }
+      button {
+        font-family: inherit;
+        color: inherit;
+      }
+      .sfnav {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        height: 44px;
+        padding: 0 16px;
+        background: #0b1220;
+        color: #cdd6e6;
+        font-size: 14px;
+      }
+      .sfnav .app {
+        font-weight: 800;
+        letter-spacing: 0.14em;
+      }
+      .sfnav .app b {
+        color: #fdb827;
+      }
+      .sfnav .tab {
+        color: #9fb0cc;
+      }
+      .sfnav .tab.on {
+        color: #fff;
+        border-bottom: 2px solid #6366f1;
+        padding-bottom: 2px;
+      }
+      .sp {
+        flex: 1;
+      }
+      .btn {
+        border: 0;
+        border-radius: 999px;
+        padding: 7px 16px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+        background: var(--slate);
+        color: #fff;
+      }
+      .btn.on {
+        background: var(--indigo);
+      }
+      .about {
+        margin: 14px 16px;
+        padding: 12px 18px;
+        background: var(--card);
+        border: 1px solid var(--edge);
+        border-radius: 12px;
+        line-height: 1.5;
+        max-width: 1100px;
+      }
+      .about summary {
+        cursor: pointer;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        color: var(--pipe);
+      }
+      .about ul {
+        margin: 4px 0 8px;
+        padding-left: 22px;
+      }
+      .tools {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        padding: 0 16px 10px;
+      }
+      .tools .lab {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+      .cols {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 420px));
+        gap: 28px;
+        padding: 0 16px 30px;
+        align-items: start;
+      }
+      h2 {
+        margin: 0 0 8px;
+        font-size: 13px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .panel {
+        background: var(--ppanel);
+        color: var(--ptext);
+        border: 1px solid var(--pline);
+        border-radius: 14px;
+        padding: 14px;
+      }
+      .panel .t {
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        font-size: 13px;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+      }
+      .panel .t b {
+        color: var(--pipe);
+      }
+      .search {
+        width: 100%;
+        height: 36px;
+        border-radius: 999px;
+        border: 1px solid var(--pline);
+        background: var(--pfield);
+        color: var(--ptext);
+        padding: 0 14px;
+        font-size: 15px;
+      }
+      .tree {
+        margin-top: 8px;
+        border: 1px solid var(--pline);
+        border-radius: 10px;
+        background: var(--pfield);
+        max-height: 330px;
+        overflow: auto;
+      }
+      .trow {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 7px 10px;
+        border-bottom: 1px solid var(--pline);
+        font-size: 14px;
+        cursor: pointer;
+      }
+      .trow:last-child {
+        border-bottom: 0;
+      }
+      .trow.sel {
+        background: var(--indigo);
+        color: #fff;
+      }
+      .trow small {
+        margin-left: auto;
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .trow.sel small {
+        color: #fff;
+      }
+      .star {
+        color: var(--pipe);
+      }
+      /* TODAY: the small 18px caret */
+      .today .car {
+        width: 18px;
+        display: inline-flex;
+        justify-content: center;
+      }
+      .today .car i {
+        display: inline-block;
+        width: 7px;
+        height: 7px;
+        border-right: 2px solid currentColor;
+        border-bottom: 2px solid currentColor;
+        transform: rotate(-45deg);
+      }
+      .today .car i.dn {
+        transform: rotate(45deg);
+      }
+      /* PROPOSED: the ROSTRA way. A 44px click area the full height of the row, flush with its left edge, that lights up on hover; a drawn chevron that turns down when open */
+      .new .trow {
+        padding: 0 10px 0 0;
+        min-height: 44px;
+      }
+      .new .chev {
+        flex: 0 0 44px;
+        align-self: stretch;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--chev);
+        border-radius: 0;
+      }
+      .new .chev svg {
+        width: 18px;
+        height: 18px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 2.6;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        transition: transform 0.15s;
+      }
+      .new .chev.open svg {
+        transform: rotate(90deg);
+      }
+      .new .chev.k {
+        cursor: pointer;
+      }
+      .new .chev.k:hover {
+        background: var(--chevhov);
+        color: var(--ptext);
+      }
+      .new .trow.sel .chev {
+        color: #fff;
+      }
+      .new .trow.sel .chev.k:hover {
+        background: var(--chevhovsel);
+      }
+      .log {
+        margin-top: 10px;
+        font-size: 13px;
+        color: var(--muted);
+        min-height: 20px;
+      }
+      .log b {
+        color: var(--ptext);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="sfnav">
+      <span class="app"><b>PIPE</b>LINE</span
+      ><span class="tab on">Pipeline</span
+      ><span class="tab">Opportunities &amp; Risks</span>
+      <span class="sp"></span
+      ><button type="button" class="btn" id="fullbtn">Full screen</button>
+    </div>
+    <details class="about" open>
+      <summary>ABOUT THIS MOCKUP</summary>
+      <p>
+        <b>Version 1, invented data only.</b> Robert's request (2026-11-09): the
+        little chevrons in the Team picker of Change selection are hard to hit.
+        Make the picker work like the ROSTRA team selector: a big click area for
+        the chevron that lights up as you point at it.
+      </p>
+      <ul>
+        <li>
+          <b>Left, Today:</b> the picker as it is now. The chevron is an 18 px
+          caret, with nothing to show where to click.
+        </li>
+        <li>
+          <b>Right, Proposed:</b> the ROSTRA way. The chevron sits in a 44 px
+          wide block, the full height of the row and flush with its left edge.
+          The block lights up when the pointer is over it, and the chevron turns
+          down when the team is open. Rows are 44 px tall.
+        </li>
+        <li>
+          <b>Try it:</b> (1) click chevrons on both sides, miss a little to the
+          left and right and compare; (2) click a team's name to pick it (it
+          turns indigo); (3) type in the search box to filter; (4) switch Light
+          and Dark above. The line under each panel counts your chevron clicks
+          and row picks.
+        </li>
+        <li>
+          <b>Not shown yet:</b> the rest of Change selection (owner, country,
+          "Include teams below"). Only the tree changes; picking, searching and
+          "My team" work as they do today.
+        </li>
+      </ul>
+    </details>
+    <div class="tools">
+      <span class="lab">Theme</span>
+      <button type="button" class="btn" data-t="light">Light</button>
+      <button type="button" class="btn" data-t="dark">Dark</button>
+    </div>
+    <div class="cols">
+      <div>
+        <h2>Today</h2>
+        <div class="panel today" id="p-today">
+          <div class="t"><b>TEAM</b></div>
+          <input
+            class="search"
+            placeholder="Search teams or managers…"
+            data-q="today"
+          />
+          <div class="tree" data-tree="today"></div>
+          <div class="log" data-log="today"></div>
+        </div>
+      </div>
+      <div>
+        <h2>Proposed</h2>
+        <div class="panel new" id="p-new">
+          <div class="t"><b>TEAM</b></div>
+          <input
+            class="search"
+            placeholder="Search teams or managers…"
+            data-q="new"
+          />
+          <div class="tree" data-tree="new"></div>
+          <div class="log" data-log="new"></div>
+        </div>
+      </div>
+    </div>
+    <script>
+      var TEAMS = [
+        {
+          id: "anz",
+          name: "Australia and New Zealand",
+          mgr: "Dana Whitfield",
+          p: null
+        },
+        { id: "au", name: "Australia", mgr: "Lee Carmichael", p: "anz" },
+        { id: "nsw", name: "NSW and ACT", mgr: "Priya Raman", p: "au" },
+        { id: "nswh", name: "NSW Hip", mgr: "Tom Ashby", p: "nsw" },
+        { id: "nswk", name: "NSW Knee", mgr: "Jo Sutherland", p: "nsw" },
+        {
+          id: "vic",
+          name: "Victoria and Tasmania",
+          mgr: "Sam Okafor",
+          p: "au"
+        },
+        { id: "vich", name: "Victoria Hip", mgr: "Mia Chen", p: "vic" },
+        { id: "wa", name: "Western Australia", mgr: "Ben Harlow", p: "au" },
+        { id: "nz", name: "New Zealand", mgr: "Aroha Pene", p: "anz" },
+        { id: "nzn", name: "North Island", mgr: "Kiri Walker", p: "nz" },
+        { id: "nzs", name: "South Island", mgr: "Hemi Ngata", p: "nz" },
+        {
+          id: "ext",
+          name: "Extremities Specialists",
+          mgr: "Rhys Dalton",
+          p: null
+        },
+        { id: "cmft", name: "CMFT", mgr: "Nina Falk", p: null }
+      ];
+      var CHEV =
+        '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"></path></svg>';
+      var state = {
+        today: {
+          open: { anz: true, au: true },
+          sel: "nsw",
+          q: "",
+          chev: 0,
+          pick: 0
+        },
+        new: {
+          open: { anz: true, au: true },
+          sel: "nsw",
+          q: "",
+          chev: 0,
+          pick: 0
+        }
+      };
+      function kids(id) {
+        return TEAMS.filter(function (t) {
+          return t.p === id;
+        });
+      }
+      function rows(which) {
+        var s = state[which],
+          out = [],
+          q = s.q.trim().toLowerCase();
+        out.push({
+          id: "mine",
+          name: "My team",
+          sub: "",
+          star: true,
+          depth: 0,
+          kids: false
+        });
+        if (q) {
+          TEAMS.forEach(function (t) {
+            if ((t.name + " " + t.mgr).toLowerCase().indexOf(q) > -1)
+              out.push({
+                id: t.id,
+                name: t.name,
+                sub: t.mgr,
+                depth: 0,
+                kids: false
+              });
+          });
+          return out;
+        }
+        (function walk(list, d) {
+          list.forEach(function (t) {
+            var k = kids(t.id);
+            out.push({
+              id: t.id,
+              name: t.name,
+              sub: t.mgr,
+              depth: d,
+              kids: k.length > 0,
+              open: !!s.open[t.id]
+            });
+            if (k.length && s.open[t.id]) walk(k, d + 1);
+          });
+        })(
+          TEAMS.filter(function (t) {
+            return !t.p;
+          }),
+          0
+        );
+        return out;
+      }
+      function esc(x) {
+        return String(x).replace(/&/g, "&amp;").replace(/</g, "&lt;");
+      }
+      function draw(which) {
+        var s = state[which],
+          h = "";
+        rows(which).forEach(function (r) {
+          var sel = s.sel === r.id ? " sel" : "";
+          h +=
+            '<div class="trow' +
+            sel +
+            '" data-id="' +
+            r.id +
+            '" style="padding-left:' +
+            (which === "today" ? 10 + r.depth * 18 : r.depth * 22) +
+            'px">';
+          if (which === "today") {
+            h +=
+              '<span class="car"' +
+              (r.kids ? ' data-car="' + r.id + '"' : "") +
+              ">" +
+              (r.kids ? '<i class="' + (r.open ? "dn" : "") + '"></i>' : "") +
+              "</span>";
+          } else {
+            h +=
+              '<span class="chev' +
+              (r.kids ? " k" : "") +
+              (r.open ? " open" : "") +
+              '"' +
+              (r.kids ? ' data-car="' + r.id + '"' : "") +
+              ">" +
+              (r.kids ? CHEV : "") +
+              "</span>";
+          }
+          h +=
+            (r.star
+              ? '<span class="star">★</span><b>' + esc(r.name) + "</b>"
+              : "<span>" + esc(r.name) + "</span>") +
+            (r.sub ? "<small>" + esc(r.sub) + "</small>" : "");
+          h += "</div>";
+        });
+        document.querySelector('[data-tree="' + which + '"]').innerHTML = h;
+        document.querySelector('[data-log="' + which + '"]').innerHTML =
+          "Chevron clicks: <b>" +
+          s.chev +
+          "</b> · Team picks: <b>" +
+          s.pick +
+          "</b>";
+      }
+      document.addEventListener("click", function (e) {
+        var tree = e.target.closest("[data-tree]");
+        if (tree) {
+          var which = tree.dataset.tree,
+            s = state[which];
+          var row = e.target.closest(".trow");
+          if (!row) return;
+          var car = e.target.closest("[data-car]");
+          if (car) {
+            s.chev++;
+            s.open[car.dataset.car] = !s.open[car.dataset.car];
+          } else {
+            s.pick++;
+            s.sel = row.dataset.id;
+          }
+          draw(which);
+          return;
+        }
+        var b = e.target.closest("[data-t]");
+        if (b) setTheme(b.dataset.t);
+        if (
+          e.target.id === "fullbtn" &&
+          document.documentElement.requestFullscreen
+        )
+          document.documentElement.requestFullscreen();
+      });
+      document.addEventListener("input", function (e) {
+        var w = e.target.dataset && e.target.dataset.q;
+        if (w) {
+          state[w].q = e.target.value;
+          draw(w);
+        }
+      });
+      function setTheme(t) {
+        document.documentElement.setAttribute("data-theme", t);
+        document.querySelectorAll("[data-t]").forEach(function (x) {
+          x.classList.toggle("on", x.dataset.t === t);
+        });
+      }
+      draw("today");
+      draw("new");
+      setTheme(location.hash === "#dark" ? "dark" : "light");
+    </script>
+  </body>
+</html>

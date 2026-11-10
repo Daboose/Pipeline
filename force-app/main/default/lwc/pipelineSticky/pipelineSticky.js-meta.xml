@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+  <apiVersion>68.0</apiVersion>
+  <description
+  >Pipeline: shared helper that keeps a list's heading bar and column names fixed under the top bar while the page scrolls past that list. Holds no screen of its own; used by the Team table and the Pipeline lists.</description>
+  <isExposed>false</isExposed>
+</LightningComponentBundle>

@@ -126,6 +126,8 @@
                         <template lwc:else
                           ><span class={c.textCls}>{c.text}</span
                           ><span lwc:if={c.star} class="star">&nbsp;★</span
+                          ><span lwc:if={c.stateStar} class="sstar"
+                            >&nbsp;★</span
                           ><span lwc:if={c.campaign} class="cstar"
                             >&nbsp;★</span
                           ></template
@@ -149,6 +151,8 @@
                         <template lwc:else
                           >{c.text}<span lwc:if={c.star} class="star"
                             >&nbsp;★</span
+                          ><span lwc:if={c.stateStar} class="sstar"
+                            >&nbsp;★</span
                           ><span lwc:if={c.campaign} class="cstar"
                             >&nbsp;★</span
                           ></template
@@ -162,6 +166,9 @@
             <div class="more" lwc:if={hasMore}>
               <button type="button" class="btn sec" onclick={handleMore}>
                 Show {moreCount} more ({remaining} left)
+              </button>
+              <button type="button" class="btn sec" onclick={handleShowAll}>
+                Show All
               </button>
             </div>
           </div>

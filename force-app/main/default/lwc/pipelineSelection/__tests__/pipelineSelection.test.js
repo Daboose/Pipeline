@@ -334,4 +334,87 @@ describe("c-pipeline-selection", () => {
       ).toContain("Old Forum");
     });
   });
+
+  describe("the divider between the Team column and the rest", () => {
+    const sizes = (el, start, total) => {
+      const root = el.shadowRoot;
+      root.querySelector(".cols > .stack").getBoundingClientRect = () => ({
+        width: start
+      });
+      Object.defineProperty(root.querySelector(".cols"), "clientWidth", {
+        configurable: true,
+        value: total
+      });
+    };
+    const colsStyle = (el) =>
+      el.shadowRoot.querySelector(".cols").style.getPropertyValue("--leftw");
+    const keyOn = (el, key) => {
+      el.shadowRoot
+        .querySelector(".divider")
+        .dispatchEvent(new KeyboardEvent("keydown", { key, bubbles: true }));
+    };
+
+    it("is there for a manager and not for a rep", async () => {
+      const mgr = make({});
+      await Promise.resolve();
+      expect(mgr.shadowRoot.querySelector(".divider")).not.toBeNull();
+      const rep = make({ isManager: false });
+      await Promise.resolve();
+      expect(rep.shadowRoot.querySelector(".divider")).toBeNull();
+    });
+
+    it("widens the Team column, never past halfway, and snaps back at the start", async () => {
+      const el = make({});
+      await Promise.resolve();
+      sizes(el, 380, 1000);
+      expect(colsStyle(el)).toBe("");
+      keyOn(el, "ArrowRight");
+      expect(colsStyle(el)).toBe("400px");
+      for (let i = 0; i < 20; i++) {
+        sizes(
+          el,
+          parseInt(colsStyle(el).replace(/\D/g, "") || "380", 10),
+          1000
+        );
+        keyOn(el, "ArrowRight");
+      }
+      expect(colsStyle(el)).toBe("500px"); // half of 1000
+      keyOn(el, "Home");
+      expect(colsStyle(el)).toBe("");
+    });
+
+    it("follows a drag without redrawing the screen, and lets go at the end", async () => {
+      const el = make({});
+      await Promise.resolve();
+      sizes(el, 380, 1000);
+      const div = el.shadowRoot.querySelector(".divider");
+      const tree = el.shadowRoot.querySelector(".tree .trow");
+      const fire = (target, type, x) =>
+        target.dispatchEvent(
+          new MouseEvent(type, { clientX: x, bubbles: true, cancelable: true })
+        );
+      fire(div, "pointerdown", 400);
+      expect(div.classList.contains("drag")).toBe(true);
+      // the move and the release are heard on the window, wherever the pointer is
+      fire(window, "pointermove", 460);
+      expect(colsStyle(el)).toBe("440px");
+      fire(window, "pointermove", 900);
+      expect(colsStyle(el)).toBe("500px"); // stops at half
+      fire(window, "pointerup", 900);
+      expect(div.classList.contains("drag")).toBe(false);
+      fire(window, "pointermove", 420); // after the release nothing follows
+      expect(colsStyle(el)).toBe("500px");
+      await Promise.resolve();
+      // the same rows are still on the page: nothing was redrawn
+      expect(el.shadowRoot.querySelector(".tree .trow")).toBe(tree);
+    });
+
+    it("never goes narrower than where it starts", async () => {
+      const el = make({});
+      await Promise.resolve();
+      sizes(el, 380, 1000);
+      keyOn(el, "ArrowLeft");
+      expect(colsStyle(el)).toBe("");
+    });
+  });
 });

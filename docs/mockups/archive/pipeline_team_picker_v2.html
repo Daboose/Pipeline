@@ -1,0 +1,518 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Mockup: the Team picker chevrons (version 2)</title>
+    <style>
+      :root,
+      [data-theme="light"] {
+        --page: #e9edf4;
+        --card: #fff;
+        --edge: #b3bfd6;
+        --text: #1b2640;
+        --muted: #5d6b85;
+        --pipe: #b7791f;
+        --indigo: #4f46e5;
+        --slate: #64748b;
+        --ppanel: #fff;
+        --pfield: #fff;
+        --pline: #d5dcea;
+        --ptext: #1b2640;
+        --rowhov: rgba(79, 70, 229, 0.08);
+      }
+      [data-theme="dark"] {
+        --page: #141e2e;
+        --card: #1a2740;
+        --edge: #5b6f93;
+        --text: #e8edf5;
+        --muted: #9fb0cc;
+        --pipe: #fdb827;
+        --indigo: #6366f1;
+        --slate: #475569;
+        --ppanel: #171b24;
+        --pfield: #11151c;
+        --pline: #2c3444;
+        --ptext: #e8edf5;
+        --rowhov: rgba(99, 102, 241, 0.14);
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--page);
+        color: var(--text);
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-size: 15px;
+      }
+      button {
+        font-family: inherit;
+        color: inherit;
+      }
+      .sfnav {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        height: 44px;
+        padding: 0 16px;
+        background: #0b1220;
+        color: #cdd6e6;
+        font-size: 14px;
+      }
+      .sfnav .app {
+        font-weight: 800;
+        letter-spacing: 0.14em;
+      }
+      .sfnav .app b {
+        color: #fdb827;
+      }
+      .sfnav .tab {
+        color: #9fb0cc;
+      }
+      .sfnav .tab.on {
+        color: #fff;
+        border-bottom: 2px solid #6366f1;
+        padding-bottom: 2px;
+      }
+      .sp {
+        flex: 1;
+      }
+      .btn {
+        border: 0;
+        border-radius: 999px;
+        padding: 7px 16px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+        background: var(--slate);
+        color: #fff;
+      }
+      .btn.on {
+        background: var(--indigo);
+      }
+      .about {
+        margin: 14px 16px;
+        padding: 12px 18px;
+        background: var(--card);
+        border: 1px solid var(--edge);
+        border-radius: 12px;
+        line-height: 1.5;
+        max-width: 1100px;
+      }
+      .about summary {
+        cursor: pointer;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        color: var(--pipe);
+      }
+      .about ul {
+        margin: 4px 0 8px;
+        padding-left: 22px;
+      }
+      .tools {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        padding: 0 16px 10px;
+      }
+      .tools .lab {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+      .cols {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 430px));
+        gap: 28px;
+        padding: 0 16px 30px;
+        align-items: start;
+      }
+      h2 {
+        margin: 0 0 8px;
+        font-size: 13px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .panel {
+        background: var(--ppanel);
+        color: var(--ptext);
+        border: 1px solid var(--pline);
+        border-radius: 14px;
+        padding: 14px;
+      }
+      .panel .t {
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        font-size: 13px;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+        color: var(--pipe);
+      }
+      .search {
+        width: 100%;
+        height: 36px;
+        border-radius: 999px;
+        border: 1px solid var(--pline);
+        background: var(--pfield);
+        color: var(--ptext);
+        padding: 0 14px;
+        font-size: 15px;
+      }
+      .log {
+        margin-top: 10px;
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .log b {
+        color: var(--ptext);
+      }
+      /* TODAY (as deployed before 0.103) */
+      .today .trow {
+        padding: 7px 10px;
+        min-height: 0;
+      }
+      .today .car {
+        flex: 0 0 18px;
+        width: 18px;
+        display: inline-flex;
+        justify-content: center;
+        align-self: auto;
+      }
+      .today .car i {
+        display: inline-block;
+        width: 7px;
+        height: 7px;
+        border-right: 2px solid currentColor;
+        border-bottom: 2px solid currentColor;
+        transform: rotate(-45deg);
+      }
+      .today .car i.dn {
+        transform: rotate(45deg);
+      }
+      /* PROPOSED: the real stylesheet of the component, copied in below */
+      .tree {
+        margin-top: 6px;
+        border: 1px solid var(--pline);
+        border-radius: 10px;
+        background: var(--pfield);
+        max-height: 300px;
+        overflow: auto;
+      }
+      .trow {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 0 10px 0 0;
+        min-height: 44px;
+        border-bottom: 1px solid var(--pline);
+        font-size: 14px;
+        cursor: pointer;
+      }
+      .trow:last-child {
+        border-bottom: 0;
+      }
+      .trow.sel {
+        background: var(--indigo);
+        color: #fff;
+      }
+      .trow.none {
+        color: var(--muted);
+        cursor: default;
+      }
+      .trow small {
+        margin-left: auto;
+        color: var(--muted);
+        font-size: 12px;
+      }
+      /* a search result: the team name across the top, its path under it, in one column */
+      .trow.stacked {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 2px;
+        padding: 7px 10px;
+      }
+      .trow.none {
+        padding: 12px 10px;
+      }
+      .trow.stacked .car {
+        display: none;
+      }
+      .trow.stacked small {
+        margin-left: 0;
+        font-size: 13px;
+        overflow-wrap: anywhere;
+      }
+      .trow.sel small {
+        color: #fff;
+      }
+      /* the fold button (the ROSTRA way, Robert 2026-11-09): a 44 px block the full height of the row, flush with its left edge, that lights up under the pointer; the drawn chevron turns down when the team is open. A team with nothing below it keeps an empty block so the names line up. */
+      .car {
+        flex: 0 0 44px;
+        align-self: stretch;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .car svg {
+        width: 18px;
+        height: 18px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 2.6;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        transition: transform 0.15s;
+      }
+      .car.open svg {
+        transform: rotate(90deg);
+      }
+      .car.k {
+        cursor: pointer;
+      }
+      @media (hover: hover) {
+        .car.k:hover {
+          background: rgba(129, 140, 248, 0.28);
+        }
+        .trow.sel .car.k:hover {
+          background: rgba(255, 255, 255, 0.25);
+        }
+      }
+      .star {
+        color: var(--pipe);
+      }
+
+      /* NEW in this version: the whole row tints a little under the pointer, as in ROSTRA */
+      @media (hover: hover) {
+        .new .trow:hover:not(.sel):not(.none) {
+          background: var(--rowhov);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="sfnav">
+      <span class="app"><b>PIPE</b>LINE</span
+      ><span class="tab on">Pipeline</span
+      ><span class="tab">Opportunities &amp; Risks</span><span class="sp"></span
+      ><button type="button" class="btn" id="fullbtn">Full screen</button>
+    </div>
+    <details class="about" open>
+      <summary>ABOUT THIS MOCKUP</summary>
+      <p>
+        <b>Version 2, invented data only.</b> Robert, 2026-11-09: in UAT 0.103
+        the chevron's hover area was a tiny square, nothing like ROSTRA's.
+        Cause: a mistake in my stylesheet edit, so the big block applied to
+        search results only, and my version 1 mockup had its own CSS, so it did
+        not show the real thing.
+        <b>This version uses the real stylesheet of the component</b>, copied
+        in, so it shows what would be built.
+      </p>
+      <ul>
+        <li>
+          <b>Left, Today (the small caret):</b> how it looked before 0.103.
+        </li>
+        <li>
+          <b>Right, Proposed:</b> the ROSTRA way. A block 44 px wide and the
+          full height of the row, flush with the row's left edge, that lights up
+          when you point at it; the whole row also tints a little (new in this
+          version, as in ROSTRA); the chevron turns down when open. Team names
+          are like your screenshot, but invented.
+        </li>
+        <li>
+          <b>Try it:</b> (1) point at the chevrons on both sides and compare the
+          hover area with ROSTRA; (2) click a chevron to open or close; (3)
+          click a name to pick it; (4) type in the search; (5) switch Light and
+          Dark.
+        </li>
+        <li><b>Not shown yet:</b> the rest of Change selection.</li>
+      </ul>
+    </details>
+    <div class="tools">
+      <span class="lab">Theme</span
+      ><button type="button" class="btn" data-t="light">Light</button
+      ><button type="button" class="btn" data-t="dark">Dark</button>
+    </div>
+    <div class="cols">
+      <div>
+        <h2>Today</h2>
+        <div class="panel today">
+          <div class="t">Team</div>
+          <input
+            class="search"
+            placeholder="Search teams or managers…"
+            data-q="today"
+          />
+          <div class="tree" data-tree="today"></div>
+          <div class="log" data-log="today"></div>
+        </div>
+      </div>
+      <div>
+        <h2>Proposed</h2>
+        <div class="panel new">
+          <div class="t">Team</div>
+          <input
+            class="search"
+            placeholder="Search teams or managers…"
+            data-q="new"
+          />
+          <div class="tree" data-tree="new"></div>
+          <div class="log" data-log="new"></div>
+        </div>
+      </div>
+    </div>
+    <script>
+      var TEAMS = [
+        {
+          id: "set",
+          name: "Shayne Engelbrecht SENIOR SALES MGR S.E.T (AU)",
+          p: null
+        },
+        { id: "anz", name: "Warren Ballinger PRESIDENT (ANZ)", p: null },
+        { id: "ops", name: "Mark Mottram COMMS OPS DIRECTOR (ANZ)", p: "anz" },
+        { id: "au", name: "Ray Vercoe SALES DIRECTOR (AU)", p: "anz" },
+        { id: "ts", name: "TS Surgical (TAS)", p: "au" },
+        { id: "wa", name: "Brenton Buller STATE MGR (WA)", p: "au" },
+        { id: "nsw", name: "Darren Agius STATE MGR (NSW/ACT)", p: "au" },
+        { id: "vic", name: "Chris Doyle STATE MGR (VIC)", p: "au" },
+        { id: "ops2", name: "Pat Lowe OPS MANAGER (ANZ)", p: "ops" }
+      ];
+      var CH =
+        '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"></path></svg>';
+      var st = {
+        today: { open: { anz: true, au: true }, sel: "wa", q: "", c: 0, k: 0 },
+        new: { open: { anz: true, au: true }, sel: "wa", q: "", c: 0, k: 0 }
+      };
+      function kids(id) {
+        return TEAMS.filter(function (t) {
+          return t.p === id;
+        });
+      }
+      function rows(w) {
+        var s = st[w],
+          o = [],
+          q = s.q.trim().toLowerCase();
+        o.push({ id: "mine", name: "My team", star: true, d: 0 });
+        if (q) {
+          TEAMS.forEach(function (t) {
+            if (t.name.toLowerCase().indexOf(q) > -1)
+              o.push({ id: t.id, name: t.name, d: 0, stk: true });
+          });
+          return o;
+        }
+        (function walk(l, d) {
+          l.forEach(function (t) {
+            var k = kids(t.id);
+            o.push({
+              id: t.id,
+              name: t.name,
+              d: d,
+              kids: k.length > 0,
+              open: !!s.open[t.id]
+            });
+            if (k.length && s.open[t.id]) walk(k, d + 1);
+          });
+        })(
+          TEAMS.filter(function (t) {
+            return !t.p;
+          }),
+          0
+        );
+        return o;
+      }
+      function draw(w) {
+        var s = st[w],
+          h = "";
+        rows(w).forEach(function (r) {
+          var cls =
+            "trow" + (r.stk ? " stacked" : "") + (s.sel === r.id ? " sel" : "");
+          var pad = r.stk
+            ? ""
+            : w === "today"
+              ? "padding-left:" + (10 + r.d * 18) + "px"
+              : "padding-left:" + r.d * 22 + "px";
+          h +=
+            '<div class="' +
+            cls +
+            '" data-id="' +
+            r.id +
+            '" style="' +
+            pad +
+            '">';
+          if (w === "today")
+            h +=
+              '<span class="car"' +
+              (r.kids ? ' data-car="' + r.id + '"' : "") +
+              ">" +
+              (r.kids ? '<i class="' + (r.open ? "dn" : "") + '"></i>' : "") +
+              "</span>";
+          else
+            h +=
+              '<span class="car' +
+              (r.kids ? " k" : "") +
+              (r.open ? " open" : "") +
+              '"' +
+              (r.kids ? ' data-car="' + r.id + '"' : "") +
+              ">" +
+              (r.kids ? CH : "") +
+              "</span>";
+          h +=
+            (r.star
+              ? '<span class="star">★</span><b>' + r.name + "</b>"
+              : "<span>" + r.name + "</span>") + "</div>";
+        });
+        document.querySelector('[data-tree="' + w + '"]').innerHTML = h;
+        document.querySelector('[data-log="' + w + '"]').innerHTML =
+          "Chevron clicks: <b>" + s.c + "</b> · Team picks: <b>" + s.k + "</b>";
+      }
+      document.addEventListener("click", function (e) {
+        var tr = e.target.closest("[data-tree]");
+        if (tr) {
+          var w = tr.dataset.tree,
+            s = st[w],
+            row = e.target.closest(".trow");
+          if (!row) return;
+          var car = e.target.closest("[data-car]");
+          if (car) {
+            s.c++;
+            s.open[car.dataset.car] = !s.open[car.dataset.car];
+          } else {
+            s.k++;
+            s.sel = row.dataset.id;
+          }
+          draw(w);
+          return;
+        }
+        var b = e.target.closest("[data-t]");
+        if (b) setTheme(b.dataset.t);
+        if (
+          e.target.id === "fullbtn" &&
+          document.documentElement.requestFullscreen
+        )
+          document.documentElement.requestFullscreen();
+      });
+      document.addEventListener("input", function (e) {
+        var w = e.target.dataset && e.target.dataset.q;
+        if (w) {
+          st[w].q = e.target.value;
+          draw(w);
+        }
+      });
+      function setTheme(t) {
+        document.documentElement.setAttribute("data-theme", t);
+        document.querySelectorAll("[data-t]").forEach(function (x) {
+          x.classList.toggle("on", x.dataset.t === t);
+        });
+      }
+      draw("today");
+      draw("new");
+      setTheme(location.hash === "#light" ? "light" : "dark");
+    </script>
+  </body>
+</html>

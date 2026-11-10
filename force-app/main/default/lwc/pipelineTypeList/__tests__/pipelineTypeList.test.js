@@ -104,6 +104,28 @@ describe("c-pipeline-type-list", () => {
     expect(stars[0].textContent).toContain("★");
   });
 
+  it("marks a state priority deal with a violet star beside the surgeon, after the rep star, in an opportunity list and in a ROSA list on its own column", async () => {
+    const el = make({
+      kind: "opp",
+      deals: [
+        deal("1", "Ann", { statePriority: true }),
+        deal("2", "Ann", { statePriority: true, repPriority: true }),
+        deal("3", "Ann", {})
+      ]
+    });
+    await Promise.resolve();
+    expect(el.shadowRoot.querySelectorAll("span.sstar").length).toBe(2);
+    const both = el.shadowRoot.querySelectorAll("tbody tr")[1];
+    const order = Array.from(
+      both.querySelectorAll("span.star, span.sstar")
+    ).map((s) => s.className);
+    expect(order).toEqual(["star", "sstar"]);
+    el.kind = "rosa";
+    el.deals = [deal("4", "Ann", { kind: "rosa", statePriority: true })];
+    await Promise.resolve();
+    expect(el.shadowRoot.querySelectorAll("span.sstar").length).toBe(1);
+  });
+
   it("shows only 25 rows and offers more", async () => {
     const many = Array.from({ length: 30 }, (_, i) => deal("d" + i, "Ann"));
     const el = make({ kind: "opp", deals: many });
@@ -112,6 +134,21 @@ describe("c-pipeline-type-list", () => {
     expect(el.shadowRoot.querySelector(".more button").textContent).toContain(
       "5 left"
     );
+  });
+
+  it("adds 50 at a time, and Show All shows every deal", async () => {
+    const many = Array.from({ length: 120 }, (_, i) => deal("d" + i, "Ann"));
+    const el = make({ kind: "opp", deals: many });
+    await Promise.resolve();
+    const buttons = () => el.shadowRoot.querySelectorAll(".more button");
+    expect(buttons()[0].textContent).toContain("Show 50 more");
+    buttons()[0].click();
+    await Promise.resolve();
+    expect(rows(el).length).toBe(75);
+    buttons()[1].click();
+    await Promise.resolve();
+    expect(rows(el).length).toBe(120);
+    expect(el.shadowRoot.querySelector(".more")).toBeNull();
   });
 
   it("says so when nothing matches", async () => {

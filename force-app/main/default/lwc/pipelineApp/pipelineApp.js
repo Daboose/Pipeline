@@ -45,7 +45,7 @@ function stableJson(value) {
  * Usages, Surgeries and Chatter, saved filters); 0.10 follows the final mockup: a filter bar with chips and a Change
  * selection panel with Apply, in place of the always-visible Choose Your Data panel.
  */
-const PIPELINE_VERSION = "0.100";
+const PIPELINE_VERSION = "0.111";
 
 /** The colours a person can choose for the headings (Robert, 2026-11-02); the look of each is in pipelineApp.css. */
 const HEAD_COLOURS = [
@@ -251,7 +251,23 @@ export default class PipelineApp extends LightningElement {
       if (!this.choicesReady && this.ctxReady) this.useFallbackStages();
     }, 6000);
   }
+  renderedCallback() {
+    this.measureTopBar();
+  }
+  /** The headings that stay at the top sit just under the top bar, so its height is measured (it can wrap on a narrow screen) and given to every list as --stick. */
+  measureTopBar() {
+    const top = this.template.querySelector(".top");
+    const root = this.template.querySelector(".root");
+    if (!top || !root) return;
+    root.style.setProperty("--stick", `${top.offsetHeight}px`);
+    if (!this.topObserver && typeof ResizeObserver !== "undefined") {
+      this.topObserver = new ResizeObserver(() => this.measureTopBar());
+      this.topObserver.observe(top);
+    }
+  }
   disconnectedCallback() {
+    if (this.topObserver) this.topObserver.disconnect();
+    this.topObserver = null;
     document.removeEventListener("fullscreenchange", this.onFullScreenChange);
     clearTimeout(this.panelTimer);
     clearTimeout(this.flyTimer);
@@ -658,7 +674,7 @@ export default class PipelineApp extends LightningElement {
       deals: deals.filter((d) => d.kind === k),
       columns: this.settings.cols[k],
       widths: this.settings.widths[k],
-      listOpen: false
+      listOpen: this.isRep // an end user has a handful of deals, so their lists start open; a manager's start folded (Robert, 2026-11-09)
     }));
   }
   get filterStatus() {

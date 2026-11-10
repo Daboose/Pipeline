@@ -1,4 +1,5 @@
 import { LightningElement, api } from "lwc";
+import { StickyHeads } from "c/pipelineSticky";
 import { beginColumnDrag } from "c/pipelineColumnResize";
 import {
   formatMoney,
@@ -15,7 +16,8 @@ import {
   dealStatus
 } from "c/pipelineFormat";
 
-const PAGE = 25;
+const PAGE = 25; // rows shown to start with
+const STEP = 50; // rows added by each "Show more" (Robert, 2026-11-09)
 
 /**
  * The columns of each list: [id, heading, how to sort, number?, shown by default].
@@ -95,8 +97,14 @@ export default class PipelineTypeList extends LightningElement {
     this.bodyMounted = open;
     this.bodyOn = open;
   }
+  renderedCallback() {
+    if (!this.sticky) this.sticky = new StickyHeads(this.template);
+    this.sticky.refresh();
+  }
   disconnectedCallback() {
     clearTimeout(this.foldTimer);
+    if (this.sticky) this.sticky.stop();
+    this.sticky = null;
   }
   get bodyCls() {
     return this.bodyOn ? "fold on" : "fold";
@@ -409,7 +417,8 @@ export default class PipelineTypeList extends LightningElement {
       title: "",
       tag: false,
       tagCls: "",
-      star: false
+      star: false,
+      stateStar: false
     };
     switch (id) {
       case "hcp":
@@ -423,6 +432,9 @@ export default class PipelineTypeList extends LightningElement {
           textCls: id === "facility" && !this.hasWidths ? "clip" : "",
           title: id === "facility" ? text : "",
           star: !!d.repPriority && (id === "hcp") === (this.kind !== "rosa"),
+          // the violet star: a state priority, in the same place as the rep star (Robert, 2026-11-10)
+          stateStar:
+            !!d.statePriority && (id === "hcp") === (this.kind !== "rosa"),
           // the gold star: the deal is in one or more campaigns (beside the surgeon; a ROSA list has no surgeon column)
           campaign: d.campaignCount > 0 && id === "hcp" && this.kind !== "rosa"
         };
@@ -508,10 +520,14 @@ export default class PipelineTypeList extends LightningElement {
     return this.dealCount - this.shown;
   }
   get moreCount() {
-    return Math.min(PAGE, this.remaining);
+    return Math.min(STEP, this.remaining);
   }
   handleMore() {
-    this.shown += PAGE;
+    this.shown += STEP;
+  }
+  /** Show All: every deal in the list at once (Robert, 2026-11-09). */
+  handleShowAll() {
+    this.shown = this.dealCount;
   }
   handleSort(event) {
     const id = event.currentTarget.dataset.id;
@@ -547,16 +563,19 @@ export default class PipelineTypeList extends LightningElement {
     const ids = (this.grouped ? ["__rep"] : []).concat(
       this.visibleDefs.map((c) => c[0])
     );
-    return ids.map((id) => ({
-      id,
-      px: this.widthMap[id] || 140,
-      style: `width:${this.widthMap[id] || 140}px`
+    const cols = ids.map((id) => ({ id, px: this.widthMap[id] || 140 }));
+    const total = cols.reduce((a, c) => a + c.px, 0);
+    // each column is a share of the table (a percentage), and the table is never wider than its box (see tableStyle), so saved widths that
+    // add up to more than the box shrink together instead of making the table scroll sideways, which would stop the column names locking
+    return cols.map((c) => ({
+      ...c,
+      style: `width:${((c.px / total) * 100).toFixed(4)}%`
     }));
   }
   get tableStyle() {
     if (!this.hasWidths) return "";
     const total = this.colWidths.reduce((a, c) => a + c.px, 0);
-    return `table-layout:fixed;width:${total}px`;
+    return `table-layout:fixed;width:min(${total}px,100%)`;
   }
   handleResizeStart(event) {
     const id = event.currentTarget.dataset.id;

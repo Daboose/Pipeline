@@ -32,6 +32,7 @@
   --pfield: #11151c;
   --pline: #2c3444;
   --gold: #ffc400;
+  --state: #a78bfa;
   position: relative;
   height: 100%;
   overflow: auto;
@@ -43,6 +44,7 @@
 }
 .root[data-theme="light"] {
   --gold: #e0a100;
+  --state: #7c3aed;
   --page: #e9edf4;
   --bg: #f4f6fa;
   --panel: #ffffff;
@@ -133,6 +135,9 @@
 /* the rep priority star in the legend takes the heading colour, like the stars in the lists */
 .legend .star {
   color: var(--head);
+}
+.legend .sstar {
+  color: var(--state);
 }
 .legend .cstar {
   color: var(--gold);

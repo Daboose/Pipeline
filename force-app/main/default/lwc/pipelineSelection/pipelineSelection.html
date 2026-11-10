@@ -87,12 +87,14 @@
                   onclick={handlePickTeam}
                 >
                   <span
-                    class="car"
+                    class={r.caretCls}
                     data-car={r.id}
                     lwc:if={r.showCar}
                     onclick={handleCaret}
                   >
-                    <span class={r.caretCls}></span>
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M9 5l7 7-7 7"></path>
+                    </svg>
                   </span>
                   <span class="car" lwc:else></span>
                   <span class="star" lwc:if={r.star}>★</span>
@@ -160,6 +162,21 @@
             </div>
           </div>
         </div>
+
+        <template lwc:if={isManager}>
+          <div
+            class="divider"
+            role="separator"
+            aria-orientation="vertical"
+            aria-label="Drag to make the Team column wider"
+            tabindex="0"
+            onpointerdown={handleDivDown}
+            ondblclick={handleDivReset}
+            onkeydown={handleDivKey}
+          >
+            <i></i>
+          </div>
+        </template>
 
         <div class="stack">
           <div class="row2">

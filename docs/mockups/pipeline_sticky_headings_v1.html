@@ -1,0 +1,1640 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Mockup: Headings that stay at the top (version 1)</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        height: 100%;
+      }
+      body {
+        margin: 0;
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-size: 15px;
+        overflow: hidden;
+      }
+      /* Pipeline shared look: imported by every Pipeline screen with  
+   The colours are NOT set here: they are set once on the app's root element (dark or light) and inherited, so one switch changes everything. */
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      button {
+        font-family: inherit;
+      }
+
+      .btn {
+        border: 1px solid transparent;
+        border-radius: 999px;
+        background: var(--indigo);
+        color: #fff;
+        font-weight: 800;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        padding: 9px 18px;
+        cursor: pointer;
+      }
+      .btn.sec {
+        background: transparent;
+        border-color: var(--indigo2);
+        color: var(--indigo2);
+      }
+      .btn.ghost {
+        background: transparent;
+        color: var(--indigo2);
+        padding-left: 10px;
+        padding-right: 10px;
+      }
+      .btn:focus-visible,
+      .pill:focus-visible,
+      .rbtn:focus-visible {
+        outline: 2px solid var(--indigo2);
+        outline-offset: 2px;
+      }
+
+      /* round icon buttons (chevrons, close) */
+      .rbtn {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        border: 1.5px solid var(--edge);
+        background: transparent;
+        color: var(--text);
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: none;
+      }
+      .chev {
+        width: 9px;
+        height: 9px;
+        border-right: 2.5px solid currentColor;
+        border-bottom: 2.5px solid currentColor;
+        transform: rotate(45deg);
+        margin-top: -3px;
+      }
+      .chev.up {
+        transform: rotate(-135deg);
+        margin-top: 3px;
+      }
+
+      .pill {
+        border: 1px solid var(--pline);
+        background: var(--pfield);
+        color: var(--text);
+        border-radius: 999px;
+        padding: 6px 13px;
+        font-size: 14px;
+        cursor: pointer;
+      }
+      .pill.on {
+        background: var(--indigo);
+        border-color: var(--indigo);
+        color: #fff;
+      }
+
+      select.in,
+      input.in {
+        height: 36px;
+        background-color: var(--pfield);
+        border: 1px solid var(--pline);
+        border-radius: 8px;
+        color: var(--text);
+        font-size: 15px;
+        padding: 0 12px;
+      }
+      select.in {
+        appearance: none;
+        padding-right: 34px;
+        background-image:
+          linear-gradient(45deg, transparent 50%, var(--muted) 50%),
+          linear-gradient(135deg, var(--muted) 50%, transparent 50%);
+        background-position:
+          calc(100% - 17px) 15px,
+          calc(100% - 12px) 15px;
+        background-size:
+          5px 5px,
+          5px 5px;
+        background-repeat: no-repeat;
+      }
+
+      .tag {
+        display: inline-block;
+        border-radius: 999px;
+        padding: 1px 9px;
+        font-size: 13px;
+        font-weight: 700;
+        border: 1px solid currentColor;
+        white-space: nowrap;
+      }
+      .tag.ok {
+        color: var(--ok);
+      }
+      .tag.warn {
+        color: var(--warn);
+      }
+      .tag.bad {
+        color: var(--bad);
+      }
+      .tag.hold {
+        color: var(--muted);
+      }
+
+      /* A round clear button: a circle with a cross drawn dead centre (two lines, so it is centred both ways whatever the font).
+   .xcirc is the circle itself; .sbox + .sclear put one on the right of a search box, vertically centred. Every search box has one. */
+      .xcirc {
+        position: relative;
+        flex: none;
+        width: 22px;
+        height: 22px;
+        padding: 0;
+        border: 0;
+        border-radius: 50%;
+        background: var(--indigo);
+        cursor: pointer;
+        font-size: 0;
+      }
+      .xcirc::before,
+      .xcirc::after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 10px;
+        height: 2px;
+        border-radius: 1px;
+        background: #fff;
+      }
+      .xcirc::before {
+        transform: translate(-50%, -50%) rotate(45deg);
+      }
+      .xcirc::after {
+        transform: translate(-50%, -50%) rotate(-45deg);
+      }
+      .xcirc:focus-visible {
+        outline: 2px solid var(--indigo2);
+        outline-offset: 2px;
+      }
+      .sbox {
+        position: relative;
+        display: block;
+      }
+      .sbox > input {
+        width: 100%;
+        padding-right: 38px;
+      }
+      .sclear {
+        position: absolute;
+        right: 7px;
+        top: 50%;
+        margin-top: -11px;
+      }
+
+      .card {
+        width: 100%;
+        background: var(--panel);
+        border: 1px solid var(--edge);
+        border-radius: 14px;
+        box-shadow: var(--shadow);
+        padding: 12px 18px 16px;
+      }
+      /* the top of each list: a band across the whole card, tinted with the heading colour (pink in dark mode), so the three lists are easy to tell apart when scrolling */
+      .lhead {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: -12px -18px 12px;
+        padding: 10px 18px;
+        border-radius: 13px 13px 0 0;
+        background: rgba(253, 184, 39, 0.14);
+        background: color-mix(in srgb, var(--head) 16%, transparent);
+        border-bottom: 1px solid
+          color-mix(in srgb, var(--head) 38%, transparent);
+      }
+      .lhead h3 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--head);
+      }
+      .sp {
+        flex: 1;
+      }
+      .colwrap {
+        position: relative;
+      }
+      .backdrop {
+        position: fixed;
+        inset: 0;
+        z-index: 20;
+      }
+      .picker {
+        position: absolute;
+        right: 0;
+        top: 42px;
+        z-index: 21;
+        background: var(--ppanel);
+        border: 1px solid var(--edge);
+        border-radius: 12px;
+        box-shadow: var(--shadow);
+        padding: 10px 14px;
+        min-width: 230px;
+      }
+      .pk {
+        display: flex;
+        gap: 9px;
+        align-items: center;
+        padding: 4px 0;
+        font-size: 15px;
+        cursor: pointer;
+      }
+      .pkfoot {
+        display: flex;
+        gap: 4px;
+        margin-top: 6px;
+      }
+
+      .tablewrap {
+        overflow-x: auto;
+      }
+      .tbl {
+        border-collapse: collapse;
+        font-size: 15px;
+        width: 100%;
+      }
+      .tbl th {
+        position: relative;
+        text-align: left;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+        padding: 8px 14px;
+        border-bottom: 1px solid var(--line);
+        white-space: nowrap;
+        user-select: none;
+      }
+      .tbl th .lab {
+        cursor: pointer;
+      }
+      .tbl td {
+        padding: 8px 14px;
+        border-bottom: 1px solid var(--line);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .num {
+        text-align: right;
+      }
+      .arrow {
+        margin-left: 4px;
+        color: var(--indigo2);
+      }
+      /* the drag handle on each column's right edge */
+      .rz {
+        position: absolute;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        width: 10px;
+        cursor: col-resize;
+      }
+      .rz::after {
+        content: "";
+        position: absolute;
+        right: 3px;
+        top: 22%;
+        bottom: 22%;
+        width: 2px;
+        border-radius: 1px;
+        background: var(--edge);
+      }
+      .rz:hover::after {
+        background: var(--indigo2);
+        top: 0;
+        bottom: 0;
+      }
+      .tbl tbody tr {
+        cursor: pointer;
+      }
+      @media (hover: hover) {
+        .tbl tbody tr:hover td {
+          background: rgba(99, 102, 241, 0.1);
+        }
+      }
+      /* the first row of each sales rep has a heavier line above it */
+      .tbl tr.gfirst td {
+        border-top: 2px solid var(--edge);
+      }
+      .tbl tr.alt td {
+        background: rgba(99, 102, 241, 0.06);
+      }
+      .repcell {
+        min-width: 170px;
+        vertical-align: top;
+        cursor: pointer;
+        border-right: 1px solid var(--line);
+      }
+      .repcell small {
+        display: block;
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 400;
+      }
+      .gchev {
+        display: inline-block;
+        width: 18px;
+      }
+      .gchev .chev {
+        width: 7px;
+        height: 7px;
+        margin: 0;
+        vertical-align: middle;
+        transform: rotate(-45deg);
+      }
+      .gchev .chev.up {
+        transform: rotate(45deg);
+      }
+      .empty {
+        color: var(--muted);
+        padding: 14px 4px;
+        font-size: 15px;
+      }
+      .more {
+        padding: 12px 0 2px;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+
+      /* closed: the card shrinks to just its coloured band, with no white strip under it */
+      .card.shut {
+        padding-bottom: 0;
+      }
+      .card.shut .lhead {
+        margin-bottom: 0;
+        border-radius: 13px;
+        border-bottom-color: transparent;
+      }
+
+      /* folding: the body unfolds from nothing to its full height and folds back, easing the card's spacing with it */
+      .card {
+        transition: padding-bottom 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .lhead {
+        transition:
+          margin-bottom 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+          border-radius 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+          border-color 0.4s ease;
+      }
+      .fold {
+        display: grid;
+        grid-template-rows: 0fr;
+        opacity: 0;
+        transition:
+          grid-template-rows 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+          opacity 0.3s ease;
+      }
+      .fold.on {
+        grid-template-rows: 1fr;
+        opacity: 1;
+      }
+      .bodyin {
+        min-height: 0;
+        overflow: hidden;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .card,
+        .lhead,
+        .fold {
+          transition: none;
+        }
+      }
+
+      /* the rep priority star takes the heading colour, the same as in the legend above the lists */
+      .star {
+        color: var(--head);
+      }
+      /* the violet star: the deal is a state priority (Robert, 2026-11-10; mockup pipeline_state_priority_star_v1.html, option A) */
+      .sstar {
+        color: var(--state);
+      }
+      /* the gold star: the deal is in one or more campaigns */
+      .cstar {
+        color: var(--gold);
+      }
+
+      /* the Status pills (Robert, 2026-11-07; mockup pipeline_status_column_v2.html, option B): solid, in the stage bar's colours */
+      .stp {
+        display: inline-flex;
+        align-items: center;
+        height: 26px;
+        padding: 0 12px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        white-space: nowrap;
+      }
+      .stp.st-open {
+        background: var(--indigo);
+        color: #fff;
+      }
+      .stp.st-hold {
+        background: #f59e0b;
+        color: #1b2640;
+      }
+      .stp.st-won {
+        background: #16a34a;
+        color: #fff;
+      }
+      .stp.st-lost {
+        background: #dc2626;
+        color: #fff;
+      }
+      .stp.st-closed {
+        background: #64748b;
+        color: #fff;
+      }
+
+      /* the default widths (Robert, 2026-11-07): the Hospital column a little narrower, the Status column a little wider. Until a person
+   drags a column, a hospital name is cut at 220px with "…" and the Status column is at least 150px; a width they have dragged wins. */
+      .clip {
+        display: inline-block;
+        max-width: 220px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        vertical-align: bottom;
+        white-space: nowrap;
+      }
+      .tbl th.c-status,
+      .tbl td.c-status {
+        min-width: 150px;
+      }
+
+      .root {
+        --page: #0e1623;
+        --bg: #141e2e;
+        --panel: #1a2740;
+        --panel2: #20304f;
+        --line: #2f4163;
+        --edge: #5b6f93;
+        --text: #e8edf5;
+        --muted: #8b9bb0;
+        --pipe: #fdb827;
+        --head: #f472b6;
+        --bar-primary: #2f80ed;
+        --bar-revision: #fb923c;
+        --bar-cmft: #14b8a6;
+        --grid-line: rgba(139, 155, 176, 0.25);
+        --indigo: #6366f1;
+        --indigo2: #a5b4fc;
+        --ok: #4ee0b0;
+        --warn: #fb923c;
+        --bad: #f87171;
+        --shadow: 0 8px 20px rgba(0, 0, 0, 0.55);
+        --ppanel: #171b24;
+        --pgroup: #1e232e;
+        --pfield: #11151c;
+        --pline: #2c3444;
+        --gold: #ffc400;
+        --state: #a78bfa;
+        position: relative;
+        background: var(--bg);
+        color: var(--text);
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-size: 15px;
+      }
+      .root[data-theme="light"] {
+        --gold: #e0a100;
+        --state: #7c3aed;
+        --page: #e9edf4;
+        --bg: #f4f6fa;
+        --panel: #ffffff;
+        --panel2: #eef2fa;
+        --line: #d5dcea;
+        --edge: #b3bfd6;
+        --text: #1b2640;
+        --muted: #5d6b85;
+        --pipe: #b7791f;
+        --bar-primary: #2563eb;
+        --bar-revision: #ea580c;
+        --bar-cmft: #0d9488;
+        --grid-line: rgba(93, 107, 133, 0.3);
+        --indigo: #4f46e5;
+        --indigo2: #4338ca;
+        --ok: #0f9d74;
+        --warn: #c2570c;
+        --bad: #dc2626;
+        --shadow: 0 8px 20px rgba(30, 45, 80, 0.18);
+        --ppanel: #eef2fa;
+        --pgroup: rgba(120, 140, 190, 0.07);
+        --pfield: #ffffff;
+        --pline: #d5dcea;
+      }
+
+      /* The heading colour (headings, the bar behind them, the rep priority star) is the person's choice, saved in their settings:
+   four colours, each with a brighter shade for dark mode and a deeper one for light mode. Pink is the default. */
+      .root[data-head="sky"] {
+        --head: #5eb3ff;
+      }
+      .root[data-head="lime"] {
+        --head: #a3e635;
+      }
+      .root[data-head="cyan"] {
+        --head: #22d3ee;
+      }
+      .root[data-theme="light"][data-head="pink"] {
+        --head: #db2777;
+      }
+      .root[data-theme="light"][data-head="sky"] {
+        --head: #0284c7;
+      }
+      .root[data-theme="light"][data-head="lime"] {
+        --head: #4d7c0f;
+      }
+      .root[data-theme="light"][data-head="cyan"] {
+        --head: #0e7490;
+      }
+
+      .top {
+        /* every control in this row is this tall, the same as the options bar under it */
+        --barh: 38px;
+        position: sticky;
+        top: 0;
+        z-index: 5;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 10px 18px;
+        background: var(--bg);
+        border-bottom: 1px solid var(--line);
+      }
+
+      .legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px 18px;
+        color: var(--muted);
+        font-size: 14px;
+        padding: 0 4px;
+      }
+      /* the rep priority star in the legend takes the heading colour, like the stars in the lists */
+      .legend .star {
+        color: var(--head);
+      }
+      .legend .sstar {
+        color: var(--state);
+      }
+      .legend .cstar {
+        color: var(--gold);
+      }
+
+      .sfnav {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        height: 44px;
+        padding: 0 16px;
+        background: #0b1220;
+        color: #cdd6e6;
+        font-size: 14px;
+      }
+      .sfnav .app {
+        font-weight: 800;
+        letter-spacing: 0.14em;
+      }
+      .sfnav .app b {
+        color: #fdb827;
+      }
+      .sfnav .tab {
+        color: #9fb0cc;
+      }
+      .sfnav .tab.on {
+        color: #fff;
+        border-bottom: 2px solid #6366f1;
+        padding-bottom: 2px;
+      }
+      .sfnav .sp {
+        flex: 1;
+      }
+      .root {
+        height: calc(100vh - 44px);
+        overflow: auto;
+        background: var(--bg);
+        color: var(--text);
+        font-size: 15px;
+      }
+      .top .wm {
+        font-weight: 800;
+        letter-spacing: 0.14em;
+        font-size: 18px;
+      }
+      .top .asat {
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .main {
+        padding: 14px 20px 40px;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+      .count {
+        color: var(--muted);
+        font-size: 14px;
+      }
+      .about {
+        padding: 12px 18px;
+        background: var(--panel);
+        border: 1px solid var(--edge);
+        border-radius: 12px;
+        line-height: 1.5;
+        max-width: 1100px;
+      }
+      .about summary {
+        cursor: pointer;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        color: var(--pipe);
+      }
+      .about ul {
+        margin: 4px 0 8px;
+        padding-left: 22px;
+      }
+      .tools {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      .tools .lab {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        margin-left: 10px;
+      }
+      .btn.on {
+        background: var(--indigo);
+        color: #fff;
+      }
+      .legend {
+        margin: 0;
+      }
+      /* ===== the proposal: the heading band and the column names stay under the top bar until their list has gone past ===== */
+      .root {
+        --stick: 59px;
+      }
+      .lhead {
+        position: sticky;
+        top: var(--stick);
+        z-index: 3;
+        background:
+          linear-gradient(
+            color-mix(in srgb, var(--head) 16%, transparent),
+            color-mix(in srgb, var(--head) 16%, transparent)
+          ),
+          var(--panel);
+      }
+      .tbl th {
+        position: sticky;
+        top: calc(var(--stick) + var(--lh, 66px));
+        z-index: 2;
+        background: var(--panel);
+        border-bottom: 0;
+        box-shadow:
+          inset 0 -1px 0 var(--line),
+          0 1px 0 var(--panel);
+      }
+      /* while the band is stuck it is flat and square and covers the card's own 1 px edge, so no side lines or curve show on that row */
+      .lhead.stuck {
+        margin-left: -19px;
+        margin-right: -19px;
+        border-radius: 0;
+      }
+      .bodyin {
+        overflow: clip;
+      }
+      .tablewrap {
+        overflow-x: clip;
+      }
+      .tbl.wide {
+        min-width: 1900px;
+      }
+      .card.widebox .tablewrap {
+        overflow-x: auto;
+      }
+      .card.widebox .tbl th {
+        position: relative;
+        top: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="sfnav">
+      <span class="app"><b>PIPE</b>LINE</span
+      ><span class="tab on">Pipeline</span><span class="tab">Campaigns</span
+      ><span class="sp"></span
+      ><button
+        type="button"
+        class="btn"
+        onclick="
+          document.documentElement.requestFullscreen &&
+            document.documentElement.requestFullscreen()
+        "
+      >
+        Full screen
+      </button>
+    </div>
+    <div class="root" data-theme="dark" data-head="pink" id="root">
+      <div class="top" id="top">
+        <span class="wm"
+          ><span class="pipe">PIPE</span><span class="line">LINE</span></span
+        ><span class="asat">As at 10 Nov 2026, 6:17 pm</span
+        ><span class="sp"></span
+        ><button type="button" class="btn sec">Filter: Georgies Team</button
+        ><button type="button" class="btn">Change selection</button>
+      </div>
+      <div class="main">
+        <details class="about" open>
+          <summary>ABOUT THIS MOCKUP</summary>
+          <p>
+            As you scroll down Pipeline, the Team, Opportunities, Risks and ROSA
+            lists each keep their heading bar and their column names fixed under
+            the top bar until you have scrolled past that list. The next list's
+            bar then takes its place. Scrolling back up reverses it. The four
+            lists use the real list styles; the data is invented.
+          </p>
+          <ul>
+            <li>
+              Try it: scroll down slowly. The pink Team bar and its column names
+              stay under the top bar, then Opportunities slides in and replaces
+              them. Scroll back up and Team returns.
+            </li>
+            <li>
+              Try it: press the round arrow on a list's bar to fold it, then
+              keep scrolling.
+            </li>
+            <li>
+              Try it: press "Make Opportunities wider than the screen" to see
+              the one case where the column names do not stay (see below).
+            </li>
+            <li>
+              Known limit: a table made wider than the screen (many columns
+              added) must scroll sideways inside its box, and a
+              sideways-scrolling box cannot hold its column names still. In that
+              case only the heading bar stays.
+            </li>
+            <li>
+              Not shown: the summary panels, the real top bar controls, and the
+              phone (Pipeline Mobile is not affected).
+            </li>
+          </ul>
+        </details>
+        <div class="tools">
+          <span class="lab">Try</span
+          ><button type="button" class="btn sec" onclick="toggleWide(this)">
+            Make Opportunities wider than the screen
+          </button>
+        </div>
+        <div class="legend">
+          <span><span class="tag ok">Current</span> Posted In Last 30 Days</span
+          ><span><span class="tag warn">Needs Update</span> 30–90 Days</span
+          ><span><span class="tag bad">Very Old</span> Over 90 Days</span
+          ><span><span class="star">★</span> Rep Priority</span>
+        </div>
+        <section class="card" id="c_team">
+          <div class="lhead">
+            <h3>Team</h3>
+            <span class="count">5 people</span><span class="sp"></span
+            ><button
+              type="button"
+              class="rbtn"
+              aria-label="Fold"
+              onclick="foldIt(this)"
+            >
+              <span class="chev up"></span>
+            </button>
+          </div>
+          <div class="fold on">
+            <div class="bodyin">
+              <div class="tablewrap">
+                <table class="tbl">
+                  <thead>
+                    <tr>
+                      <th>Rep</th>
+                      <th>Team</th>
+                      <th>Open</th>
+                      <th>Expected annual revenue</th>
+                      <th>Annual value at risk</th>
+                      <th>Needs update<br />(30–90 d)</th>
+                      <th>Very old<br />(over 90 d)</th>
+                      <th>No stage move<br />(90 d)</th>
+                      <th>Longest quiet</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>Alex Morgan</td>
+                      <td>AREA SALES MGR (VIC)</td>
+                      <td class="num">5</td>
+                      <td class="num">A$1230k</td>
+                      <td class="num">A$290k</td>
+                      <td class="num"><span class="tag warn">2</span></td>
+                      <td class="num"><span class="tag bad">3</span></td>
+                      <td class="num"><span class="tag bad">5</span></td>
+                      <td class="num">300 d</td>
+                    </tr>
+                    <tr>
+                      <td>Kim Nguyen</td>
+                      <td>AREA SALES MGR (VIC)</td>
+                      <td class="num">7</td>
+                      <td class="num">A$1640k</td>
+                      <td class="num">A$580k</td>
+                      <td class="num"><span class="tag warn">3</span></td>
+                      <td class="num"><span class="tag bad">4</span></td>
+                      <td class="num"><span class="tag bad">6</span></td>
+                      <td class="num">520 d</td>
+                    </tr>
+                    <tr>
+                      <td>Sam Patel</td>
+                      <td>AREA SALES MGR (VIC)</td>
+                      <td class="num">9</td>
+                      <td class="num">A$2050k</td>
+                      <td class="num">A$870k</td>
+                      <td class="num"><span class="tag warn">4</span></td>
+                      <td class="num"><span class="tag bad">5</span></td>
+                      <td class="num"><span class="tag bad">7</span></td>
+                      <td class="num">740 d</td>
+                    </tr>
+                    <tr>
+                      <td>Jo Carter</td>
+                      <td>AREA SALES MGR (VIC)</td>
+                      <td class="num">11</td>
+                      <td class="num">A$2460k</td>
+                      <td class="num">A$1160k</td>
+                      <td class="num"><span class="tag warn">5</span></td>
+                      <td class="num"><span class="tag bad">6</span></td>
+                      <td class="num"><span class="tag bad">8</span></td>
+                      <td class="num">960 d</td>
+                    </tr>
+                    <tr>
+                      <td>Lee Tran</td>
+                      <td>AREA SALES MGR (VIC)</td>
+                      <td class="num">13</td>
+                      <td class="num">A$2870k</td>
+                      <td class="num">A$1450k</td>
+                      <td class="num"><span class="tag warn">6</span></td>
+                      <td class="num"><span class="tag bad">7</span></td>
+                      <td class="num"><span class="tag bad">9</span></td>
+                      <td class="num">1180 d</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+        <section class="card" id="c_opp">
+          <div class="lhead">
+            <h3>40 Opportunities</h3>
+            <span class="count"></span><span class="sp"></span
+            ><button
+              type="button"
+              class="rbtn"
+              aria-label="Fold"
+              onclick="foldIt(this)"
+            >
+              <span class="chev up"></span>
+            </button>
+          </div>
+          <div class="fold on">
+            <div class="bodyin">
+              <div class="tablewrap">
+                <table class="tbl">
+                  <thead>
+                    <tr>
+                      <th>Sales rep</th>
+                      <th>Surgeon</th>
+                      <th>Hospital</th>
+                      <th>Portfolio</th>
+                      <th>Brand</th>
+                      <th>Stage</th>
+                      <th>Revenue / year</th>
+                      <th>Close quarter</th>
+                      <th>Last posted</th>
+                      <th>Last stage move</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr class="gfirst">
+                      <td class="repcell" rowspan="7">
+                        <b>Alex Morgan</b><small>7 deals · A$1260k</small>
+                      </td>
+                      <td>Dr Ford</td>
+                      <td>Eastside Private</td>
+                      <td>Hip</td>
+                      <td>Persona</td>
+                      <td>Action</td>
+                      <td class="num">A$120k</td>
+                      <td>Q2 2027</td>
+                      <td class="num"><span class="tag warn">42 d</span></td>
+                      <td class="num"><span class="tag ok">9 d</span></td>
+                    </tr>
+                    <tr class="">
+                      <td>Dr Khan</td>
+                      <td>Northgate</td>
+                      <td>Extremities</td>
+                      <td>Persona</td>
+                      <td>Commit/Contract</td>
+                      <td class="num">A$180k</td>
+                      <td>Q3 2026</td>
+                      <td class="num"><span class="tag bad">106 d</span></td>
+                      <td class="num"><span class="tag warn">68 d</span></td>
+                    </tr>
+                    <tr class="">
+                      <td>Dr Davis</td>
+                      <td>–</td>
+                      <td>CMFT</td>
+                      <td>Persona</td>
+                      <td>1st Case</td>
+                      <td class="num">A$240k</td>
+                      <td>Q4 2027</td>
+                      <td class="num"><span class="tag ok">9 d</span></td>
+                      <td class="num"><span class="tag bad">210 d</span></td>
+                    </tr>
+                    <tr class="">
+                      <td>Dr Ito<span class="star">&nbsp;★</span></td>
+                      <td>Harbour Day Surgery</td>
+                      <td>Knee</td>
+                      <td>Persona</td>
+                      <td>5th Case</td>
+                      <td class="num">A$300k</td>
+                      <td>Q1 2026</td>
+                      <td class="num"><span class="tag warn">68 d</span></td>
+                      <td class="num"><span class="tag ok">21 d</span></td>
+                    </tr>
+                    <tr class="">
+                      <td>Dr Baker</td>
+                      <td>–</td>
+                      <td>Hip</td>
+                      <td>Persona</td>
+                      <td>Plan</td>
+                      <td class="num">A$360k</td>
+                      <td>Q2 2027</td>
+                      <td class="num"><span class="tag bad">210 d</span></td>
+                      <td class="num"><span class="tag warn">42 d</span></td>
+                    </tr>
+                    <tr class="">
+                      <td>Dr Grant</td>
+                      <td>Riverside Base</td>
+                      <td>Extremities</td>
+                      <td>Persona</td>
+                      <td>Action</td>
+                      <td class="num">A$420k</td>
+                      <td>Q3 2026</td>
+                      <td class="num"><span class="tag ok">21 d</span></td>
+                      <td class="num"><span class="tag bad">106 d</span></td>
+                    </tr>
+                    <tr class="">
+                      <td>Dr Lowe</td>
+                      <td>Eastside Private</td>
+                      <td>CMFT</td>
+                      <td>Persona</td>
+                      <td>Commit/Contract</td>
+                      <td class="num">A$60k</td>
+                      <td>Q4 2027</td>
+                      <td class="num"><span class="tag warn">42 d</span></td>
+                      <td class="num"><span class="tag ok">9 d</span></td>
+                    </tr>
+                    <tr class="gfirst">
+                      <td class="repcell" rowspan="7">
+                        <b>Kim Nguyen</b><small>7 deals · A$1260k</small>
+                      </td>
+                      <td>Dr Evans<span class="star">&nbsp;★</span></td>
+                      <td>Northgate</td>
+                      <td>Knee</td>
+                      <td>Persona</td>
+                      <td>1st Case</td>
+                      <td class="num">A$120k</td>
+                      <td>Q1 2026</td>
+                      <td class="num"><span class="tag bad">106 d</span></td>
+                      <td class="num"><span class="tag warn">68 d</span></td>
+                    </tr>
+                    <tr class="">
+                      <td>Dr Jones</td>
+                      <td>–</td>
+                      <td>Hip</td>
+                      <td>Persona</td>
+                      <td>5th Case</td>
+                      <td class="num">A$180k</td>
+                      <td>Q2 2027</td>
+                      <td class="num"><span class="tag ok">9 d</span></td>
+                      <td class="num"><span class="tag bad">210 d</span></td>
+                    </tr>
+                    <tr class="">
+                      <td>Dr Chen</td>
+                      <td>Harbour Day Surgery</td>
+                      <td>Extremities</td>
+                      <td>Persona</td>
+                      <td>Plan</td>
+                      <td class="num">A$240k</td>
+                      <td>Q3 2026</td>
+                      <td class="num"><span class="tag warn">68 d</span></td>
+                      <td class="num"><span class="tag ok">21 d</span></td>
+                    </tr>
+                    <tr class="">
+                      <td>Dr Hill</td>
+                      <td>–</td>
+                      <td>CMFT</td>
+                      <td>Persona</td>
+                      <td>Action</td>
+                      <td class="num">A$300k</td>
+                      <td>Q4 2027</td>
+                      <td class="num"><span class="tag bad">210 d</span></td>
+                      <td class="num"><span class="tag warn">42 d</span></td>
+                    </tr>
+                    <tr class="">
+                      <td>Dr Adams<span class="star">&nbsp;★</span></td>
+                      <td>Riverside Base</td>
+                      <td>Knee</td>
+                      <td>Persona</td>
+                      <td>Commit/Contract</td>
+                      <td class="num">A$360k</td>
+                      <td>Q1 2026</td>
+                      <td class="num"><span class="tag ok">21 d</span></td>
+                      <td class="num"><span class="tag bad">106 d</span></td>
+                    </tr>
+                    <tr class="">
+                      <td>Dr Ford</td>
+                      <td>Eastside Private</td>
+                      <td>Hip</td>
+                      <td>Persona</td>
+                      <td>1st Case</td>
+                      <td class="num">A$420k</td>
+                      <td>Q2 2027</td>
+                      <td class="num"><span class="tag warn">42 d</span></td>
+                      <td class="num"><span class="tag ok">9 d</span></td>
+                    </tr>
+                    <tr class="">
+                      <td>Dr Khan</td>
+                      <td>Northgate</td>
+                      <td>Extremities</td>
+                      <td>Persona</td>
+                      <td>5th Case</td>
+                      <td class="num">A$60k</td>
+                      <td>Q3 2026</td>
+                      <td class="num"><span class="tag bad">106 d</span></td>
+                      <td class="num"><span class="tag warn">68 d</span></td>
+                    </tr>
+                    <tr class="gfirst">
+                      <td class="repcell" rowspan="7">
+                        <b>Sam Patel</b><small>7 deals · A$1260k</small>
+                      </td>
+                      <td>Dr Davis</td>
+                      <td>–</td>
+                      <td>CMFT</td>
+                      <td>Persona</td>
+                      <td>Plan</td>
+                      <td class="num">A$120k</td>
+                      <td>Q4 2027</td>
+                      <td class="num"><span class="tag ok">9 d</span></td>
+                      <td class="num"><span class="tag bad">210 d</span></td>
+                    </tr>
+                    <tr class="">
+                      <td>Dr Ito<span class="star">&nbsp;★</span></td>
+                      <td>Harbour Day Surgery</td>
+                      <td>Knee</td>
+                      <td>Persona</td>
+                      <td>Action</td>
+                      <td class="num">A$180k</td>
+                      <td>Q1 2026</td>
+                      <td class="num"><span class="tag warn">68 d</span></td>
+                      <td class="num"><span class="tag ok">21 d</span></td>
+                    </tr>
+                    <tr class="">
+                      <td>Dr Baker</td>
+                      <td>–</td>
+                      <td>Hip</td>
+                      <td>Persona</td>
+                      <td>Commit/Contract</td>
+                      <td class="num">A$240k</td>
+                      <td>Q2 2027</td>
+                      <td class="num"><span class="tag bad">210 d</span></td>
+                      <td class="num"><span class="tag warn">42 d</span></td>
+                    </tr>
+                    <tr class="">
+                      <td>Dr Grant</td>
+                      <td>Riverside Base</td>
+                      <td>Extremities</td>
+                      <td>Persona</td>
+                      <td>1st Case</td>
+                      <td class="num">A$300k</td>
+                      <td>Q3 2026</td>
+                      <td class="num"><span class="tag ok">21 d</span></td>
+                      <td class="num"><span class="tag bad">106 d</span></td>
+                    </tr>
+                    <tr class="">
+                      <td>Dr Lowe</td>
+                      <td>Eastside Private</td>
+                      <td>CMFT</td>
+                      <td>Persona</td>
+                      <td>5th Case</td>
+                      <td class="num">A$360k</td>
+                      <td>Q4 2027</td>
+                      <td class="num"><span class="tag warn">42 d</span></td>
+                      <td class="num"><span class="tag ok">9 d</span></td>
+                    </tr>
+                    <tr class="">
+                      <td>Dr Evans<span class="star">&nbsp;★</span></td>
+                      <td>Northgate</td>
+                      <td>Knee</td>
+                      <td>Persona</td>
+                      <td>Plan</td>
+                      <td class="num">A$420k</td>
+                      <td>Q1 2026</td>
+                      <td class="num"><span class="tag bad">106 d</span></td>
+                      <td class="num"><span class="tag warn">68 d</span></td>
+                    </tr>
+                    <tr class="">
+                      <td>Dr Jones</td>
+                      <td>–</td>
+                      <td>Hip</td>
+                      <td>Persona</td>
+                      <td>Action</td>
+                      <td class="num">A$60k</td>
+                      <td>Q2 2027</td>
+                      <td class="num"><span class="tag ok">9 d</span></td>
+                      <td class="num"><span class="tag bad">210 d</span></td>
+                    </tr>
+                    <tr class="gfirst">
+                      <td class="repcell" rowspan="7">
+                        <b>Jo Carter</b><small>7 deals · A$1260k</small>
+                      </td>
+                      <td>Dr Chen</td>
+                      <td>Harbour Day Surgery</td>
+                      <td>Extremities</td>
+                      <td>Persona</td>
+                      <td>Commit/Contract</td>
+                      <td class="num">A$120k</td>
+                      <td>Q3 2026</td>
+                      <td class="num"><span class="tag warn">68 d</span></td>
+                      <td class="num"><span class="tag ok">21 d</span></td>
+                    </tr>
+                    <tr class="">
+                      <td>Dr Hill</td>
+                      <td>–</td>
+                      <td>CMFT</td>
+                      <td>Persona</td>
+                      <td>1st Case</td>
+                      <td class="num">A$180k</td>
+                      <td>Q4 2027</td>
+                      <td class="num"><span class="tag bad">210 d</span></td>
+                      <td class="num"><span class="tag warn">42 d</span></td>
+                    </tr>
+                    <tr class="">
+                      <td>Dr Adams<span class="star">&nbsp;★</span></td>
+                      <td>Riverside Base</td>
+                      <td>Knee</td>
+                      <td>Persona</td>
+                      <td>5th Case</td>
+                      <td class="num">A$240k</td>
+                      <td>Q1 2026</td>
+                      <td class="num"><span class="tag ok">21 d</span></td>
+                      <td class="num"><span class="tag bad">106 d</span></td>
+                    </tr>
+                    <tr class="">
+                      <td>Dr Ford</td>
+                      <td>Eastside Private</td>
+                      <td>Hip</td>
+                      <td>Persona</td>
+                      <td>Plan</td>
+                      <td class="num">A$300k</td>
+                      <td>Q2 2027</td>
+                      <td class="num"><span class="tag warn">42 d</span></td>
+                      <td class="num"><span class="tag ok">9 d</span></td>
+                    </tr>
+                    <tr class="">
+                      <td>Dr Khan</td>
+                      <td>Northgate</td>
+                      <td>Extremities</td>
+                      <td>Persona</td>
+                      <td>Action</td>
+                      <td class="num">A$360k</td>
+                      <td>Q3 2026</td>
+                      <td class="num"><span class="tag bad">106 d</span></td>
+                      <td class="num"><span class="tag warn">68 d</span></td>
+                    </tr>
+                    <tr class="">
+                      <td>Dr Davis</td>
+                      <td>–</td>
+                      <td>CMFT</td>
+                      <td>Persona</td>
+                      <td>Commit/Contract</td>
+                      <td class="num">A$420k</td>
+                      <td>Q4 2027</td>
+                      <td class="num"><span class="tag ok">9 d</span></td>
+                      <td class="num"><span class="tag bad">210 d</span></td>
+                    </tr>
+                    <tr class="">
+                      <td>Dr Ito<span class="star">&nbsp;★</span></td>
+                      <td>Harbour Day Surgery</td>
+                      <td>Knee</td>
+                      <td>Persona</td>
+                      <td>1st Case</td>
+                      <td class="num">A$60k</td>
+                      <td>Q1 2026</td>
+                      <td class="num"><span class="tag warn">68 d</span></td>
+                      <td class="num"><span class="tag ok">21 d</span></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+        <section class="card" id="c_risk">
+          <div class="lhead">
+            <h3>12 Risks</h3>
+            <span class="count"></span><span class="sp"></span
+            ><button
+              type="button"
+              class="rbtn"
+              aria-label="Fold"
+              onclick="foldIt(this)"
+            >
+              <span class="chev up"></span>
+            </button>
+          </div>
+          <div class="fold on">
+            <div class="bodyin">
+              <div class="tablewrap">
+                <table class="tbl">
+                  <thead>
+                    <tr>
+                      <th>Sales rep</th>
+                      <th>Surgeon</th>
+                      <th>Hospital</th>
+                      <th>Portfolio</th>
+                      <th>Brand</th>
+                      <th>Stage</th>
+                      <th>Revenue / year</th>
+                      <th>Close quarter</th>
+                      <th>Last posted</th>
+                      <th>Last stage move</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr class="gfirst">
+                      <td class="repcell" rowspan="6">
+                        <b>Alex Morgan</b><small>6 deals · A$1080k</small>
+                      </td>
+                      <td>Dr Baker</td>
+                      <td>–</td>
+                      <td>Hip</td>
+                      <td>Risk to supply</td>
+                      <td>Action</td>
+                      <td class="num">A$420k</td>
+                      <td>Q2 2027</td>
+                      <td class="num"><span class="tag bad">210 d</span></td>
+                      <td class="num"><span class="tag warn">42 d</span></td>
+                    </tr>
+                    <tr class="">
+                      <td>Dr Grant</td>
+                      <td>Riverside Base</td>
+                      <td>Extremities</td>
+                      <td>Risk to supply</td>
+                      <td>Commit/Contract</td>
+                      <td class="num">A$60k</td>
+                      <td>Q3 2026</td>
+                      <td class="num"><span class="tag ok">21 d</span></td>
+                      <td class="num"><span class="tag bad">106 d</span></td>
+                    </tr>
+                    <tr class="">
+                      <td>Dr Lowe</td>
+                      <td>Eastside Private</td>
+                      <td>CMFT</td>
+                      <td>Risk to supply</td>
+                      <td>1st Case</td>
+                      <td class="num">A$120k</td>
+                      <td>Q4 2027</td>
+                      <td class="num"><span class="tag warn">42 d</span></td>
+                      <td class="num"><span class="tag ok">9 d</span></td>
+                    </tr>
+                    <tr class="">
+                      <td>Dr Evans<span class="star">&nbsp;★</span></td>
+                      <td>Northgate</td>
+                      <td>Knee</td>
+                      <td>Risk to supply</td>
+                      <td>5th Case</td>
+                      <td class="num">A$180k</td>
+                      <td>Q1 2026</td>
+                      <td class="num"><span class="tag bad">106 d</span></td>
+                      <td class="num"><span class="tag warn">68 d</span></td>
+                    </tr>
+                    <tr class="">
+                      <td>Dr Jones</td>
+                      <td>–</td>
+                      <td>Hip</td>
+                      <td>Risk to supply</td>
+                      <td>Plan</td>
+                      <td class="num">A$240k</td>
+                      <td>Q2 2027</td>
+                      <td class="num"><span class="tag ok">9 d</span></td>
+                      <td class="num"><span class="tag bad">210 d</span></td>
+                    </tr>
+                    <tr class="">
+                      <td>Dr Chen</td>
+                      <td>Harbour Day Surgery</td>
+                      <td>Extremities</td>
+                      <td>Risk to supply</td>
+                      <td>Action</td>
+                      <td class="num">A$300k</td>
+                      <td>Q3 2026</td>
+                      <td class="num"><span class="tag warn">68 d</span></td>
+                      <td class="num"><span class="tag ok">21 d</span></td>
+                    </tr>
+                    <tr class="gfirst">
+                      <td class="repcell" rowspan="6">
+                        <b>Kim Nguyen</b><small>6 deals · A$1080k</small>
+                      </td>
+                      <td>Dr Hill</td>
+                      <td>–</td>
+                      <td>CMFT</td>
+                      <td>Risk to supply</td>
+                      <td>Commit/Contract</td>
+                      <td class="num">A$360k</td>
+                      <td>Q4 2027</td>
+                      <td class="num"><span class="tag bad">210 d</span></td>
+                      <td class="num"><span class="tag warn">42 d</span></td>
+                    </tr>
+                    <tr class="">
+                      <td>Dr Adams<span class="star">&nbsp;★</span></td>
+                      <td>Riverside Base</td>
+                      <td>Knee</td>
+                      <td>Risk to supply</td>
+                      <td>1st Case</td>
+                      <td class="num">A$420k</td>
+                      <td>Q1 2026</td>
+                      <td class="num"><span class="tag ok">21 d</span></td>
+                      <td class="num"><span class="tag bad">106 d</span></td>
+                    </tr>
+                    <tr class="">
+                      <td>Dr Ford</td>
+                      <td>Eastside Private</td>
+                      <td>Hip</td>
+                      <td>Risk to supply</td>
+                      <td>5th Case</td>
+                      <td class="num">A$60k</td>
+                      <td>Q2 2027</td>
+                      <td class="num"><span class="tag warn">42 d</span></td>
+                      <td class="num"><span class="tag ok">9 d</span></td>
+                    </tr>
+                    <tr class="">
+                      <td>Dr Khan</td>
+                      <td>Northgate</td>
+                      <td>Extremities</td>
+                      <td>Risk to supply</td>
+                      <td>Plan</td>
+                      <td class="num">A$120k</td>
+                      <td>Q3 2026</td>
+                      <td class="num"><span class="tag bad">106 d</span></td>
+                      <td class="num"><span class="tag warn">68 d</span></td>
+                    </tr>
+                    <tr class="">
+                      <td>Dr Davis</td>
+                      <td>–</td>
+                      <td>CMFT</td>
+                      <td>Risk to supply</td>
+                      <td>Action</td>
+                      <td class="num">A$180k</td>
+                      <td>Q4 2027</td>
+                      <td class="num"><span class="tag ok">9 d</span></td>
+                      <td class="num"><span class="tag bad">210 d</span></td>
+                    </tr>
+                    <tr class="">
+                      <td>Dr Ito<span class="star">&nbsp;★</span></td>
+                      <td>Harbour Day Surgery</td>
+                      <td>Knee</td>
+                      <td>Risk to supply</td>
+                      <td>Commit/Contract</td>
+                      <td class="num">A$240k</td>
+                      <td>Q1 2026</td>
+                      <td class="num"><span class="tag warn">68 d</span></td>
+                      <td class="num"><span class="tag ok">21 d</span></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+        <section class="card" id="c_rosa">
+          <div class="lhead">
+            <h3>8 ROSA</h3>
+            <span class="count"></span><span class="sp"></span
+            ><button
+              type="button"
+              class="rbtn"
+              aria-label="Fold"
+              onclick="foldIt(this)"
+            >
+              <span class="chev up"></span>
+            </button>
+          </div>
+          <div class="fold on">
+            <div class="bodyin">
+              <div class="tablewrap">
+                <table class="tbl">
+                  <thead>
+                    <tr>
+                      <th>Sales rep</th>
+                      <th>Surgeon</th>
+                      <th>Hospital</th>
+                      <th>Portfolio</th>
+                      <th>Brand</th>
+                      <th>Stage</th>
+                      <th>Revenue / year</th>
+                      <th>Close quarter</th>
+                      <th>Last posted</th>
+                      <th>Last stage move</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr class="gfirst">
+                      <td class="repcell" rowspan="4">
+                        <b>Alex Morgan</b><small>4 deals · A$720k</small>
+                      </td>
+                      <td>Dr Ford</td>
+                      <td>Eastside Private</td>
+                      <td>Hip</td>
+                      <td>Persona</td>
+                      <td>Action</td>
+                      <td class="num">A$360k</td>
+                      <td>Q2 2027</td>
+                      <td class="num"><span class="tag warn">42 d</span></td>
+                      <td class="num"><span class="tag ok">9 d</span></td>
+                    </tr>
+                    <tr class="">
+                      <td>Dr Khan</td>
+                      <td>Northgate</td>
+                      <td>Extremities</td>
+                      <td>Persona</td>
+                      <td>Commit/Contract</td>
+                      <td class="num">A$420k</td>
+                      <td>Q3 2026</td>
+                      <td class="num"><span class="tag bad">106 d</span></td>
+                      <td class="num"><span class="tag warn">68 d</span></td>
+                    </tr>
+                    <tr class="">
+                      <td>Dr Davis</td>
+                      <td>–</td>
+                      <td>CMFT</td>
+                      <td>Persona</td>
+                      <td>1st Case</td>
+                      <td class="num">A$60k</td>
+                      <td>Q4 2027</td>
+                      <td class="num"><span class="tag ok">9 d</span></td>
+                      <td class="num"><span class="tag bad">210 d</span></td>
+                    </tr>
+                    <tr class="">
+                      <td>Dr Ito<span class="star">&nbsp;★</span></td>
+                      <td>Harbour Day Surgery</td>
+                      <td>Knee</td>
+                      <td>Persona</td>
+                      <td>5th Case</td>
+                      <td class="num">A$120k</td>
+                      <td>Q1 2026</td>
+                      <td class="num"><span class="tag warn">68 d</span></td>
+                      <td class="num"><span class="tag ok">21 d</span></td>
+                    </tr>
+                    <tr class="gfirst">
+                      <td class="repcell" rowspan="4">
+                        <b>Kim Nguyen</b><small>4 deals · A$720k</small>
+                      </td>
+                      <td>Dr Baker</td>
+                      <td>–</td>
+                      <td>Hip</td>
+                      <td>Persona</td>
+                      <td>Plan</td>
+                      <td class="num">A$180k</td>
+                      <td>Q2 2027</td>
+                      <td class="num"><span class="tag bad">210 d</span></td>
+                      <td class="num"><span class="tag warn">42 d</span></td>
+                    </tr>
+                    <tr class="">
+                      <td>Dr Grant</td>
+                      <td>Riverside Base</td>
+                      <td>Extremities</td>
+                      <td>Persona</td>
+                      <td>Action</td>
+                      <td class="num">A$240k</td>
+                      <td>Q3 2026</td>
+                      <td class="num"><span class="tag ok">21 d</span></td>
+                      <td class="num"><span class="tag bad">106 d</span></td>
+                    </tr>
+                    <tr class="">
+                      <td>Dr Lowe</td>
+                      <td>Eastside Private</td>
+                      <td>CMFT</td>
+                      <td>Persona</td>
+                      <td>Commit/Contract</td>
+                      <td class="num">A$300k</td>
+                      <td>Q4 2027</td>
+                      <td class="num"><span class="tag warn">42 d</span></td>
+                      <td class="num"><span class="tag ok">9 d</span></td>
+                    </tr>
+                    <tr class="">
+                      <td>Dr Evans<span class="star">&nbsp;★</span></td>
+                      <td>Northgate</td>
+                      <td>Knee</td>
+                      <td>Persona</td>
+                      <td>1st Case</td>
+                      <td class="num">A$360k</td>
+                      <td>Q1 2026</td>
+                      <td class="num"><span class="tag bad">106 d</span></td>
+                      <td class="num"><span class="tag warn">68 d</span></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+    <script>
+      var root = document.getElementById("root"),
+        top_ = document.getElementById("top");
+      function measure() {
+        root.style.setProperty("--stick", top_.offsetHeight + "px");
+        document.querySelectorAll(".card").forEach(function (c) {
+          c.style.setProperty(
+            "--lh",
+            c.querySelector(".lhead").offsetHeight + "px"
+          );
+        });
+      }
+      function stuckCheck() {
+        var edge = root.getBoundingClientRect().top + top_.offsetHeight;
+        document.querySelectorAll(".card").forEach(function (c) {
+          c.querySelector(".lhead").classList.toggle(
+            "stuck",
+            c.getBoundingClientRect().top + 1 < edge - 0.5
+          );
+        });
+      }
+      root.addEventListener("scroll", stuckCheck, { passive: true });
+      window.addEventListener("resize", function () {
+        measure();
+        stuckCheck();
+      });
+      measure();
+      stuckCheck();
+      function foldIt(b) {
+        var c = b.closest(".card"),
+          f = c.querySelector(".fold");
+        var on = f.classList.toggle("on");
+        c.classList.toggle("shut", !on);
+        b.querySelector(".chev").className = "chev" + (on ? " up" : "");
+      }
+      function toggleWide(b) {
+        var c = document.getElementById("c_opp");
+        var t = c.querySelector(".tbl");
+        var w = t.classList.toggle("wide");
+        c.classList.toggle("widebox", w);
+        b.textContent = w
+          ? "Make Opportunities normal width again"
+          : "Make Opportunities wider than the screen";
+      }
+      var q = new URLSearchParams(location.search);
+      if (q.get("y")) {
+        root.scrollTop = +q.get("y");
+        stuckCheck();
+      }
+      if (q.get("fold")) {
+        var fb = document.querySelector("#" + q.get("fold") + " .rbtn");
+        foldIt(fb);
+      }
+      if (q.get("wide")) toggleWide(document.querySelector(".tools .btn"));
+    </script>
+  </body>
+</html>

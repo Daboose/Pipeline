@@ -80,6 +80,9 @@ export default class PipelineSelection extends LightningElement {
     this.draft = JSON.parse(JSON.stringify(this.filter));
     this.refreshBrands();
   }
+  disconnectedCallback() {
+    this.endDrag();
+  }
   renderedCallback() {
     if (!this.treeSeeded && (this.teams || []).length) {
       this.treeSeeded = true;
@@ -228,12 +231,93 @@ export default class PipelineSelection extends LightningElement {
         star: false,
         bold: !!r.sub, // a search result: the team name in bold, its path under it
         showCar: r.hasKids,
-        caretCls: "chev" + (r.open ? " dn" : ""),
+        caretCls: "car k" + (r.open ? " open" : ""),
         cls: "trow" + (r.sub ? " stacked" : "") + (pick(r.id) ? " sel" : ""),
-        style: `padding-left:${10 + r.depth * 18}px`
+        style: r.sub ? "" : `padding-left:${r.depth * 22}px`
       });
     });
     return rows;
+  }
+  // The divider between the Team column and the rest (Robert, 2026-11-09): drag it right to widen the Team column, never past halfway.
+  // It changes the column width straight on the page and touches no tracked field, so a drag does not redraw the whole screen.
+  minW = 0; // the starting width, measured when a drag begins
+  dragging = false;
+  dragStartX = 0;
+  dragStartW = 0;
+  colsEl() {
+    return this.template.querySelector(".cols");
+  }
+  hasDragged() {
+    const cols = this.colsEl();
+    return !!cols && !!cols.style.getPropertyValue("--leftw");
+  }
+  leftWidth() {
+    const left = this.template.querySelector(".cols > .stack");
+    return left ? left.getBoundingClientRect().width : 0;
+  }
+  maxLeft() {
+    const cols = this.colsEl();
+    const half = cols ? Math.floor(cols.clientWidth / 2) : 0;
+    return Math.max(this.minW, half);
+  }
+  /** Sets the Team column width: not narrower than where it starts, not wider than half the panel. */
+  applyWidth(px) {
+    const cols = this.colsEl();
+    if (!cols) return;
+    const w = Math.min(this.maxLeft(), Math.round(px));
+    if (w <= this.minW) {
+      cols.style.removeProperty("--leftw");
+    } else {
+      cols.style.setProperty("--leftw", `${w}px`);
+    }
+  }
+  /** A drag is followed on the whole window, not on the 16 px bar, so it does not depend on the pointer being held by the bar (Salesforce does not hold it) and the bar cannot be outrun. */
+  handleDivDown(event) {
+    this.dragStartW = this.leftWidth();
+    if (!this.hasDragged()) this.minW = this.dragStartW;
+    this.dragStartX = event.clientX;
+    this.dragging = true;
+    const bar = event.currentTarget;
+    bar.classList.add("drag");
+    this.colsEl().classList.add("dragging");
+    window.addEventListener("pointermove", this.onWindowMove);
+    window.addEventListener("pointerup", this.onWindowUp);
+    window.addEventListener("pointercancel", this.onWindowUp);
+    event.preventDefault();
+  }
+  onWindowMove = (event) => {
+    if (!this.dragging) return;
+    this.applyWidth(this.dragStartW + event.clientX - this.dragStartX);
+  };
+  onWindowUp = () => {
+    this.endDrag();
+  };
+  endDrag() {
+    this.dragging = false;
+    window.removeEventListener("pointermove", this.onWindowMove);
+    window.removeEventListener("pointerup", this.onWindowUp);
+    window.removeEventListener("pointercancel", this.onWindowUp);
+    const bar = this.template.querySelector(".divider");
+    if (bar) bar.classList.remove("drag");
+    const cols = this.colsEl();
+    if (cols) cols.classList.remove("dragging");
+  }
+  handleDivReset() {
+    this.colsEl().style.removeProperty("--leftw");
+  }
+  handleDivKey(event) {
+    const now = this.leftWidth();
+    if (!this.hasDragged()) this.minW = now;
+    if (event.key === "ArrowRight") {
+      this.applyWidth(now + 20);
+    } else if (event.key === "ArrowLeft") {
+      this.applyWidth(now - 20);
+    } else if (event.key === "Home") {
+      this.handleDivReset();
+    } else {
+      return;
+    }
+    event.preventDefault();
   }
   /** "My team" is offered only to a person who manages a team. */
   get hasOwnTeam() {

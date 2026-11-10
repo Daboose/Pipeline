@@ -119,8 +119,16 @@ describe("c-pipeline-team-table column widths", () => {
     el = await open({ widths: { name: 200, team: 120 } });
     const cols = [...el.shadowRoot.querySelectorAll("col")];
     expect(cols.length).toBe(el.shadowRoot.querySelectorAll("th").length);
-    expect(cols[0].style.width).toBe("200px");
-    expect(cols[1].style.width).toBe("120px");
+    // the saved widths are kept as shares of the table, so they hold their proportions (200 : 120) ...
+    expect(
+      parseFloat(cols[0].style.width) / parseFloat(cols[1].style.width)
+    ).toBeCloseTo(200 / 120, 2);
+    expect(cols[0].style.width).toMatch(/%$/);
+    // ... and the table is never wider than its box, so saved widths that add up to too much shrink together and never make it scroll
+    // sideways (a sideways-scrolling box cannot hold the column names locked at the top)
+    const table = el.shadowRoot.querySelector("table");
+    expect(table.getAttribute("style")).toContain("min(");
+    expect(table.getAttribute("style")).toContain(",100%)");
   });
 
   it("asks for the widths to be cleared on a double-click of a handle", async () => {

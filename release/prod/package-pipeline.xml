@@ -27,10 +27,6 @@
         <name>AuraDefinitionBundle</name>
     </types>
     <types>
-        <members>Pipeline</members>
-        <name>CustomApplication</name>
-    </types>
-    <types>
         <members>Pipeline_Filter__c.Filter_Json__c</members>
         <members>Pipeline_Filter__c.Is_Default__c</members>
         <members>Pipeline_Filter__c.Is_User_Settings__c</members>

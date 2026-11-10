@@ -146,13 +146,89 @@
   background: #dc2626;
 }
 .cols {
+  position: relative;
   display: grid;
-  grid-template-columns: minmax(280px, 380px) minmax(0, 1fr);
-  gap: 16px;
+  grid-template-columns: var(--leftw, minmax(280px, 380px)) 16px minmax(0, 1fr);
+  gap: 0;
   align-items: start;
+}
+.cols.dragging {
+  user-select: none;
 }
 .cols > .stack:only-child {
   grid-column: 1 / -1;
+}
+/* the divider (Robert, 2026-11-09): 16 px wide, the full height of the Team column, a grip in the middle that lights up under the pointer and while dragged. */
+.divider {
+  align-self: stretch;
+  position: relative;
+  cursor: col-resize;
+  touch-action: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  outline: none;
+}
+.divider::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 2px;
+  margin-left: -1px;
+  background: var(--pline);
+  border-radius: 2px;
+  transition: background 0.15s;
+}
+.divider i {
+  position: relative;
+  width: 6px;
+  height: 44px;
+  border-radius: 4px;
+  background: var(--pline);
+  display: block;
+  transition:
+    background 0.15s,
+    width 0.15s;
+}
+.divider i::before,
+.divider i::after {
+  content: "";
+  position: absolute;
+  left: 1px;
+  right: 1px;
+  height: 2px;
+  border-radius: 2px;
+  background: currentColor;
+  opacity: 0.55;
+}
+.divider i::before {
+  top: 15px;
+}
+.divider i::after {
+  top: 27px;
+}
+.divider:hover::before,
+.divider.drag::before,
+.divider:focus-visible::before {
+  background: var(--indigo);
+}
+.divider:hover i,
+.divider.drag i,
+.divider:focus-visible i {
+  background: var(--indigo);
+  width: 10px;
+}
+.divider:hover i::before,
+.divider:hover i::after,
+.divider.drag i::before,
+.divider.drag i::after {
+  background: #fff;
+  opacity: 1;
+  left: 2px;
+  right: 2px;
 }
 .stack {
   display: flex;
@@ -254,7 +330,8 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 7px 10px;
+  padding: 0 10px;
+  min-height: 44px;
   border-bottom: 1px solid var(--pline);
   font-size: 14px;
   cursor: pointer;
@@ -280,6 +357,10 @@
   flex-direction: column;
   align-items: flex-start;
   gap: 2px;
+  padding: 7px 10px;
+}
+.trow.none {
+  padding: 12px 10px;
 }
 .trow.stacked .car {
   display: none;
@@ -292,24 +373,44 @@
 .trow.sel small {
   color: #fff;
 }
-.star {
-  color: var(--pipe);
-}
+/* the fold button (the ROSTRA way, Robert 2026-11-09): a 44 px block the full height of the row, flush with its left edge, that lights up under the pointer; the drawn chevron turns down when the team is open. A team with nothing below it keeps an empty block so the names line up. */
 .car {
-  width: 18px;
-  display: inline-flex;
+  flex: 0 0 44px;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
   justify-content: center;
 }
-.car .chev {
-  display: inline-block;
-  width: 7px;
-  height: 7px;
-  border-right: 2px solid currentColor;
-  border-bottom: 2px solid currentColor;
-  transform: rotate(-45deg);
+.car svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform 0.15s;
 }
-.car .chev.dn {
-  transform: rotate(45deg);
+.car.open svg {
+  transform: rotate(90deg);
+}
+.car.k {
+  cursor: pointer;
+}
+@media (hover: hover) {
+  /* the whole row tints a little under the pointer (as in ROSTRA); the fold block is brighter than the row */
+  .trow:hover:not(.sel):not(.none) {
+    background: rgba(129, 140, 248, 0.14);
+  }
+  .car.k:hover {
+    background: rgba(129, 140, 248, 0.28);
+  }
+  .trow.sel .car.k:hover {
+    background: rgba(255, 255, 255, 0.25);
+  }
+}
+.star {
+  color: var(--pipe);
 }
 .qrow {
   display: flex;

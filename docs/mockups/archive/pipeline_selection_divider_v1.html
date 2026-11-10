@@ -1,0 +1,861 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Mockup: Change selection, divider or two tabs (version 1)</title>
+    <style>
+      :root,
+      [data-theme="light"] {
+        --page: #e9edf4;
+        --card: #fff;
+        --edge: #b3bfd6;
+        --text: #1b2640;
+        --muted: #5d6b85;
+        --pipe: #b7791f;
+        --indigo: #4f46e5;
+        --slate: #64748b;
+        --ppanel: #fff;
+        --pbox: #f3f5fa;
+        --pfield: #fff;
+        --pline: #d5dcea;
+        --ptext: #1b2640;
+      }
+      [data-theme="dark"] {
+        --page: #141e2e;
+        --card: #1a2740;
+        --edge: #5b6f93;
+        --text: #e8edf5;
+        --muted: #9fb0cc;
+        --pipe: #fdb827;
+        --indigo: #6366f1;
+        --slate: #475569;
+        --ppanel: #171b24;
+        --pbox: #1e232e;
+        --pfield: #11151c;
+        --pline: #2c3444;
+        --ptext: #e8edf5;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--page);
+        color: var(--text);
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-size: 15px;
+      }
+      button {
+        font-family: inherit;
+        color: inherit;
+      }
+      .sfnav {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        height: 44px;
+        padding: 0 16px;
+        background: #0b1220;
+        color: #cdd6e6;
+        font-size: 14px;
+      }
+      .sfnav .app {
+        font-weight: 800;
+        letter-spacing: 0.14em;
+      }
+      .sfnav .app b {
+        color: #fdb827;
+      }
+      .sfnav .tab {
+        color: #9fb0cc;
+      }
+      .sfnav .tab.on {
+        color: #fff;
+        border-bottom: 2px solid #6366f1;
+        padding-bottom: 2px;
+      }
+      .sp {
+        flex: 1;
+      }
+      .btn {
+        border: 0;
+        border-radius: 999px;
+        padding: 7px 16px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+        background: var(--slate);
+        color: #fff;
+      }
+      .btn.on {
+        background: var(--indigo);
+      }
+      .about {
+        margin: 14px 16px;
+        padding: 12px 18px;
+        background: var(--card);
+        border: 1px solid var(--edge);
+        border-radius: 12px;
+        line-height: 1.5;
+        max-width: 1100px;
+      }
+      .about summary {
+        cursor: pointer;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        color: var(--pipe);
+      }
+      .about ul {
+        margin: 4px 0 8px;
+        padding-left: 22px;
+      }
+      .tools {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        padding: 0 16px 10px;
+      }
+      .tools .lab {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+      .readout {
+        margin-left: 14px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .readout b {
+        color: var(--text);
+      }
+      /* the Change selection panel, simplified; the Team tree uses the component's real stylesheet */
+      .panel {
+        margin: 0 16px 30px;
+        background: var(--ppanel);
+        color: var(--ptext);
+        border: 1px solid var(--pline);
+        border-radius: 14px;
+        padding: 16px;
+      }
+      .psub {
+        color: var(--muted);
+        margin-bottom: 14px;
+      }
+      .t {
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        font-size: 13px;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+        color: var(--pipe);
+      }
+      .cols {
+        display: grid;
+        grid-template-columns: var(--leftw, 380px) 16px minmax(0, 1fr);
+        gap: 0;
+        align-items: start;
+      }
+      .stack {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        min-width: 0;
+      }
+      .fld {
+        min-width: 0;
+      }
+      .input {
+        width: 100%;
+        height: 36px;
+        border-radius: 10px;
+        border: 1px solid var(--pline);
+        background: var(--pfield);
+        color: var(--ptext);
+        padding: 0 12px;
+        font-size: 15px;
+      }
+      .xchip {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        border: 1px solid var(--indigo);
+        background: #2b2f6b;
+        color: #fff;
+        border-radius: 18px;
+        padding: 6px 8px 6px 14px;
+        margin-bottom: 8px;
+        line-height: 1.3;
+      }
+      .box {
+        background: var(--pbox);
+        border: 1px solid var(--pline);
+        border-radius: 12px;
+        padding: 12px 14px;
+      }
+      .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .chip {
+        border: 1px solid var(--pline);
+        background: var(--pfield);
+        border-radius: 999px;
+        padding: 7px 14px;
+      }
+      .chip.on {
+        background: var(--indigo);
+        border-color: var(--indigo);
+        color: #fff;
+      }
+      .muted {
+        color: var(--muted);
+        font-size: 13px;
+        margin-top: 6px;
+      }
+      /* THE DIVIDER (new): 16 px wide, the full height of the left column, a grip in the middle, lights up on hover and while dragged */
+      .divider {
+        align-self: stretch;
+        position: relative;
+        cursor: col-resize;
+        touch-action: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        outline: none;
+      }
+      .divider::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 50%;
+        width: 2px;
+        margin-left: -1px;
+        background: var(--pline);
+        border-radius: 2px;
+        transition: background 0.15s;
+      }
+      .divider i {
+        position: relative;
+        width: 6px;
+        height: 44px;
+        border-radius: 4px;
+        background: var(--pline);
+        display: block;
+        transition:
+          background 0.15s,
+          width 0.15s;
+      }
+      .divider i::before,
+      .divider i::after {
+        content: "";
+        position: absolute;
+        left: 1px;
+        right: 1px;
+        height: 2px;
+        border-radius: 2px;
+        background: var(--ptext);
+        opacity: 0.55;
+      }
+      .divider i::before {
+        top: 15px;
+      }
+      .divider i::after {
+        top: 27px;
+      }
+      .divider:hover::before,
+      .divider.drag::before,
+      .divider:focus-visible::before {
+        background: var(--indigo);
+      }
+      .divider:hover i,
+      .divider.drag i,
+      .divider:focus-visible i {
+        background: var(--indigo);
+        width: 10px;
+      }
+      .divider:hover i::before,
+      .divider:hover i::after,
+      .divider.drag i::before,
+      .divider.drag i::after {
+        background: #fff;
+        opacity: 1;
+        left: 2px;
+        right: 2px;
+      }
+      body.dragging {
+        cursor: col-resize;
+        user-select: none;
+      }
+      .limit {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 0;
+        border-left: 2px dashed var(--pipe);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.15s;
+      }
+      body.dragging .limit {
+        opacity: 0.7;
+      }
+      .wrap {
+        position: relative;
+      }
+      .tree {
+        margin-top: 6px;
+        border: 1px solid var(--pline);
+        border-radius: 10px;
+        background: var(--pfield);
+        max-height: 300px;
+        overflow: auto;
+      }
+      .trow {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 0 10px 0 0;
+        min-height: 44px;
+        border-bottom: 1px solid var(--pline);
+        font-size: 14px;
+        cursor: pointer;
+      }
+      .trow:last-child {
+        border-bottom: 0;
+      }
+      .trow.sel {
+        background: var(--indigo);
+        color: #fff;
+      }
+      .trow.none {
+        color: var(--muted);
+        cursor: default;
+      }
+      .trow small {
+        margin-left: auto;
+        color: var(--muted);
+        font-size: 12px;
+      }
+      /* a search result: the team name across the top, its path under it, in one column */
+      .trow.stacked {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 2px;
+        padding: 7px 10px;
+      }
+      .trow.none {
+        padding: 12px 10px;
+      }
+      .trow.stacked .car {
+        display: none;
+      }
+      .trow.stacked small {
+        margin-left: 0;
+        font-size: 13px;
+        overflow-wrap: anywhere;
+      }
+      .trow.sel small {
+        color: #fff;
+      }
+      /* the fold button (the ROSTRA way, Robert 2026-11-09): a 44 px block the full height of the row, flush with its left edge, that lights up under the pointer; the drawn chevron turns down when the team is open. A team with nothing below it keeps an empty block so the names line up. */
+      .car {
+        flex: 0 0 44px;
+        align-self: stretch;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .car svg {
+        width: 18px;
+        height: 18px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 2.6;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        transition: transform 0.15s;
+      }
+      .car.open svg {
+        transform: rotate(90deg);
+      }
+      .car.k {
+        cursor: pointer;
+      }
+      @media (hover: hover) {
+        /* the whole row tints a little under the pointer (as in ROSTRA); the fold block is brighter than the row */
+        .trow:hover:not(.sel):not(.none) {
+          background: rgba(129, 140, 248, 0.14);
+        }
+        .car.k:hover {
+          background: rgba(129, 140, 248, 0.28);
+        }
+        .trow.sel .car.k:hover {
+          background: rgba(255, 255, 255, 0.25);
+        }
+      }
+      .star {
+        color: var(--pipe);
+      }
+
+      /* OPTION 2: two tabs */
+      .tabbar {
+        display: none;
+        gap: 8px;
+        margin-bottom: 14px;
+      }
+      .tb {
+        border: 1px solid var(--pline);
+        background: var(--pfield);
+        color: var(--muted);
+        border-radius: 999px;
+        padding: 9px 20px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        cursor: pointer;
+      }
+      .tb.on {
+        background: var(--indigo);
+        border-color: var(--indigo);
+        color: #fff;
+      }
+      .mode-tabs .tabbar {
+        display: flex;
+      }
+      .mode-tabs .divider,
+      .mode-tabs .limit {
+        display: none;
+      }
+      .mode-tabs .cols {
+        display: block;
+      }
+      .mode-tabs .cols .stack {
+        display: none;
+        max-width: 760px;
+      }
+      .mode-tabs[data-tab="team"] .cols .stack:first-of-type {
+        display: flex;
+      }
+      .mode-tabs[data-tab="data"] .cols .stack:last-of-type {
+        display: flex;
+        max-width: none;
+      }
+      .mode-tabs .tree {
+        max-height: 420px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="sfnav">
+      <span class="app"><b>PIPE</b>LINE</span
+      ><span class="tab on">Pipeline</span
+      ><span class="tab">Opportunities &amp; Risks</span><span class="sp"></span
+      ><button type="button" class="btn" id="fullbtn">Full screen</button>
+    </div>
+    <details class="about" open>
+      <summary>ABOUT THIS MOCKUP</summary>
+      <p>
+        <b>Version 1, invented data only.</b> Robert, 2026-11-09: in Change
+        selection the Team column is narrow, so names deep down the team tree
+        squeeze and wrap. Add a draggable divider between the Team column and
+        the rest of the screen (where his red line was in the screenshot). Drag
+        it right to widen the Team column; the rest narrows to suit.
+        <b>Drawn for the desktop screen</b> (the screenshot is the desktop
+        Pipeline; Pipeline Mobile has no Change selection).
+      </p>
+      <p>
+        <b
+          >Two ways to do it, switch between them with the Option buttons
+          below:</b
+        >
+        <b>Option 1</b> is the draggable divider. <b>Option 2</b> (Robert's
+        second idea, added the same day) splits Change selection into two tabs:
+        <b>TEAM &amp; PEOPLE</b> (the team tree, the chosen team chip, "Include
+        teams below" and the Owner box) and <b>DATA</b> (everything that is on
+        the right today). In Option 2 the team tab gives the tree the width it
+        needs, and the divider is not used.
+      </p>
+      <ul>
+        <li>
+          <b>Where it starts:</b> at its leftmost position, which is today's
+          width (380 px). It cannot go left of that.
+        </li>
+        <li>
+          <b>How far it goes:</b> no more than halfway across the panel. A
+          dashed amber line shows the limit while you drag.
+        </li>
+        <li>
+          <b>How it looks:</b> a slim bar with a grip between the two sides. It
+          turns indigo and thickens when you point at it or drag it.
+          Double-click it to snap back to the start. With the keyboard: Tab to
+          it, then the left and right arrow keys.
+        </li>
+        <li>
+          <b>Try it:</b> (1) open the teams in the Team box (open Mark Mottram,
+          then Ray Vercoe, then Darren Agius); (2) drag the divider right and
+          watch the names un-squeeze and the right side narrow; (3) try to drag
+          past halfway; (4) double-click the divider; (5) switch Light and Dark.
+        </li>
+        <li>
+          <b>Option 2, try it:</b> press <b>2 Two tabs</b>, then click TEAM
+          &amp; PEOPLE and DATA at the top of the panel to move between the two
+          halves; open the teams in the tree and see how much room the names
+          have.
+        </li>
+        <li>
+          <b>Not shown yet:</b> whether the width is remembered for next time.
+          As drawn it starts at the leftmost position each time you open the
+          screen, as you described. The right side here is simplified (country,
+          campaign, portfolio); the Team tree is the real one.
+        </li>
+      </ul>
+    </details>
+    <div class="tools">
+      <span class="lab">Option</span
+      ><button type="button" class="btn on" data-m="div">1 Divider</button
+      ><button type="button" class="btn" data-m="tabs">2 Two tabs</button
+      ><span class="lab" style="margin-left: 14px">Theme</span
+      ><button type="button" class="btn" data-t="light">Light</button
+      ><button type="button" class="btn" data-t="dark">Dark</button
+      ><span class="readout">Team column: <b id="w">380</b> px</span>
+    </div>
+    <div class="panel">
+      <div class="psub">
+        Use a team, go manual, or combine them. You see only what sharing
+        allows; anything else just comes back empty. Nothing changes on the
+        screen until you press Apply.
+      </div>
+      <div class="tabbar" id="tabbar">
+        <button type="button" class="tb on" data-tab="team">
+          Team &amp; people</button
+        ><button type="button" class="tb" data-tab="data">Data</button>
+      </div>
+      <div class="wrap" id="wrap">
+        <div class="limit" id="limit"></div>
+        <div class="cols" id="cols">
+          <div class="stack">
+            <div class="fld">
+              <div class="t">Team</div>
+              <div class="xchip" id="chip">
+                Shayne Engelbrecht SENIOR SALES MGR S.E.T (AU)
+              </div>
+              <input
+                class="input"
+                placeholder="Search teams or managers…"
+                id="q"
+              />
+              <div class="tree" id="tree"></div>
+              <label
+                style="
+                  display: flex;
+                  gap: 8px;
+                  align-items: center;
+                  margin-top: 10px;
+                "
+                ><input type="checkbox" checked /> Include teams below</label
+              >
+            </div>
+            <div class="fld">
+              <div class="t">Owner</div>
+              <input class="input" placeholder="Type a name to find anyone…" />
+              <div class="muted">
+                Searches every active user, so people with no deals simply
+                return nothing.
+              </div>
+            </div>
+          </div>
+          <div
+            class="divider"
+            id="divider"
+            role="separator"
+            aria-orientation="vertical"
+            aria-label="Drag to make the Team column wider"
+            tabindex="0"
+          >
+            <i></i>
+          </div>
+          <div class="stack">
+            <div class="box">
+              <div class="t">Where</div>
+              <div class="muted" style="margin: 0 0 8px; font-weight: 700">
+                COUNTRY
+              </div>
+              <div class="chips">
+                <span class="chip">AU</span><span class="chip">NZ</span
+                ><span class="chip">SG</span><span class="chip">MY</span
+                ><span class="chip">TH</span><span class="chip">CN</span
+                ><span class="chip">TW</span><span class="chip">HK</span
+                ><span class="chip">KR</span><span class="chip">IN</span>
+              </div>
+            </div>
+            <div class="box">
+              <div class="t">Campaign</div>
+              <div class="chips"><span class="chip">No campaign ▾</span></div>
+              <div class="muted">
+                Choose a campaign to show only its deals. Not for ROSA deals.
+              </div>
+            </div>
+            <div class="box">
+              <div class="t">What</div>
+              <div class="muted" style="margin: 0 0 8px; font-weight: 700">
+                PORTFOLIO
+              </div>
+              <div class="chips">
+                <span class="chip">Hip</span><span class="chip">Knee</span
+                ><span class="chip">Extremities</span
+                ><span class="chip">CMFT</span
+                ><span class="chip">Surgical</span>
+              </div>
+            </div>
+            <div class="box">
+              <div class="t">Stage</div>
+              <div class="chips">
+                <span class="chip on">Plan</span
+                ><span class="chip on">Action</span
+                ><span class="chip on">Commit</span
+                ><span class="chip on">1st Case</span
+                ><span class="chip on">5th Case</span
+                ><span class="chip">Conversion</span
+                ><span class="chip">Unsuccessful Conversion</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script>
+      var TEAMS = [
+        {
+          id: "set",
+          name: "Shayne Engelbrecht SENIOR SALES MGR S.E.T (AU)",
+          p: null
+        },
+        { id: "anz", name: "Warren Ballinger PRESIDENT (ANZ)", p: null },
+        { id: "ops", name: "Mark Mottram COMMS OPS DIRECTOR (ANZ)", p: "anz" },
+        { id: "au", name: "Ray Vercoe SALES DIRECTOR (AU)", p: "anz" },
+        { id: "ts", name: "TS Surgical (TAS)", p: "au" },
+        { id: "wa", name: "Brenton Buller STATE MGR (WA)", p: "au" },
+        { id: "nsw", name: "Darren Agius STATE MGR (NSW/ACT)", p: "au" },
+        { id: "gib", name: "Mark Gibson AREA SALES MGR (NSW)", p: "nsw" },
+        { id: "whi", name: "Shaun Whittal AREA SALES MGR (NSW)", p: "nsw" },
+        {
+          id: "whi2",
+          name: "Jordan Whittal SENIOR TERRITORY MGR (NSW)",
+          p: "whi"
+        },
+        {
+          id: "whi3",
+          name: "Casey Prowse CLINICAL SPECIALIST HIP (NSW)",
+          p: "whi2"
+        },
+        { id: "vic", name: "Chris Doyle STATE MGR (VIC)", p: "au" },
+        { id: "ops2", name: "Pat Lowe OPS MANAGER (ANZ)", p: "ops" }
+      ];
+      var CH =
+        '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"></path></svg>';
+      var open = { anz: true, au: true },
+        sel = "set",
+        q = "";
+      function kids(id) {
+        return TEAMS.filter(function (t) {
+          return t.p === id;
+        });
+      }
+      function draw() {
+        var o = [],
+          h = "",
+          s = q.trim().toLowerCase();
+        o.push({ id: "mine", name: "My team", star: true, d: 0 });
+        if (s) {
+          TEAMS.forEach(function (t) {
+            if (t.name.toLowerCase().indexOf(s) > -1)
+              o.push({ id: t.id, name: t.name, d: 0, stk: true });
+          });
+        } else
+          (function walk(l, d) {
+            l.forEach(function (t) {
+              var k = kids(t.id);
+              o.push({
+                id: t.id,
+                name: t.name,
+                d: d,
+                kids: k.length > 0,
+                open: !!open[t.id]
+              });
+              if (k.length && open[t.id]) walk(k, d + 1);
+            });
+          })(
+            TEAMS.filter(function (t) {
+              return !t.p;
+            }),
+            0
+          );
+        o.forEach(function (r) {
+          h +=
+            '<div class="trow' +
+            (r.stk ? " stacked" : "") +
+            (sel === r.id ? " sel" : "") +
+            '" data-id="' +
+            r.id +
+            '" style="' +
+            (r.stk ? "" : "padding-left:" + r.d * 22 + "px") +
+            '"><span class="car' +
+            (r.kids ? " k" : "") +
+            (r.open ? " open" : "") +
+            '"' +
+            (r.kids ? ' data-car="' + r.id + '"' : "") +
+            ">" +
+            (r.kids ? CH : "") +
+            "</span>" +
+            (r.star
+              ? '<span class="star">★</span><b>' + r.name + "</b>"
+              : "<span>" + r.name + "</span>") +
+            "</div>";
+        });
+        document.getElementById("tree").innerHTML = h;
+        var t = TEAMS.filter(function (x) {
+          return x.id === sel;
+        })[0];
+        document.getElementById("chip").textContent = t ? t.name : "My team";
+      }
+      document.getElementById("tree").addEventListener("click", function (e) {
+        var row = e.target.closest(".trow");
+        if (!row) return;
+        var car = e.target.closest("[data-car]");
+        if (car) open[car.dataset.car] = !open[car.dataset.car];
+        else sel = row.dataset.id;
+        draw();
+      });
+      document.getElementById("q").addEventListener("input", function (e) {
+        q = e.target.value;
+        draw();
+      });
+      /* the divider */
+      var MIN = 380,
+        cols = document.getElementById("cols"),
+        div = document.getElementById("divider"),
+        wrap = document.getElementById("wrap"),
+        lim = document.getElementById("limit"),
+        W = MIN;
+      function maxW() {
+        return Math.max(MIN, Math.floor(wrap.clientWidth / 2));
+      }
+      function setW(v) {
+        W = Math.max(MIN, Math.min(maxW(), Math.round(v)));
+        cols.style.setProperty("--leftw", W + "px");
+        document.getElementById("w").textContent =
+          W +
+          (W === MIN
+            ? " (leftmost)"
+            : W === maxW()
+              ? " (halfway, the limit)"
+              : "");
+      }
+      function limitLine() {
+        lim.style.left = maxW() + 8 + "px";
+      }
+      var sx = 0,
+        sw = 0;
+      div.addEventListener("pointerdown", function (e) {
+        sx = e.clientX;
+        sw = W;
+        div.setPointerCapture(e.pointerId);
+        div.classList.add("drag");
+        document.body.classList.add("dragging");
+        limitLine();
+        e.preventDefault();
+      });
+      div.addEventListener("pointermove", function (e) {
+        if (div.classList.contains("drag")) setW(sw + e.clientX - sx);
+      });
+      function end() {
+        div.classList.remove("drag");
+        document.body.classList.remove("dragging");
+      }
+      div.addEventListener("pointerup", end);
+      div.addEventListener("pointercancel", end);
+      div.addEventListener("dblclick", function () {
+        setW(MIN);
+      });
+      div.addEventListener("keydown", function (e) {
+        if (e.key === "ArrowRight") {
+          setW(W + 20);
+          e.preventDefault();
+        }
+        if (e.key === "ArrowLeft") {
+          setW(W - 20);
+          e.preventDefault();
+        }
+        if (e.key === "Home") {
+          setW(MIN);
+        }
+      });
+      window.addEventListener("resize", function () {
+        setW(W);
+        limitLine();
+      });
+      document.addEventListener("click", function (e) {
+        var b = e.target.closest("[data-t]");
+        if (b) setTheme(b.dataset.t);
+        if (
+          e.target.id === "fullbtn" &&
+          document.documentElement.requestFullscreen
+        )
+          document.documentElement.requestFullscreen();
+      });
+      function setTheme(t) {
+        document.documentElement.setAttribute("data-theme", t);
+        document.querySelectorAll("[data-t]").forEach(function (x) {
+          x.classList.toggle("on", x.dataset.t === t);
+        });
+      }
+      draw();
+      setW(MIN);
+      limitLine();
+      setTheme(location.hash === "#light" ? "light" : "dark");
+      if (location.hash.indexOf("wide") > -1) {
+        open.ops = true;
+        open.nsw = true;
+        open.whi = true;
+        open.whi2 = true;
+        draw();
+        setW(560);
+      }
+
+      function setMode(m) {
+        var panel = document.querySelector(".panel");
+        panel.classList.toggle("mode-tabs", m === "tabs");
+        panel.dataset.tab = panel.dataset.tab || "team";
+        document.querySelectorAll("[data-m]").forEach(function (x) {
+          x.classList.toggle("on", x.dataset.m === m);
+        });
+        document.querySelector(".readout").style.display =
+          m === "tabs" ? "none" : "";
+      }
+      document.addEventListener("click", function (e) {
+        var m = e.target.closest("[data-m]");
+        if (m) setMode(m.dataset.m);
+        var t = e.target.closest("[data-tab]");
+        if (t && t.classList.contains("tb")) {
+          var panel = document.querySelector(".panel");
+          panel.dataset.tab = t.dataset.tab;
+          document.querySelectorAll(".tb").forEach(function (x) {
+            x.classList.toggle("on", x === t);
+          });
+        }
+      });
+      if (location.hash.indexOf("tabs") > -1) setMode("tabs");
+    </script>
+  </body>
+</html>

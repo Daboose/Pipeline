@@ -1,4 +1,5 @@
 import { LightningElement, api } from "lwc";
+import { StickyHeads } from "c/pipelineSticky";
 import { beginColumnDrag } from "c/pipelineColumnResize";
 import {
   totalsByCurrency,
@@ -47,8 +48,14 @@ export default class PipelineTeamTable extends LightningElement {
     this.bodyMounted = open;
     this.bodyOn = open;
   }
+  renderedCallback() {
+    if (!this.sticky) this.sticky = new StickyHeads(this.template);
+    this.sticky.refresh();
+  }
   disconnectedCallback() {
     clearTimeout(this.foldTimer);
+    if (this.sticky) this.sticky.stop();
+    this.sticky = null;
   }
   get bodyCls() {
     return this.bodyOn ? "fold on" : "fold";
@@ -129,16 +136,22 @@ export default class PipelineTeamTable extends LightningElement {
     return Object.keys(this.widthMap).length > 0;
   }
   get colWidths() {
-    return this.heads.map((h) => ({
+    const cols = this.heads.map((h) => ({
       id: h.id,
-      px: this.widthMap[h.id] || 140,
-      style: `width:${this.widthMap[h.id] || 140}px`
+      px: this.widthMap[h.id] || 140
+    }));
+    const total = cols.reduce((a, c) => a + c.px, 0);
+    // each column is a share of the table (a percentage), and the table is never wider than its box (see tableStyle), so saved widths that
+    // add up to more than the box shrink together instead of making the table scroll sideways, which would stop the column names locking
+    return cols.map((c) => ({
+      ...c,
+      style: `width:${((c.px / total) * 100).toFixed(4)}%`
     }));
   }
   get tableStyle() {
     if (!this.hasWidths) return "";
     const total = this.colWidths.reduce((a, c) => a + c.px, 0);
-    return `table-layout:fixed;width:${total}px`;
+    return `table-layout:fixed;width:min(${total}px,100%)`;
   }
   handleResizeStart(event) {
     const id = event.currentTarget.dataset.id;
