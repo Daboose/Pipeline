@@ -27,6 +27,7 @@ import {
   MINE
 } from "c/pipelineFilterModel";
 import { quarterRank } from "c/pipelineFormat";
+import { zoomStyle, cleanZoom, DEFAULT_ZOOM } from "c/pipelineZoom";
 
 /** JSON with the keys in a fixed order, so two filters with the same choices compare as equal. */
 function stableJson(value) {
@@ -45,7 +46,7 @@ function stableJson(value) {
  * Usages, Surgeries and Chatter, saved filters); 0.10 follows the final mockup: a filter bar with chips and a Change
  * selection panel with Apply, in place of the always-visible Choose Your Data panel.
  */
-const PIPELINE_VERSION = "0.111";
+const PIPELINE_VERSION = "0.119";
 
 /** The colours a person can choose for the headings (Robert, 2026-11-02); the look of each is in pipelineApp.css. */
 const HEAD_COLOURS = [
@@ -113,6 +114,7 @@ export default class PipelineApp extends LightningElement {
   settings = {
     theme: "dark",
     headColour: "pink",
+    zoom: DEFAULT_ZOOM, // the screen size in percent: 100, 90, 80, 70 or 60; 80 until the person chooses (Robert, 2026-11-16)
     altTint: false,
     cols: {},
     widths: {},
@@ -354,6 +356,7 @@ export default class PipelineApp extends LightningElement {
         headColour: HEAD_COLOURS.some((h) => h.key === s.headColour)
           ? s.headColour
           : "pink",
+        zoom: cleanZoom(s.zoom),
         altTint: !!s.altTint,
         cols: s.cols && typeof s.cols === "object" ? s.cols : {},
         widths: s.widths && typeof s.widths === "object" ? s.widths : {},
@@ -415,6 +418,10 @@ export default class PipelineApp extends LightningElement {
   /* ----- what the template needs ----- */
   get rootClass() {
     return "root";
+  }
+  /** The zoom the person chose, as the one number (--z) the whole screen is scaled by. */
+  get rootStyle() {
+    return zoomStyle(this.settings.zoom);
   }
   get theme() {
     return this.settings.theme;
@@ -507,19 +514,27 @@ export default class PipelineApp extends LightningElement {
       this.loadCampaign();
     }
   }
-  async loadCampaign() {
+  /** A deal was put in or taken out of the campaign (Maintain mode): read the campaign's members and tiles again, and the deals, quietly. */
+  handleCampaignDealChange() {
+    this.loadCampaign(true);
+    this.loadDeals(true);
+  }
+  async loadCampaign(quiet) {
     const id = this.linkedCampaignId;
     this.campaignLoadedFor = id;
     this.campaignError = "";
     if (!id) return;
-    this.campaignBusy = true;
+    if (!quiet) this.campaignBusy = true;
     try {
       const detail = await getCampaign({ campaignId: id });
       if (id === this.linkedCampaignId) this.campaignDetail = detail;
     } catch (e) {
-      this.campaignDetail = null;
-      this.campaignError =
-        e && e.body ? e.body.message : "The campaign could not be read.";
+      // a quiet re-read that fails leaves what is on the screen as it is
+      if (!quiet) {
+        this.campaignDetail = null;
+        this.campaignError =
+          e && e.body ? e.body.message : "The campaign could not be read.";
+      }
     } finally {
       this.campaignBusy = false;
     }
@@ -977,6 +992,10 @@ export default class PipelineApp extends LightningElement {
       ...this.settings,
       headColour: event.currentTarget.dataset.head
     };
+    this.persist();
+  }
+  handleZoom(event) {
+    this.settings = { ...this.settings, zoom: cleanZoom(event.detail.value) };
     this.persist();
   }
   handleTint(event) {

@@ -1,0 +1,28 @@
+<template>
+  <div class="wrap">
+    <span class="slbl">Zoom</span>
+    <div
+      class="choices"
+      lwc:ref="track"
+      role="slider"
+      tabindex="0"
+      aria-label="Zoom"
+      aria-valuemin="60"
+      aria-valuemax="100"
+      aria-valuenow={current}
+      aria-valuetext={handleText}
+      onpointerdown={handleDown}
+      onkeydown={handleKey}
+    >
+      <template for:each={steps} for:item="s">
+        <i key={s} class="tk" data-step={s}></i>
+      </template>
+      <div class="hdl" lwc:ref="handle">{handleText}</div>
+    </div>
+  </div>
+  <div class="tl" lwc:if={showLabels} lwc:ref="labels">
+    <template for:each={steps} for:item="s">
+      <span key={s} data-step={s}>{s}</span>
+    </template>
+  </div>
+</template>

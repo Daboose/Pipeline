@@ -24,8 +24,9 @@
   z-index: 81;
   top: 0;
   right: 18px;
-  width: min(680px, calc(100vw - 36px));
-  max-height: calc(100vh - 24px);
+  /* vh and vw are not corrected by Zoom, so they are divided by it (see pipelineZoom) */
+  width: min(680px, calc(100vw / var(--z, 1) - 36px));
+  max-height: calc(100vh / var(--z, 1) - 24px);
   display: flex;
   flex-direction: column;
   overflow: hidden;

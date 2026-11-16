@@ -1,5 +1,10 @@
 <template>
-  <div class={rootClass} data-theme={theme} data-head={headColour}>
+  <div
+    class={rootClass}
+    style={rootStyle}
+    data-theme={theme}
+    data-head={headColour}
+  >
     <header class="top">
       <button
         type="button"
@@ -125,6 +130,8 @@
         lwc:if={campaignDetail}
         campaign={campaignDetail.campaign}
         members={campaignDetail.members}
+        maintainable
+        oncampaigndealchange={handleCampaignDealChange}
       >
         <div slot="heading" class="ctrail">
           <span class="cname">{campaignName}</span>
@@ -281,6 +288,16 @@
             <span class={h.dotCls}></span>{h.label}
           </button>
         </template>
+      </div>
+      <div class="flbl gap">Screen size</div>
+      <c-pipeline-zoom-slider
+        class="zoomseg"
+        value={settings.zoom}
+        onzoomchange={handleZoom}
+      ></c-pipeline-zoom-slider>
+      <div class="zhelp">
+        Makes everything smaller so more fits on the screen. It adds to your
+        browser's own zoom.
       </div>
       <label class="check">
         <input

@@ -233,6 +233,9 @@
   pointer-events: auto;
 }
 .fly {
+  /* the settings panel stays its normal size whatever the Zoom is (its own slider would otherwise shrink under the person's mouse); it is
+     inside the zoomed root, so it is zoomed back up by the same number */
+  zoom: calc(1 / var(--z, 1));
   position: fixed;
   top: 0;
   left: 0;
@@ -628,4 +631,24 @@
 /* the campaign screen ends at the bottom of the window: little padding below the list, which fits itself to what is left */
 .main.cscreen {
   padding-bottom: 16px;
+}
+
+/* Zoom (Robert, 2026-11-16): one number, --z, set on the root from the person's saved setting (1 at 100%, 0.8 at 80%), scales everything inside.
+   Sizes that mean "a share of the window" (vh, vw) are not corrected by zoom, so those are written calc(94vh / var(--z, 1)); see pipelineZoom. */
+.root {
+  zoom: var(--z, 1);
+}
+.zoomseg {
+  --seg-lab: var(--pgroup);
+  --seg-track: var(--pfield);
+  --seg-line: var(--pline);
+  --seg-muted: var(--muted);
+  --seg-indigo: var(--indigo);
+  margin-top: 6px;
+}
+.zhelp {
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.4;
 }

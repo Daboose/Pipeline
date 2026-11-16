@@ -3,11 +3,14 @@
  * Campaigns, one campaign with its members, creating and changing a campaign, switching it on or off, searching for surgeons to
  * add, adding and removing members.
  *
- * Who calls it: the pipelineCampaigns component, and PipelineCampaignControllerTest.
+ * Who calls it: the pipelineCampaigns component, the Pipeline app (pipelineApp, pipelineCampaignMaintain) and PipelineCampaignControllerTest.
  * What it touches: Sales_Campaign__c, Sales_Campaign_Member__c and Sales_Campaign_Deal__c (read counts only) in the signed-in
  * person's own access (user mode). It reads Account (surgeons) and User (managers) in user mode too. It reads the surgeon's
  * hospitals from Healthcare_Surgeon_Relationship__c and the person's own Pipeline settings in system mode, because those are
- * only used to help choose and to show the person's own theme. It never changes an Account or a deal.
+ * only used to help choose and to show the person's own theme and Zoom. maintainDeals reads the deals of a campaign's members (opportunities and risks, never ROSA) in system mode, sharing still applying,
+ * for the Maintain mode of Pipeline's campaign view; putting a deal in or out is done by PipelineDealCampaignController.setLink. saveGlobalSettings writes the person's light or dark choice
+ * and their Zoom into their own Pipeline settings record (Pipeline_Filter__c, flagged Is_User_Settings__c; only that record, only
+ * those two entries, the rest of its settings kept). It never changes an Account or a deal.
  *
  * Who may be a member: only an Account that is a person account of record type Physician or Emerging Consultant. Staging
  * accounts, demo accounts and clinic contacts are never offered. The surgeon search needs at least two characters, looks in the
@@ -40,6 +43,10 @@ public with sharing class PipelineCampaignController {
     public String theme;
     @AuraEnabled
     public String headColour;
+    @AuraEnabled
+    public Boolean hasTheme; // true when the person has saved a light or dark choice in their Pipeline settings
+    @AuraEnabled
+    public Integer zoom; // the person's saved Zoom in percent: 100, 90, 80, 70 or 60 (80 when none is saved)
     @AuraEnabled
     public List<Option> countries;
     @AuraEnabled
@@ -104,6 +111,34 @@ public with sharing class PipelineCampaignController {
     public List<RatingCell> ratings = new List<RatingCell>(); // one per portfolio the campaign covers
     @AuraEnabled
     public List<MemberDeal> deals = new List<MemberDeal>(); // the surgeon's deals linked to this campaign
+  }
+
+  /** One deal of a campaign member, for the Maintain mode of Pipeline's campaign view (put in or take out of the campaign). */
+  public class MaintainDeal {
+    @AuraEnabled
+    public Id id;
+    @AuraEnabled
+    public Id accountId; // the surgeon (Primary HCP)
+    @AuraEnabled
+    public String name;
+    @AuraEnabled
+    public String kind; // opp or risk
+    @AuraEnabled
+    public String portfolio;
+    @AuraEnabled
+    public String brand;
+    @AuraEnabled
+    public String stage;
+    @AuraEnabled
+    public Decimal value;
+    @AuraEnabled
+    public String currencyCode;
+    @AuraEnabled
+    public String ownerName;
+    @AuraEnabled
+    public Boolean inCampaign;
+    @AuraEnabled
+    public Boolean canEdit; // the person may change this deal, so may put it in or take it out
   }
 
   /** A surgeon's usage rating (PLATINUM, GOLD, SILVER, BRONZE or empty) for one of the campaign's portfolios. */
@@ -206,7 +241,9 @@ public with sharing class PipelineCampaignController {
       Schema.SObjectType.Sales_Campaign__c.isUpdateable();
     c.theme = 'dark';
     c.headColour = 'pink';
-    // the person's own Pipeline screen settings, for the dark or light theme and the heading colour (read only)
+    c.hasTheme = false;
+    c.zoom = DEFAULT_ZOOM;
+    // the person's own Pipeline screen settings: the dark or light theme, the heading colour and the Zoom
     List<Pipeline_Filter__c> mine = [
       SELECT Settings_Json__c
       FROM Pipeline_Filter__c
@@ -219,9 +256,11 @@ public with sharing class PipelineCampaignController {
         Map<String, Object> s = (Map<String, Object>) JSON.deserializeUntyped(
           mine[0].Settings_Json__c
         );
-        if (s.get('theme') == 'light') {
-          c.theme = 'light';
+        if (s.get('theme') == 'light' || s.get('theme') == 'dark') {
+          c.theme = (String) s.get('theme');
+          c.hasTheme = true;
         }
+        c.zoom = cleanZoom(s.get('zoom'));
         if (s.get('headColour') instanceof String) {
           c.headColour = (String) s.get('headColour');
         }
@@ -236,6 +275,87 @@ public with sharing class PipelineCampaignController {
       Sales_Campaign__c.Portfolios__c.getDescribe().getPicklistValues()
     );
     return c;
+  }
+
+  /** What a person gets until they choose a Zoom (Robert, 2026-11-16: 80 percent suits the Zimmer Biomet laptops). */
+  private static final Integer DEFAULT_ZOOM = 80;
+  private static final Set<Integer> ZOOM_STEPS = new Set<Integer>{
+    100,
+    90,
+    80,
+    70,
+    60
+  };
+
+  /** A saved Zoom as one of the five steps; the default (80) when it is missing or not one of them. */
+  private static Integer cleanZoom(Object value) {
+    if (value == null) {
+      return DEFAULT_ZOOM;
+    }
+    try {
+      Integer n = Integer.valueOf(String.valueOf(value));
+      return ZOOM_STEPS.contains(n) ? n : DEFAULT_ZOOM;
+    } catch (Exception e) {
+      return DEFAULT_ZOOM;
+    }
+  }
+
+  /**
+   * Saves the signed-in person's own light or dark choice and Zoom into their one Pipeline settings record (the same record the
+   * Pipeline screen keeps its settings in), leaving every other setting in it as it is. Either value may be left null to keep what is
+   * saved. It only ever touches the person's own record; it is written in system mode because a campaign manager may not hold the
+   * Pipeline permission set, and the record is theirs alone (private, owned by them).
+   */
+  @AuraEnabled
+  public static void saveGlobalSettings(String theme, Integer zoom) {
+    if (theme != null && theme != 'light' && theme != 'dark') {
+      throw new AuraHandledException('The theme must be light or dark.');
+    }
+    if (zoom != null && !ZOOM_STEPS.contains(zoom)) {
+      throw new AuraHandledException('The zoom must be 100, 90, 80, 70 or 60.');
+    }
+    Id me = UserInfo.getUserId();
+    List<Pipeline_Filter__c> mine = [
+      SELECT Id, Settings_Json__c
+      FROM Pipeline_Filter__c
+      WHERE OwnerId = :me AND Is_User_Settings__c = TRUE
+      WITH SYSTEM_MODE
+      ORDER BY LastModifiedDate DESC
+      LIMIT 1
+    ];
+    Map<String, Object> settings = new Map<String, Object>();
+    if (!mine.isEmpty() && String.isNotBlank(mine[0].Settings_Json__c)) {
+      try {
+        settings = (Map<String, Object>) JSON.deserializeUntyped(
+          mine[0].Settings_Json__c
+        );
+      } catch (Exception e) {
+        settings = new Map<String, Object>(); // unreadable: start again with just these
+      }
+    }
+    if (theme != null) {
+      settings.put('theme', theme);
+    }
+    if (zoom != null) {
+      settings.put('zoom', zoom);
+    }
+    String json = JSON.serialize(settings);
+    if (json.length() > 30000) {
+      throw new AuraHandledException('The settings are too long to save.');
+    }
+    if (mine.isEmpty()) {
+      Database.insert(
+        new Pipeline_Filter__c(
+          Name = 'Pipeline Settings (do not delete)',
+          Is_User_Settings__c = true,
+          Settings_Json__c = json
+        ),
+        AccessLevel.SYSTEM_MODE
+      );
+    } else {
+      mine[0].Settings_Json__c = json;
+      Database.update(mine[0], AccessLevel.SYSTEM_MODE);
+    }
   }
 
   private static List<Option> options(List<Schema.PicklistEntry> entries) {
@@ -913,5 +1033,131 @@ public with sharing class PipelineCampaignController {
       }
     }
     return r;
+  }
+
+  /**
+   * The deals a manager can put in or take out of a campaign (Robert, 2026-11-16, the Maintain mode of Pipeline's campaign view): for
+   * every surgeon who is a member, their opportunities and risks (never ROSA) that are open and fit the campaign (it is active, it
+   * covers the owner's country and the deal's portfolio), plus any deal already in the campaign (so it can be taken out even when it no
+   * longer fits or has closed). The deals are read without field-level checks, sharing still applies; canEdit says whether the person
+   * may change the deal (setLink in PipelineDealCampaignController checks it again, and the fit, when a deal is put in).
+   */
+  @AuraEnabled
+  public static List<MaintainDeal> maintainDeals(Id campaignId) {
+    List<MaintainDeal> out = new List<MaintainDeal>();
+    if (campaignId == null) {
+      return out;
+    }
+    Sales_Campaign__c c = [
+      SELECT Active__c, Countries__c, Portfolios__c
+      FROM Sales_Campaign__c
+      WHERE Id = :campaignId
+      WITH USER_MODE
+      LIMIT 1
+    ];
+    Set<Id> surgeons = new Set<Id>();
+    for (Sales_Campaign_Member__c m : [
+      SELECT Surgeon__c
+      FROM Sales_Campaign_Member__c
+      WHERE Campaign__c = :campaignId
+      WITH USER_MODE
+      LIMIT 2000
+    ]) {
+      surgeons.add(m.Surgeon__c);
+    }
+    if (surgeons.isEmpty()) {
+      return out;
+    }
+    Set<Id> linked = new Set<Id>();
+    for (Sales_Campaign_Deal__c l : [
+      SELECT Deal__c
+      FROM Sales_Campaign_Deal__c
+      WHERE Campaign__c = :campaignId
+      WITH USER_MODE
+      LIMIT 5000
+    ]) {
+      linked.add(l.Deal__c);
+    }
+    for (SalesRisks__c r : [
+      SELECT
+        Name,
+        Account__c,
+        Stage__c,
+        AmountPerYear__c,
+        CurrencyIsoCode,
+        Brand__c,
+        Owner.Name,
+        Owner_Country__c,
+        RecordType.DeveloperName,
+        Portfolio__c
+      FROM SalesRisks__c
+      WHERE
+        Account__c IN :surgeons
+        AND (NOT RecordType.DeveloperName LIKE '%ROSA%')
+        AND RecordType.DeveloperName NOT IN ('Master', 'SALE')
+        AND (IsClosed__c = FALSE
+        OR Id IN :linked)
+      WITH SYSTEM_MODE
+      ORDER BY CreatedDate DESC
+      LIMIT 5000
+    ]) {
+      Boolean isLinked = linked.contains(r.Id);
+      Set<String> ports = PipelineDealCampaignController.dealPortfolios(
+        r.RecordType.DeveloperName,
+        r.Portfolio__c
+      );
+      if (
+        !isLinked &&
+        !PipelineDealCampaignController.reasons(
+            c,
+            r.Owner_Country__c,
+            ports,
+            true,
+            null
+          )
+          .isEmpty()
+      ) {
+        continue;
+      }
+      MaintainDeal d = new MaintainDeal();
+      d.id = r.Id;
+      d.accountId = r.Account__c;
+      d.name = r.Name;
+      d.kind = r.RecordType.DeveloperName.toUpperCase().endsWith('RISK')
+        ? 'risk'
+        : 'opp';
+      List<String> sorted = new List<String>(ports);
+      sorted.sort();
+      d.portfolio = String.join(sorted, ', ');
+      d.brand = r.Brand__c == null ? null : r.Brand__c.replace(';', ', ');
+      d.stage = r.Stage__c;
+      d.value = r.AmountPerYear__c;
+      d.currencyCode = r.CurrencyIsoCode;
+      d.ownerName = r.Owner == null ? null : r.Owner.Name;
+      d.inCampaign = isLinked;
+      d.canEdit = false;
+      out.add(d);
+    }
+    // who may change which deal: asked of Salesforce itself, in groups (a query takes at most 200 records)
+    Map<Id, MaintainDeal> byId = new Map<Id, MaintainDeal>();
+    for (MaintainDeal d : out) {
+      byId.put(d.id, d);
+    }
+    List<Id> ids = new List<Id>(byId.keySet());
+    Id me = UserInfo.getUserId();
+    for (Integer i = 0; i < ids.size(); i += 200) {
+      List<Id> chunk = new List<Id>();
+      for (Integer j = i; j < Math.min(i + 200, ids.size()); j++) {
+        chunk.add(ids[j]);
+      }
+      for (UserRecordAccess a : [
+        SELECT RecordId, HasEditAccess
+        FROM UserRecordAccess
+        WHERE UserId = :me AND RecordId IN :chunk
+      ]) {
+        byId.get(a.RecordId).canEdit = a.HasEditAccess;
+      }
+    }
+    return out;
   }
 }

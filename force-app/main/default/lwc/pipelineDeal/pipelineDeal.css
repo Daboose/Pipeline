@@ -23,7 +23,9 @@
   top: 0;
   right: 0;
   bottom: 0;
-  width: 96vw;
+  width: calc(
+    96vw / var(--z, 1)
+  ); /* vw is not corrected by Zoom (see pipelineZoom) */
   z-index: 61;
   display: flex;
   flex-direction: column;

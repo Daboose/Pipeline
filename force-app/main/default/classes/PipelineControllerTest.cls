@@ -432,4 +432,87 @@ private class PipelineControllerTest {
     System.assertEquals(null, PipelineController.closeQuarter(null, '2027'));
     System.assertEquals(null, PipelineController.closeQuarter('', '2027'));
   }
+
+  @IsTest
+  static void aDealShowsTheSurgeonsRatingForItsOwnPortfolioAndRosaShowsNone() {
+    // the ratings are read-only roll-ups on the Account, so the choice of rating is tested on its own
+    System.assertEquals(
+      'GOLD',
+      PipelineController.ratingFor(
+        'gold',
+        'BRONZE',
+        'SILVER',
+        'PLATINUM',
+        'Hip'
+      )
+    );
+    System.assertEquals(
+      'BRONZE',
+      PipelineController.ratingFor(
+        'GOLD',
+        'bronze',
+        'SILVER',
+        'PLATINUM',
+        'Knee'
+      )
+    );
+    System.assertEquals(
+      'SILVER',
+      PipelineController.ratingFor(
+        'GOLD',
+        'BRONZE',
+        'SILVER',
+        'PLATINUM',
+        'Extremities'
+      )
+    );
+    System.assertEquals(
+      'PLATINUM',
+      PipelineController.ratingFor(
+        'GOLD',
+        'BRONZE',
+        'SILVER',
+        'PLATINUM',
+        'CMFT'
+      )
+    );
+    System.assertEquals(
+      null,
+      PipelineController.ratingFor(
+        'GOLD',
+        'BRONZE',
+        'SILVER',
+        'PLATINUM',
+        'Trauma'
+      )
+    );
+    System.assertEquals(
+      null,
+      PipelineController.ratingFor('GOLD', null, null, null, 'Knee')
+    );
+    System.assertEquals(
+      null,
+      PipelineController.ratingFor('GOLD', '', null, null, 'Knee')
+    );
+    // a deal with no surgeon, and a ROSA deal, come back with no rating and nothing breaks
+    insert new List<SalesRisks__c>{
+      new SalesRisks__c(
+        RecordTypeId = recordTypeId('AUHIP'),
+        Stage__c = 'Plan',
+        AmountPerYear__c = 1000
+      ),
+      new SalesRisks__c(
+        RecordTypeId = recordTypeId('AUROSA'),
+        Stage__c = 'Sales Pipeline',
+        ROSAGrowthDollar__c = 2000
+      )
+    };
+    PipelineController.DealResult r = PipelineController.getDeals(
+      '{"kinds":["opp","rosa"],"status":"open","closedMonths":3}'
+    );
+    System.assert(r.deals.size() >= 2);
+    for (PipelineController.Deal d : r.deals) {
+      System.assertEquals(null, d.rating);
+    }
+  }
 }

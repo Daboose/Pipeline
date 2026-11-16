@@ -10,7 +10,13 @@ import matchNames from "@salesforce/apex/PipelineCampaignController.matchNames";
 import addMembers from "@salesforce/apex/PipelineCampaignController.addMembers";
 import removeMembers from "@salesforce/apex/PipelineCampaignController.removeMembers";
 import deleteCampaign from "@salesforce/apex/PipelineCampaignController.deleteCampaign";
+import saveGlobalSettings from "@salesforce/apex/PipelineCampaignController.saveGlobalSettings";
 
+jest.mock(
+  "@salesforce/apex/PipelineCampaignController.saveGlobalSettings",
+  () => ({ default: jest.fn(() => Promise.resolve()) }),
+  { virtual: true }
+);
 jest.mock(
   "@salesforce/apex/PipelineCampaignController.getContext",
   () => ({ default: jest.fn() }),
@@ -367,21 +373,51 @@ describe("c-pipeline-campaigns", () => {
     ).toBe(false);
   });
 
-  it("opens in the light theme and remembers a choice of dark", async () => {
+  it("opens dark and at 80% until the person chooses, and saves a choice of light in their settings", async () => {
     window.localStorage.removeItem("pipelineCampaignTheme");
+    saveGlobalSettings.mockClear();
     let el = make();
     await flush();
-    expect(q(el, ".root").dataset.theme).toBe("light");
+    expect(q(el, ".root").dataset.theme).toBe("dark");
+    expect(q(el, ".root").style.getPropertyValue("--z")).toBe("0.8");
     q(el, "c-pipeline-segmented.themeseg").dispatchEvent(
-      new CustomEvent("change", { detail: { value: "dark" } })
+      new CustomEvent("change", { detail: { value: "light" } })
     );
     await flush();
-    expect(q(el, ".root").dataset.theme).toBe("dark");
+    expect(q(el, ".root").dataset.theme).toBe("light");
+    expect(saveGlobalSettings).toHaveBeenCalledWith({
+      theme: "light",
+      zoom: null
+    });
+    // this computer's memory is only the fallback for a person with no saved settings
     document.body.removeChild(el);
     el = make();
     await flush();
-    expect(q(el, ".root").dataset.theme).toBe("dark");
+    expect(q(el, ".root").dataset.theme).toBe("light");
     window.localStorage.removeItem("pipelineCampaignTheme");
+  });
+
+  it("uses the theme and Zoom saved in the person's settings, and saves a new Zoom", async () => {
+    window.localStorage.setItem("pipelineCampaignTheme", "dark");
+    getContext.mockResolvedValue({
+      ...CTX,
+      theme: "light",
+      hasTheme: true,
+      zoom: 70
+    });
+    saveGlobalSettings.mockClear();
+    const el = make();
+    await flush();
+    expect(q(el, ".root").dataset.theme).toBe("light");
+    expect(q(el, ".root").style.getPropertyValue("--z")).toBe("0.7");
+    q(el, "c-pipeline-zoom-slider").dispatchEvent(
+      new CustomEvent("zoomchange", { detail: { value: 60 } })
+    );
+    await flush();
+    expect(q(el, ".root").style.getPropertyValue("--z")).toBe("0.6");
+    expect(saveGlobalSettings).toHaveBeenCalledWith({ theme: null, zoom: 60 });
+    window.localStorage.removeItem("pipelineCampaignTheme");
+    getContext.mockResolvedValue(CTX);
   });
 
   it("shows where you are and goes back by clicking a step", async () => {

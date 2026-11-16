@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+  <apiVersion>68.0</apiVersion>
+  <description
+  >Pipeline: the Zoom slider (100, 90, 80, 70, 60 percent), a one-pill slider with a draggable handle. Used in the Pipeline settings panel and the Campaign Management top bar. It announces the step chosen and changes nothing itself.</description>
+  <isExposed>false</isExposed>
+</LightningComponentBundle>

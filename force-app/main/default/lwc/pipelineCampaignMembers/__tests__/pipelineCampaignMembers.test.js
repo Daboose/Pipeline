@@ -224,4 +224,74 @@ describe("c-pipeline-campaign-members", () => {
     expect(text(el)).toContain("Sam Okafor");
     window.localStorage.removeItem("pipelineCampaignMembersHidden");
   });
+
+  it("has no Mode switch where Maintain is not offered (Campaign Management)", async () => {
+    const el = make();
+    await flush();
+    expect(el.shadowRoot.querySelector(".modeseg")).toBeNull();
+    expect(el.shadowRoot.querySelector(".tychips")).toBeNull();
+  });
+
+  it("offers Report and Maintain in Pipeline; Maintain hands the surgeons to the maintain list, with Opportunities ticked and Risks not, and takes the Show filter and the columns cog away", async () => {
+    const el = make({ maintainable: true });
+    await flush();
+    const mode = el.shadowRoot.querySelector("c-pipeline-segmented.modeseg");
+    expect(mode.options.map((o) => o.value)).toEqual(["report", "maintain"]);
+    expect(mode.value).toBe("report");
+    expect(el.shadowRoot.querySelector(".tychips")).toBeNull();
+    expect(
+      el.shadowRoot.querySelector("c-pipeline-campaign-maintain")
+    ).toBeNull();
+    expect(
+      el.shadowRoot.querySelector("c-pipeline-segmented.showseg")
+    ).not.toBeNull();
+    mode.dispatchEvent(
+      new CustomEvent("change", { detail: { value: "maintain" } })
+    );
+    await flush();
+    const kids = el.shadowRoot.querySelectorAll(".kchip");
+    expect([...kids].map((k) => k.textContent.trim())).toEqual([
+      "Opportunities",
+      "Risks"
+    ]);
+    expect(kids[0].classList.contains("on")).toBe(true);
+    expect(kids[1].classList.contains("on")).toBe(false);
+    const maintain = el.shadowRoot.querySelector(
+      "c-pipeline-campaign-maintain"
+    );
+    expect(maintain).not.toBeNull();
+    expect(maintain.types).toEqual({ opp: true, risk: false });
+    expect(maintain.members.map((m) => m.name)).toEqual([
+      "Dr Mei Tan",
+      "Dr Priya Nair"
+    ]);
+    expect(
+      el.shadowRoot.querySelector("c-pipeline-segmented.showseg")
+    ).toBeNull();
+    expect(el.shadowRoot.querySelector("button.cog")).toBeNull();
+    // ticking Risks passes it on; a change made in the list is announced to the screen
+    kids[1].click();
+    await flush();
+    expect(
+      el.shadowRoot.querySelector("c-pipeline-campaign-maintain").types
+    ).toEqual({
+      opp: true,
+      risk: true
+    });
+    const handler = jest.fn();
+    el.addEventListener("campaigndealchange", handler);
+    maintain.dispatchEvent(
+      new CustomEvent("dealchange", { detail: { dealId: "d1", linked: true } })
+    );
+    expect(handler).toHaveBeenCalledTimes(1);
+    // back to Report: the list as it was
+    mode.dispatchEvent(
+      new CustomEvent("change", { detail: { value: "report" } })
+    );
+    await flush();
+    expect(
+      el.shadowRoot.querySelector("c-pipeline-campaign-maintain")
+    ).toBeNull();
+    expect(heads(el)).toContain("Current Hospitals");
+  });
 });

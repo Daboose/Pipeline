@@ -1,0 +1,74 @@
+<template>
+  <p class="err" lwc:if={error}>{error}</p>
+  <p class="note" lwc:if={inactive}>
+    This campaign is not active, so no deals can be put in it. Deals already in
+    it can still be taken out.
+  </p>
+  <div class="empty" lwc:if={noKinds}>
+    Tick Opportunities or Risks above to list deals.
+  </div>
+  <table class="mtbl" lwc:else>
+    <thead>
+      <tr>
+        <th>Deal</th>
+        <th>Brand</th>
+        <th class="num">Value / year</th>
+        <th>Sales rep</th>
+        <th>Stage</th>
+        <th>In campaign</th>
+        <th class="mid">Add / remove</th>
+      </tr>
+    </thead>
+    <tbody>
+      <template for:each={groups} for:item="g">
+        <tr key={g.key} class="sg">
+          <td colspan="7">
+            <span class="sn">{g.name}</span>
+            <span class="sh">{g.hospitals}</span>
+            <template for:each={g.plates} for:item="p">
+              <span key={p.key} class={p.cls}>{p.text}</span>
+            </template>
+            <span class="cnt">{g.count}</span>
+          </td>
+        </tr>
+        <tr key={g.noneKey} class="none" lwc:if={g.none}>
+          <td colspan="7">{g.noneText}</td>
+        </tr>
+        <template for:each={g.rows} for:item="r">
+          <tr key={r.key} class={r.cls}>
+            <td>
+              <b>{r.name}</b><span class="kind" lwc:if={r.risk}>RISK</span>
+            </td>
+            <td>{r.brand}</td>
+            <td class="num">{r.value}</td>
+            <td>{r.owner}</td>
+            <td>{r.stage}</td>
+            <td>
+              <span class="inpill" lwc:if={r.inCampaign}>In campaign</span>
+              <span class="outpill" lwc:else>Not in</span>
+            </td>
+            <td class="mid">
+              <button
+                type="button"
+                class={r.btnCls}
+                data-id={r.id}
+                disabled={r.disabled}
+                title={r.title}
+                aria-label={r.title}
+                onclick={handlePress}
+              >
+                {r.btnText}
+              </button>
+              <span class="lockn" lwc:if={r.note}>{r.note}</span>
+            </td>
+          </tr>
+        </template>
+      </template>
+    </tbody>
+  </table>
+  <div class="toast" lwc:if={toast}>{toast}</div>
+  <div class="wait" lwc:if={busy}>
+    <div class="spin"></div>
+    <span>{busyText}</span>
+  </div>
+</template>

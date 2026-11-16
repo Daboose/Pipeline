@@ -11,6 +11,7 @@
  *      names still, so then only the heading bar stays.
  * The distance from the top of the screen to the top bar (--stick) is set by the page itself (pipelineApp).
  */
+import { zoomOf } from "c/pipelineZoom";
 export class StickyHeads {
   constructor(template) {
     this.template = template;
@@ -39,11 +40,12 @@ export class StickyHeads {
 
   measure(card) {
     const head = card.querySelector(".lhead");
-    // the exact (fractional) height, not the rounded offsetHeight
+    // the exact (fractional) height, not the rounded offsetHeight; getBoundingClientRect answers in drawn pixels, so under Zoom it is
+    // divided by the zoom to be in the card's own units, which is what the sticky offsets are written in
     if (head)
       card.style.setProperty(
         "--lh",
-        `${head.getBoundingClientRect().height}px`
+        `${head.getBoundingClientRect().height / zoomOf(head)}px`
       );
     const wrap = card.querySelector(".tablewrap");
     const table = card.querySelector(".tbl");

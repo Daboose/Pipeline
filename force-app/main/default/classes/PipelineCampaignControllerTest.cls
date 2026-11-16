@@ -342,4 +342,171 @@ private class PipelineCampaignControllerTest {
       PipelineCampaignController.deleteCampaign(null); // nothing to do
     }
   }
+  @IsTest
+  static void zoomAndThemeAreSavedInThePersonsOwnSettingsAndKeepTheOtherSettings() {
+    System.runAs(manager()) {
+      // nothing saved yet: Pipeline's own defaults
+      PipelineCampaignController.Context c = PipelineCampaignController.getContext();
+      System.assertEquals(80, c.zoom);
+      System.assertEquals('dark', c.theme);
+      System.assertEquals(false, c.hasTheme);
+      // a first save makes the record
+      PipelineCampaignController.saveGlobalSettings('light', 80);
+      c = PipelineCampaignController.getContext();
+      System.assertEquals(80, c.zoom);
+      System.assertEquals('light', c.theme);
+      System.assertEquals(true, c.hasTheme);
+      System.assertEquals(
+        1,
+        [
+          SELECT COUNT()
+          FROM Pipeline_Filter__c
+          WHERE OwnerId = :UserInfo.getUserId() AND Is_User_Settings__c = TRUE
+          WITH SYSTEM_MODE
+        ]
+      );
+      // the Pipeline screen's other settings are kept, and a null leaves a value as it was
+      Pipeline_Filter__c mine = [
+        SELECT Id
+        FROM Pipeline_Filter__c
+        WHERE OwnerId = :UserInfo.getUserId() AND Is_User_Settings__c = TRUE
+        WITH SYSTEM_MODE
+      ];
+      mine.Settings_Json__c = '{"theme":"dark","headColour":"sky","zoom":70,"altTint":true}';
+      Database.update(mine, AccessLevel.SYSTEM_MODE);
+      PipelineCampaignController.saveGlobalSettings(null, 60);
+      Map<String, Object> s = (Map<String, Object>) JSON.deserializeUntyped(
+        [
+          SELECT Settings_Json__c
+          FROM Pipeline_Filter__c
+          WHERE Id = :mine.Id
+          WITH SYSTEM_MODE
+        ]
+        .Settings_Json__c
+      );
+      System.assertEquals(60, Integer.valueOf(String.valueOf(s.get('zoom'))));
+      System.assertEquals('dark', s.get('theme'));
+      System.assertEquals('sky', s.get('headColour'));
+      System.assertEquals(true, s.get('altTint'));
+      System.assertEquals(
+        1,
+        [
+          SELECT COUNT()
+          FROM Pipeline_Filter__c
+          WHERE OwnerId = :UserInfo.getUserId() AND Is_User_Settings__c = TRUE
+          WITH SYSTEM_MODE
+        ]
+      );
+    }
+  }
+
+  @IsTest
+  static void aZoomOrThemeThatIsNotOneOfTheChoicesIsRefusedAndASavedOddOneReadsAs80() {
+    System.runAs(manager()) {
+      try {
+        PipelineCampaignController.saveGlobalSettings(null, 55);
+        System.assert(false, 'a zoom of 55 should be refused');
+      } catch (AuraHandledException e) {
+        System.assert(true);
+      }
+      try {
+        PipelineCampaignController.saveGlobalSettings('purple', null);
+        System.assert(false, 'a theme of purple should be refused');
+      } catch (AuraHandledException e) {
+        System.assert(true);
+      }
+      Database.insert(
+        new Pipeline_Filter__c(
+          Name = 'Pipeline Settings (do not delete)',
+          Is_User_Settings__c = true,
+          Settings_Json__c = '{"zoom":55}'
+        ),
+        AccessLevel.SYSTEM_MODE
+      );
+      System.assertEquals(80, PipelineCampaignController.getContext().zoom);
+    }
+  }
+  @IsTest
+  static void maintainListsTheOpenDealsThatFitAndTheOnesAlreadyInTheCampaign() {
+    User u = manager();
+    u.CountryCode = 'SG'; // the deals' owner country comes from the owner's country
+    update u;
+    System.runAs(u) {
+      Id id = PipelineCampaignController.saveCampaign(
+        payload('Maintain', new List<String>{ 'SG' })
+      );
+      Account a = surgeon('Maint', 'Surgeon', 'SG', 'Physician');
+      PipelineCampaignController.addMember(id, a.Id);
+      SalesRisks__c ext = new SalesRisks__c(
+        RecordTypeId = rt(SalesRisks__c.SObjectType, 'AUEXTREMITIES'),
+        Account__c = a.Id,
+        Stage__c = 'Plan',
+        Expected_Closure_Quarter__c = 'Q4',
+        AmountPerYear__c = 1000
+      );
+      SalesRisks__c risk = new SalesRisks__c(
+        RecordTypeId = rt(SalesRisks__c.SObjectType, 'AURISK'),
+        Account__c = a.Id,
+        Stage__c = 'Unhappy',
+        Portfolio__c = 'Extremities',
+        AmountPerYear__c = 500
+      );
+      SalesRisks__c hip = new SalesRisks__c(
+        RecordTypeId = rt(SalesRisks__c.SObjectType, 'AUHIP'),
+        Account__c = a.Id,
+        Stage__c = 'Plan',
+        Expected_Closure_Quarter__c = 'Q4'
+      );
+      SalesRisks__c rosa = new SalesRisks__c(
+        RecordTypeId = rt(SalesRisks__c.SObjectType, 'AUROSA'),
+        Account__c = a.Id,
+        Stage__c = 'Sales Pipeline',
+        Portfolio__c = 'Extremities',
+        ROSAGrowthDollar__c = 2000
+      );
+      SalesRisks__c hipLinked = new SalesRisks__c(
+        RecordTypeId = rt(SalesRisks__c.SObjectType, 'AUHIP'),
+        Account__c = a.Id,
+        Stage__c = 'Plan',
+        Expected_Closure_Quarter__c = 'Q4'
+      );
+      insert new List<SalesRisks__c>{ ext, risk, hip, rosa, hipLinked };
+      insert new Sales_Campaign_Deal__c(
+        Campaign__c = id,
+        Deal__c = hipLinked.Id
+      );
+      Map<Id, PipelineCampaignController.MaintainDeal> byId = new Map<Id, PipelineCampaignController.MaintainDeal>();
+      for (
+        PipelineCampaignController.MaintainDeal d : PipelineCampaignController.maintainDeals(
+          id
+        )
+      ) {
+        byId.put(d.id, d);
+      }
+      // the open Extremities opportunity and risk fit; a Hip deal does not fit an Extremities campaign; ROSA is never offered
+      System.assert(
+        byId.containsKey(ext.Id),
+        'the Extremities deal is offered'
+      );
+      System.assertEquals('opp', byId.get(ext.Id).kind);
+      System.assertEquals(false, byId.get(ext.Id).inCampaign);
+      System.assertEquals(true, byId.get(ext.Id).canEdit);
+      System.assertEquals(a.Id, byId.get(ext.Id).accountId);
+      System.assert(
+        byId.containsKey(risk.Id),
+        'the Extremities risk is offered'
+      );
+      System.assertEquals('risk', byId.get(risk.Id).kind);
+      System.assertEquals(false, byId.containsKey(hip.Id));
+      System.assertEquals(false, byId.containsKey(rosa.Id));
+      // a deal already in the campaign is always listed, so it can be taken out
+      System.assert(byId.containsKey(hipLinked.Id));
+      System.assertEquals(true, byId.get(hipLinked.Id).inCampaign);
+      // nothing is offered for a campaign with no members, or none
+      System.assertEquals(
+        0,
+        PipelineCampaignController.maintainDeals(null).size()
+      );
+    }
+  }
 }

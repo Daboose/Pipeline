@@ -68,7 +68,7 @@
               </colgroup>
               <thead>
                 <tr>
-                  <th lwc:if={grouped} data-id="__rep">
+                  <th lwc:if={showRepCol} data-id="__rep">
                     <span class="lab">Sales rep</span>
                     <i
                       class="rz"
@@ -120,6 +120,7 @@
                       <b>{r.rep}</b>
                       <small lwc:if={r.summary}>{r.summary}</small>
                     </td>
+                    <td lwc:if={r.plainRep} class="repplain">{r.rep}</td>
                     <template for:each={r.cells} for:item="c">
                       <td key={c.id} class={c.cls} title={c.title}>
                         <span lwc:if={c.tag} class={c.tagCls}>{c.text}</span>

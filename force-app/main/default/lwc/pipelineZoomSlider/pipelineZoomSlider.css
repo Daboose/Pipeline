@@ -1,0 +1,92 @@
+/* the Zoom slider: the one-pill look (a label end, a shaded track, one handle), colours from the parent like pipelineSegmented */
+:host {
+  display: block;
+}
+.wrap {
+  display: flex;
+  align-items: stretch;
+  border-radius: 999px;
+  background: var(--seg-lab, #fff);
+  border: 1px solid var(--seg-line, #c4cde2);
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+}
+.slbl {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 14px 0 16px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--seg-muted, #5d6b85);
+  white-space: nowrap;
+}
+.choices {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: var(--zoom-track-min, 0);
+  height: var(--zoom-track-height, 40px);
+  margin: -1px -1px -1px 0;
+  border-radius: 999px;
+  background: var(--seg-track, #e3e8f4);
+  border: 1px solid var(--seg-line, #c4cde2);
+  box-sizing: border-box;
+  cursor: pointer;
+  user-select: none;
+  touch-action: none;
+}
+.choices:focus-visible {
+  outline: 2px solid var(--seg-indigo, #4f46e5);
+  outline-offset: 2px;
+}
+.tk {
+  position: absolute;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  margin: -3px 0 0 -3px;
+  border-radius: 50%;
+  background: var(--seg-muted, #5d6b85);
+  opacity: 0.55;
+  pointer-events: none;
+}
+.hdl {
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  left: 0;
+  width: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--seg-indigo, #4f46e5);
+  font-size: 14px;
+  font-weight: 800;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+  cursor: grab;
+  transition: left 0.55s cubic-bezier(0.3, 1.35, 0.5, 1);
+}
+.choices:active .hdl {
+  cursor: grabbing;
+}
+/* the numbers under the ticks */
+.tl {
+  position: relative;
+  height: 24px;
+  color: var(--seg-muted, #5d6b85);
+  font-size: 13px;
+  font-weight: 700;
+}
+.tl span {
+  position: absolute;
+  top: 6px;
+  transform: translateX(-50%);
+}
+@media (prefers-reduced-motion: reduce) {
+  .hdl {
+    transition: none !important;
+  }
+}

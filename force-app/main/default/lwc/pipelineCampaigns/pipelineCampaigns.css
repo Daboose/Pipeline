@@ -506,7 +506,7 @@
   border: 1px solid var(--edge);
   border-radius: 10px;
   box-shadow: 0 10px 26px rgba(0, 0, 0, 0.35);
-  width: min(640px, 90vw);
+  width: min(640px, calc(90vw / var(--z, 1)));
 }
 .pop .opt {
   display: block;
@@ -929,7 +929,7 @@ th.act {
 .inlinepop {
   position: absolute;
   z-index: 3;
-  width: min(900px, 60vw);
+  width: min(900px, calc(60vw / var(--z, 1)));
   max-width: none;
   background: var(--ppanel);
   border: 2px solid var(--indigo);
@@ -1147,4 +1147,24 @@ textarea.in::placeholder {
 
 .main.tall {
   padding-bottom: 16px;
+}
+
+/* Zoom (Robert, 2026-11-16): one number, --z, set on the root from the person's saved setting, scales everything inside (see pipelineZoom).
+   vh and vw are not corrected by zoom, so those sizes above are divided by --z. */
+.root {
+  zoom: var(--z, 1);
+}
+.zoomseg {
+  --seg-lab: var(--panel);
+  --seg-track: var(--panel2);
+  --seg-line: var(--edge);
+  --seg-muted: var(--muted);
+  --seg-indigo: var(--indigo);
+  --zoom-track-min: 150px;
+  --zoom-track-height: 36px;
+}
+/* the Zoom slider sits in the top bar beside the theme switch; compact, so it has no row of numbers under it */
+.top .zoomseg {
+  flex: none;
+  width: 250px;
 }

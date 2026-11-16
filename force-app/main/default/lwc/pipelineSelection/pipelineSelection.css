@@ -24,7 +24,9 @@
   left: 0;
   right: 0;
   z-index: 71;
-  max-height: 94vh;
+  max-height: calc(
+    94vh / var(--z, 1)
+  ); /* vh is not corrected by Zoom (see pipelineZoom) */
   display: flex;
   flex-direction: column;
   overflow: hidden;

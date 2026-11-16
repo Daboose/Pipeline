@@ -15,6 +15,8 @@ import {
   plural,
   dealStatus
 } from "c/pipelineFormat";
+import { localWidth, zoomOf } from "c/pipelineZoom";
+import { ratingRank } from "c/pipelineCampaignModel";
 
 const PAGE = 25; // rows shown to start with
 const STEP = 50; // rows added by each "Show more" (Robert, 2026-11-09)
@@ -29,6 +31,9 @@ function implantColumns(valueHeading) {
     ["facility", "Hospital", (d) => d.facility || "", false, true],
     ["country", "Country", (d) => d.ownerCountry || "", false, true],
     ["segment", "Portfolio", (d) => d.segment || "", false, true],
+    // the surgeon's usage rating for this deal's portfolio, best first, unrated last (Robert, 2026-11-16: opportunities and risks only,
+    // between Portfolio and Brand; ROSA deals are against a hospital, which has no rating)
+    ["rating", "Rating", (d) => ratingSortKey(d.rating), false, true],
     ["brands", "Brand", (d) => d.brands || "", false, true],
     ["stage", "Stage", (d) => d.stage || "", false, true],
     ["value", valueHeading, (d) => Number(d.value) || 0, true, true],
@@ -60,14 +65,29 @@ const COLUMNS = {
   ]
 };
 
+/** Sorts a rating best first (Platinum, Gold, Silver, Bronze) with the unrated last. */
+function ratingSortKey(rating) {
+  const r = ratingRank(rating);
+  return r === null ? 9 : r;
+}
+/** "GOLD" as "Gold". */
+function properRating(rating) {
+  const t = String(rating || "").toLowerCase();
+  return t.charAt(0).toUpperCase() + t.slice(1);
+}
+
 const NO_COUNTRY = "nocountry"; // saved with the column choices when the person has hidden the Country column
+const NO_RATING = "norating"; // saved with the column choices when the person has hidden the Rating column (it is on by default)
+const NO_REP = "norep"; // saved with the column choices when the person has hidden the Sales rep column (Robert, 2026-11-16: it is on by default)
 
 const FOLD_IN_DELAY_MS = 30; // lets the closed state be drawn first, so the unfolding runs
 const FOLD_MS = 450; // a little longer than the fold itself (0.4 s in the style sheet)
 
 /**
- * Pipeline: the list of deals for one kind (opportunities, risks or ROSA). Grouped by sales rep with a heavier line
- * between reps (a list holding one rep is not grouped), a Columns picker, sorting by any heading, and column edges the
+ * Pipeline: the list of deals for one kind (opportunities, risks or ROSA). The Sales rep (the owner of the deal) is the first column, on by
+ * default in every list and switched off in the Columns picker (Robert, 2026-11-16: it was missing when a campaign's deals all had one owner).
+ * With more than one rep the list is grouped by rep with a heavier line between reps; a list holding one rep is plain, with the rep's name
+ * on each row; with the column switched off there is no rep column and no grouping. a Columns picker, sorting by any heading, and column edges the
  * person can drag; the widths are kept in their own settings. A row opens the deal. It reads the deals it is handed
  * and changes none.
  */
@@ -100,6 +120,36 @@ export default class PipelineTypeList extends LightningElement {
   renderedCallback() {
     if (!this.sticky) this.sticky = new StickyHeads(this.template);
     this.sticky.refresh();
+    if (this.pickerOpen) this.fitPicker();
+  }
+  /**
+   * The Columns picker hangs below its button, but a list near the bottom of the window left the picker running off the screen with
+   * the lower columns out of reach (Robert, 2026-11-16, the Risks list). It is measured each time it is drawn: if it does not fit below
+   * the button it opens upward when there is more room above (under the top bar), and its height is held to the room it has, scrolling
+   * inside itself, so every column can always be reached. Sizes are in the picker's own units, so the room is divided by the Zoom.
+   */
+  fitPicker() {
+    const picker = this.template.querySelector(".picker");
+    const button = this.template.querySelector(".colwrap .btn");
+    if (!picker || !button) return;
+    picker.style.maxHeight = "";
+    picker.style.top = "";
+    picker.style.bottom = "";
+    const zoom = zoomOf(picker);
+    const rect = button.getBoundingClientRect();
+    const bar =
+      (parseFloat(
+        window.getComputedStyle(picker).getPropertyValue("--stick")
+      ) || 0) * zoom;
+    const below = (window.innerHeight - rect.bottom - 12) / zoom;
+    const above = (rect.top - bar - 12) / zoom;
+    if (picker.offsetHeight <= below) return;
+    const up = above > below;
+    if (up) {
+      picker.style.top = "auto";
+      picker.style.bottom = "calc(100% + 6px)";
+    }
+    picker.style.maxHeight = `${Math.max(120, Math.floor(up ? above : below))}px`;
   }
   disconnectedCallback() {
     clearTimeout(this.foldTimer);
@@ -120,8 +170,9 @@ export default class PipelineTypeList extends LightningElement {
     return (this.deals || []).length;
   }
 
+  /** "picking" while the Columns picker is open: that list's heading bar then sits above the other lists' bars (see the CSS). */
   get cardCls() {
-    return this.listOpen ? "card" : "card shut";
+    return `${this.listOpen ? "card" : "card shut"}${this.pickerOpen ? " picking" : ""}`;
   }
   /* ----- the list ----- */
   get listTitle() {
@@ -193,12 +244,21 @@ export default class PipelineTypeList extends LightningElement {
   get chosenIds() {
     if (!(this.columns && this.columns.length))
       return this.defs.filter((c) => c[4]).map((c) => c[0]);
-    const ids = this.columns;
-    return this.multiCountry &&
+    let ids = this.columns;
+    if (
+      this.multiCountry &&
       !ids.includes("country") &&
       !ids.includes(NO_COUNTRY)
-      ? [...ids, "country"]
-      : ids;
+    )
+      ids = [...ids, "country"];
+    // a layout saved before the Rating column existed shows it too, unless it was switched off
+    if (
+      this.defs.some((c) => c[0] === "rating") &&
+      !ids.includes("rating") &&
+      !ids.includes(NO_RATING)
+    )
+      ids = [...ids, "rating"];
+    return ids;
   }
   get visibleDefs() {
     return this.defs.filter((c) => this.chosenIds.includes(c[0]));
@@ -223,14 +283,18 @@ export default class PipelineTypeList extends LightningElement {
       return (x > y ? 1 : x < y ? -1 : 0) * dir;
     });
   }
-  /** Reps are grouped only when the list holds more than one rep (a lone rep needs no grouping). */
+  /** Whether the Sales rep column is on: it is, unless the person switched it off (saved as the marker "norep"). */
+  get showRepCol() {
+    return !(this.columns && this.columns.includes(NO_REP));
+  }
+  /** Reps are grouped only when the column is on and the list holds more than one rep (a lone rep needs no grouping). */
   get repNames() {
     return [...new Set((this.deals || []).map((d) => d.ownerName || ""))].sort(
       (a, b) => a.localeCompare(b)
     );
   }
   get grouped() {
-    return this.repNames.length > 1;
+    return this.showRepCol && this.repNames.length > 1;
   }
   get orderedDeals() {
     if (!this.grouped) return this.sortedDeals;
@@ -394,6 +458,8 @@ export default class PipelineTypeList extends LightningElement {
           span: 1,
           notAgg: true,
           showRep: false,
+          plainRep: this.showRepCol,
+          rep: d.ownerName || "–",
           multi: false,
           cells: defs.map((c) => this.cell(c[0], d, now))
         });
@@ -437,6 +503,17 @@ export default class PipelineTypeList extends LightningElement {
             !!d.statePriority && (id === "hcp") === (this.kind !== "rosa"),
           // the gold star: the deal is in one or more campaigns (beside the surgeon; a ROSA list has no surgeon column)
           campaign: d.campaignCount > 0 && id === "hcp" && this.kind !== "rosa"
+        };
+      }
+      case "rating": {
+        // the metal plate the Campaign list uses, or "Not rated" in quiet words
+        const r = ratingRank(d.rating) === null ? "" : properRating(d.rating);
+        return {
+          ...base,
+          tag: !!r,
+          tagCls: "rate " + r,
+          text: r || "Not rated",
+          textCls: r ? "" : "norate"
         };
       }
       case "value":
@@ -558,9 +635,9 @@ export default class PipelineTypeList extends LightningElement {
   get hasWidths() {
     return Object.keys(this.widthMap).length > 0;
   }
-  /** Every shown column in order (the rep column first when grouped), each with its width in pixels. */
+  /** Every shown column in order (the rep column first when it is on), each with its width in pixels. */
   get colWidths() {
-    const ids = (this.grouped ? ["__rep"] : []).concat(
+    const ids = (this.showRepCol ? ["__rep"] : []).concat(
       this.visibleDefs.map((c) => c[0])
     );
     const cols = ids.map((id) => ({ id, px: this.widthMap[id] || 140 }));
@@ -581,7 +658,7 @@ export default class PipelineTypeList extends LightningElement {
     const id = event.currentTarget.dataset.id;
     const snapshot = {};
     this.template.querySelectorAll("th[data-id]").forEach((th) => {
-      snapshot[th.dataset.id] = Math.round(th.getBoundingClientRect().width);
+      snapshot[th.dataset.id] = Math.round(localWidth(th));
     });
     this.live = { ...snapshot };
     beginColumnDrag(
@@ -613,23 +690,33 @@ export default class PipelineTypeList extends LightningElement {
 
   /* ----- the Columns picker ----- */
   get pickerItems() {
-    return this.defs.map((c) => ({
-      id: c[0],
-      label: c[1],
-      on: this.chosenIds.includes(c[0])
-    }));
+    return [{ id: "__rep", label: "Sales rep", on: this.showRepCol }].concat(
+      this.defs.map((c) => ({
+        id: c[0],
+        label: c[1],
+        on: this.chosenIds.includes(c[0])
+      }))
+    );
   }
   handlePicker() {
     this.pickerOpen = !this.pickerOpen;
   }
   handleColumn(event) {
     const id = event.target.dataset.id;
+    const checked = event.target.checked;
+    // the Sales rep column is not one of the deal columns: it is on unless the marker says it was switched off
+    const repOn = id === "__rep" ? checked : this.showRepCol;
     const on = this.chosenIds;
-    let next = event.target.checked ? [...on, id] : on.filter((x) => x !== id);
+    let next =
+      id === "__rep" ? on : checked ? [...on, id] : on.filter((x) => x !== id);
     next = this.defs.map((c) => c[0]).filter((x) => next.includes(x));
     if (!next.length) return;
     // switching Country off is remembered, or it would come straight back on while there is more than one country
     if (this.multiCountry && !next.includes("country")) next.push(NO_COUNTRY);
+    if (!repOn) next.push(NO_REP);
+    // the same for Rating (opportunities and risks only)
+    if (this.defs.some((c) => c[0] === "rating") && !next.includes("rating"))
+      next.push(NO_RATING);
     this.dispatchEvent(
       new CustomEvent("columnschange", {
         detail: { kind: this.kind, columns: next }

@@ -7,6 +7,7 @@ import {
   stageDays,
   plural
 } from "c/pipelineFormat";
+import { localWidth } from "c/pipelineZoom";
 
 const FOLD_IN_DELAY_MS = 30; // lets the closed state be drawn first, so the unfolding runs
 const FOLD_MS = 450; // a little longer than the fold itself (0.4 s in the style sheet)
@@ -157,7 +158,7 @@ export default class PipelineTeamTable extends LightningElement {
     const id = event.currentTarget.dataset.id;
     const snapshot = {};
     this.template.querySelectorAll("th[data-id]").forEach((th) => {
-      snapshot[th.dataset.id] = Math.round(th.getBoundingClientRect().width);
+      snapshot[th.dataset.id] = Math.round(localWidth(th));
     });
     this.live = { ...snapshot };
     beginColumnDrag(

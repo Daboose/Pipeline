@@ -14,6 +14,43 @@
     <div class="cardhead">
       <h2>Members</h2>
       <c-pipeline-segmented
+        lwc:if={maintainable}
+        class="modeseg"
+        heading="Mode"
+        label="Mode"
+        options={modeOptions}
+        value={mode}
+        onchange={handleMode}
+      ></c-pipeline-segmented>
+      <div
+        class="tychips"
+        lwc:if={isMaintain}
+        role="group"
+        aria-label="Which deals to list"
+      >
+        <button
+          type="button"
+          role="checkbox"
+          aria-checked={oppOn}
+          class={oppCls}
+          data-kind="opp"
+          onclick={handleKind}
+        >
+          Opportunities <span class={oppTickCls}></span>
+        </button>
+        <button
+          type="button"
+          role="checkbox"
+          aria-checked={riskOn}
+          class={riskCls}
+          data-kind="risk"
+          onclick={handleKind}
+        >
+          Risks <span class={riskTickCls}></span>
+        </button>
+      </div>
+      <c-pipeline-segmented
+        lwc:if={notMaintain}
         class="showseg"
         heading="Show"
         label="Show"
@@ -47,6 +84,7 @@
       <button
         type="button"
         class="cog"
+        lwc:if={notMaintain}
         title="Choose the columns"
         aria-label="Choose the columns"
         onclick={handlePicker}
@@ -72,7 +110,14 @@
     <slot name="ask"></slot>
 
     <div class="tscroll stick">
-      <table class="tbl" style={tableStyle}>
+      <c-pipeline-campaign-maintain
+        lwc:if={isMaintain}
+        campaign={campaign}
+        members={maintainMembers}
+        types={types}
+        ondealchange={handleDealChange}
+      ></c-pipeline-campaign-maintain>
+      <table class="tbl" style={tableStyle} lwc:else>
         <colgroup lwc:if={hasWidths}>
           <template for:each={colList} for:item="c">
             <col key={c.id} style={c.style} />

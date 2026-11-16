@@ -1,0 +1,215 @@
+/* the Maintain list: one heading row per surgeon, then a row per deal with a round + or minus (Robert, 2026-11-16; mockup pipeline_campaign_maintain_v1.html) */
+:host {
+  display: block;
+}
+.err {
+  margin: 10px 14px;
+  color: var(--bad, #f87171);
+  font-weight: 700;
+}
+.note {
+  margin: 10px 14px;
+  color: var(--warn, #fb923c);
+  font-weight: 700;
+}
+.empty {
+  padding: 30px 20px;
+  color: var(--muted);
+  font-size: 17px;
+}
+.mtbl {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 15px;
+}
+.mtbl th {
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  background: var(--panel);
+  text-align: left;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--head);
+  padding: 9px 14px;
+  white-space: nowrap;
+  border-bottom: 1px solid var(--line);
+}
+.mtbl td {
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+.num {
+  text-align: right;
+}
+.mid {
+  text-align: center;
+}
+tr.sg td {
+  background: color-mix(in srgb, var(--head) 8%, var(--panel));
+  border-top: 2px solid var(--edge);
+  padding: 10px 14px;
+}
+.sn {
+  font-size: 18px;
+  font-weight: 800;
+}
+.sh {
+  color: var(--muted);
+  margin: 0 12px 0 12px;
+  font-size: 14px;
+}
+.cnt {
+  float: right;
+  color: var(--muted);
+  font-size: 14px;
+}
+tr.dl td:first-child {
+  padding-left: 34px;
+}
+tr.dl.in td {
+  background: rgba(22, 163, 74, 0.1);
+}
+tr.dl.lock td {
+  opacity: 0.55;
+}
+tr.none td {
+  color: var(--muted);
+  font-style: italic;
+  padding-left: 34px;
+}
+.kind {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 1px 8px;
+  border-radius: 6px;
+  background: var(--panel2, var(--panel));
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+}
+.inpill {
+  display: inline-block;
+  padding: 3px 12px;
+  border-radius: 999px;
+  background: #16a34a;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.outpill {
+  color: var(--muted);
+  font-size: 13px;
+}
+/* the round buttons are filled: indigo to put a deal in, slate to take it out */
+.rb {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  color: #fff;
+  font-family: inherit;
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.rb.add {
+  background: var(--indigo, #6366f1);
+}
+.rb.rem {
+  background: var(--fill2, #475569);
+}
+.rb:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.rb:focus-visible {
+  outline: 2px solid var(--indigo2, #a5b4fc);
+  outline-offset: 2px;
+}
+.lockn {
+  margin-left: 8px;
+  color: var(--muted);
+  font-size: 12px;
+}
+/* the rating plates, the same brushed-metal colours as the lists */
+.rate {
+  display: inline-block;
+  border-radius: 6px;
+  padding: 0 10px;
+  margin-right: 6px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1.7;
+  color: #1b2640;
+}
+.rate.Platinum {
+  background: linear-gradient(135deg, #f1f4f8, #aeb9c8);
+}
+.rate.Gold {
+  background: linear-gradient(135deg, #ffe08a, #d9a21b);
+}
+.rate.Silver {
+  background: linear-gradient(135deg, #eef0f3, #b4b8bf);
+}
+.rate.Bronze {
+  background: linear-gradient(135deg, #f0c9a0, #b8763a);
+}
+/* the message that says what was done, and the "Please wait" cover over everything while a press is saved */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 22px;
+  transform: translateX(-50%);
+  z-index: 60;
+  padding: 10px 20px;
+  border: 1px solid var(--edge);
+  border-radius: 999px;
+  background: #0b1220;
+  color: #fff;
+  font-weight: 700;
+}
+.wait {
+  position: fixed;
+  inset: 0;
+  z-index: 55;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+  justify-content: center;
+  background: rgba(8, 12, 20, 0.55);
+  color: #fff;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+.spin {
+  width: 36px;
+  height: 36px;
+  border: 4px solid rgba(255, 255, 255, 0.25);
+  border-top-color: var(--indigo2, #a5b4fc);
+  border-radius: 50%;
+  animation: spin 0.9s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .spin {
+    animation: none;
+  }
+}

@@ -14,6 +14,7 @@ import {
   teamRows
 } from "c/pipelineFilterModel";
 import { quarterRank, boundRank, boundText } from "c/pipelineFormat";
+import { localWidth, zoomOf } from "c/pipelineZoom";
 
 /** Brand lists already read, by record type, so a record type is asked for only once. */
 const BRAND_CACHE = new Map();
@@ -93,8 +94,10 @@ export default class PipelineSelection extends LightningElement {
       const tree = this.template.querySelector(".tree");
       const sel = this.template.querySelector(".tree .trow.sel");
       if (tree && sel) {
+        // drawn distance, divided by the zoom so it is in the box's own scrolling units
         const gap =
-          sel.getBoundingClientRect().top - tree.getBoundingClientRect().top;
+          (sel.getBoundingClientRect().top - tree.getBoundingClientRect().top) /
+          zoomOf(tree);
         tree.scrollTop += gap - tree.clientHeight / 3;
       }
     }
@@ -243,6 +246,7 @@ export default class PipelineSelection extends LightningElement {
   minW = 0; // the starting width, measured when a drag begins
   dragging = false;
   dragStartX = 0;
+  dragZoom = 1; // the zoom where the divider is, so the mouse's drawn pixels become the panel's own units
   dragStartW = 0;
   colsEl() {
     return this.template.querySelector(".cols");
@@ -253,7 +257,7 @@ export default class PipelineSelection extends LightningElement {
   }
   leftWidth() {
     const left = this.template.querySelector(".cols > .stack");
-    return left ? left.getBoundingClientRect().width : 0;
+    return left ? localWidth(left) : 0;
   }
   maxLeft() {
     const cols = this.colsEl();
@@ -276,6 +280,7 @@ export default class PipelineSelection extends LightningElement {
     this.dragStartW = this.leftWidth();
     if (!this.hasDragged()) this.minW = this.dragStartW;
     this.dragStartX = event.clientX;
+    this.dragZoom = zoomOf(event.currentTarget);
     this.dragging = true;
     const bar = event.currentTarget;
     bar.classList.add("drag");
@@ -287,7 +292,9 @@ export default class PipelineSelection extends LightningElement {
   }
   onWindowMove = (event) => {
     if (!this.dragging) return;
-    this.applyWidth(this.dragStartW + event.clientX - this.dragStartX);
+    this.applyWidth(
+      this.dragStartW + (event.clientX - this.dragStartX) / this.dragZoom
+    );
   };
   onWindowUp = () => {
     this.endDrag();

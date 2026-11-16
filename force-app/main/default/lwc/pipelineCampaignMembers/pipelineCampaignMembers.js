@@ -8,6 +8,7 @@ import {
   stageBand
 } from "c/pipelineFormat";
 import { sortRows, memberTiles, ratingRank } from "c/pipelineCampaignModel";
+import { localWidth, zoomOf } from "c/pipelineZoom";
 
 const WIDTHS_KEY = "pipelineCampaignMembersWidths";
 const HIDDEN_KEY = "pipelineCampaignMembersHidden";
@@ -56,7 +57,8 @@ const byNewest = (a, b) =>
  * surgeon, hospitals, country and city, type, one rating column per portfolio the campaign covers, and the surgeon's deals
  * linked to the campaign (a second line for each further deal; a Portfolio column when the campaign covers several portfolios).
  * The table sorts by a heading, resizes by a column edge and keeps its headings in view, like every Pipeline table.
- * It reads nothing itself; the parent gives it the campaign and its members. It only shows what is connected: reps link their own deals.
+ * It reads nothing itself; the parent gives it the campaign and its members. In Report mode it only shows what is connected. In Pipeline
+ * (`maintainable`) a Mode switch adds Maintain, which hands the surgeons to pipelineCampaignMaintain (put deals in and out of the campaign).
  */
 export default class PipelineCampaignMembers extends LightningElement {
   /** The campaign (CampaignRow from PipelineCampaignController) and its members (MemberRow list). */
@@ -64,7 +66,11 @@ export default class PipelineCampaignMembers extends LightningElement {
   @api members = [];
   /** Campaign Management: show the tick boxes. */
   @api manage = false;
+  /** Pipeline: offer the Maintain mode (put deals in and out of the campaign) beside the Report mode (Robert, 2026-11-16). */
+  @api maintainable = false;
 
+  mode = "report"; // report (the list as it always was) or maintain
+  types = { opp: true, risk: false }; // the kinds of deal Maintain lists: opportunities, not risks, until the person ticks them
   filter = "all";
   q = "";
   sort = { id: "name", dir: 1 };
@@ -101,9 +107,10 @@ export default class PipelineCampaignMembers extends LightningElement {
     const below = parent
       ? parseFloat(window.getComputedStyle(parent).paddingBottom) || 0
       : 0;
+    // top is in drawn pixels and the box's own units are what the style is written in, so under Zoom the space left is divided by it
     const room = Math.max(
       260,
-      Math.floor(window.innerHeight - top - below - 4)
+      Math.floor((window.innerHeight - top) / zoomOf(box) - below - 4)
     );
     box.style.maxHeight = room + "px";
   }
@@ -230,7 +237,7 @@ export default class PipelineCampaignMembers extends LightningElement {
     const id = event.currentTarget.dataset.id;
     const snapshot = {};
     this.template.querySelectorAll("th[data-id]").forEach((th) => {
-      snapshot[th.dataset.id] = Math.round(th.getBoundingClientRect().width);
+      snapshot[th.dataset.id] = Math.round(localWidth(th));
     });
     this.live = { ...snapshot };
     beginColumnDrag(
@@ -278,6 +285,65 @@ export default class PipelineCampaignMembers extends LightningElement {
         valCls: money.length > 9 ? "long" : ""
       }
     ];
+  }
+
+  // ---------- report or maintain ----------
+  get isMaintain() {
+    return this.maintainable && this.mode === "maintain";
+  }
+  get notMaintain() {
+    return !this.isMaintain;
+  }
+  get modeOptions() {
+    return [
+      { value: "report", label: "Report" },
+      { value: "maintain", label: "Maintain" }
+    ];
+  }
+  handleMode(event) {
+    this.mode = event.detail.value;
+  }
+  get oppOn() {
+    return this.types.opp;
+  }
+  get riskOn() {
+    return this.types.risk;
+  }
+  get oppCls() {
+    return this.types.opp ? "kchip on" : "kchip";
+  }
+  get riskCls() {
+    return this.types.risk ? "kchip on" : "kchip";
+  }
+  get oppTickCls() {
+    return this.types.opp ? "ktick" : "kring";
+  }
+  get riskTickCls() {
+    return this.types.risk ? "ktick" : "kring";
+  }
+  handleKind(event) {
+    const kind = event.currentTarget.dataset.kind;
+    this.types = { ...this.types, [kind]: !this.types[kind] };
+  }
+  /** The surgeons Maintain lists: the search applies, the Show filter does not (a surgeon must not vanish from under the person's finger
+   *  when a deal is put in), and they are in name order. */
+  get maintainMembers() {
+    const q = this.q.trim().toLowerCase();
+    return (this.members || [])
+      .filter(
+        (m) =>
+          !q ||
+          ((m.name || "") + " " + (m.preferredName || ""))
+            .toLowerCase()
+            .includes(q)
+      )
+      .sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+  }
+  /** A deal was put in or taken out: tell the screen, so the tiles and the deals are read again. */
+  handleDealChange(event) {
+    this.dispatchEvent(
+      new CustomEvent("campaigndealchange", { detail: event.detail })
+    );
   }
 
   // ---------- filter and search ----------

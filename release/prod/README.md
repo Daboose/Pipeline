@@ -75,3 +75,7 @@ The pilot (assign `Pipeline_User` to Robert and a few), then everyone; warn the 
 ### The easier way, if Gearset is connected to GitHub
 
 Gearset can compare a branch of `Daboose/Pipeline` against PROD. I can make a branch that holds exactly the items above (PROD's own record types and layouts included), so you tick everything Gearset shows instead of choosing among UAT's differences. Tell Claude if you want it.
+
+## Release 3 (2026-11-16): Pipeline 0.119 (Zoom, Sales rep and Rating columns, Maintain mode)
+
+Released by Robert with Gearset: 13 Lightning web components (`pipelineApp`, `pipelineCampaignMaintain`, `pipelineCampaignMembers`, `pipelineCampaigns`, `pipelineColumnResize`, `pipelineDeal`, `pipelineFilters`, `pipelineSelection`, `pipelineSticky`, `pipelineTeamTable`, `pipelineTypeList`, `pipelineZoom`, `pipelineZoomSlider`) and 4 Apex classes (`PipelineController`, `PipelineCampaignController` and their two tests), validated with `PipelineControllerTest` and `PipelineCampaignControllerTest`. No permission set or data model change. Left out on purpose: the Usage Card (UAT only) and `pipelineUsageChoices`. Verified read-only against the repo by content on 2026-11-16: PROD matches except those two. Everyone hard refreshes; a person with no saved Zoom sees 80% and dark.

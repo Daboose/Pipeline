@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+  <apiVersion>68.0</apiVersion>
+  <description
+  >Pipeline: the Maintain mode of the campaign view. For each surgeon in a campaign it lists their open deals that fit the campaign, with a round plus to put a deal in the campaign and a minus to take it out. Used inside pipelineCampaignMembers in Pipeline.</description>
+  <isExposed>false</isExposed>
+</LightningComponentBundle>

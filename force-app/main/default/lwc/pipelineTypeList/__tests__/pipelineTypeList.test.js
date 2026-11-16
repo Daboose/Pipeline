@@ -63,7 +63,7 @@ describe("c-pipeline-type-list", () => {
     expect(el.shadowRoot.querySelectorAll("tr.gfirst").length).toBe(2);
   });
 
-  it("does not group a list that holds a single rep", async () => {
+  it("does not group a list that holds a single rep, but still shows the rep's name first on every row", async () => {
     const el = make({
       kind: "opp",
       deals: [deal("1", "Ann"), deal("2", "Ann")]
@@ -71,6 +71,42 @@ describe("c-pipeline-type-list", () => {
     await Promise.resolve();
     expect(el.shadowRoot.querySelectorAll("td.repcell").length).toBe(0);
     expect(rows(el).length).toBe(2);
+    expect(el.shadowRoot.querySelector("th").dataset.id).toBe("__rep");
+    const names = [...el.shadowRoot.querySelectorAll("td.repplain")].map(
+      (td) => td.textContent
+    );
+    expect(names).toEqual(["Ann", "Ann"]);
+  });
+
+  it("offers Sales rep first in the Columns picker, on by default, and switching it off removes the column and the grouping", async () => {
+    const el = make({
+      kind: "opp",
+      deals: [deal("1", "Ann"), deal("2", "Bob")]
+    });
+    const handler = jest.fn();
+    el.addEventListener("columnschange", handler);
+    await Promise.resolve();
+    el.shadowRoot.querySelector(".colwrap .btn").click();
+    await Promise.resolve();
+    const first = el.shadowRoot.querySelector(".picker input");
+    expect(first.dataset.id).toBe("__rep");
+    expect(first.checked).toBe(true);
+    first.checked = false;
+    first.dispatchEvent(new CustomEvent("change"));
+    const cols = handler.mock.calls[0][0].detail.columns;
+    expect(cols).toContain("norep");
+    expect(cols).toContain("segment");
+    // the screen hands the saved choice back: no rep column, no grouping
+    el.columns = cols;
+    await Promise.resolve();
+    expect(el.shadowRoot.querySelector('th[data-id="__rep"]')).toBeNull();
+    expect(el.shadowRoot.querySelectorAll("td.repcell").length).toBe(0);
+    expect(el.shadowRoot.querySelectorAll("td.repplain").length).toBe(0);
+    expect(rows(el).length).toBe(2);
+    // a layout saved before the Sales rep column existed shows it
+    el.columns = ["segment", "stage"];
+    await Promise.resolve();
+    expect(el.shadowRoot.querySelectorAll("td.repcell").length).toBe(2);
   });
 
   it("marks a deal that is in a campaign with a gold star beside the surgeon, never in a ROSA list", async () => {
@@ -168,6 +204,87 @@ describe("c-pipeline-type-list", () => {
     box.dispatchEvent(new CustomEvent("change"));
     expect(handler).toHaveBeenCalled();
     expect(handler.mock.calls[0][0].detail.columns).toContain("age");
+  });
+
+  it("lifts its heading bar above the other lists' bars while the Columns picker is open, and puts it back when closed", async () => {
+    const el = make({ kind: "opp", deals: [deal("1", "Ann")] });
+    const card = () => el.shadowRoot.querySelector("section.card");
+    expect(card().classList.contains("picking")).toBe(false);
+    el.shadowRoot.querySelector(".colwrap .btn").click();
+    await Promise.resolve();
+    expect(card().classList.contains("picking")).toBe(true);
+    el.shadowRoot.querySelector(".backdrop").click();
+    await Promise.resolve();
+    expect(card().classList.contains("picking")).toBe(false);
+  });
+
+  it("shows the surgeon's rating as a metal plate between Portfolio and Brand, and Not rated when there is none", async () => {
+    const el = make({
+      kind: "opp",
+      deals: [
+        deal("1", "Ann", { rating: "GOLD" }),
+        deal("2", "Ann", { rating: null })
+      ]
+    });
+    await Promise.resolve();
+    const heads = [...el.shadowRoot.querySelectorAll("th .lab")].map((l) =>
+      l.textContent.trim()
+    );
+    expect(heads.indexOf("Rating")).toBe(heads.indexOf("Portfolio") + 1);
+    expect(heads.indexOf("Brand")).toBe(heads.indexOf("Rating") + 1);
+    const plates = [...el.shadowRoot.querySelectorAll("span.rate")];
+    expect(plates.map((p) => p.textContent)).toContain("Gold");
+    expect(
+      plates.find((p) => p.textContent === "Gold").classList.contains("Gold")
+    ).toBe(true);
+    expect(el.shadowRoot.querySelector("span.norate").textContent).toBe(
+      "Not rated"
+    );
+  });
+
+  it("has a Rating column for opportunities and risks but not for ROSA", async () => {
+    const kinds = ["opp", "risk", "rosa"];
+    const els = kinds.map((kind) => make({ kind, deals: [deal("1", "Ann")] }));
+    await Promise.resolve();
+    els.forEach((el) => el.shadowRoot.querySelector(".colwrap .btn").click());
+    await Promise.resolve();
+    els.forEach((el, i) => {
+      const labels = [...el.shadowRoot.querySelectorAll(".picker label")].map(
+        (l) => l.textContent.trim()
+      );
+      expect(labels.includes("Rating")).toBe(kinds[i] !== "rosa");
+    });
+  });
+
+  it("shows Rating on a layout saved before it existed, and remembers when it is switched off", async () => {
+    const el = make({
+      kind: "opp",
+      deals: [deal("1", "Ann")],
+      columns: ["hcp", "stage"]
+    });
+    const handler = jest.fn();
+    el.addEventListener("columnschange", handler);
+    await Promise.resolve();
+    expect(
+      [...el.shadowRoot.querySelectorAll("th .lab")].map((l) =>
+        l.textContent.trim()
+      )
+    ).toContain("Rating");
+    el.shadowRoot.querySelector(".colwrap .btn").click();
+    await Promise.resolve();
+    const box = el.shadowRoot.querySelector('.picker input[data-id="rating"]');
+    box.checked = false;
+    box.dispatchEvent(new CustomEvent("change"));
+    const cols = handler.mock.calls[0][0].detail.columns;
+    expect(cols).toContain("norating");
+    expect(cols).not.toContain("rating");
+    el.columns = cols;
+    await Promise.resolve();
+    expect(
+      [...el.shadowRoot.querySelectorAll("th .lab")].map((l) =>
+        l.textContent.trim()
+      )
+    ).not.toContain("Rating");
   });
 
   it("shows each rep's deal count and total, and collapses a rep to one line", async () => {

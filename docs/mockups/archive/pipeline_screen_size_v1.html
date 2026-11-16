@@ -1,0 +1,2487 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Mockup: Screen size, Normal and Small (version 1)</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        height: 100%;
+      }
+      body {
+        margin: 0;
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-size: 15px;
+        overflow: hidden;
+      }
+      /* Pipeline shared look: imported by every Pipeline screen with  
+   The colours are NOT set here: they are set once on the app's root element (dark or light) and inherited, so one switch changes everything. */
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      button {
+        font-family: inherit;
+      }
+
+      .btn {
+        border: 1px solid transparent;
+        border-radius: 999px;
+        background: var(--indigo);
+        color: #fff;
+        font-weight: 800;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        padding: 9px 18px;
+        cursor: pointer;
+      }
+      .btn.sec {
+        background: transparent;
+        border-color: var(--indigo2);
+        color: var(--indigo2);
+      }
+      .btn.ghost {
+        background: transparent;
+        color: var(--indigo2);
+        padding-left: 10px;
+        padding-right: 10px;
+      }
+      .btn:focus-visible,
+      .pill:focus-visible,
+      .rbtn:focus-visible {
+        outline: 2px solid var(--indigo2);
+        outline-offset: 2px;
+      }
+
+      /* round icon buttons (chevrons, close) */
+      .rbtn {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        border: 1.5px solid var(--edge);
+        background: transparent;
+        color: var(--text);
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: none;
+      }
+      .chev {
+        width: 9px;
+        height: 9px;
+        border-right: 2.5px solid currentColor;
+        border-bottom: 2.5px solid currentColor;
+        transform: rotate(45deg);
+        margin-top: -3px;
+      }
+      .chev.up {
+        transform: rotate(-135deg);
+        margin-top: 3px;
+      }
+
+      .pill {
+        border: 1px solid var(--pline);
+        background: var(--pfield);
+        color: var(--text);
+        border-radius: 999px;
+        padding: 6px 13px;
+        font-size: 14px;
+        cursor: pointer;
+      }
+      .pill.on {
+        background: var(--indigo);
+        border-color: var(--indigo);
+        color: #fff;
+      }
+
+      select.in,
+      input.in {
+        height: 36px;
+        background-color: var(--pfield);
+        border: 1px solid var(--pline);
+        border-radius: 8px;
+        color: var(--text);
+        font-size: 15px;
+        padding: 0 12px;
+      }
+      select.in {
+        appearance: none;
+        padding-right: 34px;
+        background-image:
+          linear-gradient(45deg, transparent 50%, var(--muted) 50%),
+          linear-gradient(135deg, var(--muted) 50%, transparent 50%);
+        background-position:
+          calc(100% - 17px) 15px,
+          calc(100% - 12px) 15px;
+        background-size:
+          5px 5px,
+          5px 5px;
+        background-repeat: no-repeat;
+      }
+
+      .tag {
+        display: inline-block;
+        border-radius: 999px;
+        padding: 1px 9px;
+        font-size: 13px;
+        font-weight: 700;
+        border: 1px solid currentColor;
+        white-space: nowrap;
+      }
+      .tag.ok {
+        color: var(--ok);
+      }
+      .tag.warn {
+        color: var(--warn);
+      }
+      .tag.bad {
+        color: var(--bad);
+      }
+      .tag.hold {
+        color: var(--muted);
+      }
+
+      /* A round clear button: a circle with a cross drawn dead centre (two lines, so it is centred both ways whatever the font).
+   .xcirc is the circle itself; .sbox + .sclear put one on the right of a search box, vertically centred. Every search box has one. */
+      .xcirc {
+        position: relative;
+        flex: none;
+        width: 22px;
+        height: 22px;
+        padding: 0;
+        border: 0;
+        border-radius: 50%;
+        background: var(--indigo);
+        cursor: pointer;
+        font-size: 0;
+      }
+      .xcirc::before,
+      .xcirc::after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 10px;
+        height: 2px;
+        border-radius: 1px;
+        background: #fff;
+      }
+      .xcirc::before {
+        transform: translate(-50%, -50%) rotate(45deg);
+      }
+      .xcirc::after {
+        transform: translate(-50%, -50%) rotate(-45deg);
+      }
+      .xcirc:focus-visible {
+        outline: 2px solid var(--indigo2);
+        outline-offset: 2px;
+      }
+      .sbox {
+        position: relative;
+        display: block;
+      }
+      .sbox > input {
+        width: 100%;
+        padding-right: 38px;
+      }
+      .sclear {
+        position: absolute;
+        right: 7px;
+        top: 50%;
+        margin-top: -11px;
+      }
+
+      .card {
+        width: 100%;
+        background: var(--panel);
+        border: 1px solid var(--edge);
+        border-radius: 14px;
+        box-shadow: var(--shadow);
+        padding: 12px 18px 16px;
+      }
+      /* the top of each list: a band across the whole card, tinted with the heading colour (pink in dark mode), so the three lists are easy to tell apart when scrolling */
+      .lhead {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: -12px -18px 12px;
+        padding: 10px 18px;
+        border-radius: 13px 13px 0 0;
+        background: rgba(253, 184, 39, 0.14);
+        background: color-mix(in srgb, var(--head) 16%, transparent);
+        border-bottom: 1px solid
+          color-mix(in srgb, var(--head) 38%, transparent);
+      }
+      .lhead h3 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--head);
+      }
+      .sp {
+        flex: 1;
+      }
+      .colwrap {
+        position: relative;
+      }
+      .backdrop {
+        position: fixed;
+        inset: 0;
+        z-index: 20;
+      }
+      .picker {
+        position: absolute;
+        right: 0;
+        top: 42px;
+        z-index: 21;
+        background: var(--ppanel);
+        border: 1px solid var(--edge);
+        border-radius: 12px;
+        box-shadow: var(--shadow);
+        padding: 10px 14px;
+        min-width: 230px;
+      }
+      .pk {
+        display: flex;
+        gap: 9px;
+        align-items: center;
+        padding: 4px 0;
+        font-size: 15px;
+        cursor: pointer;
+      }
+      .pkfoot {
+        display: flex;
+        gap: 4px;
+        margin-top: 6px;
+      }
+
+      .tablewrap {
+        overflow-x: auto;
+      }
+      .tbl {
+        border-collapse: collapse;
+        font-size: 15px;
+        width: 100%;
+      }
+      .tbl th {
+        position: relative;
+        text-align: left;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+        padding: 8px 14px;
+        border-bottom: 1px solid var(--line);
+        white-space: nowrap;
+        user-select: none;
+      }
+      .tbl th .lab {
+        cursor: pointer;
+      }
+      .tbl td {
+        padding: 8px 14px;
+        border-bottom: 1px solid var(--line);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .num {
+        text-align: right;
+      }
+      .arrow {
+        margin-left: 4px;
+        color: var(--indigo2);
+      }
+      /* the drag handle on each column's right edge */
+      .rz {
+        position: absolute;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        width: 10px;
+        cursor: col-resize;
+      }
+      .rz::after {
+        content: "";
+        position: absolute;
+        right: 3px;
+        top: 22%;
+        bottom: 22%;
+        width: 2px;
+        border-radius: 1px;
+        background: var(--edge);
+      }
+      .rz:hover::after {
+        background: var(--indigo2);
+        top: 0;
+        bottom: 0;
+      }
+      .tbl tbody tr {
+        cursor: pointer;
+      }
+      @media (hover: hover) {
+        .tbl tbody tr:hover td {
+          background: rgba(99, 102, 241, 0.1);
+        }
+      }
+      /* the first row of each sales rep has a heavier line above it */
+      .tbl tr.gfirst td {
+        border-top: 2px solid var(--edge);
+      }
+      .tbl tr.alt td {
+        background: rgba(99, 102, 241, 0.06);
+      }
+      .repcell {
+        min-width: 170px;
+        vertical-align: top;
+        cursor: pointer;
+        border-right: 1px solid var(--line);
+      }
+      .repcell small {
+        display: block;
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 400;
+      }
+      .gchev {
+        display: inline-block;
+        width: 18px;
+      }
+      .gchev .chev {
+        width: 7px;
+        height: 7px;
+        margin: 0;
+        vertical-align: middle;
+        transform: rotate(-45deg);
+      }
+      .gchev .chev.up {
+        transform: rotate(45deg);
+      }
+      .empty {
+        color: var(--muted);
+        padding: 14px 4px;
+        font-size: 15px;
+      }
+      .more {
+        padding: 12px 0 2px;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+
+      /* closed: the card shrinks to just its coloured band, with no white strip under it */
+      .card.shut {
+        padding-bottom: 0;
+      }
+      .card.shut .lhead {
+        margin-bottom: 0;
+        border-radius: 13px;
+        border-bottom-color: transparent;
+      }
+
+      /* folding: the body unfolds from nothing to its full height and folds back, easing the card's spacing with it */
+      .card {
+        transition: padding-bottom 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .lhead {
+        transition:
+          margin-bottom 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+          border-radius 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+          border-color 0.4s ease;
+      }
+      .fold {
+        display: grid;
+        grid-template-rows: 0fr;
+        opacity: 0;
+        transition:
+          grid-template-rows 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+          opacity 0.3s ease;
+      }
+      .fold.on {
+        grid-template-rows: 1fr;
+        opacity: 1;
+      }
+      .bodyin {
+        min-height: 0;
+        overflow: hidden;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .card,
+        .lhead,
+        .fold {
+          transition: none;
+        }
+      }
+
+      /* the rep priority star takes the heading colour, the same as in the legend above the lists */
+      .star {
+        color: var(--head);
+      }
+      /* the violet star: the deal is a state priority (Robert, 2026-11-10; mockup pipeline_state_priority_star_v1.html, option A) */
+      .sstar {
+        color: var(--state);
+      }
+      /* the gold star: the deal is in one or more campaigns */
+      .cstar {
+        color: var(--gold);
+      }
+
+      /* the Status pills (Robert, 2026-11-07; mockup pipeline_status_column_v2.html, option B): solid, in the stage bar's colours */
+      .stp {
+        display: inline-flex;
+        align-items: center;
+        height: 26px;
+        padding: 0 12px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        white-space: nowrap;
+      }
+      .stp.st-open {
+        background: var(--indigo);
+        color: #fff;
+      }
+      .stp.st-hold {
+        background: #f59e0b;
+        color: #1b2640;
+      }
+      .stp.st-won {
+        background: #16a34a;
+        color: #fff;
+      }
+      .stp.st-lost {
+        background: #dc2626;
+        color: #fff;
+      }
+      .stp.st-closed {
+        background: #64748b;
+        color: #fff;
+      }
+
+      /* the default widths (Robert, 2026-11-07): the Hospital column a little narrower, the Status column a little wider. Until a person
+   drags a column, a hospital name is cut at 220px with "…" and the Status column is at least 150px; a width they have dragged wins. */
+      .clip {
+        display: inline-block;
+        max-width: 220px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        vertical-align: bottom;
+        white-space: nowrap;
+      }
+      .tbl th.c-status,
+      .tbl td.c-status {
+        min-width: 150px;
+      }
+
+      .root {
+        --page: #0e1623;
+        --bg: #141e2e;
+        --panel: #1a2740;
+        --panel2: #20304f;
+        --line: #2f4163;
+        --edge: #5b6f93;
+        --text: #e8edf5;
+        --muted: #8b9bb0;
+        --pipe: #fdb827;
+        --head: #f472b6;
+        --bar-primary: #2f80ed;
+        --bar-revision: #fb923c;
+        --bar-cmft: #14b8a6;
+        --grid-line: rgba(139, 155, 176, 0.25);
+        --indigo: #6366f1;
+        --indigo2: #a5b4fc;
+        --ok: #4ee0b0;
+        --warn: #fb923c;
+        --bad: #f87171;
+        --shadow: 0 8px 20px rgba(0, 0, 0, 0.55);
+        --ppanel: #171b24;
+        --pgroup: #1e232e;
+        --pfield: #11151c;
+        --pline: #2c3444;
+        --gold: #ffc400;
+        --state: #a78bfa;
+        position: relative;
+        background: var(--bg);
+        color: var(--text);
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-size: 15px;
+      }
+      .root[data-theme="light"] {
+        --gold: #e0a100;
+        --state: #7c3aed;
+        --page: #e9edf4;
+        --bg: #f4f6fa;
+        --panel: #ffffff;
+        --panel2: #eef2fa;
+        --line: #d5dcea;
+        --edge: #b3bfd6;
+        --text: #1b2640;
+        --muted: #5d6b85;
+        --pipe: #b7791f;
+        --bar-primary: #2563eb;
+        --bar-revision: #ea580c;
+        --bar-cmft: #0d9488;
+        --grid-line: rgba(93, 107, 133, 0.3);
+        --indigo: #4f46e5;
+        --indigo2: #4338ca;
+        --ok: #0f9d74;
+        --warn: #c2570c;
+        --bad: #dc2626;
+        --shadow: 0 8px 20px rgba(30, 45, 80, 0.18);
+        --ppanel: #eef2fa;
+        --pgroup: rgba(120, 140, 190, 0.07);
+        --pfield: #ffffff;
+        --pline: #d5dcea;
+      }
+
+      /* The heading colour (headings, the bar behind them, the rep priority star) is the person's choice, saved in their settings:
+   four colours, each with a brighter shade for dark mode and a deeper one for light mode. Pink is the default. */
+      .root[data-head="sky"] {
+        --head: #5eb3ff;
+      }
+      .root[data-head="lime"] {
+        --head: #a3e635;
+      }
+      .root[data-head="cyan"] {
+        --head: #22d3ee;
+      }
+      .root[data-theme="light"][data-head="pink"] {
+        --head: #db2777;
+      }
+      .root[data-theme="light"][data-head="sky"] {
+        --head: #0284c7;
+      }
+      .root[data-theme="light"][data-head="lime"] {
+        --head: #4d7c0f;
+      }
+      .root[data-theme="light"][data-head="cyan"] {
+        --head: #0e7490;
+      }
+
+      .top {
+        /* every control in this row is this tall, the same as the options bar under it */
+        --barh: 38px;
+        position: sticky;
+        top: 0;
+        z-index: 5;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 10px 18px;
+        background: var(--bg);
+        border-bottom: 1px solid var(--line);
+      }
+
+      .legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px 18px;
+        color: var(--muted);
+        font-size: 14px;
+        padding: 0 4px;
+      }
+      /* the rep priority star in the legend takes the heading colour, like the stars in the lists */
+      .legend .star {
+        color: var(--head);
+      }
+      .legend .sstar {
+        color: var(--state);
+      }
+      .legend .cstar {
+        color: var(--gold);
+      }
+
+      .sfnav {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        height: 44px;
+        padding: 0 16px;
+        background: #0b1220;
+        color: #cdd6e6;
+        font-size: 14px;
+      }
+      .sfnav .app {
+        font-weight: 800;
+        letter-spacing: 0.14em;
+      }
+      .sfnav .app b {
+        color: #fdb827;
+      }
+      .sfnav .tab {
+        color: #9fb0cc;
+      }
+      .sfnav .tab.on {
+        color: #fff;
+        border-bottom: 2px solid #6366f1;
+        padding-bottom: 2px;
+      }
+      .sfnav .sp {
+        flex: 1;
+      }
+      .root {
+        height: calc(100vh - 44px);
+        overflow: auto;
+        background: var(--bg);
+        color: var(--text);
+        font-size: 15px;
+      }
+      .top .wm {
+        font-weight: 800;
+        letter-spacing: 0.14em;
+        font-size: 18px;
+      }
+      .top .asat {
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .main {
+        padding: 14px 20px 40px;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+      .count {
+        color: var(--muted);
+        font-size: 14px;
+      }
+      .about {
+        padding: 12px 18px;
+        background: var(--panel);
+        border: 1px solid var(--edge);
+        border-radius: 12px;
+        line-height: 1.5;
+        max-width: 1100px;
+      }
+      .about summary {
+        cursor: pointer;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        color: var(--pipe);
+      }
+      .about ul {
+        margin: 4px 0 8px;
+        padding-left: 22px;
+      }
+      .tools {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      .tools .lab {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        margin-left: 10px;
+      }
+      .btn.on {
+        background: var(--indigo);
+        color: #fff;
+      }
+      .legend {
+        margin: 0;
+      }
+      /* ===== the proposal: the heading band and the column names stay under the top bar until their list has gone past ===== */
+      .root {
+        --stick: 59px;
+      }
+      .lhead {
+        position: sticky;
+        top: var(--stick);
+        z-index: 3;
+        background:
+          linear-gradient(
+            color-mix(in srgb, var(--head) 16%, transparent),
+            color-mix(in srgb, var(--head) 16%, transparent)
+          ),
+          var(--panel);
+      }
+      .tbl th {
+        position: sticky;
+        top: calc(var(--stick) + var(--lh, 66px));
+        z-index: 2;
+        background: var(--panel);
+        border-bottom: 0;
+        box-shadow:
+          inset 0 -1px 0 var(--line),
+          0 1px 0 var(--panel);
+      }
+      /* while the band is stuck it is flat and square and covers the card's own 1 px edge, so no side lines or curve show on that row */
+      .bodyin {
+        overflow: clip;
+      }
+      .tablewrap {
+        overflow-x: clip;
+      }
+      .tbl.wide {
+        min-width: 1900px;
+      }
+      .card.widebox .tablewrap {
+        overflow-x: auto;
+      }
+      .card.widebox .tbl th {
+        position: relative;
+        top: auto;
+      }
+
+      /* ===== this mockup: Screen size (Normal / Small) ===== */
+      body {
+        overflow: auto;
+        background: #0b1220;
+        color: #e8edf5;
+      }
+      .mk {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 14px 16px 0;
+      }
+      .mk .about {
+        max-width: none;
+        background: #1a2740;
+        color: #e8edf5;
+        --muted: #8b9bb0;
+        --pipe: #fdb827;
+        --edge: #5b6f93;
+        --panel: #1a2740;
+      }
+      .mk .about code {
+        background: #0b1220;
+        padding: 1px 6px;
+        border-radius: 6px;
+      }
+      .bar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px 22px;
+        align-items: center;
+        padding: 12px 16px;
+        margin: 12px auto 0;
+        max-width: 1280px;
+        color: #cdd6e6;
+        font-size: 14px;
+      }
+      .bar .lab {
+        color: #8b9bb0;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        margin-right: 8px;
+      }
+      .seg {
+        display: inline-flex;
+        background: #11182a;
+        border: 1px solid #2f4163;
+        border-radius: 999px;
+        padding: 3px;
+      }
+      .seg button {
+        border: 0;
+        background: transparent;
+        color: #9fb0cc;
+        font-weight: 800;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        padding: 8px 16px;
+        border-radius: 999px;
+        cursor: pointer;
+      }
+      .seg button.on {
+        background: #6366f1;
+        color: #fff;
+      }
+      .stage {
+        margin: 12px auto 40px;
+        width: var(--w, 100%);
+        max-width: 100%;
+        border: 1px solid #2f4163;
+        transition: width 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .stage .sfnav {
+        height: 44px;
+      }
+      /* the window the app lives in: its height is a share of the screen */
+      .stage .root {
+        height: 74vh;
+        min-height: 560px;
+        overflow: auto;
+      }
+      /* ===== THE WHOLE IDEA: one number scales everything inside the app. Normal = 1, Small = 0.75. ===== */
+      .wrapper {
+        --z: 1;
+      }
+      .stage .root {
+        zoom: var(--z);
+        height: calc(74vh / var(--z));
+        min-height: calc(560px / var(--z));
+      }
+
+      .top {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: nowrap;
+        padding: 10px 18px;
+      }
+      .top .cog {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        background: var(--indigo);
+        color: #fff;
+        border: 0;
+        font-size: 22px;
+        cursor: pointer;
+        flex: none;
+      }
+      .top .wm {
+        display: flex;
+        align-items: center;
+        gap: 0;
+        font-size: 22px;
+        font-weight: 800;
+        letter-spacing: 0.06em;
+        padding: 6px 16px;
+        border-radius: 6px;
+        background: linear-gradient(#2a2f39, #0f1218 45%, #2a2f39);
+        border: 1px solid #545b69;
+      }
+      .top .wm .pipe {
+        color: var(--pipe);
+      }
+      .top .wm .line {
+        color: #fff;
+      }
+      .top .asat {
+        color: var(--muted);
+        font-size: 15px;
+        line-height: 1.4;
+        flex: none;
+      }
+      .top .grow {
+        flex: 1;
+      }
+      .sw {
+        display: inline-flex;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 3px;
+        background: var(--bg);
+        flex: none;
+      }
+      .sw span {
+        padding: 9px 18px;
+        border-radius: 999px;
+        font-weight: 800;
+        font-size: 13px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+        cursor: pointer;
+      }
+      .sw span.on {
+        background: var(--indigo);
+        color: #fff;
+      }
+      .pillbox {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 8px 18px;
+        font-size: 15px;
+        flex: none;
+        white-space: nowrap;
+      }
+      .pillbox .k {
+        color: var(--muted);
+        font-weight: 800;
+        font-size: 13px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+      .pillbox b {
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+      .chg {
+        color: var(--warn);
+        border: 1px solid var(--warn);
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        padding: 2px 10px;
+      }
+      .big {
+        background: var(--indigo);
+        color: #fff;
+        border: 0;
+        border-radius: 999px;
+        font-weight: 800;
+        font-size: 14px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        padding: 11px 18px;
+        cursor: pointer;
+        flex: none;
+      }
+      .sq {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        background: var(--indigo);
+        color: #fff;
+        border: 0;
+        font-size: 20px;
+        flex: none;
+      }
+      .chips {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 14px 18px;
+        border-bottom: 1px solid var(--line);
+        flex-wrap: nowrap;
+      }
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 8px 18px;
+        font-weight: 800;
+        font-size: 14px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        white-space: nowrap;
+        flex: none;
+      }
+      .chip.on {
+        background: #1a2447;
+        border-color: var(--indigo);
+      }
+      .chip .tick {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: var(--indigo);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+      }
+      .chip .ring {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        border: 2px solid var(--indigo2);
+      }
+      .chip.txt {
+        font-weight: 500;
+        letter-spacing: 0;
+        text-transform: none;
+        font-size: 17px;
+        color: var(--muted);
+      }
+      .chip.txt b {
+        color: var(--text);
+        font-weight: 500;
+      }
+      .main {
+        padding: 16px 18px 40px;
+      }
+      .sum {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+      }
+      .sumc {
+        background: var(--panel);
+        border: 1px solid var(--edge);
+        border-radius: 14px;
+        padding: 18px 22px;
+        box-shadow: var(--shadow);
+      }
+      .sumc h3 {
+        margin: 0 0 14px;
+        font-size: 26px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--head);
+      }
+      .sumc h3 small {
+        font-size: 17px;
+        font-weight: 500;
+        letter-spacing: 0;
+        color: var(--muted);
+        text-transform: none;
+        margin-left: 10px;
+      }
+      .kp {
+        display: flex;
+        gap: 48px;
+      }
+      .kp div {
+        font-size: 14px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .kp b {
+        display: block;
+        font-size: 44px;
+        line-height: 1.2;
+        color: var(--text);
+        letter-spacing: 0;
+      }
+      .kp b.o {
+        color: var(--warn);
+      }
+      .sumc p {
+        margin: 10px 0 0;
+        color: var(--muted);
+        font-size: 17px;
+      }
+      .gap {
+        height: 16px;
+      }
+      .camp {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        padding: 18px 18px 0;
+        flex-wrap: nowrap;
+      }
+      .camp h2 {
+        margin: 0;
+        font-size: 30px;
+        font-weight: 800;
+        white-space: nowrap;
+      }
+      .camp .ok {
+        background: #14803c;
+        color: #fff;
+        font-weight: 700;
+        font-size: 17px;
+        padding: 6px 20px;
+        border-radius: 999px;
+      }
+      .camp .sub {
+        color: var(--muted);
+        font-size: 17px;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        white-space: nowrap;
+      }
+      .tiles {
+        display: flex;
+        gap: 12px;
+      }
+      .tile {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 10px 14px;
+        min-width: 100px;
+      }
+      .tile b {
+        display: block;
+        font-size: 38px;
+        line-height: 1.1;
+      }
+      .tile i {
+        font-style: normal;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        font-size: 13px;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .tile.o b {
+        color: var(--warn);
+      }
+      .plate {
+        display: inline-block;
+        font-weight: 800;
+        font-size: 13px;
+        letter-spacing: 0.14em;
+        padding: 5px 16px;
+        border-radius: 8px;
+        text-transform: uppercase;
+      }
+      .plate.g {
+        background: #e8b923;
+        color: #3a2a00;
+      }
+      .plate.s {
+        background: #d7dbe3;
+        color: #2b3140;
+      }
+      .nd {
+        color: var(--warn);
+        font-weight: 700;
+        font-size: 19px;
+      }
+      .tbl td,
+      .tbl th {
+        white-space: nowrap;
+      }
+      .view {
+        display: none;
+      }
+      .view.on {
+        display: block;
+      }
+      /* the settings flyout, sliding in from the left */
+      .fly {
+        color: #e8edf5;
+        background: #171b24;
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: 380px;
+        border-right: 3px solid var(--indigo);
+        padding: 22px;
+        z-index: 20;
+        transform: translateX(-105%);
+        transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+        overflow: auto;
+      }
+      .fly.on {
+        transform: none;
+      }
+      .fly h4 {
+        margin: 0 0 18px;
+        font-size: 20px;
+        letter-spacing: 0.12em;
+        font-weight: 800;
+      }
+      .fly h4 span {
+        color: #fdb827;
+      }
+      .fly .row {
+        background: #1e232e;
+        border: 1px solid #2c3444;
+        border-radius: 12px;
+        padding: 14px;
+        margin-bottom: 14px;
+      }
+      .fly .row .t {
+        font-weight: 800;
+        font-size: 12px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: #8b9bb0;
+        margin-bottom: 10px;
+      }
+      .fly .row p {
+        margin: 10px 0 0;
+        color: #8b9bb0;
+        font-size: 13px;
+        line-height: 1.4;
+      }
+      .fly .seg {
+        width: 100%;
+      }
+      .fly .seg button {
+        flex: 1;
+        padding: 9px 0;
+        letter-spacing: 0;
+        font-size: 13px;
+      }
+      .scrim {
+        position: absolute;
+        inset: 0;
+        background: rgba(5, 8, 15, 0.55);
+        z-index: 19;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.4s;
+      }
+      .scrim.on {
+        opacity: 1;
+        pointer-events: auto;
+      }
+      .wrapper {
+        position: relative;
+        overflow: hidden;
+      }
+      /* the settings panel stays at its normal size whatever the screen behind it is set to */
+      .pillsl {
+        display: flex;
+        align-items: center;
+        background: #0f131a;
+        border: 1px solid #2c3444;
+        border-radius: 999px;
+        padding: 4px;
+      }
+      .pillsl .lab {
+        color: #fff;
+        font-weight: 800;
+        font-size: 12px;
+        letter-spacing: 0.1em;
+        padding: 0 12px 0 14px;
+      }
+      .trk {
+        position: relative;
+        flex: 1;
+        height: 40px;
+        border-radius: 999px;
+        background: #11182a;
+        margin: 0 2px;
+        touch-action: none;
+        cursor: pointer;
+        user-select: none;
+      }
+      .trk .tk {
+        position: absolute;
+        top: 50%;
+        width: 6px;
+        height: 6px;
+        margin: -3px 0 0 -3px;
+        border-radius: 50%;
+        background: #3b4a6b;
+      }
+      .trk .hdl {
+        position: absolute;
+        top: 3px;
+        bottom: 3px;
+        width: 58px;
+        left: 0;
+        border-radius: 999px;
+        background: #fff;
+        color: #4f46e5;
+        font-weight: 800;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.45);
+        transition: left 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
+        cursor: grab;
+      }
+      .trk.drag .hdl {
+        transition: none;
+        cursor: grabbing;
+      }
+      .tl {
+        position: relative;
+        height: 24px;
+        color: #8b9bb0;
+        font-size: 13px;
+        font-weight: 700;
+      }
+      #tlA span {
+        position: absolute;
+        top: 6px;
+        transform: translateX(-50%);
+      }
+      #slB ~ .tl {
+        display: flex;
+        justify-content: space-between;
+      }
+      #slB + .tl {
+        padding: 6px 6px 0;
+        height: auto;
+      }
+      .step {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .step button {
+        width: 56px;
+        height: 44px;
+        border-radius: 999px;
+        border: 0;
+        background: #6366f1;
+        color: #fff;
+        font-size: 24px;
+        font-weight: 800;
+        cursor: pointer;
+      }
+      .step button:disabled {
+        opacity: 0.35;
+        cursor: default;
+      }
+      .step b {
+        font-size: 22px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="mk">
+      <details class="about" open>
+        <summary>ABOUT THIS MOCKUP</summary>
+        <p>
+          Proposal: a <b>Screen size</b> setting. Here it offers five steps:
+          100% (as it is today), 90%, 80%, 70% and 60% (everything that much of
+          its normal size: fonts, padding, pills, icons and tables, all
+          together). The settings panel shows three ways to choose the step,
+          side by side, for you to compare. It lives in the settings panel
+          behind the cog and would be saved in each person's settings, so it
+          follows them to any computer. Pipeline and Campaign Management would
+          share the one choice. Under the hood it is one number (for example 0.8
+          for 80%) that scales the whole screen, so no component is changed one
+          by one. The screens below use invented data and the same look as
+          Pipeline today. The phone app (Pipeline Mobile) is not affected.
+        </p>
+        <ul>
+          <li>
+            Try it: press the cog (top left of the app). Try Option A, the
+            one-pill slider: drag the white handle, or press a step. Then try B
+            and C. They all do the same thing, and the screen changes when you
+            let go.
+          </li>
+          <li>
+            Try it: under "Pretend my screen is", pick "Zimmer laptop at 150%"
+            (1280 px wide, as in the two screenshots). Step through 100%, 90%,
+            80% and so on and watch how much more fits.
+          </li>
+          <li>
+            Try it: press CAMPAIGN or PIPELINE at the top to see both screens at
+            both sizes.
+          </li>
+          <li>
+            Try it: on the Pipeline screen, scroll down. The coloured heading
+            bar and the column names still stay locked at the top at every step.
+          </li>
+          <li>
+            Not shown yet: the deal flyout, the other panels (Surgeon Usages,
+            MyCase Bookings, Change selection), light mode. They would shrink
+            the same way. The mockup has not been tried on a real Windows
+            laptop; that is what UAT is for.
+          </li>
+        </ul>
+      </details>
+    </div>
+    <div class="bar">
+      <span class="lab">Pretend my screen is</span>
+      <span class="seg" id="scr">
+        <button type="button" class="on" data-w="100%">This screen</button>
+        <button type="button" data-w="1280px">
+          Zimmer laptop at 150% (1280 px)
+        </button>
+        <button type="button" data-w="960px">
+          Zimmer laptop at 200% (960 px)
+        </button>
+      </span>
+      <span style="color: #8b9bb0"
+        >These three buttons are only for this mockup; they are not part of the
+        product.</span
+      >
+    </div>
+    <div class="stage" id="stage">
+      <div class="sfnav">
+        <span class="app"><b>PIPE</b>LINE</span
+        ><span class="tab on">Pipeline</span><span class="tab">Campaigns</span
+        ><span class="sp"></span>
+        <button
+          type="button"
+          class="btn"
+          onclick="document.documentElement.requestFullscreen &amp;&amp; document.documentElement.requestFullscreen()"
+        >
+          Full screen
+        </button>
+      </div>
+      <div class="wrapper">
+        <div
+          class="root"
+          data-theme="dark"
+          data-head="pink"
+          data-size="normal"
+          id="root"
+        >
+          <div class="top" id="top">
+            <button type="button" class="cog" id="cog" aria-label="Settings">
+              ⚙
+            </button>
+            <span class="wm"
+              ><span class="pipe">PIPE</span
+              ><span class="line">LINE</span></span
+            >
+            <span class="asat">As at 16 Nov<br />2026, 6:05 pm</span>
+            <span class="grow"></span>
+            <span class="sw" id="sw"
+              ><span class="on" data-v="camp">Campaign</span
+              ><span data-v="pipe">Pipeline</span></span
+            >
+            <span class="pillbox"
+              ><span class="k">Filter</span
+              ><span style="color: var(--gold)">★</span><b>ANZ Extremities</b
+              ><span class="chg">CHANGED</span></span
+            >
+            <button type="button" class="big">Change selection ⌄</button>
+            <button type="button" class="sq" aria-label="Full screen">⛶</button>
+          </div>
+          <div class="chips">
+            <span class="chip on"
+              >Opportunities <span class="tick">✓</span></span
+            >
+            <span class="chip on">Risks <span class="tick">✓</span></span>
+            <span class="chip">ROSA <span class="ring"></span></span>
+            <span class="chip"
+              ><span style="color: var(--muted)">Status</span>
+              <span class="sw" style="border: 0; padding: 0"
+                ><span class="on">Open</span><span>Closed</span
+                ><span>Both</span></span
+              ></span
+            >
+            <span class="chip txt">Country <b>AU, NZ</b></span>
+            <span class="chip txt">Portfolio <b>Extremities</b></span>
+          </div>
+
+          <div class="view on" id="v_camp">
+            <div class="camp">
+              <h2>SESA 2026 AU-NZ</h2>
+              <span class="ok">Active</span
+              ><span class="sub">Extremities · Manager Robert Reeves</span
+              ><span class="grow" style="flex: 1"></span>
+              <div class="tiles">
+                <div class="tile"><b>119</b><i>Surgeons</i></div>
+                <div class="tile o"><b>2</b><i>With a deal</i></div>
+                <div class="tile o"><b>117</b><i>No deal yet</i></div>
+                <div class="tile"><b>2</b><i>Deals</i></div>
+                <div class="tile"><b>A$270k</b><i>Value / year</i></div>
+              </div>
+            </div>
+            <div class="main">
+              <section class="card" id="c_mem">
+                <div class="lhead">
+                  <h3>Members</h3>
+                  <span class="count">119 surgeons</span><span class="sp"></span
+                  ><span class="pillbox"
+                    ><span class="k">Search</span
+                    ><span style="color: var(--muted)">Surgeon</span></span
+                  >
+                </div>
+                <div class="fold on">
+                  <div class="bodyin">
+                    <div class="tablewrap">
+                      <table class="tbl">
+                        <thead>
+                          <tr>
+                            <th>Surgeon ▲</th>
+                            <th>Current hospitals</th>
+                            <th>Country · city</th>
+                            <th>Type</th>
+                            <th>Rating</th>
+                            <th>Stage</th>
+                            <th>Revenue / year</th>
+                            <th>Close</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td><b style="font-size: 19px">Afsana Hasan</b></td>
+                            <td></td>
+                            <td>TO</td>
+                            <td>Emerging Consultant</td>
+                            <td>
+                              <span style="color: var(--muted)">Not rated</span>
+                            </td>
+                            <td><span class="nd">No deal yet</span></td>
+                            <td class="num"></td>
+                            <td></td>
+                          </tr>
+                          <tr>
+                            <td><b style="font-size: 19px">Alan Dao</b></td>
+                            <td>BANKSTOWN HOSPITAL…</td>
+                            <td>TO</td>
+                            <td>Physician</td>
+                            <td><span class="plate s">Silver</span></td>
+                            <td><span class="nd">No deal yet</span></td>
+                            <td class="num"></td>
+                            <td></td>
+                          </tr>
+                          <tr>
+                            <td>
+                              <b style="font-size: 19px">Alexandra Brown</b>
+                            </td>
+                            <td></td>
+                            <td>AU · HEIDELBERG</td>
+                            <td>Emerging Consultant</td>
+                            <td>
+                              <span style="color: var(--muted)">Not rated</span>
+                            </td>
+                            <td><span class="nd">No deal yet</span></td>
+                            <td class="num"></td>
+                            <td></td>
+                          </tr>
+                          <tr>
+                            <td><b style="font-size: 19px">Allan Young</b></td>
+                            <td>MATER MISERICORDIAE…</td>
+                            <td>TO</td>
+                            <td>Physician</td>
+                            <td><span class="plate g">Gold</span></td>
+                            <td><span class="nd">No deal yet</span></td>
+                            <td class="num"></td>
+                            <td></td>
+                          </tr>
+                          <tr>
+                            <td>
+                              <b style="font-size: 19px">Andrew Mattin</b>
+                            </td>
+                            <td>FIONA STANLEY HOSPIT…</td>
+                            <td>AU · Murdoch</td>
+                            <td>Physician</td>
+                            <td><span class="plate g">Gold</span></td>
+                            <td><span class="nd">No deal yet</span></td>
+                            <td class="num"></td>
+                            <td></td>
+                          </tr>
+                          <tr>
+                            <td>
+                              <b style="font-size: 19px">Andrew McBride</b>
+                            </td>
+                            <td>PRINCESS ALEXANDRA …</td>
+                            <td>TO</td>
+                            <td>Physician</td>
+                            <td><span class="plate g">Gold</span></td>
+                            <td>Commit</td>
+                            <td class="num">A$120k</td>
+                            <td>Q3</td>
+                          </tr>
+                          <tr>
+                            <td><b style="font-size: 19px">Andrew Weber</b></td>
+                            <td>BELEURA PRIVATE HOSP…</td>
+                            <td>AU · MORNINGT…</td>
+                            <td>Physician</td>
+                            <td>
+                              <span style="color: var(--muted)">Not rated</span>
+                            </td>
+                            <td><span class="nd">No deal yet</span></td>
+                            <td class="num"></td>
+                            <td></td>
+                          </tr>
+                          <tr>
+                            <td>
+                              <b style="font-size: 19px">Anton Lambers</b>
+                            </td>
+                            <td>WANGARATTA BASE HO…</td>
+                            <td>AU · Bright</td>
+                            <td>Physician</td>
+                            <td>
+                              <span style="color: var(--muted)">Not rated</span>
+                            </td>
+                            <td><span class="nd">No deal yet</span></td>
+                            <td class="num"></td>
+                            <td></td>
+                          </tr>
+                          <tr>
+                            <td>
+                              <b style="font-size: 19px">Bella Kowalski</b>
+                            </td>
+                            <td>ROYAL HOBART HOSPITAL</td>
+                            <td>AU · Hobart</td>
+                            <td>Physician</td>
+                            <td><span class="plate s">Silver</span></td>
+                            <td><span class="nd">No deal yet</span></td>
+                            <td class="num"></td>
+                            <td></td>
+                          </tr>
+                          <tr>
+                            <td><b style="font-size: 19px">Ben Okafor</b></td>
+                            <td>NORTH SHORE PRIVATE</td>
+                            <td>AU · St Leonards</td>
+                            <td>Physician</td>
+                            <td><span class="plate g">Gold</span></td>
+                            <td>Plan</td>
+                            <td class="num">A$150k</td>
+                            <td>Q1</td>
+                          </tr>
+                          <tr>
+                            <td><b style="font-size: 19px">Carla Mendes</b></td>
+                            <td></td>
+                            <td>NZ · Wellington</td>
+                            <td>Emerging Consultant</td>
+                            <td>
+                              <span style="color: var(--muted)">Not rated</span>
+                            </td>
+                            <td><span class="nd">No deal yet</span></td>
+                            <td class="num"></td>
+                            <td></td>
+                          </tr>
+                          <tr>
+                            <td><b style="font-size: 19px">Daniel Tran</b></td>
+                            <td>EPWORTH RICHMOND</td>
+                            <td>AU · Richmond</td>
+                            <td>Physician</td>
+                            <td><span class="plate g">Gold</span></td>
+                            <td><span class="nd">No deal yet</span></td>
+                            <td class="num"></td>
+                            <td></td>
+                          </tr>
+                          <tr>
+                            <td><b style="font-size: 19px">Afsana Hasan</b></td>
+                            <td></td>
+                            <td>TO</td>
+                            <td>Emerging Consultant</td>
+                            <td>
+                              <span style="color: var(--muted)">Not rated</span>
+                            </td>
+                            <td><span class="nd">No deal yet</span></td>
+                            <td class="num"></td>
+                            <td></td>
+                          </tr>
+                          <tr>
+                            <td><b style="font-size: 19px">Alan Dao</b></td>
+                            <td>BANKSTOWN HOSPITAL…</td>
+                            <td>TO</td>
+                            <td>Physician</td>
+                            <td><span class="plate s">Silver</span></td>
+                            <td><span class="nd">No deal yet</span></td>
+                            <td class="num"></td>
+                            <td></td>
+                          </tr>
+                          <tr>
+                            <td>
+                              <b style="font-size: 19px">Alexandra Brown</b>
+                            </td>
+                            <td></td>
+                            <td>AU · HEIDELBERG</td>
+                            <td>Emerging Consultant</td>
+                            <td>
+                              <span style="color: var(--muted)">Not rated</span>
+                            </td>
+                            <td><span class="nd">No deal yet</span></td>
+                            <td class="num"></td>
+                            <td></td>
+                          </tr>
+                          <tr>
+                            <td><b style="font-size: 19px">Allan Young</b></td>
+                            <td>MATER MISERICORDIAE…</td>
+                            <td>TO</td>
+                            <td>Physician</td>
+                            <td><span class="plate g">Gold</span></td>
+                            <td><span class="nd">No deal yet</span></td>
+                            <td class="num"></td>
+                            <td></td>
+                          </tr>
+                          <tr>
+                            <td>
+                              <b style="font-size: 19px">Andrew Mattin</b>
+                            </td>
+                            <td>FIONA STANLEY HOSPIT…</td>
+                            <td>AU · Murdoch</td>
+                            <td>Physician</td>
+                            <td><span class="plate g">Gold</span></td>
+                            <td><span class="nd">No deal yet</span></td>
+                            <td class="num"></td>
+                            <td></td>
+                          </tr>
+                          <tr>
+                            <td>
+                              <b style="font-size: 19px">Andrew McBride</b>
+                            </td>
+                            <td>PRINCESS ALEXANDRA …</td>
+                            <td>TO</td>
+                            <td>Physician</td>
+                            <td><span class="plate g">Gold</span></td>
+                            <td>Commit</td>
+                            <td class="num">A$120k</td>
+                            <td>Q3</td>
+                          </tr>
+                          <tr>
+                            <td><b style="font-size: 19px">Andrew Weber</b></td>
+                            <td>BELEURA PRIVATE HOSP…</td>
+                            <td>AU · MORNINGT…</td>
+                            <td>Physician</td>
+                            <td>
+                              <span style="color: var(--muted)">Not rated</span>
+                            </td>
+                            <td><span class="nd">No deal yet</span></td>
+                            <td class="num"></td>
+                            <td></td>
+                          </tr>
+                          <tr>
+                            <td>
+                              <b style="font-size: 19px">Anton Lambers</b>
+                            </td>
+                            <td>WANGARATTA BASE HO…</td>
+                            <td>AU · Bright</td>
+                            <td>Physician</td>
+                            <td>
+                              <span style="color: var(--muted)">Not rated</span>
+                            </td>
+                            <td><span class="nd">No deal yet</span></td>
+                            <td class="num"></td>
+                            <td></td>
+                          </tr>
+                          <tr>
+                            <td>
+                              <b style="font-size: 19px">Bella Kowalski</b>
+                            </td>
+                            <td>ROYAL HOBART HOSPITAL</td>
+                            <td>AU · Hobart</td>
+                            <td>Physician</td>
+                            <td><span class="plate s">Silver</span></td>
+                            <td><span class="nd">No deal yet</span></td>
+                            <td class="num"></td>
+                            <td></td>
+                          </tr>
+                          <tr>
+                            <td><b style="font-size: 19px">Ben Okafor</b></td>
+                            <td>NORTH SHORE PRIVATE</td>
+                            <td>AU · St Leonards</td>
+                            <td>Physician</td>
+                            <td><span class="plate g">Gold</span></td>
+                            <td>Plan</td>
+                            <td class="num">A$150k</td>
+                            <td>Q1</td>
+                          </tr>
+                          <tr>
+                            <td><b style="font-size: 19px">Carla Mendes</b></td>
+                            <td></td>
+                            <td>NZ · Wellington</td>
+                            <td>Emerging Consultant</td>
+                            <td>
+                              <span style="color: var(--muted)">Not rated</span>
+                            </td>
+                            <td><span class="nd">No deal yet</span></td>
+                            <td class="num"></td>
+                            <td></td>
+                          </tr>
+                          <tr>
+                            <td><b style="font-size: 19px">Daniel Tran</b></td>
+                            <td>EPWORTH RICHMOND</td>
+                            <td>AU · Richmond</td>
+                            <td>Physician</td>
+                            <td><span class="plate g">Gold</span></td>
+                            <td><span class="nd">No deal yet</span></td>
+                            <td class="num"></td>
+                            <td></td>
+                          </tr>
+                          <tr>
+                            <td><b style="font-size: 19px">Afsana Hasan</b></td>
+                            <td></td>
+                            <td>TO</td>
+                            <td>Emerging Consultant</td>
+                            <td>
+                              <span style="color: var(--muted)">Not rated</span>
+                            </td>
+                            <td><span class="nd">No deal yet</span></td>
+                            <td class="num"></td>
+                            <td></td>
+                          </tr>
+                          <tr>
+                            <td><b style="font-size: 19px">Alan Dao</b></td>
+                            <td>BANKSTOWN HOSPITAL…</td>
+                            <td>TO</td>
+                            <td>Physician</td>
+                            <td><span class="plate s">Silver</span></td>
+                            <td><span class="nd">No deal yet</span></td>
+                            <td class="num"></td>
+                            <td></td>
+                          </tr>
+                          <tr>
+                            <td>
+                              <b style="font-size: 19px">Alexandra Brown</b>
+                            </td>
+                            <td></td>
+                            <td>AU · HEIDELBERG</td>
+                            <td>Emerging Consultant</td>
+                            <td>
+                              <span style="color: var(--muted)">Not rated</span>
+                            </td>
+                            <td><span class="nd">No deal yet</span></td>
+                            <td class="num"></td>
+                            <td></td>
+                          </tr>
+                          <tr>
+                            <td><b style="font-size: 19px">Allan Young</b></td>
+                            <td>MATER MISERICORDIAE…</td>
+                            <td>TO</td>
+                            <td>Physician</td>
+                            <td><span class="plate g">Gold</span></td>
+                            <td><span class="nd">No deal yet</span></td>
+                            <td class="num"></td>
+                            <td></td>
+                          </tr>
+                          <tr>
+                            <td>
+                              <b style="font-size: 19px">Andrew Mattin</b>
+                            </td>
+                            <td>FIONA STANLEY HOSPIT…</td>
+                            <td>AU · Murdoch</td>
+                            <td>Physician</td>
+                            <td><span class="plate g">Gold</span></td>
+                            <td><span class="nd">No deal yet</span></td>
+                            <td class="num"></td>
+                            <td></td>
+                          </tr>
+                          <tr>
+                            <td>
+                              <b style="font-size: 19px">Andrew McBride</b>
+                            </td>
+                            <td>PRINCESS ALEXANDRA …</td>
+                            <td>TO</td>
+                            <td>Physician</td>
+                            <td><span class="plate g">Gold</span></td>
+                            <td>Commit</td>
+                            <td class="num">A$120k</td>
+                            <td>Q3</td>
+                          </tr>
+                          <tr>
+                            <td><b style="font-size: 19px">Andrew Weber</b></td>
+                            <td>BELEURA PRIVATE HOSP…</td>
+                            <td>AU · MORNINGT…</td>
+                            <td>Physician</td>
+                            <td>
+                              <span style="color: var(--muted)">Not rated</span>
+                            </td>
+                            <td><span class="nd">No deal yet</span></td>
+                            <td class="num"></td>
+                            <td></td>
+                          </tr>
+                          <tr>
+                            <td>
+                              <b style="font-size: 19px">Anton Lambers</b>
+                            </td>
+                            <td>WANGARATTA BASE HO…</td>
+                            <td>AU · Bright</td>
+                            <td>Physician</td>
+                            <td>
+                              <span style="color: var(--muted)">Not rated</span>
+                            </td>
+                            <td><span class="nd">No deal yet</span></td>
+                            <td class="num"></td>
+                            <td></td>
+                          </tr>
+                          <tr>
+                            <td>
+                              <b style="font-size: 19px">Bella Kowalski</b>
+                            </td>
+                            <td>ROYAL HOBART HOSPITAL</td>
+                            <td>AU · Hobart</td>
+                            <td>Physician</td>
+                            <td><span class="plate s">Silver</span></td>
+                            <td><span class="nd">No deal yet</span></td>
+                            <td class="num"></td>
+                            <td></td>
+                          </tr>
+                          <tr>
+                            <td><b style="font-size: 19px">Ben Okafor</b></td>
+                            <td>NORTH SHORE PRIVATE</td>
+                            <td>AU · St Leonards</td>
+                            <td>Physician</td>
+                            <td><span class="plate g">Gold</span></td>
+                            <td>Plan</td>
+                            <td class="num">A$150k</td>
+                            <td>Q1</td>
+                          </tr>
+                          <tr>
+                            <td><b style="font-size: 19px">Carla Mendes</b></td>
+                            <td></td>
+                            <td>NZ · Wellington</td>
+                            <td>Emerging Consultant</td>
+                            <td>
+                              <span style="color: var(--muted)">Not rated</span>
+                            </td>
+                            <td><span class="nd">No deal yet</span></td>
+                            <td class="num"></td>
+                            <td></td>
+                          </tr>
+                          <tr>
+                            <td><b style="font-size: 19px">Daniel Tran</b></td>
+                            <td>EPWORTH RICHMOND</td>
+                            <td>AU · Richmond</td>
+                            <td>Physician</td>
+                            <td><span class="plate g">Gold</span></td>
+                            <td><span class="nd">No deal yet</span></td>
+                            <td class="num"></td>
+                            <td></td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </section>
+            </div>
+          </div>
+
+          <div class="view" id="v_pipe">
+            <div class="main">
+              <div class="sum">
+                <div class="sumc">
+                  <h3>Opportunities <small>8 deals</small></h3>
+                  <div class="kp">
+                    <div>Open deals<b>8</b></div>
+                    <div>Needs attention<b class="o">3</b></div>
+                  </div>
+                  <p>
+                    3 need an update · 1 very old · 0 no stage move in 90 days
+                  </p>
+                </div>
+                <div class="sumc">
+                  <h3>Risks <small>2 deals</small></h3>
+                  <div class="kp">
+                    <div>Open deals<b>2</b></div>
+                    <div>Needs attention<b class="o">0</b></div>
+                  </div>
+                  <p>
+                    0 need an update · 0 very old · 0 no stage move in 90 days
+                  </p>
+                </div>
+              </div>
+              <div class="gap"></div>
+              <section class="card" id="c_opp">
+                <div class="lhead">
+                  <h3>Opportunities</h3>
+                  <span class="count">8 deals</span><span class="sp"></span
+                  ><button type="button" class="btn sec">Columns</button>
+                </div>
+                <div class="fold on">
+                  <div class="bodyin">
+                    <div class="tablewrap">
+                      <table class="tbl">
+                        <thead>
+                          <tr>
+                            <th>Deal</th>
+                            <th>Rep</th>
+                            <th>Hospital</th>
+                            <th>Stage</th>
+                            <th>Value / year</th>
+                            <th>Close</th>
+                            <th>Chatter</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td><b>Knee System Upgrade</b></td>
+                            <td>Alex Morgan</td>
+                            <td>BANKSTOWN HOSPITAL</td>
+                            <td>Commit</td>
+                            <td class="num">A$120k</td>
+                            <td>Q3 2026</td>
+                            <td><span class="tag ok">Current</span></td>
+                          </tr>
+                          <tr>
+                            <td><b>Hip Revision Programme</b></td>
+                            <td>Kim Nguyen</td>
+                            <td>MATER MISERICORDIAE</td>
+                            <td>Plan</td>
+                            <td class="num">A$310k</td>
+                            <td>Q1 2027</td>
+                            <td><span class="tag warn">Needs Update</span></td>
+                          </tr>
+                          <tr>
+                            <td><b>Extremities Trial</b></td>
+                            <td>Sam Patel</td>
+                            <td>FIONA STANLEY</td>
+                            <td>1st Case</td>
+                            <td class="num">A$85k</td>
+                            <td>Q4 2026</td>
+                            <td><span class="tag ok">Current</span></td>
+                          </tr>
+                          <tr>
+                            <td><b>Shoulder Platform</b></td>
+                            <td>Jo Carter</td>
+                            <td>PRINCESS ALEXANDRA</td>
+                            <td>Action</td>
+                            <td class="num">A$450k</td>
+                            <td>Q2 2027</td>
+                            <td><span class="tag bad">Very Old</span></td>
+                          </tr>
+                          <tr>
+                            <td><b>CMFT Expansion</b></td>
+                            <td>Lee Tran</td>
+                            <td>EPWORTH RICHMOND</td>
+                            <td>Commit</td>
+                            <td class="num">A$210k</td>
+                            <td>Q4 2026</td>
+                            <td><span class="tag ok">Current</span></td>
+                          </tr>
+                          <tr>
+                            <td><b>Knee Navigation</b></td>
+                            <td>Alex Morgan</td>
+                            <td>ROYAL HOBART</td>
+                            <td>Plan</td>
+                            <td class="num">A$95k</td>
+                            <td>Q1 2027</td>
+                            <td><span class="tag warn">Needs Update</span></td>
+                          </tr>
+                          <tr>
+                            <td><b>Hip Stem Switch</b></td>
+                            <td>Kim Nguyen</td>
+                            <td>NORTH SHORE PRIVATE</td>
+                            <td>5th Case</td>
+                            <td class="num">A$260k</td>
+                            <td>Q4 2026</td>
+                            <td><span class="tag ok">Current</span></td>
+                          </tr>
+                          <tr>
+                            <td><b>Ankle Pilot</b></td>
+                            <td>Sam Patel</td>
+                            <td>BELEURA PRIVATE</td>
+                            <td>Action</td>
+                            <td class="num">A$60k</td>
+                            <td>Q2 2027</td>
+                            <td><span class="tag warn">Needs Update</span></td>
+                          </tr>
+                          <tr>
+                            <td><b>Knee System Upgrade</b></td>
+                            <td>Alex Morgan</td>
+                            <td>BANKSTOWN HOSPITAL</td>
+                            <td>Commit</td>
+                            <td class="num">A$120k</td>
+                            <td>Q3 2026</td>
+                            <td><span class="tag ok">Current</span></td>
+                          </tr>
+                          <tr>
+                            <td><b>Hip Revision Programme</b></td>
+                            <td>Kim Nguyen</td>
+                            <td>MATER MISERICORDIAE</td>
+                            <td>Plan</td>
+                            <td class="num">A$310k</td>
+                            <td>Q1 2027</td>
+                            <td><span class="tag warn">Needs Update</span></td>
+                          </tr>
+                          <tr>
+                            <td><b>Extremities Trial</b></td>
+                            <td>Sam Patel</td>
+                            <td>FIONA STANLEY</td>
+                            <td>1st Case</td>
+                            <td class="num">A$85k</td>
+                            <td>Q4 2026</td>
+                            <td><span class="tag ok">Current</span></td>
+                          </tr>
+                          <tr>
+                            <td><b>Shoulder Platform</b></td>
+                            <td>Jo Carter</td>
+                            <td>PRINCESS ALEXANDRA</td>
+                            <td>Action</td>
+                            <td class="num">A$450k</td>
+                            <td>Q2 2027</td>
+                            <td><span class="tag bad">Very Old</span></td>
+                          </tr>
+                          <tr>
+                            <td><b>CMFT Expansion</b></td>
+                            <td>Lee Tran</td>
+                            <td>EPWORTH RICHMOND</td>
+                            <td>Commit</td>
+                            <td class="num">A$210k</td>
+                            <td>Q4 2026</td>
+                            <td><span class="tag ok">Current</span></td>
+                          </tr>
+                          <tr>
+                            <td><b>Knee Navigation</b></td>
+                            <td>Alex Morgan</td>
+                            <td>ROYAL HOBART</td>
+                            <td>Plan</td>
+                            <td class="num">A$95k</td>
+                            <td>Q1 2027</td>
+                            <td><span class="tag warn">Needs Update</span></td>
+                          </tr>
+                          <tr>
+                            <td><b>Hip Stem Switch</b></td>
+                            <td>Kim Nguyen</td>
+                            <td>NORTH SHORE PRIVATE</td>
+                            <td>5th Case</td>
+                            <td class="num">A$260k</td>
+                            <td>Q4 2026</td>
+                            <td><span class="tag ok">Current</span></td>
+                          </tr>
+                          <tr>
+                            <td><b>Ankle Pilot</b></td>
+                            <td>Sam Patel</td>
+                            <td>BELEURA PRIVATE</td>
+                            <td>Action</td>
+                            <td class="num">A$60k</td>
+                            <td>Q2 2027</td>
+                            <td><span class="tag warn">Needs Update</span></td>
+                          </tr>
+                          <tr>
+                            <td><b>Knee System Upgrade</b></td>
+                            <td>Alex Morgan</td>
+                            <td>BANKSTOWN HOSPITAL</td>
+                            <td>Commit</td>
+                            <td class="num">A$120k</td>
+                            <td>Q3 2026</td>
+                            <td><span class="tag ok">Current</span></td>
+                          </tr>
+                          <tr>
+                            <td><b>Hip Revision Programme</b></td>
+                            <td>Kim Nguyen</td>
+                            <td>MATER MISERICORDIAE</td>
+                            <td>Plan</td>
+                            <td class="num">A$310k</td>
+                            <td>Q1 2027</td>
+                            <td><span class="tag warn">Needs Update</span></td>
+                          </tr>
+                          <tr>
+                            <td><b>Extremities Trial</b></td>
+                            <td>Sam Patel</td>
+                            <td>FIONA STANLEY</td>
+                            <td>1st Case</td>
+                            <td class="num">A$85k</td>
+                            <td>Q4 2026</td>
+                            <td><span class="tag ok">Current</span></td>
+                          </tr>
+                          <tr>
+                            <td><b>Shoulder Platform</b></td>
+                            <td>Jo Carter</td>
+                            <td>PRINCESS ALEXANDRA</td>
+                            <td>Action</td>
+                            <td class="num">A$450k</td>
+                            <td>Q2 2027</td>
+                            <td><span class="tag bad">Very Old</span></td>
+                          </tr>
+                          <tr>
+                            <td><b>CMFT Expansion</b></td>
+                            <td>Lee Tran</td>
+                            <td>EPWORTH RICHMOND</td>
+                            <td>Commit</td>
+                            <td class="num">A$210k</td>
+                            <td>Q4 2026</td>
+                            <td><span class="tag ok">Current</span></td>
+                          </tr>
+                          <tr>
+                            <td><b>Knee Navigation</b></td>
+                            <td>Alex Morgan</td>
+                            <td>ROYAL HOBART</td>
+                            <td>Plan</td>
+                            <td class="num">A$95k</td>
+                            <td>Q1 2027</td>
+                            <td><span class="tag warn">Needs Update</span></td>
+                          </tr>
+                          <tr>
+                            <td><b>Hip Stem Switch</b></td>
+                            <td>Kim Nguyen</td>
+                            <td>NORTH SHORE PRIVATE</td>
+                            <td>5th Case</td>
+                            <td class="num">A$260k</td>
+                            <td>Q4 2026</td>
+                            <td><span class="tag ok">Current</span></td>
+                          </tr>
+                          <tr>
+                            <td><b>Ankle Pilot</b></td>
+                            <td>Sam Patel</td>
+                            <td>BELEURA PRIVATE</td>
+                            <td>Action</td>
+                            <td class="num">A$60k</td>
+                            <td>Q2 2027</td>
+                            <td><span class="tag warn">Needs Update</span></td>
+                          </tr>
+                          <tr>
+                            <td><b>Knee System Upgrade</b></td>
+                            <td>Alex Morgan</td>
+                            <td>BANKSTOWN HOSPITAL</td>
+                            <td>Commit</td>
+                            <td class="num">A$120k</td>
+                            <td>Q3 2026</td>
+                            <td><span class="tag ok">Current</span></td>
+                          </tr>
+                          <tr>
+                            <td><b>Hip Revision Programme</b></td>
+                            <td>Kim Nguyen</td>
+                            <td>MATER MISERICORDIAE</td>
+                            <td>Plan</td>
+                            <td class="num">A$310k</td>
+                            <td>Q1 2027</td>
+                            <td><span class="tag warn">Needs Update</span></td>
+                          </tr>
+                          <tr>
+                            <td><b>Extremities Trial</b></td>
+                            <td>Sam Patel</td>
+                            <td>FIONA STANLEY</td>
+                            <td>1st Case</td>
+                            <td class="num">A$85k</td>
+                            <td>Q4 2026</td>
+                            <td><span class="tag ok">Current</span></td>
+                          </tr>
+                          <tr>
+                            <td><b>Shoulder Platform</b></td>
+                            <td>Jo Carter</td>
+                            <td>PRINCESS ALEXANDRA</td>
+                            <td>Action</td>
+                            <td class="num">A$450k</td>
+                            <td>Q2 2027</td>
+                            <td><span class="tag bad">Very Old</span></td>
+                          </tr>
+                          <tr>
+                            <td><b>CMFT Expansion</b></td>
+                            <td>Lee Tran</td>
+                            <td>EPWORTH RICHMOND</td>
+                            <td>Commit</td>
+                            <td class="num">A$210k</td>
+                            <td>Q4 2026</td>
+                            <td><span class="tag ok">Current</span></td>
+                          </tr>
+                          <tr>
+                            <td><b>Knee Navigation</b></td>
+                            <td>Alex Morgan</td>
+                            <td>ROYAL HOBART</td>
+                            <td>Plan</td>
+                            <td class="num">A$95k</td>
+                            <td>Q1 2027</td>
+                            <td><span class="tag warn">Needs Update</span></td>
+                          </tr>
+                          <tr>
+                            <td><b>Hip Stem Switch</b></td>
+                            <td>Kim Nguyen</td>
+                            <td>NORTH SHORE PRIVATE</td>
+                            <td>5th Case</td>
+                            <td class="num">A$260k</td>
+                            <td>Q4 2026</td>
+                            <td><span class="tag ok">Current</span></td>
+                          </tr>
+                          <tr>
+                            <td><b>Ankle Pilot</b></td>
+                            <td>Sam Patel</td>
+                            <td>BELEURA PRIVATE</td>
+                            <td>Action</td>
+                            <td class="num">A$60k</td>
+                            <td>Q2 2027</td>
+                            <td><span class="tag warn">Needs Update</span></td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </section>
+            </div>
+          </div>
+        </div>
+        <div class="scrim" id="scrim"></div>
+        <aside class="fly" id="fly">
+          <h4><span>YOUR</span> SETTINGS</h4>
+          <div class="row">
+            <div class="t">Option A (recommended): one-pill slider</div>
+            <div class="pillsl" id="slA">
+              <span class="lab">SIZE</span>
+              <div class="trk" id="trkA">
+                <i class="tk"></i><i class="tk"></i><i class="tk"></i
+                ><i class="tk"></i><i class="tk"></i>
+                <div class="hdl" id="hdlA">100%</div>
+              </div>
+            </div>
+            <div class="tl" id="tlA">
+              <span>100</span><span>90</span><span>80</span><span>70</span
+              ><span>60</span>
+            </div>
+            <p>
+              Drag the white handle or press a step. The screen changes when you
+              let go. Bigger on the left, smaller on the right.
+            </p>
+          </div>
+          <div class="row">
+            <div class="t">Option B: plain slider</div>
+            <input
+              type="range"
+              id="slB"
+              min="60"
+              max="100"
+              step="10"
+              value="100"
+              style="width: 100%"
+            />
+            <div class="tl">
+              <span>60</span><span>70</span><span>80</span><span>90</span
+              ><span>100</span>
+            </div>
+            <p>
+              The standard browser slider. Smaller is on the left here, as on
+              any browser slider.
+            </p>
+          </div>
+          <div class="row">
+            <div class="t">Option C: stepper</div>
+            <div class="step">
+              <button type="button" id="stDown" aria-label="Smaller">
+                &minus;</button
+              ><b id="stVal">100%</b
+              ><button type="button" id="stUp" aria-label="Bigger">+</button>
+            </div>
+            <p>Two filled buttons with the size between them.</p>
+          </div>
+          <div class="row">
+            <div class="t">Colour mode</div>
+            <p>
+              Light / dark, and the heading colour, stay here as they are today
+              (not shown in this mockup).
+            </p>
+          </div>
+        </aside>
+      </div>
+    </div>
+    <script>
+      var root = document.getElementById("root"),
+        top_ = document.getElementById("top");
+      function measure() {
+        root.style.setProperty("--stick", top_.offsetHeight + "px");
+        document.querySelectorAll(".card").forEach(function (c) {
+          c.style.setProperty(
+            "--lh",
+            c.querySelector(".lhead").offsetHeight + "px"
+          );
+        });
+      }
+      var STEPS = [100, 90, 80, 70, 60],
+        cur = 100;
+      var trk = document.getElementById("trkA"),
+        hdl = document.getElementById("hdlA");
+      function geo() {
+        var w = trk.clientWidth - hdl.offsetWidth;
+        return { w: w, step: w / 4 };
+      }
+      function place(i) {
+        var g = geo();
+        hdl.style.left = i * g.step + "px";
+        hdl.textContent = STEPS[i] + "%";
+        var tr = trk.getBoundingClientRect(),
+          tl = document.getElementById("tlA"),
+          lr = tl.getBoundingClientRect(),
+          half = hdl.offsetWidth / 2;
+        trk.querySelectorAll(".tk").forEach(function (t, k) {
+          t.style.left = half + k * g.step + "px";
+        });
+        tl.querySelectorAll("span").forEach(function (sp, k) {
+          sp.style.left = tr.left - lr.left + half + k * g.step + "px";
+        });
+      }
+      function setSize(v) {
+        v = +v || 100;
+        if (STEPS.indexOf(v) < 0) v = 100;
+        cur = v;
+        document.querySelector(".wrapper").style.setProperty("--z", v / 100);
+        place(STEPS.indexOf(v));
+        document.getElementById("slB").value = v;
+        document.getElementById("stVal").textContent = v + "%";
+        document.getElementById("stDown").disabled = v === 60;
+        document.getElementById("stUp").disabled = v === 100;
+        requestAnimationFrame(measure);
+      }
+      /* Option A: drag, or press a step; the screen changes on release */
+      var dragging = false,
+        pending = 0;
+      function idxFromX(clientX) {
+        var r = trk.getBoundingClientRect(),
+          g = geo();
+        var x = Math.max(
+          0,
+          Math.min(g.w, clientX - r.left - hdl.offsetWidth / 2)
+        );
+        return { x: x, i: Math.round(x / g.step) };
+      }
+      trk.addEventListener("pointerdown", function (e) {
+        dragging = true;
+        trk.classList.add("drag");
+        trk.setPointerCapture(e.pointerId);
+        var m = idxFromX(e.clientX);
+        hdl.style.left = m.x + "px";
+        pending = m.i;
+        hdl.textContent = STEPS[m.i] + "%";
+      });
+      trk.addEventListener("pointermove", function (e) {
+        if (!dragging) return;
+        var m = idxFromX(e.clientX);
+        hdl.style.left = m.x + "px";
+        pending = m.i;
+        hdl.textContent = STEPS[m.i] + "%";
+      });
+      function release() {
+        if (!dragging) return;
+        dragging = false;
+        trk.classList.remove("drag");
+        void hdl.offsetWidth;
+        setSize(STEPS[pending]);
+      }
+      trk.addEventListener("pointerup", release);
+      trk.addEventListener("pointercancel", release);
+      /* Option B */
+      document.getElementById("slB").addEventListener("change", function (e) {
+        setSize(e.target.value);
+      });
+      document.getElementById("slB").addEventListener("input", function (e) {
+        document.getElementById("stVal").textContent = e.target.value + "%";
+      });
+      /* Option C */
+      document.getElementById("stDown").onclick = function () {
+        setSize(STEPS[Math.min(4, STEPS.indexOf(cur) + 1)]);
+      };
+      document.getElementById("stUp").onclick = function () {
+        setSize(STEPS[Math.max(0, STEPS.indexOf(cur) - 1)]);
+      };
+      document.querySelectorAll("#scr button").forEach(function (b) {
+        b.onclick = function () {
+          document.querySelectorAll("#scr button").forEach(function (x) {
+            x.classList.toggle("on", x === b);
+          });
+          document
+            .getElementById("stage")
+            .style.setProperty("--w", b.dataset.w);
+          setTimeout(measure, 450);
+        };
+      });
+      function fly(on) {
+        if (on)
+          setTimeout(function () {
+            place(STEPS.indexOf(cur));
+          }, 60);
+        document.getElementById("fly").classList.toggle("on", on);
+        document.getElementById("scrim").classList.toggle("on", on);
+      }
+      document.getElementById("cog").onclick = function () {
+        fly(true);
+      };
+      document.getElementById("scrim").onclick = function () {
+        fly(false);
+      };
+      document.querySelectorAll("#sw span").forEach(function (s) {
+        s.onclick = function () {
+          document.querySelectorAll("#sw span").forEach(function (x) {
+            x.classList.toggle("on", x === s);
+          });
+          document
+            .getElementById("v_camp")
+            .classList.toggle("on", s.dataset.v === "camp");
+          document
+            .getElementById("v_pipe")
+            .classList.toggle("on", s.dataset.v === "pipe");
+          root.scrollTop = 0;
+          requestAnimationFrame(measure);
+        };
+      });
+      window.addEventListener("resize", measure);
+      var q = new URLSearchParams(location.search);
+      if (q.get("size")) setSize(q.get("size"));
+      if (q.get("w")) {
+        document.getElementById("stage").style.setProperty("--w", q.get("w"));
+      }
+      if (q.get("view") === "pipe")
+        document.querySelector('#sw span[data-v="pipe"]').click();
+      if (q.get("y")) root.scrollTop = +q.get("y");
+      if (q.get("fly")) fly(true);
+      measure();
+    </script>
+  </body>
+</html>

@@ -180,7 +180,7 @@
 .tscroll.stick {
   overflow: auto;
   max-height: calc(
-    100vh - 240px
+    100vh / var(--z, 1) - 240px
   ); /* a first guess; the component measures the real space and sets the height itself */
   min-height: 260px;
 }
@@ -357,7 +357,9 @@ input[type="checkbox"] {
   box-shadow: 0 18px 44px rgba(0, 0, 0, 0.5);
   padding: 12px 18px 14px;
   min-width: 260px;
-  max-height: 64vh;
+  max-height: calc(
+    64vh / var(--z, 1)
+  ); /* vh is not corrected by Zoom, so it is divided by it (see pipelineZoom) */
   overflow-y: auto;
 }
 .picker h3 {
@@ -388,4 +390,62 @@ input[type="checkbox"] {
   padding: 4px 8px;
   min-height: 28px;
   font-size: 11px;
+}
+
+/* Maintain mode (Robert, 2026-11-16): the two kinds-of-deal tick boxes beside the Report / Maintain switch, in the look of Pipeline's type buttons */
+.tychips {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+}
+.kchip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 14px 5px 16px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.kchip.on {
+  background: color-mix(in srgb, var(--indigo) 18%, var(--panel));
+  border-color: var(--indigo);
+}
+.kchip:focus-visible {
+  outline: 2px solid var(--indigo2, #a5b4fc);
+  outline-offset: 2px;
+}
+.ktick,
+.kring {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  box-sizing: border-box;
+  position: relative;
+  flex: none;
+}
+.ktick {
+  background: var(--indigo);
+}
+.ktick::after {
+  content: "";
+  position: absolute;
+  left: 8px;
+  top: 4px;
+  width: 6px;
+  height: 11px;
+  border-right: 2px solid #fff;
+  border-bottom: 2px solid #fff;
+  transform: rotate(45deg);
+}
+.kring {
+  border: 2px solid var(--indigo2, var(--indigo));
 }

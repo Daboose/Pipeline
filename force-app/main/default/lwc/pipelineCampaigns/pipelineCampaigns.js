@@ -12,6 +12,7 @@ import deleteCampaign from "@salesforce/apex/PipelineCampaignController.deleteCa
 import removeMembers from "@salesforce/apex/PipelineCampaignController.removeMembers";
 import matchNames from "@salesforce/apex/PipelineCampaignController.matchNames";
 import addMembers from "@salesforce/apex/PipelineCampaignController.addMembers";
+import saveGlobalSettings from "@salesforce/apex/PipelineCampaignController.saveGlobalSettings";
 import {
   previewName,
   emptyForm,
@@ -25,9 +26,10 @@ import {
   MAX_IMPORT_LINES,
   NAME_LIMIT
 } from "c/pipelineCampaignModel";
+import { localWidth, zoomStyle, cleanZoom, DEFAULT_ZOOM } from "c/pipelineZoom";
 
 /** Shown on the screen; raise it with each change that goes out. */
-export const CAMPAIGN_VERSION = "0.37";
+export const CAMPAIGN_VERSION = "0.39";
 const THEME_KEY = "pipelineCampaignTheme";
 const WIDTHS_KEY = "pipelineCampaignWidths";
 
@@ -113,12 +115,13 @@ export default class PipelineCampaigns extends LightningElement {
   removeAsking = false; // the members card is asking "are you sure?" before removing
   leaveAsking = false; // the check screen is asking "leave without adding?"
   leaveThen = null; // what to do if the person confirms they want to leave
-  themeChoice = "light"; // light unless the person chose dark here (remembered on this computer)
+  themeChoice = "dark"; // dark until the person chooses (Robert, 2026-11-16); their choice is saved in their Pipeline settings, this computer's memory is only the fallback
+  zoomChoice = DEFAULT_ZOOM; // the Zoom in percent: 80 until the person chooses; saved in their Pipeline settings, shared with the Pipeline screen
 
   connectedCallback() {
     try {
-      if (window.localStorage.getItem(THEME_KEY) === "dark") {
-        this.themeChoice = "dark";
+      if (window.localStorage.getItem(THEME_KEY) === "light") {
+        this.themeChoice = "light"; // a person who chose light on this computer before Zoom was built keeps it until their settings say otherwise
       }
       const saved = JSON.parse(
         window.localStorage.getItem(WIDTHS_KEY) || "null"
@@ -141,6 +144,9 @@ export default class PipelineCampaigns extends LightningElement {
     window.addEventListener("beforeunload", this.beforeUnload);
     this.run(async () => {
       this.ctx = await getContext();
+      // the person's saved choices win over this computer's memory (Robert, 2026-11-16: theme and Zoom are global, kept in their settings)
+      this.zoomChoice = cleanZoom(this.ctx.zoom);
+      if (this.ctx.hasTheme) this.themeChoice = this.ctx.theme;
       this.campaigns = await listCampaigns();
     });
   }
@@ -168,6 +174,13 @@ export default class PipelineCampaigns extends LightningElement {
   }
   get theme() {
     return this.themeChoice;
+  }
+  /** The one number the whole screen is scaled by (see pipelineZoom). */
+  get rootStyle() {
+    return zoomStyle(this.zoomChoice);
+  }
+  get zoom() {
+    return this.zoomChoice;
   }
   get headColour() {
     return this.ctx ? this.ctx.headColour : "pink";
@@ -239,8 +252,17 @@ export default class PipelineCampaigns extends LightningElement {
     try {
       window.localStorage.setItem(THEME_KEY, this.themeChoice);
     } catch {
-      // not remembered, still switches
+      // not remembered on this computer, still switches
     }
+    saveGlobalSettings({ theme: this.themeChoice, zoom: null }).catch(() => {
+      // a failed save only means the choice is not remembered next time
+    });
+  }
+  handleZoomPick(event) {
+    this.zoomChoice = cleanZoom(event.detail.value);
+    saveGlobalSettings({ theme: null, zoom: this.zoomChoice }).catch(() => {
+      // a failed save only means the choice is not remembered next time
+    });
   }
   handleImport() {
     this.pasteText = "";
@@ -1268,7 +1290,7 @@ export default class PipelineCampaigns extends LightningElement {
     this.template
       .querySelectorAll('th[data-table="' + table + '"][data-id]')
       .forEach((th) => {
-        snapshot[th.dataset.id] = Math.round(th.getBoundingClientRect().width);
+        snapshot[th.dataset.id] = Math.round(localWidth(th));
       });
     this.live = { table, widths: { ...snapshot } };
     beginColumnDrag(

@@ -4,7 +4,9 @@
  * Who calls it: the pipelineApp component and the components inside it.
  * What it touches: reads SalesRisks__c (Opportunities & Risks) in the signed-in person's own access (user mode, so
  * org-wide sharing and field access apply as normal), reads the Teams through PipelineScope, and reads and writes one
- * Pipeline_Filter__c settings record per person (flagged Is_User_Settings__c; their own screen choices as one JSON string). It never changes a deal.
+ * Pipeline_Filter__c settings record per person (flagged Is_User_Settings__c; their own screen choices as one JSON string). It also reads
+ * each opportunity's and risk's Primary HCP usage ratings (Account roll-up fields) in system mode, to show the surgeon's rating for the
+ * deal's portfolio. It never changes a deal.
  *
  * The three kinds of deal are kept apart and never added together (Robert, 2026-10-25): opportunities, risks and ROSA.
  * The kind comes from the record type's developer name: ends in RISK is a risk, contains ROSA is ROSA, the rest are
@@ -55,6 +57,8 @@ public with sharing class PipelineController {
     public String kind;
     @AuraEnabled
     public String segment;
+    @AuraEnabled
+    public String rating; // the Primary HCP's usage rating for the deal's portfolio (PLATINUM, GOLD, SILVER, BRONZE) or null; never set on a ROSA deal
     @AuraEnabled
     public String stage;
     @AuraEnabled
@@ -263,7 +267,74 @@ public with sharing class PipelineController {
       out.deals.add(toDeal(rows[i]));
     }
     markCampaignDeals(out.deals);
+    attachRatings(out.deals);
     return out;
+  }
+
+  /**
+   * Gives each opportunity and risk its surgeon's usage rating for the deal's own portfolio (Robert, 2026-11-16: a hip deal shows the
+   * surgeon's hip rating, knee the knee rating, extremities the shoulder rating, CMFT the CMF rating; ROSA deals are against a hospital, so
+   * they get none). The ratings are stored on the Primary HCP's Account (read-only roll-ups). One query for the whole list, read without
+   * field-level checks because a person who may see the deal need not hold those Account fields (sharing still applies), the same as the
+   * campaign members list.
+   */
+  private static void attachRatings(List<Deal> deals) {
+    Set<Id> ids = new Set<Id>();
+    for (Deal d : deals) {
+      if (d.kind != 'rosa') {
+        ids.add(d.id);
+      }
+    }
+    if (ids.isEmpty()) {
+      return;
+    }
+    Map<Id, SalesRisks__c> byId = new Map<Id, SalesRisks__c>(
+      [
+        SELECT
+          Id,
+          Account__r.HCPUsageHipRating__c,
+          Account__r.HCPUsageKneeRating__c,
+          Account__r.HCPUsageShoulderRating__c,
+          Account__r.HCPUsageCMFRating__c
+        FROM SalesRisks__c
+        WHERE Id IN :ids
+        WITH SYSTEM_MODE
+      ]
+    );
+    for (Deal d : deals) {
+      SalesRisks__c r = byId.get(d.id);
+      if (r != null && r.Account__r != null) {
+        d.rating = ratingFor(
+          r.Account__r.HCPUsageHipRating__c,
+          r.Account__r.HCPUsageKneeRating__c,
+          r.Account__r.HCPUsageShoulderRating__c,
+          r.Account__r.HCPUsageCMFRating__c,
+          d.segment
+        );
+      }
+    }
+  }
+
+  /** The rating that belongs to a deal's portfolio: Hip, Knee, Extremities (the Shoulder rating) or CMFT (the CMF rating); null for any other portfolio or an empty rating. */
+  @TestVisible
+  private static String ratingFor(
+    String hip,
+    String knee,
+    String shoulder,
+    String cmf,
+    String portfolio
+  ) {
+    String r = null;
+    if (portfolio == 'Hip') {
+      r = hip;
+    } else if (portfolio == 'Knee') {
+      r = knee;
+    } else if (portfolio == 'Extremities') {
+      r = shoulder;
+    } else if (portfolio == 'CMFT') {
+      r = cmf;
+    }
+    return String.isBlank(r) ? null : r.toUpperCase();
   }
 
   /**

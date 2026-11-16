@@ -1,5 +1,5 @@
 <template>
-  <div class="root" data-theme={theme} data-head={headColour}>
+  <div class="root" style={rootStyle} data-theme={theme} data-head={headColour}>
     <header class="top">
       <span class="word"
         ><span class="pipe">SALES</span
@@ -45,6 +45,12 @@
           </button>
         </template>
       </div>
+      <c-pipeline-zoom-slider
+        class="zoomseg"
+        compact
+        value={zoom}
+        onzoomchange={handleZoomPick}
+      ></c-pipeline-zoom-slider>
       <c-pipeline-segmented
         class="themeseg"
         heading="Theme"
