@@ -1,14 +1,45 @@
 <template>
-  <div class="band">
+  <div class={bandCls}>
     <div class="bandl"><slot name="heading"></slot></div>
-    <div class="tiles">
+    <div class="tiles" lwc:if={notValueRow}>
       <template for:each={tiles} for:item="t">
         <div key={t.key} class={t.cls}>
           <b class={t.valCls}>{t.value}</b><span>{t.label}</span>
         </div>
       </template>
     </div>
+    <c-pipeline-segmented
+      lwc:if={showValueRow}
+      class="currencyseg"
+      heading="Currency"
+      label="Currency"
+      options={currencyOptions}
+      value={currencyValue}
+      onchange={handleCurrency}
+    ></c-pipeline-segmented>
   </div>
+
+  <template lwc:if={showValueRow}>
+    <div class="vrow">
+      <template for:each={valueChips} for:item="c">
+        <div key={c.key} class={c.cls}>
+          <span class="vl"
+            ><span lwc:if={c.plateCls} class={c.plateCls}>{c.label}</span
+            ><template lwc:else>{c.label}</template></span
+          >
+          <b class="vv">{c.text}</b>
+        </div>
+      </template>
+      <div class="tiles ctiles">
+        <template for:each={tiles} for:item="t">
+          <div key={t.key} class={t.cls}>
+            <b class={t.valCls}>{t.value}</b><span>{t.label}</span>
+          </div>
+        </template>
+      </div>
+    </div>
+    <p class="vnote bad" lwc:if={ratesError}>{ratesError}</p>
+  </template>
 
   <div class="card full tablecard">
     <div class="cardhead">
@@ -115,6 +146,8 @@
         campaign={campaign}
         members={maintainMembers}
         types={types}
+        usd={showUsd}
+        rates={rates}
         ondealchange={handleDealChange}
       ></c-pipeline-campaign-maintain>
       <table class="tbl" style={tableStyle} lwc:else>

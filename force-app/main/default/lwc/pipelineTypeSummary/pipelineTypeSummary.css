@@ -56,6 +56,13 @@
 .v.warn {
   color: var(--warn);
 }
+/* the revenue (value) figures in Roboto Condensed Light at 24 px, the same treatment as the campaign value chips (Robert, 2026-11-17); the
+   font is loaded by the PipelineApp page from the static resource Pipeline_Fonts. The counts keep the standard font. */
+.v.money {
+  font-family: "Pipeline Roboto Condensed", "Arial Narrow", Arial, sans-serif;
+  font-size: 24px;
+  font-weight: 300;
+}
 .dnote {
   color: var(--muted);
   font-size: 14px;

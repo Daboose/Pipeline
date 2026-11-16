@@ -24,7 +24,6 @@
         <tr key={g.key} class="sg">
           <td colspan="7">
             <span class="sn">{g.name}</span>
-            <span class="sh">{g.hospitals}</span>
             <template for:each={g.plates} for:item="p">
               <span key={p.key} class={p.cls}>{p.text}</span>
             </template>
@@ -57,7 +56,7 @@
                 aria-label={r.title}
                 onclick={handlePress}
               >
-                {r.btnText}
+                <span class="mark"></span>
               </button>
               <span class="lockn" lwc:if={r.note}>{r.note}</span>
             </td>

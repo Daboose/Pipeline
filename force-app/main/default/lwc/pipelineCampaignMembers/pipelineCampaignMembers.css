@@ -449,3 +449,109 @@ input[type="checkbox"] {
 .kring {
   border: 2px solid var(--indigo2, var(--indigo));
 }
+
+/* the value row (Robert, 2026-11-17; mockup pipeline_campaign_value_v1.html): the total and the five rating chips on the left, the Currency
+   switch at the right-hand end, under the four counts. A chip with several currencies is wide, so the row wraps. */
+.vrow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 12px;
+  margin: 0 0 12px;
+}
+.vchip {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  min-width: 150px;
+  padding: 10px 18px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+.vchip.tot {
+  border-color: var(--edge);
+  background: color-mix(in srgb, var(--indigo) 12%, var(--panel));
+}
+.vl {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.vv {
+  /* Roboto Condensed Light at 24 px (Robert, 2026-11-17: taller and lighter than the standard font, so five currencies fit on one row);
+     the font is loaded by the PipelineApp page from the static resource Pipeline_Fonts */
+  font-family: "Pipeline Roboto Condensed", "Arial Narrow", Arial, sans-serif;
+  font-size: 24px;
+  font-weight: 300;
+  line-height: 1.15;
+  white-space: nowrap;
+}
+.vchip.zero .vv {
+  color: var(--muted);
+}
+.vl .rate {
+  display: inline-block;
+  padding: 2px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  line-height: 1.6;
+  color: #1b2640;
+}
+.vl .rate.Platinum {
+  background: linear-gradient(135deg, #f1f4f8, #aeb9c8);
+}
+.vl .rate.Gold {
+  background: linear-gradient(135deg, #ffe08a, #d9a21b);
+}
+.vl .rate.Silver {
+  background: linear-gradient(135deg, #eef0f3, #b4b8bf);
+}
+.vl .rate.Bronze {
+  background: linear-gradient(135deg, #f0c9a0, #b8763a);
+}
+.vl .rate.none {
+  padding: 0;
+  background: none;
+  color: var(--muted);
+}
+.currencyseg {
+  margin-left: auto;
+  align-self: center;
+}
+.vnote {
+  margin: -6px 0 12px;
+  text-align: right;
+  font-size: 13px;
+  color: var(--muted);
+}
+.vnote.bad {
+  color: var(--bad, #f87171);
+}
+
+/* the campaign screen's rearranged top (Robert, 2026-11-17; mockup pipeline_top_rows_v1.html): the first row is only the title and the
+   Currency switch, so it is shorter; the second row holds the value chips on the left and the four count tiles on the right, each tile with
+   its number and wording centred (the numbers keep the standard font). */
+.band.compact {
+  align-items: center;
+  margin: 0 0 8px;
+  padding: 2px 0; /* a little more room above and below the title and the Currency switch (Robert, 2026-11-17) */
+}
+.ctiles {
+  margin-left: auto;
+  align-self: stretch; /* the same height as the value chips beside them (Robert, 2026-11-17) */
+}
+.ctiles .tile {
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* the number and its wording stay centred in the taller tile */
+  text-align: center;
+}

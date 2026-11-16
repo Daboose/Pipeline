@@ -72,6 +72,9 @@
   --seg-shadow: rgba(0, 0, 0, 0.35);
   display: inline-flex;
 }
+.cur {
+  margin-left: auto; /* the Currency switch sits at the right-hand end of the row (Robert, 2026-11-17) */
+}
 .chips {
   display: flex;
   flex-wrap: wrap;

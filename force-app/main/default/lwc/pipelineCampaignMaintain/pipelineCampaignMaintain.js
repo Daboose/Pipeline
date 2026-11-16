@@ -2,6 +2,7 @@ import { LightningElement, api } from "lwc";
 import maintainDeals from "@salesforce/apex/PipelineCampaignController.maintainDeals";
 import setLink from "@salesforce/apex/PipelineDealCampaignController.setLink";
 import { formatMoney } from "c/pipelineFormat";
+import { usdAmount } from "c/pipelineCampaignModel";
 
 const TOAST_MS = 2500;
 
@@ -31,6 +32,9 @@ function proper(rating) {
 export default class PipelineCampaignMaintain extends LightningElement {
   /** The surgeons to list (MemberRow), already searched and in order. */
   @api members = [];
+  /** US dollars: the value column shows each deal in US dollars with these Salesforce rates (usd true and rates read), else its own currency. */
+  @api usd = false;
+  @api rates = null;
   /** Which kinds of deal to list: { opp: true, risk: false }. */
   @api types = { opp: true, risk: false };
   /** The campaign (CampaignRow). A different campaign reads its deals again. */
@@ -124,7 +128,6 @@ export default class PipelineCampaignMaintain extends LightningElement {
         key: m.memberId,
         noneKey: m.memberId + "-none",
         name: withEnglish(m.name, m.preferredName),
-        hospitals: m.hospitals || "",
         plates: (m.ratings || [])
           .filter((r) => r.rating)
           .map((r) => ({
@@ -158,17 +161,23 @@ export default class PipelineCampaignMaintain extends LightningElement {
       name: d.name,
       risk: d.kind === "risk",
       brand: d.brand || "–",
-      value: formatMoney(d.value, d.currencyCode),
+      value: this.valueText(d),
       owner: d.ownerName || "–",
       stage: d.stage || "–",
       inCampaign: d.inCampaign,
       cls: `dl${d.inCampaign ? " in" : ""}${cannotEdit ? " lock" : ""}`,
       btnCls: d.inCampaign ? "rb rem" : "rb add",
-      btnText: d.inCampaign ? "−" : "+",
       disabled,
       title,
       note: cannotEdit ? "cannot edit" : ""
     };
+  }
+  valueText(d) {
+    if (this.usd && this.rates) {
+      const u = usdAmount(d.value, d.currencyCode, this.rates);
+      if (u !== null) return formatMoney(u, "USD");
+    }
+    return formatMoney(d.value, d.currencyCode);
   }
   get busy() {
     return this.saving || (this.loading && !this.loaded);

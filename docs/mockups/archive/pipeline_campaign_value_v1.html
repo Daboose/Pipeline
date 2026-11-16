@@ -1,0 +1,2729 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Mockup: Campaign screen, value by rating (version 1)</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        height: 100%;
+      }
+      body {
+        margin: 0;
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-size: 15px;
+        overflow: hidden;
+      }
+      /* Pipeline shared look: imported by every Pipeline screen with  
+   The colours are NOT set here: they are set once on the app's root element (dark or light) and inherited, so one switch changes everything. */
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      button {
+        font-family: inherit;
+      }
+
+      .btn {
+        border: 1px solid transparent;
+        border-radius: 999px;
+        background: var(--indigo);
+        color: #fff;
+        font-weight: 800;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        padding: 9px 18px;
+        cursor: pointer;
+      }
+      .btn.sec {
+        background: transparent;
+        border-color: var(--indigo2);
+        color: var(--indigo2);
+      }
+      .btn.ghost {
+        background: transparent;
+        color: var(--indigo2);
+        padding-left: 10px;
+        padding-right: 10px;
+      }
+      .btn:focus-visible,
+      .pill:focus-visible,
+      .rbtn:focus-visible {
+        outline: 2px solid var(--indigo2);
+        outline-offset: 2px;
+      }
+
+      /* round icon buttons (chevrons, close) */
+      .rbtn {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        border: 1.5px solid var(--edge);
+        background: transparent;
+        color: var(--text);
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: none;
+      }
+      .chev {
+        width: 9px;
+        height: 9px;
+        border-right: 2.5px solid currentColor;
+        border-bottom: 2.5px solid currentColor;
+        transform: rotate(45deg);
+        margin-top: -3px;
+      }
+      .chev.up {
+        transform: rotate(-135deg);
+        margin-top: 3px;
+      }
+
+      .pill {
+        border: 1px solid var(--pline);
+        background: var(--pfield);
+        color: var(--text);
+        border-radius: 999px;
+        padding: 6px 13px;
+        font-size: 14px;
+        cursor: pointer;
+      }
+      .pill.on {
+        background: var(--indigo);
+        border-color: var(--indigo);
+        color: #fff;
+      }
+
+      select.in,
+      input.in {
+        height: 36px;
+        background-color: var(--pfield);
+        border: 1px solid var(--pline);
+        border-radius: 8px;
+        color: var(--text);
+        font-size: 15px;
+        padding: 0 12px;
+      }
+      select.in {
+        appearance: none;
+        padding-right: 34px;
+        background-image:
+          linear-gradient(45deg, transparent 50%, var(--muted) 50%),
+          linear-gradient(135deg, var(--muted) 50%, transparent 50%);
+        background-position:
+          calc(100% - 17px) 15px,
+          calc(100% - 12px) 15px;
+        background-size:
+          5px 5px,
+          5px 5px;
+        background-repeat: no-repeat;
+      }
+
+      .tag {
+        display: inline-block;
+        border-radius: 999px;
+        padding: 1px 9px;
+        font-size: 13px;
+        font-weight: 700;
+        border: 1px solid currentColor;
+        white-space: nowrap;
+      }
+      .tag.ok {
+        color: var(--ok);
+      }
+      .tag.warn {
+        color: var(--warn);
+      }
+      .tag.bad {
+        color: var(--bad);
+      }
+      .tag.hold {
+        color: var(--muted);
+      }
+
+      /* A round clear button: a circle with a cross drawn dead centre (two lines, so it is centred both ways whatever the font).
+   .xcirc is the circle itself; .sbox + .sclear put one on the right of a search box, vertically centred. Every search box has one. */
+      .xcirc {
+        position: relative;
+        flex: none;
+        width: 22px;
+        height: 22px;
+        padding: 0;
+        border: 0;
+        border-radius: 50%;
+        background: var(--indigo);
+        cursor: pointer;
+        font-size: 0;
+      }
+      .xcirc::before,
+      .xcirc::after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 10px;
+        height: 2px;
+        border-radius: 1px;
+        background: #fff;
+      }
+      .xcirc::before {
+        transform: translate(-50%, -50%) rotate(45deg);
+      }
+      .xcirc::after {
+        transform: translate(-50%, -50%) rotate(-45deg);
+      }
+      .xcirc:focus-visible {
+        outline: 2px solid var(--indigo2);
+        outline-offset: 2px;
+      }
+      .sbox {
+        position: relative;
+        display: block;
+      }
+      .sbox > input {
+        width: 100%;
+        padding-right: 38px;
+      }
+      .sclear {
+        position: absolute;
+        right: 7px;
+        top: 50%;
+        margin-top: -11px;
+      }
+
+      .card {
+        width: 100%;
+        background: var(--panel);
+        border: 1px solid var(--edge);
+        border-radius: 14px;
+        box-shadow: var(--shadow);
+        padding: 12px 18px 16px;
+      }
+      /* the top of each list: a band across the whole card, tinted with the heading colour (pink in dark mode), so the three lists are easy to tell apart when scrolling */
+      .lhead {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: -12px -18px 12px;
+        padding: 10px 18px;
+        border-radius: 13px 13px 0 0;
+        background: rgba(253, 184, 39, 0.14);
+        background: color-mix(in srgb, var(--head) 16%, transparent);
+        border-bottom: 1px solid
+          color-mix(in srgb, var(--head) 38%, transparent);
+      }
+      .lhead h3 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--head);
+      }
+      .sp {
+        flex: 1;
+      }
+      .colwrap {
+        position: relative;
+      }
+      .backdrop {
+        position: fixed;
+        inset: 0;
+        z-index: 20;
+      }
+      .picker {
+        position: absolute;
+        right: 0;
+        top: 42px;
+        z-index: 21;
+        background: var(--ppanel);
+        border: 1px solid var(--edge);
+        border-radius: 12px;
+        box-shadow: var(--shadow);
+        padding: 10px 14px;
+        min-width: 230px;
+      }
+      .pk {
+        display: flex;
+        gap: 9px;
+        align-items: center;
+        padding: 4px 0;
+        font-size: 15px;
+        cursor: pointer;
+      }
+      .pkfoot {
+        display: flex;
+        gap: 4px;
+        margin-top: 6px;
+      }
+
+      .tablewrap {
+        overflow-x: auto;
+      }
+      .tbl {
+        border-collapse: collapse;
+        font-size: 15px;
+        width: 100%;
+      }
+      .tbl th {
+        position: relative;
+        text-align: left;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+        padding: 8px 14px;
+        border-bottom: 1px solid var(--line);
+        white-space: nowrap;
+        user-select: none;
+      }
+      .tbl th .lab {
+        cursor: pointer;
+      }
+      .tbl td {
+        padding: 8px 14px;
+        border-bottom: 1px solid var(--line);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .num {
+        text-align: right;
+      }
+      .arrow {
+        margin-left: 4px;
+        color: var(--indigo2);
+      }
+      /* the drag handle on each column's right edge */
+      .rz {
+        position: absolute;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        width: 10px;
+        cursor: col-resize;
+      }
+      .rz::after {
+        content: "";
+        position: absolute;
+        right: 3px;
+        top: 22%;
+        bottom: 22%;
+        width: 2px;
+        border-radius: 1px;
+        background: var(--edge);
+      }
+      .rz:hover::after {
+        background: var(--indigo2);
+        top: 0;
+        bottom: 0;
+      }
+      .tbl tbody tr {
+        cursor: pointer;
+      }
+      @media (hover: hover) {
+        .tbl tbody tr:hover td {
+          background: rgba(99, 102, 241, 0.1);
+        }
+      }
+      /* the first row of each sales rep has a heavier line above it */
+      .tbl tr.gfirst td {
+        border-top: 2px solid var(--edge);
+      }
+      .tbl tr.alt td {
+        background: rgba(99, 102, 241, 0.06);
+      }
+      .repcell {
+        min-width: 170px;
+        vertical-align: top;
+        cursor: pointer;
+        border-right: 1px solid var(--line);
+      }
+      .repcell small {
+        display: block;
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 400;
+      }
+      .gchev {
+        display: inline-block;
+        width: 18px;
+      }
+      .gchev .chev {
+        width: 7px;
+        height: 7px;
+        margin: 0;
+        vertical-align: middle;
+        transform: rotate(-45deg);
+      }
+      .gchev .chev.up {
+        transform: rotate(45deg);
+      }
+      .empty {
+        color: var(--muted);
+        padding: 14px 4px;
+        font-size: 15px;
+      }
+      .more {
+        padding: 12px 0 2px;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+
+      /* closed: the card shrinks to just its coloured band, with no white strip under it */
+      .card.shut {
+        padding-bottom: 0;
+      }
+      .card.shut .lhead {
+        margin-bottom: 0;
+        border-radius: 13px;
+        border-bottom-color: transparent;
+      }
+
+      /* folding: the body unfolds from nothing to its full height and folds back, easing the card's spacing with it */
+      .card {
+        transition: padding-bottom 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .lhead {
+        transition:
+          margin-bottom 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+          border-radius 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+          border-color 0.4s ease;
+      }
+      .fold {
+        display: grid;
+        grid-template-rows: 0fr;
+        opacity: 0;
+        transition:
+          grid-template-rows 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+          opacity 0.3s ease;
+      }
+      .fold.on {
+        grid-template-rows: 1fr;
+        opacity: 1;
+      }
+      .bodyin {
+        min-height: 0;
+        overflow: hidden;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .card,
+        .lhead,
+        .fold {
+          transition: none;
+        }
+      }
+
+      /* the rep priority star takes the heading colour, the same as in the legend above the lists */
+      .star {
+        color: var(--head);
+      }
+      /* the violet star: the deal is a state priority (Robert, 2026-11-10; mockup pipeline_state_priority_star_v1.html, option A) */
+      .sstar {
+        color: var(--state);
+      }
+      /* the gold star: the deal is in one or more campaigns */
+      .cstar {
+        color: var(--gold);
+      }
+
+      /* the Status pills (Robert, 2026-11-07; mockup pipeline_status_column_v2.html, option B): solid, in the stage bar's colours */
+      .stp {
+        display: inline-flex;
+        align-items: center;
+        height: 26px;
+        padding: 0 12px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        white-space: nowrap;
+      }
+      .stp.st-open {
+        background: var(--indigo);
+        color: #fff;
+      }
+      .stp.st-hold {
+        background: #f59e0b;
+        color: #1b2640;
+      }
+      .stp.st-won {
+        background: #16a34a;
+        color: #fff;
+      }
+      .stp.st-lost {
+        background: #dc2626;
+        color: #fff;
+      }
+      .stp.st-closed {
+        background: #64748b;
+        color: #fff;
+      }
+
+      /* the default widths (Robert, 2026-11-07): the Hospital column a little narrower, the Status column a little wider. Until a person
+   drags a column, a hospital name is cut at 220px with "…" and the Status column is at least 150px; a width they have dragged wins. */
+      .clip {
+        display: inline-block;
+        max-width: 220px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        vertical-align: bottom;
+        white-space: nowrap;
+      }
+      .tbl th.c-status,
+      .tbl td.c-status {
+        min-width: 150px;
+      }
+
+      .root {
+        --page: #0e1623;
+        --bg: #141e2e;
+        --panel: #1a2740;
+        --panel2: #20304f;
+        --line: #2f4163;
+        --edge: #5b6f93;
+        --text: #e8edf5;
+        --muted: #8b9bb0;
+        --pipe: #fdb827;
+        --head: #f472b6;
+        --bar-primary: #2f80ed;
+        --bar-revision: #fb923c;
+        --bar-cmft: #14b8a6;
+        --grid-line: rgba(139, 155, 176, 0.25);
+        --indigo: #6366f1;
+        --indigo2: #a5b4fc;
+        --ok: #4ee0b0;
+        --warn: #fb923c;
+        --bad: #f87171;
+        --shadow: 0 8px 20px rgba(0, 0, 0, 0.55);
+        --ppanel: #171b24;
+        --pgroup: #1e232e;
+        --pfield: #11151c;
+        --pline: #2c3444;
+        --gold: #ffc400;
+        --state: #a78bfa;
+        position: relative;
+        background: var(--bg);
+        color: var(--text);
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-size: 15px;
+      }
+      .root[data-theme="light"] {
+        --gold: #e0a100;
+        --state: #7c3aed;
+        --page: #e9edf4;
+        --bg: #f4f6fa;
+        --panel: #ffffff;
+        --panel2: #eef2fa;
+        --line: #d5dcea;
+        --edge: #b3bfd6;
+        --text: #1b2640;
+        --muted: #5d6b85;
+        --pipe: #b7791f;
+        --bar-primary: #2563eb;
+        --bar-revision: #ea580c;
+        --bar-cmft: #0d9488;
+        --grid-line: rgba(93, 107, 133, 0.3);
+        --indigo: #4f46e5;
+        --indigo2: #4338ca;
+        --ok: #0f9d74;
+        --warn: #c2570c;
+        --bad: #dc2626;
+        --shadow: 0 8px 20px rgba(30, 45, 80, 0.18);
+        --ppanel: #eef2fa;
+        --pgroup: rgba(120, 140, 190, 0.07);
+        --pfield: #ffffff;
+        --pline: #d5dcea;
+      }
+
+      /* The heading colour (headings, the bar behind them, the rep priority star) is the person's choice, saved in their settings:
+   four colours, each with a brighter shade for dark mode and a deeper one for light mode. Pink is the default. */
+      .root[data-head="sky"] {
+        --head: #5eb3ff;
+      }
+      .root[data-head="lime"] {
+        --head: #a3e635;
+      }
+      .root[data-head="cyan"] {
+        --head: #22d3ee;
+      }
+      .root[data-theme="light"][data-head="pink"] {
+        --head: #db2777;
+      }
+      .root[data-theme="light"][data-head="sky"] {
+        --head: #0284c7;
+      }
+      .root[data-theme="light"][data-head="lime"] {
+        --head: #4d7c0f;
+      }
+      .root[data-theme="light"][data-head="cyan"] {
+        --head: #0e7490;
+      }
+
+      .top {
+        /* every control in this row is this tall, the same as the options bar under it */
+        --barh: 38px;
+        position: sticky;
+        top: 0;
+        z-index: 5;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 10px 18px;
+        background: var(--bg);
+        border-bottom: 1px solid var(--line);
+      }
+
+      .legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px 18px;
+        color: var(--muted);
+        font-size: 14px;
+        padding: 0 4px;
+      }
+      /* the rep priority star in the legend takes the heading colour, like the stars in the lists */
+      .legend .star {
+        color: var(--head);
+      }
+      .legend .sstar {
+        color: var(--state);
+      }
+      .legend .cstar {
+        color: var(--gold);
+      }
+
+      .sfnav {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        height: 44px;
+        padding: 0 16px;
+        background: #0b1220;
+        color: #cdd6e6;
+        font-size: 14px;
+      }
+      .sfnav .app {
+        font-weight: 800;
+        letter-spacing: 0.14em;
+      }
+      .sfnav .app b {
+        color: #fdb827;
+      }
+      .sfnav .tab {
+        color: #9fb0cc;
+      }
+      .sfnav .tab.on {
+        color: #fff;
+        border-bottom: 2px solid #6366f1;
+        padding-bottom: 2px;
+      }
+      .sfnav .sp {
+        flex: 1;
+      }
+      .root {
+        height: calc(100vh - 44px);
+        overflow: auto;
+        background: var(--bg);
+        color: var(--text);
+        font-size: 15px;
+      }
+      .top .wm {
+        font-weight: 800;
+        letter-spacing: 0.14em;
+        font-size: 18px;
+      }
+      .top .asat {
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .main {
+        padding: 14px 20px 40px;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+      .count {
+        color: var(--muted);
+        font-size: 14px;
+      }
+      .about {
+        padding: 12px 18px;
+        background: var(--panel);
+        border: 1px solid var(--edge);
+        border-radius: 12px;
+        line-height: 1.5;
+        max-width: 1100px;
+      }
+      .about summary {
+        cursor: pointer;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        color: var(--pipe);
+      }
+      .about ul {
+        margin: 4px 0 8px;
+        padding-left: 22px;
+      }
+      .tools {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      .tools .lab {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        margin-left: 10px;
+      }
+      .btn.on {
+        background: var(--indigo);
+        color: #fff;
+      }
+      .legend {
+        margin: 0;
+      }
+      /* ===== the proposal: the heading band and the column names stay under the top bar until their list has gone past ===== */
+      .root {
+        --stick: 59px;
+      }
+      .lhead {
+        position: sticky;
+        top: var(--stick);
+        z-index: 3;
+        background:
+          linear-gradient(
+            color-mix(in srgb, var(--head) 16%, transparent),
+            color-mix(in srgb, var(--head) 16%, transparent)
+          ),
+          var(--panel);
+      }
+      .tbl th {
+        position: sticky;
+        top: calc(var(--stick) + var(--lh, 66px));
+        z-index: 2;
+        background: var(--panel);
+        border-bottom: 0;
+        box-shadow:
+          inset 0 -1px 0 var(--line),
+          0 1px 0 var(--panel);
+      }
+      /* while the band is stuck it is flat and square and covers the card's own 1 px edge, so no side lines or curve show on that row */
+      .bodyin {
+        overflow: clip;
+      }
+      .tablewrap {
+        overflow-x: clip;
+      }
+      .tbl.wide {
+        min-width: 1900px;
+      }
+      .card.widebox .tablewrap {
+        overflow-x: auto;
+      }
+      .card.widebox .tbl th {
+        position: relative;
+        top: auto;
+      }
+
+      /* ===== this mockup: Screen size (Normal / Small) ===== */
+      body {
+        overflow: auto;
+        background: #0b1220;
+        color: #e8edf5;
+      }
+      .mk {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 14px 16px 0;
+      }
+      .mk .about {
+        max-width: none;
+        background: #1a2740;
+        color: #e8edf5;
+        --muted: #8b9bb0;
+        --pipe: #fdb827;
+        --edge: #5b6f93;
+        --panel: #1a2740;
+      }
+      .mk .about code {
+        background: #0b1220;
+        padding: 1px 6px;
+        border-radius: 6px;
+      }
+      .bar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px 22px;
+        align-items: center;
+        padding: 12px 16px;
+        margin: 12px auto 0;
+        max-width: 1280px;
+        color: #cdd6e6;
+        font-size: 14px;
+      }
+      .bar .lab {
+        color: #8b9bb0;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        margin-right: 8px;
+      }
+      .seg {
+        display: inline-flex;
+        background: #11182a;
+        border: 1px solid #2f4163;
+        border-radius: 999px;
+        padding: 3px;
+      }
+      .seg button {
+        border: 0;
+        background: transparent;
+        color: #9fb0cc;
+        font-weight: 800;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        padding: 8px 16px;
+        border-radius: 999px;
+        cursor: pointer;
+      }
+      .seg button.on {
+        background: #6366f1;
+        color: #fff;
+      }
+      .stage {
+        margin: 12px auto 40px;
+        width: var(--w, 100%);
+        max-width: 100%;
+        border: 1px solid #2f4163;
+        transition: width 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .stage .sfnav {
+        height: 44px;
+      }
+      /* the window the app lives in: its height is a share of the screen */
+      .stage .root {
+        height: 74vh;
+        min-height: 560px;
+        overflow: auto;
+      }
+      /* ===== THE WHOLE IDEA: one number scales everything inside the app. Normal = 1, Small = 0.75. ===== */
+      .wrapper {
+        --z: 1;
+      }
+      .stage .root {
+        zoom: var(--z);
+        height: calc(74vh / var(--z));
+        min-height: calc(560px / var(--z));
+      }
+
+      .top {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: nowrap;
+        padding: 10px 18px;
+      }
+      .top .cog {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        background: var(--indigo);
+        color: #fff;
+        border: 0;
+        font-size: 22px;
+        cursor: pointer;
+        flex: none;
+      }
+      .top .wm {
+        display: flex;
+        align-items: center;
+        gap: 0;
+        font-size: 22px;
+        font-weight: 800;
+        letter-spacing: 0.06em;
+        padding: 6px 16px;
+        border-radius: 6px;
+        background: linear-gradient(#2a2f39, #0f1218 45%, #2a2f39);
+        border: 1px solid #545b69;
+      }
+      .top .wm .pipe {
+        color: var(--pipe);
+      }
+      .top .wm .line {
+        color: #fff;
+      }
+      .top .asat {
+        color: var(--muted);
+        font-size: 15px;
+        line-height: 1.4;
+        flex: none;
+      }
+      .top .grow {
+        flex: 1;
+      }
+      .sw {
+        display: inline-flex;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 3px;
+        background: var(--bg);
+        flex: none;
+      }
+      .sw span {
+        padding: 9px 18px;
+        border-radius: 999px;
+        font-weight: 800;
+        font-size: 13px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+        cursor: pointer;
+      }
+      .sw span.on {
+        background: var(--indigo);
+        color: #fff;
+      }
+      .pillbox {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 8px 18px;
+        font-size: 15px;
+        flex: none;
+        white-space: nowrap;
+      }
+      .pillbox .k {
+        color: var(--muted);
+        font-weight: 800;
+        font-size: 13px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+      .pillbox b {
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+      .chg {
+        color: var(--warn);
+        border: 1px solid var(--warn);
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        padding: 2px 10px;
+      }
+      .big {
+        background: var(--indigo);
+        color: #fff;
+        border: 0;
+        border-radius: 999px;
+        font-weight: 800;
+        font-size: 14px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        padding: 11px 18px;
+        cursor: pointer;
+        flex: none;
+      }
+      .sq {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        background: var(--indigo);
+        color: #fff;
+        border: 0;
+        font-size: 20px;
+        flex: none;
+      }
+      .chips {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 14px 18px;
+        border-bottom: 1px solid var(--line);
+        flex-wrap: nowrap;
+      }
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 8px 18px;
+        font-weight: 800;
+        font-size: 14px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        white-space: nowrap;
+        flex: none;
+      }
+      .chip.on {
+        background: #1a2447;
+        border-color: var(--indigo);
+      }
+      .chip .tick {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: var(--indigo);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+      }
+      .chip .ring {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        border: 2px solid var(--indigo2);
+      }
+      .chip.txt {
+        font-weight: 500;
+        letter-spacing: 0;
+        text-transform: none;
+        font-size: 17px;
+        color: var(--muted);
+      }
+      .chip.txt b {
+        color: var(--text);
+        font-weight: 500;
+      }
+      .main {
+        padding: 16px 18px 40px;
+      }
+      .sum {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+      }
+      .sumc {
+        background: var(--panel);
+        border: 1px solid var(--edge);
+        border-radius: 14px;
+        padding: 18px 22px;
+        box-shadow: var(--shadow);
+      }
+      .sumc h3 {
+        margin: 0 0 14px;
+        font-size: 26px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--head);
+      }
+      .sumc h3 small {
+        font-size: 17px;
+        font-weight: 500;
+        letter-spacing: 0;
+        color: var(--muted);
+        text-transform: none;
+        margin-left: 10px;
+      }
+      .kp {
+        display: flex;
+        gap: 48px;
+      }
+      .kp div {
+        font-size: 14px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .kp b {
+        display: block;
+        font-size: 44px;
+        line-height: 1.2;
+        color: var(--text);
+        letter-spacing: 0;
+      }
+      .kp b.o {
+        color: var(--warn);
+      }
+      .sumc p {
+        margin: 10px 0 0;
+        color: var(--muted);
+        font-size: 17px;
+      }
+      .gap {
+        height: 16px;
+      }
+      .camp {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        padding: 18px 18px 0;
+        flex-wrap: nowrap;
+      }
+      .camp h2 {
+        margin: 0;
+        font-size: 30px;
+        font-weight: 800;
+        white-space: nowrap;
+      }
+      .camp .ok {
+        background: #14803c;
+        color: #fff;
+        font-weight: 700;
+        font-size: 17px;
+        padding: 6px 20px;
+        border-radius: 999px;
+      }
+      .camp .sub {
+        color: var(--muted);
+        font-size: 17px;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        white-space: nowrap;
+      }
+      .tiles {
+        display: flex;
+        gap: 12px;
+      }
+      .tile {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 10px 14px;
+        min-width: 100px;
+      }
+      .tile b {
+        display: block;
+        font-size: 38px;
+        line-height: 1.1;
+      }
+      .tile i {
+        font-style: normal;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        font-size: 13px;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .tile.o b {
+        color: var(--warn);
+      }
+      .plate {
+        display: inline-block;
+        font-weight: 800;
+        font-size: 13px;
+        letter-spacing: 0.14em;
+        padding: 5px 16px;
+        border-radius: 8px;
+        text-transform: uppercase;
+      }
+      .plate.g {
+        background: #e8b923;
+        color: #3a2a00;
+      }
+      .plate.s {
+        background: #d7dbe3;
+        color: #2b3140;
+      }
+      .nd {
+        color: var(--warn);
+        font-weight: 700;
+        font-size: 19px;
+      }
+      .tbl td,
+      .tbl th {
+        white-space: nowrap;
+      }
+      .view {
+        display: none;
+      }
+      .view.on {
+        display: block;
+      }
+      /* the settings flyout, sliding in from the left */
+      .fly {
+        color: #e8edf5;
+        background: #171b24;
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: 380px;
+        border-right: 3px solid var(--indigo);
+        padding: 22px;
+        z-index: 20;
+        transform: translateX(-105%);
+        transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+        overflow: auto;
+      }
+      .fly.on {
+        transform: none;
+      }
+      .fly h4 {
+        margin: 0 0 18px;
+        font-size: 20px;
+        letter-spacing: 0.12em;
+        font-weight: 800;
+      }
+      .fly h4 span {
+        color: #fdb827;
+      }
+      .fly .row {
+        background: #1e232e;
+        border: 1px solid #2c3444;
+        border-radius: 12px;
+        padding: 14px;
+        margin-bottom: 14px;
+      }
+      .fly .row .t {
+        font-weight: 800;
+        font-size: 12px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: #8b9bb0;
+        margin-bottom: 10px;
+      }
+      .fly .row p {
+        margin: 10px 0 0;
+        color: #8b9bb0;
+        font-size: 13px;
+        line-height: 1.4;
+      }
+      .fly .seg {
+        width: 100%;
+      }
+      .fly .seg button {
+        flex: 1;
+        padding: 9px 0;
+        letter-spacing: 0;
+        font-size: 13px;
+      }
+      .scrim {
+        position: absolute;
+        inset: 0;
+        background: rgba(5, 8, 15, 0.55);
+        z-index: 19;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.4s;
+      }
+      .scrim.on {
+        opacity: 1;
+        pointer-events: auto;
+      }
+      .wrapper {
+        position: relative;
+        overflow: hidden;
+      }
+      /* the settings panel stays at its normal size whatever the screen behind it is set to */
+      .pillsl {
+        display: flex;
+        align-items: center;
+        background: #0f131a;
+        border: 1px solid #2c3444;
+        border-radius: 999px;
+        padding: 4px;
+      }
+      .pillsl .lab {
+        color: #fff;
+        font-weight: 800;
+        font-size: 12px;
+        letter-spacing: 0.1em;
+        padding: 0 12px 0 14px;
+      }
+      .trk {
+        position: relative;
+        flex: 1;
+        height: 40px;
+        border-radius: 999px;
+        background: #11182a;
+        margin: 0 2px;
+        touch-action: none;
+        cursor: pointer;
+        user-select: none;
+      }
+      .trk .tk {
+        position: absolute;
+        top: 50%;
+        width: 6px;
+        height: 6px;
+        margin: -3px 0 0 -3px;
+        border-radius: 50%;
+        background: #3b4a6b;
+      }
+      .trk .hdl {
+        position: absolute;
+        top: 3px;
+        bottom: 3px;
+        width: 58px;
+        left: 0;
+        border-radius: 999px;
+        background: #fff;
+        color: #4f46e5;
+        font-weight: 800;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.45);
+        transition: left 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
+        cursor: grab;
+      }
+      .trk.drag .hdl {
+        transition: none;
+        cursor: grabbing;
+      }
+      .tl {
+        position: relative;
+        height: 24px;
+        color: #8b9bb0;
+        font-size: 13px;
+        font-weight: 700;
+      }
+      #tlA span {
+        position: absolute;
+        top: 6px;
+        transform: translateX(-50%);
+      }
+      #slB ~ .tl {
+        display: flex;
+        justify-content: space-between;
+      }
+      #slB + .tl {
+        padding: 6px 6px 0;
+        height: auto;
+      }
+      .step {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .step button {
+        width: 56px;
+        height: 44px;
+        border-radius: 999px;
+        border: 0;
+        background: #6366f1;
+        color: #fff;
+        font-size: 24px;
+        font-weight: 800;
+        cursor: pointer;
+      }
+      .step button:disabled {
+        opacity: 0.35;
+        cursor: default;
+      }
+      .step b {
+        font-size: 22px;
+      }
+
+      /* ===== this mockup: Maintain mode in the Campaign view ===== */
+      .stage {
+        width: 100%;
+        margin: 12px 0 40px;
+        border-left: 0;
+        border-right: 0;
+      }
+      .wrapper {
+        position: relative;
+        overflow: hidden;
+        --z: 0.8;
+      }
+      /* Zoom: one number scales the whole screen; vh is not corrected by zoom, so the height is divided by it */
+      .stage .root {
+        zoom: var(--z);
+        height: calc(78vh / var(--z));
+        min-height: calc(600px / var(--z));
+      }
+      .fly {
+        color: #e8edf5;
+        background: #171b24;
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: 400px;
+        border-right: 3px solid #6366f1;
+        padding: 22px;
+        z-index: 40;
+        transform: translateX(-105%);
+        transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+        overflow: auto;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+      }
+      .fly.on {
+        transform: none;
+      }
+      .fly h4 {
+        margin: 0 0 18px;
+        font-size: 20px;
+        letter-spacing: 0.12em;
+        font-weight: 800;
+      }
+      .fly h4 span {
+        color: #fdb827;
+      }
+      .fly .row {
+        background: #1e232e;
+        border: 1px solid #2c3444;
+        border-radius: 12px;
+        padding: 14px;
+        margin-bottom: 14px;
+      }
+      .fly .row .t {
+        font-weight: 800;
+        font-size: 12px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: #8b9bb0;
+        margin-bottom: 10px;
+      }
+      .fly .row p {
+        margin: 10px 0 0;
+        color: #8b9bb0;
+        font-size: 13px;
+        line-height: 1.4;
+      }
+      .scrim {
+        position: absolute;
+        inset: 0;
+        background: rgba(5, 8, 15, 0.55);
+        z-index: 39;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.4s;
+      }
+      .scrim.on {
+        opacity: 1;
+        pointer-events: auto;
+      }
+      .pillsl {
+        display: flex;
+        align-items: center;
+        background: #0f131a;
+        border: 1px solid #2c3444;
+        border-radius: 999px;
+        padding: 4px;
+      }
+      .pillsl .lab {
+        color: #fff;
+        font-weight: 800;
+        font-size: 12px;
+        letter-spacing: 0.1em;
+        padding: 0 12px 0 14px;
+      }
+      .trk {
+        position: relative;
+        flex: 1;
+        height: 40px;
+        border-radius: 999px;
+        background: #11182a;
+        margin: 0 2px;
+        touch-action: none;
+        cursor: pointer;
+        user-select: none;
+      }
+      .trk .tk {
+        position: absolute;
+        top: 50%;
+        width: 6px;
+        height: 6px;
+        margin: -3px 0 0 -3px;
+        border-radius: 50%;
+        background: #3b4a6b;
+      }
+      .trk .hdl {
+        position: absolute;
+        top: 3px;
+        bottom: 3px;
+        width: 58px;
+        left: 0;
+        border-radius: 999px;
+        background: #fff;
+        color: #4f46e5;
+        font-weight: 800;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.45);
+        transition: left 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
+        cursor: grab;
+      }
+      .trk.drag .hdl {
+        transition: none;
+        cursor: grabbing;
+      }
+      .tl {
+        position: relative;
+        height: 24px;
+        color: #8b9bb0;
+        font-size: 13px;
+        font-weight: 700;
+      }
+      #tlA span {
+        position: absolute;
+        top: 6px;
+        transform: translateX(-50%);
+      }
+      .modeseg {
+        display: inline-flex;
+        align-items: center;
+        border: 1px solid var(--edge);
+        border-radius: 999px;
+        background: var(--panel);
+        padding: 3px;
+        flex: none;
+      }
+      .modeseg .ml {
+        padding: 0 12px 0 16px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .modeseg button {
+        border: 0;
+        background: transparent;
+        color: var(--muted);
+        font-weight: 800;
+        font-size: 13px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        padding: 9px 18px;
+        border-radius: 999px;
+        cursor: pointer;
+      }
+      .modeseg button.on {
+        background: var(--indigo);
+        color: #fff;
+      }
+      .mtbl {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 15px;
+      }
+      .mtbl th {
+        text-align: left;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+        padding: 8px 14px;
+        border-bottom: 1px solid var(--line);
+        position: sticky;
+        top: calc(var(--stick) + var(--lh, 60px) - 3px);
+        background: var(--panel);
+        z-index: 2;
+        white-space: nowrap;
+      }
+      .mtbl td {
+        padding: 8px 14px;
+        border-bottom: 1px solid var(--line);
+        white-space: nowrap;
+      }
+      .mtbl .num {
+        text-align: right;
+      }
+      .mtbl tr.sg td {
+        background: color-mix(in srgb, var(--head) 8%, var(--panel));
+        border-top: 2px solid var(--edge);
+        padding: 10px 14px;
+      }
+      .mtbl tr.sg .sn {
+        font-size: 18px;
+        font-weight: 800;
+      }
+      .mtbl tr.sg .sh {
+        color: var(--muted);
+        margin-left: 12px;
+        font-size: 14px;
+      }
+      .mtbl tr.sg .cnt {
+        float: right;
+        color: var(--muted);
+        font-size: 14px;
+      }
+      .mtbl tr.dl td:first-child {
+        padding-left: 34px;
+      }
+      .mtbl tr.dl.in td {
+        background: rgba(22, 163, 74, 0.1);
+      }
+      .mtbl tr.dl.lock td {
+        opacity: 0.55;
+      }
+      .mtbl tr.none td {
+        color: var(--muted);
+        font-style: italic;
+        padding-left: 34px;
+      }
+      .kind {
+        display: inline-block;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        padding: 1px 8px;
+        border-radius: 6px;
+        margin-left: 8px;
+        background: var(--panel2);
+        color: var(--muted);
+      }
+      .inpill {
+        display: inline-block;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        padding: 3px 12px;
+        border-radius: 999px;
+        background: #16a34a;
+        color: #fff;
+      }
+      .outpill {
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .rb {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        border: 0;
+        font-size: 22px;
+        font-weight: 800;
+        line-height: 1;
+        color: #fff;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .rb.add {
+        background: var(--indigo);
+      }
+      .rb.rem {
+        background: #475569;
+      }
+      .rb:disabled {
+        opacity: 0.35;
+        cursor: not-allowed;
+      }
+      .rb:focus-visible {
+        outline: 2px solid var(--indigo2);
+        outline-offset: 2px;
+      }
+      .lockn {
+        color: var(--muted);
+        font-size: 12px;
+        margin-left: 8px;
+      }
+      .toast {
+        position: absolute;
+        left: 50%;
+        bottom: 22px;
+        transform: translateX(-50%) translateY(20px);
+        background: #0b1220;
+        color: #fff;
+        border: 1px solid var(--edge);
+        padding: 10px 20px;
+        border-radius: 999px;
+        font-weight: 700;
+        opacity: 0;
+        transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+        z-index: 30;
+        pointer-events: none;
+      }
+      .toast.on {
+        opacity: 1;
+        transform: translateX(-50%);
+      }
+      .legend2 {
+        display: flex;
+        gap: 22px;
+        flex-wrap: wrap;
+        color: var(--muted);
+        font-size: 14px;
+        padding: 6px 4px 12px;
+        align-items: center;
+      }
+      .camp {
+        flex-wrap: wrap;
+      }
+      .tychips {
+        display: none;
+        align-items: center;
+        gap: 8px;
+        flex: none;
+      }
+      .tychips.show {
+        display: inline-flex;
+      }
+      .tychips .chip {
+        padding: 5px 14px 5px 16px;
+        font-size: 13px;
+        gap: 8px;
+        cursor: pointer;
+      }
+      .tychips .chip .tick,
+      .tychips .chip .ring {
+        width: 24px;
+        height: 24px;
+        font-size: 13px;
+      }
+      .tychips .chip:focus-visible {
+        outline: 2px solid var(--indigo2);
+        outline-offset: 2px;
+      }
+      .mtbl tr.none td.hint {
+        font-style: normal;
+      }
+
+      /* ===== this mockup: the Campaign screen with the toolbar row gone and the value split by rating ===== */
+      .cmp {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px 22px;
+        align-items: center;
+        padding: 12px 16px;
+        max-width: 1500px;
+        margin: 12px auto 0;
+        color: #cdd6e6;
+        font-size: 14px;
+      }
+      .cmp .lab {
+        color: #8b9bb0;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        margin-right: 6px;
+      }
+      .cmp .seg {
+        display: inline-flex;
+        background: #11182a;
+        border: 1px solid #2f4163;
+        border-radius: 999px;
+        padding: 3px;
+      }
+      .cmp .seg button {
+        border: 0;
+        background: transparent;
+        color: #9fb0cc;
+        font-weight: 800;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        padding: 8px 16px;
+        border-radius: 999px;
+        cursor: pointer;
+      }
+      .cmp .seg button.on {
+        background: #6366f1;
+        color: #fff;
+      }
+      .stage {
+        width: 100%;
+        margin: 12px 0 40px;
+        border-left: 0;
+        border-right: 0;
+      }
+      .stage .root {
+        zoom: var(--z);
+        height: calc(82vh / var(--z));
+        min-height: calc(620px / var(--z));
+      }
+      .typebar {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 14px 18px;
+        border-bottom: 1px solid var(--line);
+        flex-wrap: nowrap;
+      }
+      .typebar .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 8px 18px;
+        font-weight: 800;
+        font-size: 14px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        white-space: nowrap;
+        flex: none;
+      }
+      .typebar .chip.on {
+        background: #1a2447;
+        border-color: var(--indigo);
+      }
+      .typebar .tick {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: var(--indigo);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+      }
+      .typebar .ring {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        border: 2px solid var(--indigo2);
+      }
+      .typebar .chip.txt {
+        font-weight: 500;
+        letter-spacing: 0;
+        text-transform: none;
+        font-size: 17px;
+        color: var(--muted);
+      }
+      .typebar .chip.txt b {
+        color: var(--text);
+        font-weight: 500;
+      }
+      .vrow {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: stretch;
+        gap: 12px;
+        padding: 12px 18px 0;
+      }
+      .vchip {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 10px 18px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 4px;
+        min-width: 150px;
+      }
+      .vchip .vl {
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .vchip .vv {
+        font-size: 30px;
+        font-weight: 800;
+        line-height: 1.15;
+        white-space: nowrap;
+      }
+      .vchip .vv .dim {
+        color: var(--muted);
+        font-weight: 600;
+        font-size: 22px;
+      }
+      .vchip.tot {
+        border-color: var(--edge);
+        background: color-mix(in srgb, var(--indigo) 12%, var(--panel));
+      }
+      .vchip.zero .vv {
+        color: var(--muted);
+      }
+      .vchip .rate {
+        display: inline-block;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        padding: 2px 12px;
+        border-radius: 6px;
+        text-transform: uppercase;
+        color: #1b2640;
+        line-height: 1.6;
+      }
+      .vchip .rate.Platinum {
+        background: linear-gradient(135deg, #f1f4f8, #aeb9c8);
+      }
+      .vchip .rate.Gold {
+        background: linear-gradient(135deg, #ffe08a, #d9a21b);
+      }
+      .vchip .rate.Silver {
+        background: linear-gradient(135deg, #eef0f3, #b4b8bf);
+      }
+      .vchip .rate.Bronze {
+        background: linear-gradient(135deg, #f0c9a0, #b8763a);
+      }
+      .vchip .rate.none {
+        background: none;
+        color: var(--muted);
+        padding: 0;
+        letter-spacing: 0.1em;
+      }
+      .mtbl.cent th:not(:first-child),
+      .mtbl.cent td:not(:first-child) {
+        text-align: center;
+      }
+      .mtbl.cent .num {
+        text-align: center;
+      }
+      .plate.b {
+        background: linear-gradient(135deg, #f0c9a0, #b8763a);
+        color: #2a1a08;
+      }
+      .cursw {
+        margin-left: auto;
+        align-self: center;
+      }
+      .camp2 {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        padding: 16px 18px 0;
+        flex-wrap: wrap;
+      }
+      .camp2 h2 {
+        margin: 0;
+        font-size: 30px;
+        font-weight: 800;
+        white-space: nowrap;
+      }
+      .camp2 .ok {
+        background: #14803c;
+        color: #fff;
+        font-weight: 700;
+        font-size: 17px;
+        padding: 6px 20px;
+        border-radius: 999px;
+      }
+      .camp2 .sub {
+        color: var(--muted);
+        font-size: 19px;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        white-space: nowrap;
+      }
+      .camp2 .grow {
+        flex: 1;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="mk">
+      <details class="about" open>
+        <summary>ABOUT THIS MOCKUP</summary>
+        <p>
+          Proposal for the <b>Campaign screen</b> of Pipeline (Change selection,
+          pick a campaign, CAMPAIGN at the top), shown at the
+          <b>80% Zoom</b> default. Three changes: (1) the second row, with the
+          Opportunities, Risks and ROSA buttons, the Status switch and the
+          choice chips, goes in campaign mode, because it only drives the
+          Pipeline view and does nothing to a campaign; (2) the heading row
+          moves up into its place, with the four counts (surgeons, with a deal,
+          no deal yet, deals) beside it, and "Manager" now reads
+          <b>Campaign Manager</b>; (3) the third row is the value: one
+          <b>Value / year</b> chip for the whole campaign and five chips that
+          split it by the surgeon's rating (Platinum, Gold, Silver, Bronze, Not
+          rated), which add up to the total. Each amount is shown per currency
+          and never added across currencies, so a chip can be wide, which is why
+          it has a row of its own. Invented data. The top bar is unchanged.
+        </p>
+        <ul>
+          <li>
+            Try it: the <b>Today / Proposed</b> switch above the screen shows
+            the screen as it is now (with the toolbar row) and as proposed.
+          </li>
+          <li>
+            Try it: the <b>Currencies in the data</b> switch (mockup only) shows
+            one, two or three currencies, so you can judge how wide the chips
+            get.
+          </li>
+          <li>
+            Try it: press Maintain beside Members and press a + or a &minus; on
+            a deal. The counts and every value chip change, and the five rating
+            chips still add up to the total.
+          </li>
+          <li>
+            Try it: the <b>Currency</b> switch at the right of the value row,
+            under the four counts: <b>LOCAL</b> (the default) shows each amount
+            in its own currency, <b>USD</b> shows one US dollar amount in every
+            chip, so many currencies no longer matter. The rates used here are
+            the ones in UAT's currency table after the 17 Nov 2026 refresh. Each
+            chip is converted, and the five rating chips still add up to the
+            total. It switches the five rating chips and the total only; the
+            tables below stay in local currency (tell me if they should switch
+            too).
+          </li>
+          <li>
+            Try it: press the cog and move the Zoom slider to 100% or 70% to see
+            how the three rows hold.
+          </li>
+          <li>
+            How a deal gets its rating: the surgeon's usage rating for the
+            deal's own portfolio (a Knee deal uses the surgeon's Knee rating),
+            the same rule as the Rating column in the lists. A surgeon with no
+            rating for it counts under Not rated. Only deals in the campaign are
+            counted, as today.
+          </li>
+          <li>
+            Maintain table: every column except the Deal name is now centred,
+            heading and figures alike (Value / year, Add / remove and the rest);
+            the Deal name stays at the left under the surgeon's name.
+          </li>
+          <li>
+            Not shown: the Report columns beyond the first few, the search box
+            detail and light mode.
+          </li>
+        </ul>
+      </details>
+    </div>
+    <div class="cmp">
+      <span class="lab">Screen</span
+      ><span class="seg" id="vsw"
+        ><button type="button" data-v="today">Today</button
+        ><button type="button" class="on" data-v="proposed">
+          Proposed
+        </button></span
+      >
+      <span class="lab">Currencies in the data</span
+      ><span class="seg" id="csw"
+        ><button type="button" class="on" data-c="1">One</button
+        ><button type="button" data-c="2">Two</button
+        ><button type="button" data-c="3">Three</button></span
+      >
+      <span style="color: #8b9bb0"
+        >These two switches are only for this mockup; they are not part of the
+        product.</span
+      >
+    </div>
+    <div class="stage" id="stage">
+      <div class="sfnav">
+        <span class="app"><b>PIPE</b>LINE</span
+        ><span class="tab on">Pipeline</span><span class="tab">Campaigns</span
+        ><span class="sp"></span>
+        <button
+          type="button"
+          class="btn"
+          onclick="document.documentElement.requestFullscreen &amp;&amp; document.documentElement.requestFullscreen()"
+        >
+          Full screen
+        </button>
+      </div>
+      <div class="wrapper">
+        <div class="root" data-theme="dark" data-head="pink" id="root">
+          <div class="top" id="top">
+            <button type="button" class="cog" id="cog" aria-label="Settings">
+              &#9881;
+            </button>
+            <span class="wm"
+              ><span class="pipe">PIPE</span
+              ><span class="line">LINE</span></span
+            >
+            <span class="asat">As at 17 Nov<br />2026, 9:05 am</span>
+            <span class="grow"></span>
+            <span class="sw"
+              ><span class="on">Campaign</span><span>Pipeline</span></span
+            >
+            <span class="pillbox"
+              ><span class="k">Filter</span
+              ><span style="color: var(--gold)">&#9733;</span
+              ><b>ANZ Knee</b></span
+            >
+            <button type="button" class="big">Change selection &#8964;</button>
+            <button type="button" class="sq" aria-label="Full screen">
+              &#9974;
+            </button>
+          </div>
+          <div class="typebar" id="typebar" style="display: none">
+            <span class="chip on"
+              >Opportunities <span class="tick">&#10003;</span></span
+            >
+            <span class="chip on"
+              >Risks <span class="tick">&#10003;</span></span
+            >
+            <span class="chip">ROSA <span class="ring"></span></span>
+            <span class="chip"
+              ><span style="color: var(--muted)">Status</span>
+              <span class="sw" style="border: 0; padding: 0"
+                ><span class="on">Open</span><span>Closed</span
+                ><span>Both</span></span
+              ></span
+            >
+            <span class="chip txt">Country <b>AU, NZ</b></span>
+            <span class="chip txt">Portfolio <b>Knee</b></span>
+          </div>
+          <div class="camp2">
+            <h2>ANZ KNEE 2027 AU-NZ</h2>
+            <span class="ok">Active</span
+            ><span class="sub" id="sub"
+              >Knee &middot; Campaign Manager Robert Reeves</span
+            ><span class="grow"></span>
+            <div class="tiles" id="tiles"></div>
+          </div>
+          <div class="vrow" id="vrow"></div>
+          <div class="main">
+            <section class="card" id="c_mem">
+              <div class="lhead">
+                <h3>Members</h3>
+                <span class="count" id="cnt">8 surgeons</span
+                ><span class="sp"></span>
+                <span class="modeseg" id="mode"
+                  ><span class="ml">Mode</span
+                  ><button type="button" class="on" data-m="report">
+                    Report</button
+                  ><button type="button" data-m="maintain">
+                    Maintain
+                  </button></span
+                >
+                <span
+                  class="tychips"
+                  id="tychips"
+                  role="group"
+                  aria-label="Which deals to list"
+                  ><span
+                    class="chip on"
+                    role="checkbox"
+                    aria-checked="true"
+                    tabindex="0"
+                    data-t="opp"
+                    >Opportunities <span class="tick">&#10003;</span></span
+                  ><span
+                    class="chip"
+                    role="checkbox"
+                    aria-checked="false"
+                    tabindex="0"
+                    data-t="risk"
+                    >Risks <span class="ring"></span></span
+                ></span>
+                <span class="pillbox"
+                  ><span class="k">Search</span
+                  ><span style="color: var(--muted)">Surgeon</span></span
+                >
+              </div>
+              <div class="fold on">
+                <div class="bodyin">
+                  <div class="tablewrap" id="body"></div>
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+        <div class="scrim" id="scrim"></div>
+        <aside class="fly" id="fly" aria-label="Your settings">
+          <h4><span>YOUR</span> SETTINGS</h4>
+          <div class="row">
+            <div class="t">Screen size</div>
+            <div class="pillsl">
+              <span class="lab">ZOOM</span>
+              <div
+                class="trk"
+                id="trkA"
+                role="slider"
+                tabindex="0"
+                aria-label="Zoom"
+              >
+                <i class="tk"></i><i class="tk"></i><i class="tk"></i
+                ><i class="tk"></i><i class="tk"></i>
+                <div class="hdl" id="hdlA">80%</div>
+              </div>
+            </div>
+            <div class="tl" id="tlA">
+              <span>100</span><span>90</span><span>80</span><span>70</span
+              ><span>60</span>
+            </div>
+            <p>
+              Makes everything smaller so more fits on the screen. It adds to
+              your browser's own zoom. Until you choose, it is 80%.
+            </p>
+          </div>
+          <div class="row">
+            <div class="t">Look</div>
+            <p>
+              Dark or light, the heading colour and the other settings stay here
+              as they are today (not shown in this mockup).
+            </p>
+          </div>
+        </aside>
+        <div class="toast" id="toast"></div>
+      </div>
+    </div>
+    <script>
+      var SURG = [
+        {
+          name: "Andrew McBride",
+          hosp: "PRINCESS ALEXANDRA HOSPITAL",
+          rate: "Platinum",
+          deals: [
+            {
+              name: "Persona Revision Programme",
+              kind: "opp",
+              brand: "Persona",
+              v: 120000,
+              rep: "Alex Morgan",
+              stage: "Commit",
+              in: true
+            },
+            {
+              name: "Oxford Partial Knee",
+              kind: "opp",
+              brand: "Oxford",
+              v: 60000,
+              rep: "Alex Morgan",
+              stage: "Plan",
+              in: true
+            }
+          ]
+        },
+        {
+          name: "Ben Trafine",
+          hosp: "MATER PRIVATE HOSPITAL",
+          rate: "Gold",
+          deals: [
+            {
+              name: "Persona Knee System",
+              kind: "opp",
+              brand: "Persona",
+              v: 150000,
+              rep: "Sam Patel",
+              stage: "Action",
+              in: true
+            }
+          ]
+        },
+        {
+          name: "Carla Mendes",
+          hosp: "ST VINCENT'S PRIVATE",
+          rate: "Gold",
+          deals: [
+            {
+              name: "Persona Navigation",
+              kind: "opp",
+              brand: "Persona",
+              v: 95000,
+              rep: "Jo Carter",
+              stage: "Plan",
+              in: true
+            },
+            {
+              name: "Knee Upgrade 2027",
+              kind: "opp",
+              brand: "Persona, Oxford",
+              v: 140000,
+              rep: "Jo Carter",
+              stage: "5th Case",
+              in: false
+            }
+          ]
+        },
+        {
+          name: "Daniel Tran",
+          hosp: "EPWORTH RICHMOND",
+          rate: "Silver",
+          deals: [
+            {
+              name: "Persona Partial Knee",
+              kind: "opp",
+              brand: "Persona",
+              v: 85000,
+              rep: "Kim Nguyen",
+              stage: "1st Case",
+              in: true
+            },
+            {
+              name: "Competitor trial of knee system",
+              kind: "risk",
+              brand: "Persona",
+              v: 210000,
+              rep: "Lee Tran",
+              stage: "Unhappy",
+              in: false
+            }
+          ]
+        },
+        {
+          name: "Elena Rossi",
+          hosp: "NORTH SHORE PRIVATE",
+          rate: "Silver",
+          deals: [
+            {
+              name: "Knee Navigation",
+              kind: "opp",
+              brand: "Persona",
+              v: 70000,
+              rep: "Alex Morgan",
+              stage: "Plan",
+              in: true
+            }
+          ]
+        },
+        {
+          name: "Frank Okafor",
+          hosp: "ROYAL HOBART HOSPITAL",
+          rate: "Bronze",
+          deals: [
+            {
+              name: "Hip-Knee Combo",
+              kind: "opp",
+              brand: "Persona",
+              v: 55000,
+              rep: "Sam Patel",
+              stage: "Commit",
+              in: true
+            }
+          ]
+        },
+        {
+          name: "Grace Lim",
+          hosp: "WELLINGTON REGIONAL",
+          rate: "",
+          deals: [
+            {
+              name: "Persona Starter Set",
+              kind: "opp",
+              brand: "Persona",
+              v: 48000,
+              rep: "Jo Carter",
+              stage: "Action",
+              in: true
+            },
+            {
+              name: "Persona Robotics Add-on",
+              kind: "opp",
+              brand: "Persona",
+              v: 90000,
+              rep: "Jo Carter",
+              stage: "Plan",
+              in: false
+            }
+          ]
+        },
+        { name: "Hiro Tanaka", hosp: "AUCKLAND CITY", rate: "", deals: [] }
+      ];
+      var CURS = { 1: ["AUD"], 2: ["AUD", "NZD"], 3: ["AUD", "NZD", "SGD"] },
+        SYM = { AUD: "A$", NZD: "NZ$", SGD: "S$", USD: "US$" },
+        ncur = 1;
+      var vmode = "proposed",
+        mode = "report",
+        types = { opp: true, risk: false },
+        usd = false;
+      var RATE = { AUD: 1.474704, NZD: 1.80864, SGD: 1.28751, USD: 1 }; // units of each currency per 1 USD: the rates in UAT's currency table after Robert refreshed them on 17 Nov 2026
+      var root = document.getElementById("root"),
+        top_ = document.getElementById("top");
+      function curOf(si, di) {
+        var l = CURS[ncur];
+        return l[(si + di) % l.length];
+      }
+      function money(n, c) {
+        var s = SYM[c] || c + " ";
+        return n >= 1e6
+          ? s + (n / 1e6).toFixed(2) + "m"
+          : n >= 1e3
+            ? s + Math.round(n / 1e3) + "k"
+            : s + Math.round(n);
+      }
+      function plate(r) {
+        var k = { Platinum: "s", Silver: "s", Gold: "g", Bronze: "b" }[r];
+        return r
+          ? '<span class="plate ' + k + '">' + r + "</span>"
+          : '<span style="color:var(--muted)">Not rated</span>';
+      }
+      function sums(filter) {
+        var t = {};
+        SURG.forEach(function (s, si) {
+          s.deals.forEach(function (d, di) {
+            if (!d.in) return;
+            if (filter && (s.rate || "none") !== filter) return;
+            var c = curOf(si, di);
+            t[c] = (t[c] || 0) + d.v;
+          });
+        });
+        return t;
+      }
+      function fmt(t) {
+        if (usd && vmode !== "today") {
+          var u = 0,
+            any = false;
+          Object.keys(t).forEach(function (c) {
+            u += t[c] / RATE[c];
+            any = true;
+          });
+          return any ? money(u, "USD") : "–";
+        }
+        var l = CURS[ncur].filter(function (c) {
+          return t[c];
+        });
+        if (!l.length) return "–";
+        return l
+          .map(function (c) {
+            return money(t[c], c);
+          })
+          .join('<span class="dim"> &middot; </span>');
+      }
+      function tiles() {
+        var withDeal = 0,
+          deals = 0;
+        SURG.forEach(function (s) {
+          var n = s.deals.filter(function (d) {
+            return d.in;
+          }).length;
+          if (n) withDeal++;
+          deals += n;
+        });
+        document.getElementById("tiles").innerHTML =
+          '<div class="tile"><b>' +
+          SURG.length +
+          "</b><i>Surgeons</i></div>" +
+          '<div class="tile o"><b>' +
+          withDeal +
+          "</b><i>With a deal</i></div>" +
+          '<div class="tile o"><b>' +
+          (SURG.length - withDeal) +
+          "</b><i>No deal yet</i></div>" +
+          '<div class="tile"><b>' +
+          deals +
+          "</b><i>Deals</i></div>" +
+          (vmode === "today"
+            ? '<div class="tile"><b>' +
+              fmt(sums()) +
+              "</b><i>Value / year</i></div>"
+            : "");
+      }
+      function vrow() {
+        var h =
+          '<div class="vchip tot"><span class="vl">Value / year</span><span class="vv">' +
+          fmt(sums()) +
+          "</span></div>";
+        ["Platinum", "Gold", "Silver", "Bronze", "none"].forEach(function (k) {
+          var t = sums(k),
+            z = !Object.keys(t).length;
+          h +=
+            '<div class="vchip' +
+            (z ? " zero" : "") +
+            '"><span class="vl"><span class="rate ' +
+            k +
+            '">' +
+            (k === "none" ? "Not rated" : k) +
+            '</span></span><span class="vv">' +
+            fmt(t) +
+            "</span></div>";
+        });
+        h +=
+          '<span class="cursw modeseg" id="cursw"><span class="ml">Currency</span><button type="button" data-u="local"' +
+          (usd ? "" : ' class="on"') +
+          '>LOCAL</button><button type="button" data-u="usd"' +
+          (usd ? ' class="on"' : "") +
+          ">USD</button></span>";
+        document.getElementById("vrow").innerHTML = h;
+        document.querySelectorAll("#cursw button").forEach(function (b) {
+          b.onclick = function () {
+            usd = b.dataset.u === "usd";
+            draw();
+          };
+        });
+      }
+      function report() {
+        var h =
+          '<table class="mtbl"><thead><tr><th>Surgeon</th><th>Current hospitals</th><th>Rating</th><th>Stage</th><th class="num">Revenue / year</th><th>Sales rep</th></tr></thead><tbody>';
+        SURG.forEach(function (s, si) {
+          var n = [];
+          s.deals.forEach(function (d, di) {
+            if (d.in) n.push({ d: d, c: curOf(si, di) });
+          });
+          if (!n.length) {
+            h +=
+              '<tr><td><b style="font-size:17px">' +
+              s.name +
+              "</b></td><td>" +
+              s.hosp +
+              "</td><td>" +
+              plate(s.rate) +
+              '</td><td><span class="nd">No deal yet</span></td><td></td><td></td></tr>';
+          }
+          n.forEach(function (x, i) {
+            h +=
+              (i === 0
+                ? '<tr><td><b style="font-size:17px">' +
+                  s.name +
+                  "</b></td><td>" +
+                  s.hosp +
+                  "</td><td>" +
+                  plate(s.rate) +
+                  "</td>"
+                : "<tr><td></td><td></td><td></td>") +
+              "<td>" +
+              x.d.stage +
+              '</td><td class="num">' +
+              money(x.d.v, x.c) +
+              "</td><td>" +
+              x.d.rep +
+              "</td></tr>";
+          });
+        });
+        return h + "</tbody></table>";
+      }
+      function maintain() {
+        if (!types.opp && !types.risk)
+          return '<div style="padding:30px 20px;color:var(--muted);font-size:17px">Tick Opportunities or Risks above to list deals.</div>';
+        var h =
+          '<table class="mtbl cent"><thead><tr><th>Deal</th><th>Brand</th><th class="num">Value / year</th><th>Sales rep</th><th>Stage</th><th>In campaign</th><th style="text-align:center">Add / remove</th></tr></thead><tbody>';
+        SURG.forEach(function (s, si) {
+          var ds = s.deals.filter(function (d) {
+            return types[d.kind];
+          });
+          var inN = ds.filter(function (d) {
+            return d.in;
+          }).length;
+          h +=
+            '<tr class="sg"><td colspan="7"><span class="sn">' +
+            s.name +
+            '</span><span class="sh">' +
+            s.hosp +
+            "</span> " +
+            plate(s.rate) +
+            '<span class="cnt">' +
+            (ds.length
+              ? ds.length +
+                " open Knee deal" +
+                (ds.length > 1 ? "s" : "") +
+                " &middot; " +
+                inN +
+                " in the campaign"
+              : "no open Knee deals") +
+            "</span></td></tr>";
+          if (!ds.length)
+            h +=
+              '<tr class="none"><td colspan="7">Nothing to add: this surgeon has no open Knee deals.</td></tr>';
+          s.deals.forEach(function (d, di) {
+            if (!types[d.kind]) return;
+            h +=
+              '<tr class="dl' +
+              (d.in ? " in" : "") +
+              '"><td><b>' +
+              d.name +
+              "</b>" +
+              (d.kind === "risk" ? '<span class="kind">RISK</span>' : "") +
+              "</td><td>" +
+              d.brand +
+              '</td><td class="num">' +
+              money(d.v, curOf(si, di)) +
+              "</td><td>" +
+              d.rep +
+              "</td><td>" +
+              d.stage +
+              "</td><td>" +
+              (d.in
+                ? '<span class="inpill">In campaign</span>'
+                : '<span class="outpill">Not in</span>') +
+              '</td><td style="text-align:center"><button class="rb ' +
+              (d.in ? "rem" : "add") +
+              '" data-s="' +
+              si +
+              '" data-d="' +
+              di +
+              '" aria-label="' +
+              (d.in ? "Take out of the campaign" : "Put in the campaign") +
+              '">' +
+              (d.in ? "&minus;" : "+") +
+              "</button></td></tr>";
+          });
+        });
+        return h + "</tbody></table>";
+      }
+      function draw() {
+        document.getElementById("typebar").style.display =
+          vmode === "today" ? "flex" : "none";
+        document.getElementById("vrow").style.display =
+          vmode === "today" ? "none" : "flex";
+        document.getElementById("sub").innerHTML =
+          vmode === "today"
+            ? "Knee &middot; Manager Robert Reeves"
+            : "Knee &middot; Campaign Manager Robert Reeves";
+        document.getElementById("body").innerHTML =
+          mode === "report" ? report() : maintain();
+        tiles();
+        vrow();
+        document.querySelectorAll("#mode button").forEach(function (b) {
+          b.classList.toggle("on", b.dataset.m === mode);
+        });
+        document
+          .getElementById("tychips")
+          .classList.toggle("show", mode === "maintain");
+        document.querySelectorAll("#tychips .chip").forEach(function (c) {
+          var on = types[c.dataset.t];
+          c.classList.toggle("on", on);
+          c.setAttribute("aria-checked", on);
+          c.querySelector("span").className = on ? "tick" : "ring";
+          c.querySelector("span").innerHTML = on ? "&#10003;" : "";
+        });
+        document.querySelectorAll("#vsw button").forEach(function (b) {
+          b.classList.toggle("on", b.dataset.v === vmode);
+        });
+        document.querySelectorAll("#csw button").forEach(function (b) {
+          b.classList.toggle("on", +b.dataset.c === ncur);
+        });
+        document.querySelectorAll(".rb[data-s]").forEach(function (b) {
+          b.onclick = function () {
+            var d = SURG[+b.dataset.s].deals[+b.dataset.d];
+            d.in = !d.in;
+            draw();
+            var t = document.getElementById("toast");
+            t.textContent =
+              (d.in ? "Added to" : "Removed from") + " the campaign: " + d.name;
+            t.classList.add("on");
+            clearTimeout(window.__t);
+            window.__t = setTimeout(function () {
+              t.classList.remove("on");
+            }, 1800);
+          };
+        });
+        measure();
+      }
+      function measure() {
+        root.style.setProperty("--stick", top_.offsetHeight + "px");
+        var c = document.getElementById("c_mem");
+        c.style.setProperty(
+          "--lh",
+          c.querySelector(".lhead").offsetHeight + "px"
+        );
+      }
+      document.querySelectorAll("#mode button").forEach(function (b) {
+        b.onclick = function () {
+          mode = b.dataset.m;
+          draw();
+        };
+      });
+      document.querySelectorAll("#tychips .chip").forEach(function (c) {
+        var go = function () {
+          types[c.dataset.t] = !types[c.dataset.t];
+          draw();
+        };
+        c.onclick = go;
+        c.onkeydown = function (e) {
+          if (e.key === " " || e.key === "Enter") {
+            e.preventDefault();
+            go();
+          }
+        };
+      });
+      document.querySelectorAll("#vsw button").forEach(function (b) {
+        b.onclick = function () {
+          vmode = b.dataset.v;
+          draw();
+        };
+      });
+      document.querySelectorAll("#csw button").forEach(function (b) {
+        b.onclick = function () {
+          ncur = +b.dataset.c;
+          draw();
+        };
+      });
+      var STEPS = [100, 90, 80, 70, 60],
+        cur = 80;
+      var trk = document.getElementById("trkA"),
+        hdl = document.getElementById("hdlA"),
+        wrap = document.querySelector(".wrapper");
+      function geo() {
+        var w = trk.clientWidth - hdl.offsetWidth;
+        return { w: w, step: w / 4 };
+      }
+      function place(i) {
+        var g = geo();
+        hdl.style.left = i * g.step + "px";
+        hdl.textContent = STEPS[i] + "%";
+        var tr = trk.getBoundingClientRect(),
+          tl = document.getElementById("tlA"),
+          lr = tl.getBoundingClientRect(),
+          half = hdl.offsetWidth / 2;
+        trk.querySelectorAll(".tk").forEach(function (t, k) {
+          t.style.left = half + k * g.step + "px";
+        });
+        tl.querySelectorAll("span").forEach(function (sp, k) {
+          sp.style.left = tr.left - lr.left + half + k * g.step + "px";
+        });
+      }
+      function setZoom(v) {
+        cur = v;
+        wrap.style.setProperty("--z", v / 100);
+        place(STEPS.indexOf(v));
+        requestAnimationFrame(measure);
+      }
+      var dragging = false,
+        pending = 2;
+      function idx(clientX) {
+        var r = trk.getBoundingClientRect(),
+          g = geo();
+        var x = Math.max(
+          0,
+          Math.min(g.w, clientX - r.left - hdl.offsetWidth / 2)
+        );
+        return { x: x, i: Math.round(x / g.step) };
+      }
+      trk.addEventListener("pointerdown", function (e) {
+        dragging = true;
+        trk.classList.add("drag");
+        var m = idx(e.clientX);
+        hdl.style.left = m.x + "px";
+        pending = m.i;
+        hdl.textContent = STEPS[m.i] + "%";
+        var mv = function (ev) {
+          var n = idx(ev.clientX);
+          hdl.style.left = n.x + "px";
+          pending = n.i;
+          hdl.textContent = STEPS[n.i] + "%";
+        };
+        var up = function () {
+          window.removeEventListener("pointermove", mv);
+          window.removeEventListener("pointerup", up);
+          dragging = false;
+          trk.classList.remove("drag");
+          void hdl.offsetWidth;
+          setZoom(STEPS[pending]);
+        };
+        window.addEventListener("pointermove", mv);
+        window.addEventListener("pointerup", up);
+      });
+      function fly(on) {
+        if (on)
+          setTimeout(function () {
+            place(STEPS.indexOf(cur));
+          }, 60);
+        document.getElementById("fly").classList.toggle("on", on);
+        document.getElementById("scrim").classList.toggle("on", on);
+      }
+      document.getElementById("cog").onclick = function () {
+        fly(true);
+      };
+      document.getElementById("scrim").onclick = function () {
+        fly(false);
+      };
+
+      var q = new URLSearchParams(location.search);
+      if (q.get("v") === "today") vmode = "today";
+      if (q.get("c")) ncur = +q.get("c");
+      if (q.get("m") === "maintain") mode = "maintain";
+      if (q.get("zoom")) setZoom(+q.get("zoom"));
+      else setZoom(80);
+      if (q.get("fly")) fly(true);
+      draw();
+    </script>
+  </body>
+</html>

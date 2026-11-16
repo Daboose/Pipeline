@@ -1,0 +1,408 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Mockup: Value chip fonts (version 1)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@600;700&family=Barlow+Semi+Condensed:wght@600;700&family=IBM+Plex+Sans+Condensed:wght@600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: #0b1220;
+        color: #e8edf5;
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-size: 15px;
+      }
+      .sfnav {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        height: 44px;
+        padding: 0 16px;
+        background: #0b1220;
+        color: #cdd6e6;
+        font-size: 14px;
+        border-bottom: 1px solid #1d2a44;
+      }
+      .sfnav .app {
+        font-weight: 800;
+        letter-spacing: 0.14em;
+      }
+      .sfnav .app b {
+        color: #fdb827;
+      }
+      .sfnav .tab {
+        color: #9fb0cc;
+      }
+      .sfnav .tab.on {
+        color: #fff;
+        border-bottom: 2px solid #6366f1;
+        padding-bottom: 2px;
+      }
+      .sfnav .sp {
+        flex: 1;
+      }
+      .btn {
+        border: 0;
+        border-radius: 999px;
+        background: #6366f1;
+        color: #fff;
+        font-weight: 800;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        padding: 9px 18px;
+        cursor: pointer;
+      }
+      .about {
+        margin: 14px 16px 0;
+        padding: 12px 18px;
+        background: #1a2740;
+        border: 1px solid #5b6f93;
+        border-radius: 12px;
+        line-height: 1.5;
+        max-width: 1100px;
+      }
+      .about summary {
+        cursor: pointer;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        color: #fdb827;
+      }
+      .about ul {
+        margin: 4px 0 8px;
+        padding-left: 22px;
+      }
+      .bar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px 22px;
+        align-items: center;
+        padding: 14px 16px 0;
+        color: #cdd6e6;
+      }
+      .bar .lab {
+        color: #8b9bb0;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        margin-right: 6px;
+      }
+      .seg {
+        display: inline-flex;
+        background: #11182a;
+        border: 1px solid #2f4163;
+        border-radius: 999px;
+        padding: 3px;
+      }
+      .seg button {
+        border: 0;
+        background: transparent;
+        color: #9fb0cc;
+        font-weight: 800;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        padding: 8px 16px;
+        border-radius: 999px;
+        cursor: pointer;
+      }
+      .seg button.on {
+        background: #6366f1;
+        color: #fff;
+      }
+      /* the app's dark look at the 80% Zoom default */
+      .stage {
+        zoom: 0.8;
+        --panel: #1a2740;
+        --line: #2f4163;
+        --edge: #5b6f93;
+        --muted: #8b9bb0;
+        --indigo: #6366f1;
+        background: #141e2e;
+        margin: 16px;
+        border: 1px solid #2f4163;
+        border-radius: 12px;
+        padding: 14px 18px 18px;
+      }
+      .opt {
+        margin: 0 0 4px;
+        padding: 10px 0 4px;
+      }
+      .opt h3 {
+        margin: 0 0 8px;
+        font-size: 15px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #fdb827;
+      }
+      .opt h3 span {
+        color: #8b9bb0;
+        font-weight: 600;
+        letter-spacing: 0;
+        text-transform: none;
+        margin-left: 10px;
+      }
+      .vrow {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: stretch;
+        gap: 12px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid #2f4163;
+      }
+      .vchip {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 4px;
+        min-width: 150px;
+        padding: 10px 18px;
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+      }
+      .vchip.tot {
+        border-color: var(--edge);
+        background: color-mix(in srgb, var(--indigo) 12%, var(--panel));
+      }
+      .vl {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .vv {
+        font-weight: var(--fw, 800);
+        font-family: var(--ff, inherit);
+        line-height: 1.15;
+        white-space: nowrap;
+        font-size: var(--vs);
+      }
+      .vchip.zero .vv {
+        color: var(--muted);
+      }
+      .vl .rate {
+        display: inline-block;
+        padding: 2px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        line-height: 1.6;
+        color: #1b2640;
+      }
+      .rate.Platinum {
+        background: linear-gradient(135deg, #f1f4f8, #aeb9c8);
+      }
+      .rate.Gold {
+        background: linear-gradient(135deg, #ffe08a, #d9a21b);
+      }
+      .rate.Silver {
+        background: linear-gradient(135deg, #eef0f3, #b4b8bf);
+      }
+      .rate.Bronze {
+        background: linear-gradient(135deg, #f0c9a0, #b8763a);
+      }
+      .rate.none {
+        background: none;
+        color: #8b9bb0;
+        padding: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="sfnav">
+      <span class="app"><b>PIPE</b>LINE</span
+      ><span class="tab on">Pipeline</span><span class="tab">Campaigns</span
+      ><span class="sp"></span>
+      <button
+        type="button"
+        class="btn"
+        onclick="
+          document.documentElement.requestFullscreen &&
+            document.documentElement.requestFullscreen()
+        "
+      >
+        Full screen
+      </button>
+    </div>
+    <details class="about" open>
+      <summary>ABOUT THIS MOCKUP</summary>
+      <p>
+        The value row of the campaign screen shown in eight fonts for the
+        figures, all at the same size (24 px) and at the 80% Zoom. The labels,
+        plates and spacing are unchanged. Invented data. Fonts marked "on the
+        computer" are already installed, so they cost nothing to use. Fonts
+        marked "added to Salesforce" would be loaded once from a font file kept
+        in Salesforce (the three here are free, open-licence fonts), and then
+        look the same on every computer.
+      </p>
+      <ul>
+        <li>
+          Try it: the <b>Currencies</b> switch (mockup only) shows one, two,
+          three or five currencies.
+        </li>
+        <li>
+          Font 6 (Bahnschrift) only shows on a Windows computer; on a Mac it
+          falls back to the standard font. Font 5 (Calibri) needs Microsoft
+          Office installed.
+        </li>
+        <li>Pick a font by its number, or tell me to keep the current one.</li>
+      </ul>
+    </details>
+    <div class="bar">
+      <span class="lab">Currencies</span>
+      <span class="seg" id="csw"
+        ><button type="button" data-c="1">One</button
+        ><button type="button" data-c="2">Two</button
+        ><button type="button" data-c="3">Three</button
+        ><button type="button" class="on" data-c="5">Five</button></span
+      >
+    </div>
+    <div class="stage" id="app"></div>
+    <script>
+      var FONTS = [
+        [
+          "1. Now: the standard font, extra bold",
+          "on the computer (Segoe UI on Windows, San Francisco on a Mac)",
+          "inherit",
+          800
+        ],
+        ["2. The standard font, semi-bold", "on the computer", "inherit", 600],
+        [
+          "3. Arial Narrow, bold",
+          "on the computer (Windows and Mac)",
+          "'Arial Narrow', Arial, sans-serif",
+          700
+        ],
+        [
+          "4. Roboto Condensed, bold",
+          "added to Salesforce",
+          "'Roboto Condensed', sans-serif",
+          700
+        ],
+        [
+          "5. Calibri, bold",
+          "on the computer when Microsoft Office is installed",
+          "Calibri, 'Segoe UI', sans-serif",
+          700
+        ],
+        [
+          "6. Bahnschrift, semi-bold (condensed)",
+          "on a Windows computer only",
+          "Bahnschrift, 'Arial Narrow', sans-serif",
+          600
+        ],
+        [
+          "7. Barlow Semi Condensed, bold",
+          "added to Salesforce",
+          "'Barlow Semi Condensed', sans-serif",
+          700
+        ],
+        [
+          "8. IBM Plex Sans Condensed, bold",
+          "added to Salesforce",
+          "'IBM Plex Sans Condensed', sans-serif",
+          700
+        ]
+      ];
+      var CUR = ["AUD", "NZD", "SGD", "HKD", "MYR"],
+        SYM = { AUD: "A$", NZD: "NZ$", SGD: "S$", HKD: "HK$", MYR: "RM" };
+      // invented amounts per rating and currency (thousands)
+      var BASE = {
+        PLATINUM: [120, 60, 0, 40, 0],
+        GOLD: [900, 220, 95, 130, 70],
+        SILVER: [0, 0, 0, 0, 0],
+        BRONZE: [250, 550, 55, 0, 85],
+        NONE: [675, 200, 48, 90, 35]
+      };
+      var n = 5;
+      function money(v, c) {
+        return v >= 1000
+          ? SYM[c] + (v / 1000).toFixed(2) + "m"
+          : SYM[c] + v + "k";
+      }
+      function fmt(arr) {
+        var out = [];
+        for (var i = 0; i < n; i++) if (arr[i]) out.push(money(arr[i], CUR[i]));
+        return out.length ? out.join(" · ") : "–";
+      }
+      function chips() {
+        var tot = [0, 0, 0, 0, 0];
+        Object.keys(BASE).forEach(function (k) {
+          BASE[k].forEach(function (v, i) {
+            tot[i] += v;
+          });
+        });
+        var h =
+          '<div class="vchip tot"><span class="vl">Value / year</span><b class="vv">' +
+          fmt(tot) +
+          "</b></div>";
+        [
+          ["PLATINUM", "Platinum"],
+          ["GOLD", "Gold"],
+          ["SILVER", "Silver"],
+          ["BRONZE", "Bronze"],
+          ["NONE", "Not rated"]
+        ].forEach(function (r) {
+          var t = fmt(BASE[r[0]]);
+          h +=
+            '<div class="vchip' +
+            (t === "–" ? " zero" : "") +
+            '"><span class="vl"><span class="rate ' +
+            (r[0] === "NONE" ? "none" : r[1]) +
+            '">' +
+            r[1] +
+            '</span></span><b class="vv">' +
+            t +
+            "</b></div>";
+        });
+        return h;
+      }
+      function draw() {
+        var h = "";
+        FONTS.forEach(function (f) {
+          h +=
+            '<div class="opt"><h3>' +
+            f[0] +
+            "<span>" +
+            f[1] +
+            '</span></h3><div class="vrow" style="--vs:24px;--ff:' +
+            f[2] +
+            ";--fw:" +
+            f[3] +
+            '">' +
+            chips() +
+            "</div></div>";
+        });
+        document.getElementById("app").innerHTML = h;
+        document.querySelectorAll("#csw button").forEach(function (b) {
+          b.classList.toggle("on", +b.dataset.c === n);
+        });
+      }
+      document.querySelectorAll("#csw button").forEach(function (b) {
+        b.onclick = function () {
+          n = +b.dataset.c;
+          draw();
+        };
+      });
+      var q = new URLSearchParams(location.search);
+      if (q.get("c")) n = +q.get("c");
+      draw();
+    </script>
+  </body>
+</html>

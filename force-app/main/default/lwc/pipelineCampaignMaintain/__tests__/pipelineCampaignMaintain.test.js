@@ -88,6 +88,7 @@ describe("c-pipeline-campaign-maintain", () => {
     );
     expect(heads[0]).toContain("Andrew McBride");
     expect(heads[0]).toContain("Gold");
+    expect(heads[0]).not.toContain("PRINCESS ALEXANDRA"); // the hospitals are not shown beside the name
     expect(heads[0]).toContain("2 open Knee deals · 1 in the campaign");
     expect(heads[1]).toContain("no open Knee deals");
     expect(qa(el, "tr.dl").length).toBe(2); // the risk is not listed
@@ -177,5 +178,19 @@ describe("c-pipeline-campaign-maintain", () => {
     expect(q(el, ".err").textContent).toContain("cannot edit");
     expect(maintainDeals).toHaveBeenCalledTimes(1);
     expect(qa(el, "tr.dl.in").length).toBe(1);
+  });
+
+  it("shows each deal's value in US dollars when USD is on and the rates are given, and in its own currency otherwise", async () => {
+    const el = make({ types: { opp: true, risk: false } });
+    await flush();
+    const first = () => q(el, "tr.dl td:nth-child(3)").textContent.trim();
+    expect(first()).toBe("A$120k");
+    el.rates = { rates: { USD: 1, AUD: 1.5 } };
+    el.usd = true;
+    await flush();
+    expect(first()).toBe("US$80k"); // 120,000 AUD at 1.5 is 80,000 USD
+    el.usd = false;
+    await flush();
+    expect(first()).toBe("A$120k");
   });
 });

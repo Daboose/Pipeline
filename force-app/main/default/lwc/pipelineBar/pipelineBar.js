@@ -10,7 +10,7 @@ const STATUS_OPTIONS = [
 /**
  * Pipeline: the filter bar under the header. The three deal-type buttons, the Status slider (Open / Closed / Both, worked out
  * from the stages chosen; with stages picked one by one in the panel nothing is highlighted) and chips saying in words what is being looked at. (My filters and Change selection are in the
- * top row of the page.) The type and status buttons act at once; everything else is chosen in the panel. It changes
+ * top row of the page.) At the right-hand end is the Currency switch (LOCAL or USD), saved by the screen. The type and status buttons act at once; everything else is chosen in the panel. It changes
  * nothing itself: it announces what was pressed and the Pipeline screen does the rest.
  */
 export default class PipelineBar extends LightningElement {
@@ -18,6 +18,8 @@ export default class PipelineBar extends LightningElement {
   @api choices = {};
   @api teams = [];
   @api isRep = false;
+  /** The LOCAL or USD choice, saved in the person's settings by the screen: "local" or "usd". */
+  @api currency = "local";
 
   get kindButtons() {
     const on = this.filter.kinds || [];
@@ -27,6 +29,19 @@ export default class PipelineBar extends LightningElement {
       on: on.includes(k),
       cls: "ktog" + (on.includes(k) ? " on" : "")
     }));
+  }
+  get currencyOptions() {
+    return [
+      { value: "local", label: "LOCAL" },
+      { value: "usd", label: "USD" }
+    ];
+  }
+  handleCurrency(event) {
+    this.dispatchEvent(
+      new CustomEvent("currencychange", {
+        detail: { value: event.detail.value }
+      })
+    );
   }
   get status() {
     return this.filter.stages

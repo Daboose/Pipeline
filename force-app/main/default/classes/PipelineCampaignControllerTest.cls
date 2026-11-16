@@ -509,4 +509,18 @@ private class PipelineCampaignControllerTest {
       );
     }
   }
+  @IsTest
+  static void currencyRatesComeFromTheOrgsCurrencyTable() {
+    System.runAs(manager()) {
+      PipelineCampaignController.CurrencyRates r = PipelineCampaignController.currencyRates();
+      System.assert(r.corporate != null, 'the org has a corporate currency');
+      System.assertEquals(
+        1,
+        r.rates.get(r.corporate),
+        'the corporate currency is worth one of itself'
+      );
+      System.assert(r.rates.size() >= 1);
+      System.assert(r.changed != null);
+    }
+  }
 }

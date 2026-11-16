@@ -8,7 +8,8 @@
  * person's own access (user mode). It reads Account (surgeons) and User (managers) in user mode too. It reads the surgeon's
  * hospitals from Healthcare_Surgeon_Relationship__c and the person's own Pipeline settings in system mode, because those are
  * only used to help choose and to show the person's own theme and Zoom. maintainDeals reads the deals of a campaign's members (opportunities and risks, never ROSA) in system mode, sharing still applying,
- * for the Maintain mode of Pipeline's campaign view; putting a deal in or out is done by PipelineDealCampaignController.setLink. saveGlobalSettings writes the person's light or dark choice
+ * for the Maintain mode of Pipeline's campaign view; putting a deal in or out is done by PipelineDealCampaignController.setLink. currencyRates reads the exchange rates held in Salesforce (CurrencyType) for the campaign
+ * view's US dollar totals; Pipeline holds no rates of its own. saveGlobalSettings writes the person's light or dark choice
  * and their Zoom into their own Pipeline settings record (Pipeline_Filter__c, flagged Is_User_Settings__c; only that record, only
  * those two entries, the rest of its settings kept). It never changes an Account or a deal.
  *
@@ -139,6 +140,16 @@ public with sharing class PipelineCampaignController {
     public Boolean inCampaign;
     @AuraEnabled
     public Boolean canEdit; // the person may change this deal, so may put it in or take it out
+  }
+
+  /** The exchange rates Salesforce holds, for showing a campaign's value in US dollars. */
+  public class CurrencyRates {
+    @AuraEnabled
+    public Map<String, Decimal> rates = new Map<String, Decimal>(); // units of each currency per one unit of the corporate currency
+    @AuraEnabled
+    public String corporate; // the corporate currency's ISO code (USD in these orgs)
+    @AuraEnabled
+    public Datetime changed; // when the newest rate was last changed
   }
 
   /** A surgeon's usage rating (PLATINUM, GOLD, SILVER, BRONZE or empty) for one of the campaign's portfolios. */
@@ -1156,6 +1167,31 @@ public with sharing class PipelineCampaignController {
         WHERE UserId = :me AND RecordId IN :chunk
       ]) {
         byId.get(a.RecordId).canEdit = a.HasEditAccess;
+      }
+    }
+    return out;
+  }
+
+  /**
+   * The exchange rates held in Salesforce (Setup, Manage Currencies; the CurrencyType object), read as they are: Pipeline keeps no rates
+   * of its own (Robert, 2026-11-17: one source, kept up to date by him). Each rate is the number of units of that currency that make one
+   * unit of the corporate currency, so an amount in a currency is converted to the corporate currency by dividing by its rate. Only
+   * active currencies are returned.
+   */
+  @AuraEnabled(cacheable=true)
+  public static CurrencyRates currencyRates() {
+    CurrencyRates out = new CurrencyRates();
+    for (CurrencyType t : [
+      SELECT IsoCode, ConversionRate, IsCorporate, LastModifiedDate
+      FROM CurrencyType
+      WHERE IsActive = TRUE
+    ]) {
+      out.rates.put(t.IsoCode, t.ConversionRate);
+      if (t.IsCorporate) {
+        out.corporate = t.IsoCode;
+      }
+      if (out.changed == null || t.LastModifiedDate > out.changed) {
+        out.changed = t.LastModifiedDate;
       }
     }
     return out;

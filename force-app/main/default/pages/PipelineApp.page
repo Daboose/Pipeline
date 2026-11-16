@@ -11,6 +11,16 @@
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <title>Pipeline</title>
       <style>
+        /* Roboto Condensed, kept in Salesforce as the static resource Pipeline_Fonts (SIL Open Font License, see OFL.txt in it), for the figures in
+           the campaign value chips (Robert, 2026-11-17: Light, weight 300, at 24 px) */
+        @font-face {
+          font-family: "Pipeline Roboto Condensed";
+          src: url("{!URLFOR($Resource.Pipeline_Fonts, 'RobotoCondensed-VariableFont_wght.woff2')}")
+            format("woff2");
+          font-weight: 100 900;
+          font-style: normal;
+          font-display: swap;
+        }
         html,
         body {
           margin: 0;

@@ -1,5 +1,12 @@
 import { createElement } from "lwc";
 import PipelineCampaignMembers from "c/pipelineCampaignMembers";
+import currencyRates from "@salesforce/apex/PipelineCampaignController.currencyRates";
+
+jest.mock(
+  "@salesforce/apex/PipelineCampaignController.currencyRates",
+  () => ({ default: jest.fn() }),
+  { virtual: true }
+);
 
 // eslint-disable-next-line @lwc/lwc/no-async-operation
 const flush = () => new Promise((r) => setTimeout(r, 0));
@@ -293,5 +300,175 @@ describe("c-pipeline-campaign-members", () => {
       el.shadowRoot.querySelector("c-pipeline-campaign-maintain")
     ).toBeNull();
     expect(heads(el)).toContain("Current Hospitals");
+  });
+
+  it("keeps the fifth Value / year tile in Campaign Management and gives Pipeline a value row of its own", async () => {
+    let el = make();
+    await flush();
+    expect(el.shadowRoot.querySelectorAll(".tile").length).toBe(5);
+    expect(el.shadowRoot.querySelector(".vrow")).toBeNull();
+    document.body.removeChild(el);
+    el = make({ valueRow: true });
+    await flush();
+    expect(el.shadowRoot.querySelectorAll(".tile").length).toBe(4);
+    expect(el.shadowRoot.querySelector(".vrow")).not.toBeNull();
+  });
+
+  it("splits the value by the surgeon's rating, per currency, and the five rating chips add up to the total", async () => {
+    const el = make({ valueRow: true });
+    await flush();
+    const chips = [...el.shadowRoot.querySelectorAll(".vchip")].map((c) =>
+      c.textContent.replace(/\s+/g, " ").trim()
+    );
+    expect(chips.length).toBe(6);
+    expect(chips[0]).toContain("Value / year");
+    expect(chips[0]).toContain("S$190k");
+    // Dr Mei Tan has a Hip deal (95,000 SGD) and a Knee deal (no Knee rating): Hip is Gold, Knee is not rated
+    expect(chips[2]).toContain("Gold");
+    expect(chips[2]).toContain("S$95k");
+    expect(chips[5]).toContain("Not rated");
+    expect(chips[5]).toContain("S$95k");
+  });
+
+  it("starts in local currencies, reads the Salesforce rates the first time USD is chosen, and shows one dollar amount", async () => {
+    currencyRates.mockReset();
+    currencyRates.mockResolvedValue({
+      rates: { USD: 1, SGD: 2 },
+      corporate: "USD",
+      changed: "2026-11-17T01:00:00.000Z"
+    });
+    const el = make({ valueRow: true });
+    await flush();
+    const seg = el.shadowRoot.querySelector("c-pipeline-segmented.currencyseg");
+    expect(seg.value).toBe("local");
+    expect(seg.options.map((o) => o.label)).toEqual(["LOCAL", "USD"]);
+    expect(currencyRates).not.toHaveBeenCalled();
+    expect(el.shadowRoot.querySelector(".vnote")).toBeNull();
+    seg.dispatchEvent(new CustomEvent("change", { detail: { value: "usd" } }));
+    await flush();
+    expect(currencyRates).toHaveBeenCalledTimes(1);
+    const total = el.shadowRoot.querySelector(".vchip.tot .vv").textContent;
+    expect(total).toContain("US$");
+    // no explanatory line is added under the chips (Robert, 2026-11-17)
+    expect(el.shadowRoot.querySelector(".vnote")).toBeNull();
+    // back to local, and USD again does not read the rates a second time
+    seg.dispatchEvent(
+      new CustomEvent("change", { detail: { value: "local" } })
+    );
+    await flush();
+    expect(
+      el.shadowRoot.querySelector(".vchip.tot .vv").textContent
+    ).not.toContain("US$");
+    seg.dispatchEvent(new CustomEvent("change", { detail: { value: "usd" } }));
+    await flush();
+    expect(currencyRates).toHaveBeenCalledTimes(1);
+  });
+
+  it("stays in local currencies and says so when the rates cannot be read", async () => {
+    currencyRates.mockReset();
+    currencyRates.mockRejectedValue(new Error("no"));
+    const el = make({ valueRow: true });
+    await flush();
+    el.shadowRoot
+      .querySelector("c-pipeline-segmented.currencyseg")
+      .dispatchEvent(new CustomEvent("change", { detail: { value: "usd" } }));
+    await flush();
+    expect(el.shadowRoot.querySelector(".vnote.bad").textContent).toContain(
+      "could not be read"
+    );
+    expect(
+      el.shadowRoot.querySelector(".vchip.tot .vv").textContent
+    ).not.toContain("US$");
+  });
+
+  it("shows the Revenue / year column in US dollars when USD is chosen, and back in each deal's own currency on LOCAL", async () => {
+    currencyRates.mockReset();
+    currencyRates.mockResolvedValue({
+      rates: { USD: 1, SGD: 2 },
+      corporate: "USD",
+      changed: "2026-11-17T01:00:00.000Z"
+    });
+    const el = make({ valueRow: true });
+    await flush();
+    const values = () =>
+      [...el.shadowRoot.querySelectorAll("tbody td.num")].map((c) =>
+        c.textContent.trim()
+      );
+    expect(values()).toEqual(["S$95k", "S$95k"]);
+    const seg = el.shadowRoot.querySelector("c-pipeline-segmented.currencyseg");
+    seg.dispatchEvent(new CustomEvent("change", { detail: { value: "usd" } }));
+    await flush();
+    expect(values()).toEqual(["US$48k", "US$48k"]); // SGD 95,000 at a rate of 2 is 47,500
+    seg.dispatchEvent(
+      new CustomEvent("change", { detail: { value: "local" } })
+    );
+    await flush();
+    expect(values()).toEqual(["S$95k", "S$95k"]);
+  });
+
+  it("hands the USD choice and the rates to the Maintain list", async () => {
+    currencyRates.mockReset();
+    currencyRates.mockResolvedValue({
+      rates: { USD: 1, SGD: 2 },
+      corporate: "USD"
+    });
+    const el = make({ valueRow: true, maintainable: true });
+    await flush();
+    el.shadowRoot
+      .querySelector("c-pipeline-segmented.modeseg")
+      .dispatchEvent(
+        new CustomEvent("change", { detail: { value: "maintain" } })
+      );
+    await flush();
+    let list = el.shadowRoot.querySelector("c-pipeline-campaign-maintain");
+    expect(list.usd).toBe(false);
+    el.shadowRoot
+      .querySelector("c-pipeline-segmented.currencyseg")
+      .dispatchEvent(new CustomEvent("change", { detail: { value: "usd" } }));
+    await flush();
+    list = el.shadowRoot.querySelector("c-pipeline-campaign-maintain");
+    expect(list.usd).toBe(true);
+    expect(list.rates.rates.SGD).toBe(2);
+  });
+
+  it("opens in the currency the person last chose (US dollars), reading the rates itself, and announces a flick of the switch so it can be remembered", async () => {
+    currencyRates.mockReset();
+    currencyRates.mockResolvedValue({
+      rates: { USD: 1, SGD: 2 },
+      corporate: "USD"
+    });
+    const el = make({ valueRow: true, currency: "usd" });
+    const handler = jest.fn();
+    el.addEventListener("currencychange", handler);
+    await flush();
+    expect(currencyRates).toHaveBeenCalledTimes(1);
+    expect(
+      el.shadowRoot.querySelector("c-pipeline-segmented.currencyseg").value
+    ).toBe("usd");
+    expect(el.shadowRoot.querySelector(".vchip.tot .vv").textContent).toContain(
+      "US$"
+    );
+    expect(handler).not.toHaveBeenCalled(); // opening in USD is not a flick
+    el.shadowRoot
+      .querySelector("c-pipeline-segmented.currencyseg")
+      .dispatchEvent(new CustomEvent("change", { detail: { value: "local" } }));
+    await flush();
+    expect(handler).toHaveBeenCalledTimes(1);
+    expect(handler.mock.calls[0][0].detail.value).toBe("local");
+    expect(el.currency).toBe("local");
+  });
+
+  it("does not announce USD when the rates could not be read", async () => {
+    currencyRates.mockReset();
+    currencyRates.mockRejectedValue(new Error("no"));
+    const el = make({ valueRow: true });
+    const handler = jest.fn();
+    el.addEventListener("currencychange", handler);
+    await flush();
+    el.shadowRoot
+      .querySelector("c-pipeline-segmented.currencyseg")
+      .dispatchEvent(new CustomEvent("change", { detail: { value: "usd" } }));
+    await flush();
+    expect(handler).not.toHaveBeenCalled();
   });
 });

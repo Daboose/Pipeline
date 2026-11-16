@@ -41,25 +41,25 @@
   border-bottom: 1px solid var(--line);
   white-space: nowrap;
 }
-.num {
-  text-align: right;
+/* every column except the Deal name is centred, heading and figures alike (Robert, 2026-11-17) */
+.mtbl th:not(:first-child),
+.mtbl td:not(:first-child) {
+  text-align: center;
 }
+.num,
 .mid {
   text-align: center;
 }
+/* no background colours in this table (Robert, 2026-11-17): a clear line above each surgeon, a little thicker than the lines between deals,
+   in the colour of the person's heading colour; a deal in the campaign is shown by its green pill and its minus button, not a tint */
 tr.sg td {
-  background: color-mix(in srgb, var(--head) 8%, var(--panel));
-  border-top: 2px solid var(--edge);
+  border-top: 3px solid var(--head);
   padding: 10px 14px;
 }
 .sn {
+  margin-right: 12px; /* a small gap before the rating (the hospitals are not shown here; Robert, 2026-11-17) */
   font-size: 18px;
   font-weight: 800;
-}
-.sh {
-  color: var(--muted);
-  margin: 0 12px 0 12px;
-  font-size: 14px;
 }
 .cnt {
   float: right;
@@ -68,9 +68,6 @@ tr.sg td {
 }
 tr.dl td:first-child {
   padding-left: 34px;
-}
-tr.dl.in td {
-  background: rgba(22, 163, 74, 0.1);
 }
 tr.dl.lock td {
   opacity: 0.55;
@@ -119,9 +116,28 @@ tr.none td {
   font-weight: 800;
   line-height: 1;
   cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  position: relative;
+}
+/* the plus and the minus are drawn, not typed: two bars placed by the circle's own centre, so they sit exactly in the middle across and down
+   whatever the font (Robert, 2026-11-17: they must be centred horizontally and vertically in the circle). 16 x 4 px bars in a 36 px circle. */
+.rb .mark {
+  position: absolute;
+  left: 10px;
+  top: 16px;
+  width: 16px;
+  height: 4px;
+  border-radius: 2px;
+  background: #fff;
+}
+.rb.add .mark::after {
+  content: "";
+  position: absolute;
+  left: 6px;
+  top: -6px;
+  width: 4px;
+  height: 16px;
+  border-radius: 2px;
+  background: #fff;
 }
 .rb.add {
   background: var(--indigo, #6366f1);

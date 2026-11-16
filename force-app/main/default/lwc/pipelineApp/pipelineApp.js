@@ -5,6 +5,7 @@ import {
 } from "lightning/uiObjectInfoApi";
 import SALESRISKS from "@salesforce/schema/SalesRisks__c";
 import getContext from "@salesforce/apex/PipelineController.getContext";
+import currencyRates from "@salesforce/apex/PipelineCampaignController.currencyRates";
 import getDeals from "@salesforce/apex/PipelineController.getDeals";
 import listCampaigns from "@salesforce/apex/PipelineCampaignController.listCampaigns";
 import getCampaign from "@salesforce/apex/PipelineCampaignController.getCampaign";
@@ -28,6 +29,7 @@ import {
 } from "c/pipelineFilterModel";
 import { quarterRank } from "c/pipelineFormat";
 import { zoomStyle, cleanZoom, DEFAULT_ZOOM } from "c/pipelineZoom";
+import { usdDeals } from "c/pipelineCurrency";
 
 /** JSON with the keys in a fixed order, so two filters with the same choices compare as equal. */
 function stableJson(value) {
@@ -46,7 +48,7 @@ function stableJson(value) {
  * Usages, Surgeries and Chatter, saved filters); 0.10 follows the final mockup: a filter bar with chips and a Change
  * selection panel with Apply, in place of the always-visible Choose Your Data panel.
  */
-const PIPELINE_VERSION = "0.119";
+const PIPELINE_VERSION = "0.135";
 
 /** The colours a person can choose for the headings (Robert, 2026-11-02); the look of each is in pipelineApp.css. */
 const HEAD_COLOURS = [
@@ -114,6 +116,7 @@ export default class PipelineApp extends LightningElement {
   settings = {
     theme: "dark",
     headColour: "pink",
+    currency: "local", // the campaign screen's value figures: "local" (each in its own currency) or "usd" (Robert, 2026-11-17)
     zoom: DEFAULT_ZOOM, // the screen size in percent: 100, 90, 80, 70 or 60; 80 until the person chooses (Robert, 2026-11-16)
     altTint: false,
     cols: {},
@@ -121,6 +124,7 @@ export default class PipelineApp extends LightningElement {
     ui: {},
     last: null
   };
+  rates = null; // the exchange rates held in Salesforce, read the first time US dollars are wanted
   _filter = null; // the choices applied; set once the stage choices and the person are known
   campaigns = []; // the active sales campaigns offered in Change selection
   campaignDetail = null; // the linked campaign and its members, for the campaign screen
@@ -357,12 +361,15 @@ export default class PipelineApp extends LightningElement {
           ? s.headColour
           : "pink",
         zoom: cleanZoom(s.zoom),
+        currency: s.currency === "usd" ? "usd" : "local",
         altTint: !!s.altTint,
         cols: s.cols && typeof s.cols === "object" ? s.cols : {},
         widths: s.widths && typeof s.widths === "object" ? s.widths : {},
         ui: s.ui && typeof s.ui === "object" ? s.ui : {},
         last: s.last && typeof s.last === "object" ? s.last : null
       };
+      // opening in US dollars: the rates are read now (and if they cannot be, the screen simply shows local currencies)
+      if (this.settings.currency === "usd") this.ensureRates();
       // the summary panels, the Team table and the lists always open folded (Robert, 2026-11-07), whatever was left open last time
     } catch {
       // unreadable settings: keep the defaults
@@ -416,8 +423,10 @@ export default class PipelineApp extends LightningElement {
   }
 
   /* ----- what the template needs ----- */
+  /** While the Pipeline screen slides away to the campaign screen the page's own scroll bar is taken off at once, so it does not hang on
+   *  until the end of the slide and then vanish, which made the campaign screen jerk to the right (Robert, 2026-11-17). */
   get rootClass() {
-    return "root";
+    return this.leaving === "pipeline" ? "root nosb" : "root";
   }
   /** The zoom the person chose, as the one number (--z) the whole screen is scaled by. */
   get rootStyle() {
@@ -469,6 +478,12 @@ export default class PipelineApp extends LightningElement {
       (away ? " away" : "") +
       (!away && this.screenIn ? " slide-" + this.screenIn : "")
     );
+  }
+  /** The Opportunities, Risks, ROSA and Status row drives the Pipeline view only, so it is not on the campaign screen at all (Robert,
+   *  2026-11-17). It goes, and comes back, at once, in the same pass that builds the screen, so the campaign screen is laid out in its
+   *  final shape from the first moment (a fold would leave the members list measured for the old, shorter room). */
+  get showBar() {
+    return this.ready && this.screen !== "campaign";
   }
   get showCampaignScreen() {
     return (
@@ -567,7 +582,7 @@ export default class PipelineApp extends LightningElement {
     if (!c) return "";
     return [
       c.portfolios.join(", "),
-      c.managerName ? "Manager " + c.managerName : ""
+      c.managerName ? "Campaign Manager " + c.managerName : ""
     ]
       .filter(Boolean)
       .join(" · ");
@@ -658,11 +673,17 @@ export default class PipelineApp extends LightningElement {
     };
   }
 
-  /** The deals left after every choice applied on the screen, except a single owner (the Team table lists everyone). */
+  /** US dollars are on: the person chose USD and the Salesforce rates have been read. */
+  get usdOn() {
+    return this.settings.currency === "usd" && !!this.rates;
+  }
+  /** The deals left after every choice applied on the screen, except a single owner (the Team table lists everyone). With USD chosen
+   *  every deal's value is in US dollars (Robert, 2026-11-17), so every summary, table and total below works in one currency. */
   get dealsForPeople() {
     const now = Date.now();
     const f = { ...this.filter, ownerId: "" };
-    return this.allDeals.filter((d) => clientMatch(d, f, now));
+    const kept = this.allDeals.filter((d) => clientMatch(d, f, now));
+    return this.usdOn ? usdDeals(kept, this.rates) : kept;
   }
   /** The team member the screen is filtered down to (their name follows each list's heading), or blank. */
   get focusRepName() {
@@ -689,7 +710,10 @@ export default class PipelineApp extends LightningElement {
       deals: deals.filter((d) => d.kind === k),
       columns: this.settings.cols[k],
       widths: this.settings.widths[k],
-      listOpen: this.isRep // an end user has a handful of deals, so their lists start open; a manager's start folded (Robert, 2026-11-09)
+      // an end user has a handful of deals, so their lists start open (Robert, 2026-11-09). A manager's start folded, except Opportunities, the
+      // list people look at most, which starts open whenever the choices include it (Robert, 2026-11-17); Risks, ROSA, the Team table and the
+      // summary panels stay folded
+      listOpen: this.isRep || k === "opp"
     }));
   }
   get filterStatus() {
@@ -993,6 +1017,23 @@ export default class PipelineApp extends LightningElement {
       headColour: event.currentTarget.dataset.head
     };
     this.persist();
+  }
+  /** The Currency switch was flicked (here or on the campaign screen): reads the Salesforce rates the first time US dollars are wanted,
+   *  and, if they cannot be read, stays on local currencies and saves nothing. */
+  async handleCurrencyChange(event) {
+    const wantUsd = event.detail.value === "usd";
+    if (wantUsd && !(await this.ensureRates())) return;
+    this.settings = { ...this.settings, currency: wantUsd ? "usd" : "local" };
+    this.persist();
+  }
+  async ensureRates() {
+    if (this.rates) return true;
+    try {
+      this.rates = await currencyRates();
+      return true;
+    } catch {
+      return false;
+    }
   }
   handleZoom(event) {
     this.settings = { ...this.settings, zoom: cleanZoom(event.detail.value) };

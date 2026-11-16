@@ -7,7 +7,16 @@ import {
   chatterBand,
   stageBand
 } from "c/pipelineFormat";
-import { sortRows, memberTiles, ratingRank } from "c/pipelineCampaignModel";
+import {
+  sortRows,
+  memberTiles,
+  ratingRank,
+  valueByRating,
+  toUsd,
+  usdAmount,
+  RATING_KEYS
+} from "c/pipelineCampaignModel";
+import currencyRates from "@salesforce/apex/PipelineCampaignController.currencyRates";
 import { localWidth, zoomOf } from "c/pipelineZoom";
 
 const WIDTHS_KEY = "pipelineCampaignMembersWidths";
@@ -66,9 +75,14 @@ export default class PipelineCampaignMembers extends LightningElement {
   @api members = [];
   /** Campaign Management: show the tick boxes. */
   @api manage = false;
+  /** Pipeline: the value goes on a row of its own: the campaign's Value / year and the same split by the surgeon's rating, with a LOCAL or USD switch (Robert, 2026-11-17). */
+  @api valueRow = false;
   /** Pipeline: offer the Maintain mode (put deals in and out of the campaign) beside the Report mode (Robert, 2026-11-16). */
   @api maintainable = false;
 
+  usd = false; // the value chips in US dollars; local currencies until the person flicks the switch
+  rates = null; // the exchange rates held in Salesforce, read the first time USD is chosen
+  ratesError = "";
   mode = "report"; // report (the list as it always was) or maintain
   types = { opp: true, risk: false }; // the kinds of deal Maintain lists: opportunities, not risks, until the person ticks them
   filter = "all";
@@ -95,6 +109,7 @@ export default class PipelineCampaignMembers extends LightningElement {
     }
   }
   disconnectedCallback() {
+    cancelAnimationFrame(this.fitFrame);
     window.removeEventListener("resize", this.onResize);
   }
   /** The table box is as tall as the space left below it in the window, so it reaches the bottom wherever it is shown. */
@@ -116,6 +131,10 @@ export default class PipelineCampaignMembers extends LightningElement {
   }
   renderedCallback() {
     this.fit();
+    // and once more when the browser has laid the screen out, so the list always reaches the bottom of the window
+    cancelAnimationFrame(this.fitFrame);
+    // eslint-disable-next-line @lwc/lwc/no-async-operation
+    this.fitFrame = requestAnimationFrame(() => this.fit());
     const all = this.template.querySelector("input.selall");
     if (all) {
       const n = this.selectedIds.length;
@@ -272,19 +291,117 @@ export default class PipelineCampaignMembers extends LightningElement {
     const money = t.value.length
       ? t.value.map((v) => formatMoney(v.total, v.currencyCode)).join(" · ")
       : "–";
-    return [
+    const counts = [
       { key: "s", label: "Surgeons", value: t.surgeons, cls: "tile" },
       { key: "w", label: "With a deal", value: t.withDeal, cls: "tile" },
       { key: "n", label: "No deal yet", value: t.noDeal, cls: "tile warn" },
-      { key: "d", label: "Deals", value: t.deals, cls: "tile" },
-      {
-        key: "v",
-        label: "Value / year",
-        value: money,
-        cls: "tile",
-        valCls: money.length > 9 ? "long" : ""
-      }
+      { key: "d", label: "Deals", value: t.deals, cls: "tile" }
     ];
+    // Campaign Management keeps its fifth tile; Pipeline gives the value a row of its own
+    if (this.valueRow) return counts;
+    return counts.concat({
+      key: "v",
+      label: "Value / year",
+      value: money,
+      cls: "tile",
+      valCls: money.length > 9 ? "long" : ""
+    });
+  }
+
+  // ---------- the value row: total and by rating, local or in US dollars ----------
+  get currencyOptions() {
+    return [
+      { value: "local", label: "LOCAL" },
+      { value: "usd", label: "USD" }
+    ];
+  }
+  get currencyValue() {
+    return this.usd ? "usd" : "local";
+  }
+  /** The currency the person last chose, saved in their Pipeline settings and handed in by the screen: "local" (the default) or "usd". */
+  @api
+  get currency() {
+    return this.usd ? "usd" : "local";
+  }
+  set currency(value) {
+    this.applyCurrency(value === "usd");
+  }
+  /** The person flicked the switch: show it, and tell the screen so it can be remembered. */
+  async handleCurrency(event) {
+    const wantUsd = event.detail.value === "usd";
+    await this.applyCurrency(wantUsd);
+    if (this.usd === wantUsd)
+      this.dispatchEvent(
+        new CustomEvent("currencychange", {
+          detail: { value: wantUsd ? "usd" : "local" }
+        })
+      );
+  }
+  /** Switches the figures to US dollars or back, reading the Salesforce rates the first time US dollars are wanted. */
+  async applyCurrency(wantUsd) {
+    if (wantUsd && !this.rates) {
+      try {
+        this.rates = await currencyRates();
+        this.ratesError = "";
+      } catch {
+        this.ratesError = "The exchange rates could not be read.";
+        return; // stays on local currencies
+      }
+    }
+    this.usd = wantUsd;
+  }
+  /** One amount per currency, or one amount in US dollars. */
+  amountText(amounts) {
+    if (this.usd && this.rates) {
+      const { usd } = toUsd(amounts, this.rates);
+      return Object.keys(amounts).length ? formatMoney(usd, "USD") : "–";
+    }
+    const list = Object.keys(amounts)
+      .filter((c) => amounts[c])
+      .sort();
+    return list.length
+      ? list.map((c) => formatMoney(amounts[c], c)).join(" · ")
+      : "–";
+  }
+  get valueChips() {
+    const v = valueByRating(this.members);
+    const chip = (key, label, amounts, cls) => {
+      const text = this.amountText(amounts);
+      return {
+        key,
+        label,
+        text,
+        cls: `vchip${cls ? " " + cls : ""}${text === "–" ? " zero" : ""}`,
+        plateCls:
+          key === "total"
+            ? ""
+            : `rate ${key === "NONE" ? "none" : key.charAt(0) + key.slice(1).toLowerCase()}`
+      };
+    };
+    return [chip("total", "Value / year", v.total, "tot")].concat(
+      RATING_KEYS.map((k) =>
+        chip(
+          k,
+          k === "NONE" ? "Not rated" : k.charAt(0) + k.slice(1).toLowerCase(),
+          v[k],
+          ""
+        )
+      )
+    );
+  }
+  /** USD is on and the rates have been read. */
+  get showUsd() {
+    return this.usd && !!this.rates;
+  }
+  get notValueRow() {
+    return !this.valueRow;
+  }
+  /** Pipeline's campaign screen: the first row holds only the title and the Currency switch, so it is compact (Robert, 2026-11-17). */
+  get bandCls() {
+    return this.valueRow ? "band compact" : "band";
+  }
+  get showValueRow() {
+    return this.valueRow;
   }
 
   // ---------- report or maintain ----------
@@ -399,7 +516,7 @@ export default class PipelineCampaignMembers extends LightningElement {
       y1: (m) => m.y1Rep,
       y6: (m) => m.y6Rep,
       stage: (m) => (deal(m) ? deal(m).stage : ""),
-      value: (m) => (deal(m) ? Number(deal(m).value) || 0 : null),
+      value: (m) => (deal(m) ? this.sortAmount(deal(m)) : null),
       quarter: (m) => (deal(m) ? deal(m).quarter : ""),
       posted: (m) => (deal(m) ? chatterDays(deal(m), now) : null),
       moved: (m) => (deal(m) ? stageDays(deal(m), now) : null),
@@ -413,6 +530,23 @@ export default class PipelineCampaignMembers extends LightningElement {
     return valueOf ? sortRows(kept, valueOf, this.sort.dir) : kept;
   }
   /** The cells of one deal, by column id, so the ones turned off can be left out. */
+  /** A deal's value as the person asked to see it: in its own currency, or, with USD chosen, in US dollars (left in its own currency
+   *  if that currency has no rate). */
+  moneyText(d) {
+    if (this.usd && this.rates) {
+      const u = usdAmount(d.value, d.currencyCode, this.rates);
+      if (u !== null) return formatMoney(u, "USD");
+    }
+    return formatMoney(d.value, d.currencyCode);
+  }
+  /** What the value column sorts by: US dollars with USD chosen, so the order matches the figures shown. */
+  sortAmount(d) {
+    if (this.usd && this.rates) {
+      const u = usdAmount(d.value, d.currencyCode, this.rates);
+      if (u !== null) return u;
+    }
+    return Number(d.value) || 0;
+  }
   dealCellMap(d, now) {
     const quiet = d.isClosed || d.onHold;
     const day = (n, band) => {
@@ -433,7 +567,7 @@ export default class PipelineCampaignMembers extends LightningElement {
       value: {
         isText: true,
         cls: "num",
-        text: formatMoney(d.value, d.currencyCode)
+        text: this.moneyText(d)
       },
       quarter: { isText: true, text: d.quarter || "–" },
       posted: day(chatterDays(d, now), chatterBand),

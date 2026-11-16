@@ -32,5 +32,15 @@
         >
       </template>
     </div>
+
+    <div class="status cur">
+      <c-pipeline-segmented
+        heading="Currency"
+        label="Local currencies or US dollars"
+        options={currencyOptions}
+        value={currency}
+        onchange={handleCurrency}
+      ></c-pipeline-segmented>
+    </div>
   </div>
 </template>

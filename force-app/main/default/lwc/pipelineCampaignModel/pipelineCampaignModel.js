@@ -213,3 +213,35 @@ export function memberTiles(members) {
       .map((currencyCode) => ({ currencyCode, total: value[currencyCode] }))
   };
 }
+
+/** The rating keys in the order the value chips show them; "NONE" is a surgeon with no rating for the deal's portfolio. */
+export const RATING_KEYS = ["PLATINUM", "GOLD", "SILVER", "BRONZE", "NONE"];
+
+/**
+ * The value of the deals in a campaign, in total and split by the surgeon's rating (Robert, 2026-11-17). Each deal counts under the
+ * surgeon's rating for the deal's own portfolio (a Knee deal uses the Knee rating, the same rule as the Rating column in the lists); a
+ * surgeon with no rating for it counts under NONE. Amounts are kept per currency and never added across currencies.
+ * Returns { total: { AUD: 1000 }, PLATINUM: { AUD: 500 }, GOLD: {}, ... }.
+ */
+export function valueByRating(members) {
+  const out = { total: {} };
+  RATING_KEYS.forEach((k) => {
+    out[k] = {};
+  });
+  (members || []).forEach((m) => {
+    (m.deals || []).forEach((d) => {
+      const cell = (m.ratings || []).find((r) => r.portfolio === d.portfolio);
+      const rated = String((cell && cell.rating) || "").toUpperCase();
+      const key =
+        RATING_KEYS.includes(rated) && rated !== "NONE" ? rated : "NONE";
+      const c = d.currencyCode || "";
+      const v = Number(d.value) || 0;
+      out.total[c] = (out.total[c] || 0) + v;
+      out[key][c] = (out[key][c] || 0) + v;
+    });
+  });
+  return out;
+}
+
+// the US dollar conversion lives in one place, pipelineCurrency; re-exported here for the campaign screen and its tests
+export { toUsd, usdAmount } from "c/pipelineCurrency";

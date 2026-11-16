@@ -22,6 +22,7 @@ import {
   quarterIsPast,
   STAGE_ENDS
 } from "c/pipelineFormat";
+import { usdAmount } from "c/pipelineCurrency";
 
 const SLIDE_IN_DELAY_MS = 30; // lets the closed position be drawn first, so the slide runs
 const SLIDE_OUT_MS = 450; // a little longer than the slide itself (0.4 s in the style sheet)
@@ -151,6 +152,9 @@ export default class PipelineDeal extends LightningElement {
     if (!value) this.resetPanel(); // the flyout is sliding away; it opens next time with no panel over it
   }
   _deal;
+  /** USD chosen and the Salesforce rates read: the expected annual value in the top row is shown in US dollars (the field below stays in the deal's own currency, which is what is edited). */
+  @api usd = false;
+  @api rates = null;
   @api index = 0;
   @api total = 0;
   @api isManager = false;
@@ -543,6 +547,13 @@ export default class PipelineDeal extends LightningElement {
     const seg = this.kind === "risk" && d.segment ? d.segment + " " : "";
     return { label: "Type", value: seg + KIND_NAME[this.kind] };
   }
+  stripMoney(d) {
+    if (this.usd && this.rates) {
+      const u = usdAmount(d.value, d.currencyCode, this.rates);
+      if (u !== null) return formatMoney(u, "USD");
+    }
+    return formatMoney(d.value, d.currencyCode);
+  }
   get strip() {
     const d = this._deal || {};
     const now = Date.now();
@@ -554,7 +565,7 @@ export default class PipelineDeal extends LightningElement {
       this.typeItem(d),
       {
         label: VALUE_LABEL[this.kind],
-        value: formatMoney(d.value, d.currencyCode)
+        value: this.stripMoney(d)
       },
       { label: "Close quarter", value: d.quarter || "–" },
       {

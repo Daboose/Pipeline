@@ -95,4 +95,20 @@ describe("c-pipeline-bar", () => {
       );
     expect(picked.mock.calls[0][0].detail.value).toBe("closed");
   });
+
+  it("has the Currency switch at the right-hand end, showing the saved choice, and announces a flick", async () => {
+    const el = make({ currency: "usd" });
+    const handler = jest.fn();
+    el.addEventListener("currencychange", handler);
+    await Promise.resolve();
+    const bar = el.shadowRoot.querySelector(".bar");
+    const seg = el.shadowRoot.querySelector(".cur c-pipeline-segmented");
+    expect(bar.lastElementChild.classList.contains("cur")).toBe(true);
+    expect(seg.value).toBe("usd");
+    expect(seg.options.map((o) => o.label)).toEqual(["LOCAL", "USD"]);
+    seg.dispatchEvent(
+      new CustomEvent("change", { detail: { value: "local" } })
+    );
+    expect(handler.mock.calls[0][0].detail.value).toBe("local");
+  });
 });

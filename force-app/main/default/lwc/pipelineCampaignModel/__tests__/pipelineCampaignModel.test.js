@@ -11,6 +11,9 @@ import {
   cleaningReport,
   ratingRank,
   memberTiles,
+  valueByRating,
+  toUsd,
+  usdAmount,
   rowDone,
   importCounts,
   NAME_LIMIT
@@ -212,5 +215,72 @@ describe("the importer", () => {
       need: 2,
       toAdd: 1
     });
+  });
+});
+
+describe("valueByRating and toUsd", () => {
+  const members = [
+    {
+      ratings: [
+        { portfolio: "Knee", rating: "GOLD" },
+        { portfolio: "Hip", rating: "PLATINUM" }
+      ],
+      deals: [
+        { portfolio: "Knee", value: 100000, currencyCode: "AUD" },
+        { portfolio: "Hip", value: 50000, currencyCode: "AUD" }
+      ]
+    },
+    {
+      ratings: [{ portfolio: "Knee", rating: null }],
+      deals: [
+        { portfolio: "Knee", value: 30000, currencyCode: "NZD" },
+        { portfolio: "Hip", value: 20000, currencyCode: "NZD" }
+      ]
+    },
+    { ratings: [], deals: [] }
+  ];
+
+  it("counts each deal under the surgeon's rating for the deal's own portfolio, and the rest under none", () => {
+    const v = valueByRating(members);
+    expect(v.GOLD).toEqual({ AUD: 100000 });
+    expect(v.PLATINUM).toEqual({ AUD: 50000 });
+    expect(v.NONE).toEqual({ NZD: 50000 }); // no rating for Knee, and no Hip rating at all
+    expect(v.SILVER).toEqual({});
+    expect(v.BRONZE).toEqual({});
+  });
+
+  it("keeps every currency apart, and the five rating groups add up to the total", () => {
+    const v = valueByRating(members);
+    expect(v.total).toEqual({ AUD: 150000, NZD: 50000 });
+    ["AUD", "NZD"].forEach((c) => {
+      const parts = ["PLATINUM", "GOLD", "SILVER", "BRONZE", "NONE"].reduce(
+        (a, k) => a + (v[k][c] || 0),
+        0
+      );
+      expect(parts).toBe(v.total[c]);
+    });
+    expect(valueByRating(null).total).toEqual({});
+  });
+
+  it("converts to US dollars by dividing by the currency's rate, and names a currency with no rate", () => {
+    const rates = { rates: { USD: 1, AUD: 1.5, NZD: 2 } };
+    expect(toUsd({ AUD: 150000, NZD: 50000 }, rates)).toEqual({
+      usd: 125000,
+      missing: []
+    });
+    expect(toUsd({ AUD: 150000, JPY: 1000 }, rates)).toEqual({
+      usd: 100000,
+      missing: ["JPY"]
+    });
+    expect(toUsd({}, rates).usd).toBe(0);
+    expect(toUsd({ AUD: 10 }, null).missing).toEqual(["AUD"]);
+  });
+
+  it("converts one amount to US dollars, or says there is no rate", () => {
+    const rates = { rates: { USD: 1, AUD: 1.5 } };
+    expect(usdAmount(150000, "AUD", rates)).toBe(100000);
+    expect(usdAmount(100, "USD", rates)).toBe(100);
+    expect(usdAmount(100, "JPY", rates)).toBeNull();
+    expect(usdAmount(100, "AUD", null)).toBeNull();
   });
 });

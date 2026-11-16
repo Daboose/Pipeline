@@ -118,7 +118,7 @@ export default class PipelineTypeSummary extends LightningElement {
           key: "v" + c,
           label: `${VALUE_WORD[this.kind]} · ${c || "?"}`,
           value: formatMoney(v, c),
-          cls: "v"
+          cls: "v money"
         })
       );
     const now = Date.now();

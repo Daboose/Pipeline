@@ -652,3 +652,13 @@
   font-size: 13px;
   line-height: 1.4;
 }
+
+/* the campaign screen sits closer to the top bar, now that its first row is only the title and the Currency switch (Robert, 2026-11-17) */
+.main.cscreen {
+  padding-top: 8px;
+}
+
+/* no page scroll bar while the Pipeline screen slides away to the campaign screen */
+.root.nosb {
+  overflow-y: hidden;
+}

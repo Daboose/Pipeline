@@ -111,11 +111,13 @@
     </header>
 
     <c-pipeline-bar
-      lwc:if={ready}
+      lwc:if={showBar}
       filter={filter}
       choices={choices}
       teams={teams}
       is-rep={isRep}
+      currency={settings.currency}
+      oncurrencychange={handleCurrencyChange}
       onkindtoggle={handleKindToggle}
       onstatuspick={handleStatusPick}
       onopenpanel={handleOpenPanel}
@@ -131,6 +133,9 @@
         campaign={campaignDetail.campaign}
         members={campaignDetail.members}
         maintainable
+        value-row
+        currency={settings.currency}
+        oncurrencychange={handleCurrencyChange}
         oncampaigndealchange={handleCampaignDealChange}
       >
         <div slot="heading" class="ctrail">
@@ -227,6 +232,8 @@
       lwc:if={flyDeal}
       open={flyOn}
       deal={flyDeal}
+      usd={usdOn}
+      rates={rates}
       index={flyIndex}
       total={flyTotal}
       is-manager={isManager}

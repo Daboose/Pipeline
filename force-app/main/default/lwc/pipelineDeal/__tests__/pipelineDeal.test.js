@@ -94,6 +94,23 @@ describe("c-pipeline-deal", () => {
     expect(el.shadowRoot.textContent).toContain("Pat Owner");
   });
 
+  it("shows the expected annual value in the top row in the deal's own currency, and in US dollars when USD is on", async () => {
+    const el = createElement("c-pipeline-deal", { is: PipelineDeal });
+    el.deal = { ...deal, value: 150000, currencyCode: "AUD" };
+    document.body.appendChild(el);
+    await Promise.resolve();
+    const strip = () => el.shadowRoot.querySelector(".strip").textContent;
+    expect(strip()).toContain("A$150k");
+    el.rates = { rates: { USD: 1, AUD: 1.5 } };
+    el.usd = true;
+    await Promise.resolve();
+    expect(strip()).toContain("US$100k");
+    expect(strip()).not.toContain("A$150k");
+    el.usd = false;
+    await Promise.resolve();
+    expect(strip()).toContain("A$150k");
+  });
+
   it("slides in only when told to open", async () => {
     const el = createElement("c-pipeline-deal", { is: PipelineDeal });
     el.deal = deal;
