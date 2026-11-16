@@ -83,3 +83,7 @@ Released by Robert with Gearset: 13 Lightning web components (`pipelineApp`, `pi
 ## Release 4 (2026-11-17): Pipeline 0.135 (LOCAL / USD, campaign screen redesign, Roboto Condensed figures)
 
 Released by Robert with Gearset: Lightning web components `pipelineApp`, `pipelineBar`, `pipelineCampaignMaintain`, `pipelineCampaignMembers`, `pipelineCampaignModel`, `pipelineCurrency` (new), `pipelineDeal`, `pipelineTypeSummary`; Apex `PipelineCampaignController` and `PipelineCampaignControllerTest` (validated with that test); Visualforce page `PipelineApp`; static resource `Pipeline_Fonts` (new: Roboto Condensed, SIL Open Font License). No permission set or data model change. Left out on purpose: the Usage Card (UAT only) and `pipelineUsageChoices`. Verified read-only against the repo by content on 2026-11-17: PROD matches except those two. Before USD is used in PROD, its currency table must be refreshed in Setup, Manage Currencies (data, not carried by Gearset).
+
+## Release 5 (2026-11-17): Pipeline 0.136 (Status column wide enough for its pill)
+
+Released by Robert with Gearset: Lightning web components `pipelineTypeList` and `pipelineApp` (the version line), no tests. Checked read-only afterwards by content: PROD matches the repo apart from the UAT-only Usage Card and the harmless `pipelineUsageChoices` rename.

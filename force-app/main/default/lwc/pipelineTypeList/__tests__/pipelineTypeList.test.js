@@ -287,6 +287,31 @@ describe("c-pipeline-type-list", () => {
     ).not.toContain("Rating");
   });
 
+  it("never makes the Status column narrower than its pill needs, whatever widths are saved", async () => {
+    const el = make({
+      kind: "opp",
+      deals: [deal("1", "Ann")],
+      columns: ["hcp", "stage", "status"],
+      widths: { __rep: 100, hcp: 200, stage: 100, status: 90 }
+    });
+    await Promise.resolve();
+    const cols = [...el.shadowRoot.querySelectorAll("col")];
+    const heads = [...el.shadowRoot.querySelectorAll("th")].map(
+      (th) => th.dataset.id
+    );
+    expect(cols.length).toBe(heads.length);
+    // a saved 90 px is raised to 150 px, and the others share the rest of the table
+    expect(cols[heads.indexOf("status")].getAttribute("style")).toContain(
+      "width:150px"
+    );
+    expect(cols[heads.indexOf("hcp")].getAttribute("style")).toContain(
+      "calc((100% - 150px)"
+    );
+    expect(
+      el.shadowRoot.querySelector("table").getAttribute("style")
+    ).toContain("min(");
+  });
+
   it("shows each rep's deal count and total, and collapses a rep to one line", async () => {
     const el = make({
       kind: "opp",

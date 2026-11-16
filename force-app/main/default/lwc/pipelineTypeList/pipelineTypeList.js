@@ -76,6 +76,7 @@ function properRating(rating) {
   return t.charAt(0).toUpperCase() + t.slice(1);
 }
 
+const STATUS_MIN_PX = 150; // the Status pill (Closed Lost is the widest) and the cell's padding; the same as the style sheet's minimum for the column
 const NO_COUNTRY = "nocountry"; // saved with the column choices when the person has hidden the Country column
 const NO_RATING = "norating"; // saved with the column choices when the person has hidden the Rating column (it is on by default)
 const NO_REP = "norep"; // saved with the column choices when the person has hidden the Sales rep column (Robert, 2026-11-16: it is on by default)
@@ -641,12 +642,24 @@ export default class PipelineTypeList extends LightningElement {
       this.visibleDefs.map((c) => c[0])
     );
     const cols = ids.map((id) => ({ id, px: this.widthMap[id] || 140 }));
+    // the Status column never gets narrower than its pill needs (Robert, 2026-11-17: Closed Won did not fit and he had to widen the column by
+    // hand): its width is fixed at the pill's width or the saved width if that is wider, and the other columns share what is left
+    const status = cols.find((c) => c.id === "status");
+    if (status) status.px = Math.max(status.px, STATUS_MIN_PX);
+    const others = cols.filter((c) => c.id !== "status");
+    const othersTotal = others.reduce((a, c) => a + c.px, 0);
     const total = cols.reduce((a, c) => a + c.px, 0);
-    // each column is a share of the table (a percentage), and the table is never wider than its box (see tableStyle), so saved widths that
-    // add up to more than the box shrink together instead of making the table scroll sideways, which would stop the column names locking
+    // each other column is a share of the table (a percentage of what the Status column leaves), and the table is never wider than its box
+    // (see tableStyle), so saved widths that add up to more than the box shrink together instead of making the table scroll sideways, which
+    // would stop the column names locking
     return cols.map((c) => ({
       ...c,
-      style: `width:${((c.px / total) * 100).toFixed(4)}%`
+      style:
+        c.id === "status"
+          ? `width:${c.px}px`
+          : status
+            ? `width:calc((100% - ${status.px}px) * ${(c.px / othersTotal).toFixed(5)})`
+            : `width:${((c.px / total) * 100).toFixed(4)}%`
     }));
   }
   get tableStyle() {
