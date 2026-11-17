@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+  <apiVersion>68.0</apiVersion>
+  <isExposed>false</isExposed>
+  <description
+  >Pipeline: the layout of a usage (fields, rows, mandatory fields, product lists that follow the company) and the logic for the Usage card's tiles. No screen.</description>
+</LightningComponentBundle>

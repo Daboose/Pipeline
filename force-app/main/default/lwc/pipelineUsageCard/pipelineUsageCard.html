@@ -1,35 +1,25 @@
 <template>
   <div class={busyCls}>
     <template for:each={neededRts} for:item="rt">
-      <c-pipeline-usage-choices
+      <c-pipeline-usage-field-choices
         key={rt.id}
         record-type-id={rt.id}
-        onchoices={handleChoices}
-      ></c-pipeline-usage-choices>
+        onfieldchoices={handleChoices}
+      ></c-pipeline-usage-field-choices>
     </template>
 
     <div class="head">
       <h2>{heading}</h2>
       <span class="sp"></span>
       <template lwc:if={isHospital}>
-        <span class="switch" lwc:if={showSwitch}>
-          <button
-            type="button"
-            data-m="mc"
-            class={mcBtnCls}
-            onclick={handleMode}
-          >
-            MyCase bookings, last 12 months
-          </button>
-          <button
-            type="button"
-            data-m="us"
-            class={usBtnCls}
-            onclick={handleMode}
-          >
-            Usage records, cases per year
-          </button>
-        </span>
+        <div class="modeswitch" lwc:if={showSwitch}>
+          <c-pipeline-segmented
+            label="Show MyCase bookings or usage records"
+            options={modeOptions}
+            value={hmode}
+            onchange={handleMode}
+          ></c-pipeline-segmented>
+        </div>
       </template>
     </div>
 
@@ -135,62 +125,32 @@
                 </div>
                 <div class="fld">
                   <label>Portfolio</label>
-                  <select class="sel" onchange={handleAddPortfolio}>
-                    <template for:each={portfolioChoices} for:item="o">
-                      <option
-                        key={o.value}
-                        value={o.value}
-                        selected={o.selected}
-                      >
-                        {o.label}
-                      </option>
-                    </template>
-                  </select>
-                </div>
-                <div class="fld">
-                  <label>Product</label>
-                  <select class="sel" onchange={handleAddProduct}>
-                    <template for:each={addProducts} for:item="o">
-                      <option
-                        key={o.value}
-                        value={o.value}
-                        selected={o.selected}
-                      >
-                        {o.label}
-                      </option>
-                    </template>
-                  </select>
-                </div>
-                <div class="fld">
-                  <label>Company</label>
-                  <select class="sel" onchange={handleAddCompany}>
-                    <template for:each={addCompanies} for:item="o">
-                      <option
-                        key={o.value}
-                        value={o.value}
-                        selected={o.selected}
-                      >
-                        {o.label}
-                      </option>
-                    </template>
-                  </select>
-                </div>
-                <div class="fld">
-                  <label>Cases per year</label>
-                  <input
-                    class="inp"
-                    type="number"
-                    min="0"
-                    placeholder="0"
-                    value={addCases}
-                    onchange={handleAddCases}
-                  />
+                  <div class="modeswitch">
+                    <c-pipeline-segmented
+                      label="Portfolio of the new usage"
+                      options={portfolioOptions}
+                      value={addPortfolio}
+                      onchange={handleAddPortfolio}
+                    ></c-pipeline-segmented>
+                  </div>
                 </div>
               </div>
+              <template lwc:if={addTile}>
+                <c-pipeline-usage-tile
+                  tile={addTile}
+                  onfieldchange={handleTileField}
+                  onchip={handleTileChip}
+                ></c-pipeline-usage-tile>
+              </template>
               <div class="note bad" lwc:if={addMsg}>{addMsg}</div>
               <div class="addfoot">
-                <button class="btn" type="button" onclick={handleAddDo}>
-                  Add usage
+                <button
+                  class="btn"
+                  type="button"
+                  disabled={addDisabled}
+                  onclick={handleAddDo}
+                >
+                  Save
                 </button>
                 <button
                   class="btn sec2"
@@ -209,138 +169,45 @@
 
         <div class={rowMsgCls} lwc:if={rowMsg}>{rowMsg}</div>
 
-        <template lwc:if={noLines}>
+        <template lwc:if={noUsages}>
           <div class="empty">No usages recorded for this surgeon yet.</div>
         </template>
         <template lwc:else>
-          <table>
-            <thead>
-              <tr>
-                <th>Portfolio</th>
-                <th>Product</th>
-                <th>Company</th>
-                <th class="num">Cases per year</th>
-                <th class="act" lwc:if={canEdit}></th>
-              </tr>
-            </thead>
-            <tbody>
-              <template for:each={groups} for:item="g">
-                <tr key={g.hospital} class="hosp">
-                  <td colspan={colCount}>{g.hospital}</td>
-                </tr>
-                <template for:each={g.rows} for:item="r">
-                  <tr key={r.k} class={r.cls}>
-                    <template lwc:if={r.editing}>
-                      <td>{r.portfolio}</td>
-                      <td>{r.label}</td>
-                      <td>
-                        <select class="sel" onchange={handleEditCompany}>
-                          <template for:each={r.options} for:item="o">
-                            <option
-                              key={o.value}
-                              value={o.value}
-                              selected={o.selected}
-                            >
-                              {o.label}
-                            </option>
-                          </template>
-                        </select>
-                      </td>
-                      <td class="num">
-                        <input
-                          class="inp"
-                          type="number"
-                          min="0"
-                          value={r.casesValue}
-                          onchange={handleEditCases}
-                        />
-                      </td>
-                      <td class="act">
-                        <button
-                          class="btn"
-                          type="button"
-                          data-usage={r.usageId}
-                          data-key={r.lineKey}
-                          onclick={handleEditSave}
-                        >
-                          Save
-                        </button>
-                        <button
-                          class="btn sec2"
-                          type="button"
-                          onclick={handleEditCancel}
-                        >
-                          Cancel
-                        </button>
-                      </td>
-                    </template>
-                    <template lwc:elseif={r.deleting}>
-                      <td colspan={r.delSpan}>
-                        <b>{r.delText}</b> This takes it off the surgeon.
-                      </td>
-                      <td class="act">
-                        <button
-                          class="btn danger"
-                          type="button"
-                          data-usage={r.usageId}
-                          data-key={r.lineKey}
-                          onclick={handleDeleteYes}
-                        >
-                          Take off
-                        </button>
-                        <button
-                          class="btn sec2"
-                          type="button"
-                          onclick={handleDeleteNo}
-                        >
-                          Keep
-                        </button>
-                      </td>
-                    </template>
-                    <template lwc:else>
-                      <td>{r.portfolio}</td>
-                      <td>{r.label}</td>
-                      <td class={r.companyCls}>{r.company}</td>
-                      <td class="num">{r.cases}</td>
-                      <td class="act" lwc:if={canEdit}>
-                        <button
-                          class="iconbtn"
-                          type="button"
-                          data-k={r.k}
-                          onclick={handleEdit}
-                        >
-                          {r.actionLabel}
-                        </button>
-                        <button
-                          lwc:if={canDelete}
-                          class="iconbtn del"
-                          type="button"
-                          data-k={r.k}
-                          onclick={handleDelete}
-                        >
-                          Delete
-                        </button>
-                      </td>
-                    </template>
-                  </tr>
-                </template>
+          <div class="tiles">
+            <template for:each={groups} for:item="g">
+              <div key={g.hospital} class="uhosp">{g.hospital}</div>
+              <template for:each={g.tiles} for:item="t">
+                <c-pipeline-usage-tile
+                  key={t.key}
+                  tile={t}
+                  onedit={handleTileEdit}
+                  oncancel={handleTileCancel}
+                  onfieldchange={handleTileField}
+                  onchip={handleTileChip}
+                  onsave={handleTileSave}
+                  ondelete={handleTileDelete}
+                  ondeleteno={handleTileDeleteNo}
+                  ondeleteyes={handleTileDeleteYes}
+                ></c-pipeline-usage-tile>
               </template>
-            </tbody>
-          </table>
+            </template>
+          </div>
         </template>
       </div>
 
       <div class="sec" lwc:if={canMyCase}>
-        <h3>
-          MyCase bookings, last 12 months <span class="sp"></span
-          ><span class="tag">for information only</span>
-        </h3>
         <template lwc:if={noBookings}>
-          <div class="empty">
-            No MyCase bookings for this surgeon in the last 12 months.
-          </div>
+          <h3 class="solo">
+            MyCase: there were 0 MyCase bookings in the last 12 months
+            <span class="sp"></span
+            ><span class="tag">for information only</span>
+          </h3>
         </template>
         <template lwc:else>
+          <h3>
+            MyCase bookings, last 12 months <span class="sp"></span
+            ><span class="tag">for information only</span>
+          </h3>
           <table>
             <thead>
               <tr>
@@ -396,7 +263,7 @@
           </div>
         </template>
         <template lwc:else>
-          <table>
+          <table class="hosp">
             <thead>
               <template lwc:if={splitView}>
                 <tr>

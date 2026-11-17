@@ -65,6 +65,9 @@ select {
   align-items: center;
   gap: 10px;
 }
+.sec h3.solo {
+  margin-bottom: 0;
+}
 .sec h3 .tag {
   text-transform: none;
   letter-spacing: 0;
@@ -140,27 +143,27 @@ select {
   }
 }
 
-/* the hospital switch */
-.switch {
-  display: inline-flex;
-  border: 1px solid var(--pc-line2);
-  border-radius: 999px;
-  overflow: hidden;
-  background: #fff;
+/* the usage tiles run the full width of the card, under a band for each hospital */
+.tiles {
+  margin: 0 -16px -14px;
+  border-top: 1px solid var(--pc-line);
 }
-.switch button {
-  border: 0;
-  background: transparent;
-  padding: 6px 13px;
-  cursor: pointer;
-  color: var(--pc-text);
-  font-size: 14px;
-  white-space: nowrap;
+.uhosp {
+  padding: 8px 16px;
+  background: #f3f3f3;
+  border-bottom: 1px solid var(--pc-line);
+  font-weight: 800;
 }
-.switch button.on {
-  background: var(--pc-blue);
-  color: #fff;
-  font-weight: 700;
+
+/* the hospital switch: the shared sliding one-pill choice; it reads its colours from these (the card is light) */
+.modeswitch {
+  --seg-track: #e3e8f4;
+  --seg-line: #c4cde2;
+  --seg-lab: #ffffff;
+  --seg-optx: #5d6b85;
+  --seg-indigo: #4f46e5;
+  --seg-shadow: rgba(79, 70, 229, 0.35);
+  --seg-muted: #5d6b85;
 }
 
 /* notes */
@@ -737,4 +740,10 @@ a.lnk:hover {
   .fold {
     transition: none;
   }
+}
+
+/* the hospital tables: every figure and its heading are centred, group headings sit centred over their ZB and Other pair (Robert, 2026-11-17) */
+table.hosp td.num,
+table.hosp th.num {
+  text-align: center;
 }

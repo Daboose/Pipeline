@@ -1,9 +1,9 @@
 import { createElement } from "lwc";
 import PipelineUsageCard from "c/pipelineUsageCard";
 import getCard from "@salesforce/apex/PipelineUsageCardController.getCard";
-import deleteLine from "@salesforce/apex/PipelineUsageCardController.deleteLine";
-import addUsageFor from "@salesforce/apex/PipelineUsageCardController.addUsageFor";
-import saveUsage from "@salesforce/apex/PipelineUsageController.saveUsage";
+import deleteUsage from "@salesforce/apex/PipelineUsageController.deleteUsage";
+import saveWhole from "@salesforce/apex/PipelineUsageEditController.save";
+import addWhole from "@salesforce/apex/PipelineUsageEditController.add";
 import searchLookup from "@salesforce/apex/PipelineLookupController.search";
 
 jest.mock(
@@ -12,17 +12,17 @@ jest.mock(
   { virtual: true }
 );
 jest.mock(
-  "@salesforce/apex/PipelineUsageCardController.deleteLine",
+  "@salesforce/apex/PipelineUsageController.deleteUsage",
   () => ({ default: jest.fn() }),
   { virtual: true }
 );
 jest.mock(
-  "@salesforce/apex/PipelineUsageCardController.addUsageFor",
+  "@salesforce/apex/PipelineUsageEditController.save",
   () => ({ default: jest.fn() }),
   { virtual: true }
 );
 jest.mock(
-  "@salesforce/apex/PipelineUsageController.saveUsage",
+  "@salesforce/apex/PipelineUsageEditController.add",
   () => ({ default: jest.fn() }),
   { virtual: true }
 );
@@ -31,9 +31,9 @@ jest.mock(
   () => ({ default: jest.fn() }),
   { virtual: true }
 );
-// the company choices are read from Salesforce; here a stand-in that the tests drive by an event
+// the lists are read from Salesforce; here a stand-in that shows nothing
 jest.mock(
-  "c/pipelineUsageChoices",
+  "c/pipelineUsageFieldChoices",
   () => {
     const { LightningElement } = require("lwc");
     return { __esModule: true, default: class extends LightningElement {} };
@@ -44,19 +44,38 @@ jest.mock(
 // eslint-disable-next-line @lwc/lwc/no-async-operation
 const flush = () => new Promise((r) => setTimeout(r, 0));
 
-const line = (over) => ({
+const hipUsage = (over) => ({
   usageId: "u1",
   hospital: "North Hospital",
   hospitalId: "h1",
   portfolio: "Hip",
-  label: "Stems",
-  key: "stems",
-  company: "ZB",
-  cases: 60,
   recordType: "ANZ HIP",
   recordTypeId: "rt1",
-  empty: false,
+  values: {
+    CompanyHipStems__c: "ZB",
+    ProductHipStems__c: "Taperloc",
+    Hip_Stem_Type__c: "Cementless",
+    CasesPAHipStem__c: "60",
+    CompanyHipCups__c: "Lima",
+    ProductHipCups__c: "Trinity",
+    HipBearingType__c: "Ceramic on Poly",
+    Procedure_Types__c: "Total;Revision",
+    Supporting_Technologies__c: "ROSA"
+  },
   ...over
+});
+const kneeUsage = () => ({
+  usageId: "u2",
+  hospital: "Harbour Private",
+  hospitalId: "h2",
+  portfolio: "Knee",
+  recordType: "ANZ KNEE",
+  recordTypeId: "rt2",
+  values: {
+    CompanyTotalKnee__c: "Stryker",
+    ProductTotalKnee__c: "Triathlon",
+    CasesPATotalKnee__c: "40"
+  }
 });
 const surgeon = (over) => ({
   accountId: "001",
@@ -70,26 +89,8 @@ const surgeon = (over) => ({
     { area: "CMF", rating: null }
   ],
   newest: new Date(Date.now() - 20 * 86400000).toISOString(),
-  lines: [
-    line(),
-    line({
-      key: "cups",
-      label: "Cups",
-      company: null,
-      cases: null,
-      empty: true
-    }),
-    line({
-      usageId: "u2",
-      portfolio: "Knee",
-      label: "Knee",
-      key: "knee",
-      company: "Stryker",
-      cases: 40,
-      recordType: "ANZ KNEE",
-      recordTypeId: "rt2"
-    })
-  ],
+  lines: [],
+  usages: [hipUsage(), kneeUsage()],
   canEdit: true,
   canCreate: true,
   canDelete: true,
@@ -145,6 +146,14 @@ async function mount(data) {
 const q = (el, sel) => el.shadowRoot.querySelector(sel);
 const qa = (el, sel) => Array.from(el.shadowRoot.querySelectorAll(sel));
 const text = (el) => el.shadowRoot.textContent;
+/** The tile components of the card; their own content is in their shadow. */
+const tiles = (el) => qa(el, "c-pipeline-usage-tile");
+const tq = (tile, sel) => tile.shadowRoot.querySelector(sel);
+const tqa = (tile, sel) => Array.from(tile.shadowRoot.querySelectorAll(sel));
+const ttext = (tile) => tile.shadowRoot.textContent;
+/** Tells the card what a tile reported, the way the tile does. */
+const report = (tile, name, detail) =>
+  tile.dispatchEvent(new CustomEvent(name, { detail }));
 
 afterEach(() => {
   while (document.body.firstChild)
@@ -153,7 +162,7 @@ afterEach(() => {
 });
 
 describe("pipeline-usage-card, a surgeon", () => {
-  it("shows the four ratings as metal plates, the usages and the bookings", async () => {
+  it("shows the four ratings as metal plates, each usage as a tile under its hospital, and the bookings", async () => {
     const el = await mount(surgeon());
     const plates = qa(el, ".plate");
     expect(plates).toHaveLength(4);
@@ -164,11 +173,42 @@ describe("pipeline-usage-card, a surgeon", () => {
     expect(plates[0].querySelector(".rank").textContent).toBe("Gold");
     expect(plates[0].querySelector(".stars").textContent).toBe("★★★");
     expect(plates[3].querySelector(".rank").textContent).toBe("No rating");
-    expect(text(el)).toContain("North Hospital");
-    expect(text(el)).toContain("Stryker");
+    expect(qa(el, ".uhosp").map((h) => h.textContent)).toEqual([
+      "North Hospital",
+      "Harbour Private"
+    ]);
+    expect(tiles(el)).toHaveLength(2);
     expect(text(el)).toContain("MyCase bookings, last 12 months");
     expect(text(el)).toContain("Latest booking");
-    expect(text(el)).not.toContain("Cups"); // an empty line stays hidden until it is opened
+  });
+
+  it("draws a hip with one set of headings, the stem then the cup, the bearing, and the chips", async () => {
+    const el = await mount(surgeon());
+    const hip = tiles(el)[0];
+    const t = ttext(hip);
+    expect(tq(hip, "b").textContent).toBe("Hip");
+    expect(tqa(hip, ".gh").map((h) => h.textContent.trim())).toEqual([
+      "Company",
+      "Product",
+      "Stem type",
+      "Cases per year",
+      "Bearing type"
+    ]);
+    expect(
+      tqa(hip, ".rl").map((h) => h.textContent.trim().replace("*", ""))[0]
+    ).toBe("Stem");
+    expect(t).toContain("Taperloc");
+    expect(t).toContain("Trinity");
+    expect(t).toContain("Ceramic on Poly");
+    expect(tqa(hip, ".chip.p").map((c) => c.textContent.trim())).toEqual([
+      "Total",
+      "Revision"
+    ]);
+    expect(tqa(hip, ".chip.t").map((c) => c.textContent.trim())).toEqual([
+      "ROSA"
+    ]);
+    expect(tq(hip, ".gap")).not.toBeNull();
+    expect(ttext(tiles(el)[1])).toContain("Triathlon");
   });
 
   it("warns when the usages have not changed for over a year", async () => {
@@ -178,11 +218,21 @@ describe("pipeline-usage-card, a surgeon", () => {
     expect(q(el, ".note.warn").textContent).toContain("Worth checking");
   });
 
+  it("says there were 0 MyCase bookings in one line, with no table, when there are none", async () => {
+    const el = await mount(surgeon({ canMyCase: true, bookings: [] }));
+    expect(text(el)).toContain(
+      "MyCase: there were 0 MyCase bookings in the last 12 months"
+    );
+    expect(text(el)).toContain("for information only");
+    expect(text(el)).not.toContain("Latest booking");
+    expect(text(el)).not.toContain("MyCase bookings, last 12 months");
+  });
+
   it("leaves MyCase out completely for someone who cannot see it", async () => {
     const el = await mount(surgeon({ canMyCase: false, bookings: [] }));
     expect(text(el)).not.toContain("MyCase");
     expect(qa(el, ".plate")).toHaveLength(4);
-    expect(text(el)).toContain("Stryker");
+    expect(ttext(tiles(el)[1])).toContain("Stryker");
   });
 
   it("hides edit, delete and add from someone who may not change usages", async () => {
@@ -194,46 +244,96 @@ describe("pipeline-usage-card, a surgeon", () => {
         addable: []
       })
     );
-    expect(qa(el, ".iconbtn")).toHaveLength(0);
+    tiles(el).forEach((t) => {
+      expect(tqa(t, ".ib")).toHaveLength(0);
+      expect(tqa(t, ".iconbtn")).toHaveLength(0);
+    });
     expect(qa(el, "button.btn")).toHaveLength(0); // no Add usage, and no add panel at all
     expect(q(el, ".fold")).toBeNull();
   });
 
-  it("edits a line and saves it through the usage controller", async () => {
-    saveUsage.mockResolvedValue();
+  it("edits a usage in place and saves every field of its layout", async () => {
+    saveWhole.mockResolvedValue();
     const el = await mount(surgeon());
-    q(el, ".iconbtn").click();
+    tq(tiles(el)[0], ".ib").click();
     await flush();
-    const input = q(el, "tr.editing input.inp");
-    input.value = "75";
-    input.dispatchEvent(new CustomEvent("change"));
+    const hip = tiles(el)[0];
+    expect(tqa(hip, "select")).toHaveLength(6); // stem co, product, type, cup co, product, bearing
+    const cases = tq(hip, "input.inp");
+    cases.value = "75";
+    cases.dispatchEvent(new CustomEvent("input"));
     await flush();
-    q(el, "tr.editing button.btn").click();
+    // a chip is switched off
+    tqa(tiles(el)[0], "button.chip.p")
+      .find((c) => c.textContent.trim() === "Revision")
+      .click();
     await flush();
-    expect(saveUsage).toHaveBeenCalledTimes(1);
-    expect(saveUsage.mock.calls[0][0].usageId).toBe("u1");
-    expect(JSON.parse(saveUsage.mock.calls[0][0].linesJson)).toEqual([
-      { key: "stems", company: "ZB", cases: 75 }
-    ]);
+    tq(tiles(el)[0], ".tfoot .btn:not(.sec2)").click();
+    await flush();
+    expect(saveWhole).toHaveBeenCalledTimes(1);
+    expect(saveWhole.mock.calls[0][0].usageId).toBe("u1");
+    const sent = JSON.parse(saveWhole.mock.calls[0][0].fieldsJson);
+    expect(sent.CasesPAHipStem__c).toBe(75);
+    expect(sent.CompanyHipStems__c).toBe("ZB");
+    expect(sent.Procedure_Types__c).toEqual(["Total"]);
+    expect(sent.Supporting_Technologies__c).toEqual(["ROSA"]);
     expect(getCard).toHaveBeenCalledTimes(2); // read again after the change
     expect(text(el)).toContain("Usages changed just now");
   });
 
-  it("asks before taking a line off, then calls deleteLine", async () => {
-    deleteLine.mockResolvedValue();
+  it("will not save while a mandatory field is empty, and clearing a company clears its product", async () => {
     const el = await mount(surgeon());
-    q(el, ".iconbtn.del").click();
+    tq(tiles(el)[0], ".ib").click();
     await flush();
-    expect(q(el, "tr.deleting").textContent).toContain("Take off Stems");
-    q(el, "tr.deleting button.sec2").click(); // Keep
+    const save = () => tq(tiles(el)[0], ".tfoot .btn:not(.sec2)");
+    expect(save().disabled).toBe(false);
+    report(tiles(el)[0], "fieldchange", {
+      id: "u1",
+      field: "CompanyHipStems__c",
+      value: ""
+    });
     await flush();
-    expect(q(el, "tr.deleting")).toBeNull();
-    expect(deleteLine).not.toHaveBeenCalled();
-    q(el, ".iconbtn.del").click();
+    expect(save().disabled).toBe(true);
+    expect(tqa(tiles(el)[0], ".sel.bad").length).toBeGreaterThan(0);
+    const product = tqa(tiles(el)[0], "select")[1];
+    expect(product.value).toBe("");
+    expect(product.disabled).toBe(true);
+  });
+
+  it("greys the cup until the stem company and product are filled", async () => {
+    const el = await mount(
+      surgeon({
+        usages: [
+          hipUsage({ values: { Hip_Stem_Type__c: "Cemented" } }),
+          kneeUsage()
+        ]
+      })
+    );
+    tq(tiles(el)[0], ".ib").click();
     await flush();
-    q(el, "tr.deleting button.danger").click();
+    expect(tqa(tiles(el)[0], ".gc.off").length).toBe(2);
+    expect(ttext(tiles(el)[0])).toContain(
+      "Fill the stem company and product first."
+    );
+  });
+
+  it("asks before deleting a usage, then calls deleteUsage", async () => {
+    deleteUsage.mockResolvedValue();
+    const el = await mount(surgeon());
+    tq(tiles(el)[0], ".iconbtn.del").click();
     await flush();
-    expect(deleteLine).toHaveBeenCalledWith({ usageId: "u1", key: "stems" });
+    expect(tq(tiles(el)[0], ".confirm").textContent).toContain(
+      "Delete this Hip usage at North Hospital?"
+    );
+    tq(tiles(el)[0], ".confirm .sec2").click(); // Keep
+    await flush();
+    expect(tq(tiles(el)[0], ".confirm")).toBeNull();
+    expect(deleteUsage).not.toHaveBeenCalled();
+    tq(tiles(el)[0], ".iconbtn.del").click();
+    await flush();
+    tq(tiles(el)[0], ".confirm .danger").click();
+    await flush();
+    expect(deleteUsage).toHaveBeenCalledWith({ usageId: "u1" });
   });
 
   it("folds the add panel open and closed", async () => {
@@ -248,14 +348,14 @@ describe("pipeline-usage-card, a surgeon", () => {
     expect(q(el, ".fold").className).not.toContain("open");
   });
 
-  it("finds a hospital, adds a usage for the surgeon, and says so when one already exists", async () => {
+  it("finds a hospital, adds a whole usage, and says so when one already exists", async () => {
     searchLookup.mockResolvedValue([
       { id: "h9", name: "Harbour Private", sub: "Sydney" }
     ]);
-    addUsageFor.mockResolvedValue({ usageId: "u1", existing: true });
+    addWhole.mockResolvedValue({ usageId: "u1", existing: true });
     const el = await mount(surgeon());
     q(el, "h3 button.btn").click();
-    await Promise.resolve();
+    await flush();
     const box = q(el, ".sbox input");
     box.value = "harb";
     box.dispatchEvent(new CustomEvent("input"));
@@ -269,43 +369,74 @@ describe("pipeline-usage-card, a surgeon", () => {
     q(el, ".pick .opt").click();
     await flush();
     expect(q(el, ".chosen").textContent).toContain("Harbour Private");
-    const cases = q(el, ".addbox input.inp");
-    cases.value = "12";
-    cases.dispatchEvent(new CustomEvent("change"));
-    q(el, ".addfoot button.btn").click();
+    const add = () => q(el, ".addfoot button.btn");
+    expect(add().disabled).toBe(true); // the mandatory fields are empty
+    const addTile = () => q(el, ".addbox c-pipeline-usage-tile");
+    [
+      ["CompanyHipStems__c", "ZB"],
+      ["ProductHipStems__c", "Taperloc"],
+      ["Hip_Stem_Type__c", "Cementless"],
+      ["CasesPAHipStem__c", "12"]
+    ].forEach(([field, value]) =>
+      report(addTile(), "fieldchange", { id: "add", field, value })
+    );
+    report(addTile(), "chip", {
+      id: "add",
+      field: "Procedure_Types__c",
+      value: "Total"
+    });
     await flush();
-    expect(addUsageFor).toHaveBeenCalledTimes(1);
-    const call = addUsageFor.mock.calls[0][0];
+    expect(add().disabled).toBe(false);
+    add().click();
+    await flush();
+    expect(addWhole).toHaveBeenCalledTimes(1);
+    const call = addWhole.mock.calls[0][0];
     expect(call.surgeonId).toBe("001");
     expect(call.hospitalId).toBe("h9");
     expect(call.portfolio).toBe("Hip");
-    expect(JSON.parse(call.linesJson)).toEqual([
-      { key: "stems", company: null, cases: 12 }
-    ]);
+    const sent = JSON.parse(call.fieldsJson);
+    expect(sent.CompanyHipStems__c).toBe("ZB");
+    expect(sent.CasesPAHipStem__c).toBe(12);
+    expect(sent.Procedure_Types__c).toEqual(["Total"]);
+    expect(sent.CompanyHipCups__c).toBeNull();
     expect(text(el)).toContain("already has a Hip usage");
-    expect(text(el)).toContain("Cups"); // the empty line of that usage is opened so it can be filled in
   });
 
-  it("will not add without a hospital or without cases", async () => {
+  it("changes the fields of the add panel when another portfolio is chosen", async () => {
     const el = await mount(surgeon());
     q(el, "h3 button.btn").click();
     await flush();
-    q(el, ".addfoot button.btn").click();
-    await flush();
-    expect(q(el, ".addbox .note.bad").textContent).toContain(
-      "Pick a hospital first"
+    expect(
+      tqa(q(el, ".addbox c-pipeline-usage-tile"), ".gh").map((h) =>
+        h.textContent.trim()
+      )
+    ).toContain("Stem type");
+    q(el, ".addbox c-pipeline-segmented").dispatchEvent(
+      new CustomEvent("change", { detail: { value: "Knee" } })
     );
-    expect(addUsageFor).not.toHaveBeenCalled();
+    await flush();
+    const heads = tqa(q(el, ".addbox c-pipeline-usage-tile"), ".gh").map((h) =>
+      h.textContent.trim().replace("*", "")
+    );
+    expect(heads).toEqual(["Company", "Product", "Cases per year"]);
+  });
+
+  it("will not add without a hospital", async () => {
+    const el = await mount(surgeon());
+    q(el, "h3 button.btn").click();
+    await flush();
+    expect(q(el, ".addfoot button.btn").disabled).toBe(true);
+    expect(addWhole).not.toHaveBeenCalled();
   });
 
   it("shows a refused change as a message and keeps the screen", async () => {
-    saveUsage.mockRejectedValue({
+    saveWhole.mockRejectedValue({
       body: { message: "No access to that usage." }
     });
     const el = await mount(surgeon());
-    q(el, ".iconbtn").click();
+    tq(tiles(el)[0], ".ib").click();
     await flush();
-    q(el, "tr.editing button.btn").click();
+    tq(tiles(el)[0], ".tfoot .btn:not(.sec2)").click();
     await flush();
     expect(text(el)).toContain("No access to that usage.");
     expect(q(el, ".wait")).toBeNull();
@@ -316,6 +447,7 @@ describe("pipeline-usage-card, a hospital", () => {
   it("shows MyCase cases by surgeon first, with a switch to usage records split ZB and other", async () => {
     const el = await mount(hospital());
     expect(qa(el, ".plate")).toHaveLength(0);
+    expect(q(el, "h2").textContent).toBe("Cases by Surgeon at North Hospital");
     expect(text(el)).toContain("Dr One");
     expect(text(el)).not.toContain("Dr Two".concat(" 0")); // sanity
     const rows = qa(el, "tbody tr");
@@ -323,16 +455,19 @@ describe("pipeline-usage-card, a hospital", () => {
     expect(rows[0].textContent).toContain("12"); // 10 + 2
     expect(rows[1].textContent).toContain("Dr Two");
     expect(text(el)).not.toContain("Other");
-    qa(el, ".switch button")[1].click();
+    q(el, "c-pipeline-segmented").dispatchEvent(
+      new CustomEvent("change", { detail: { value: "us" } })
+    );
     await flush();
     expect(text(el)).toContain("Other");
+    expect(text(el)).toContain("A hip counts its stems only");
     expect(qa(el, "tbody tr")).toHaveLength(2); // Dr One and the total: Dr Two has no usage records
     expect(text(el)).not.toContain("Dr Two");
   });
 
   it("has no MyCase switch and always splits ZB from other for someone who cannot see MyCase", async () => {
     const el = await mount(hospital({ canMyCase: false }));
-    expect(q(el, ".switch")).toBeNull();
+    expect(q(el, "c-pipeline-segmented")).toBeNull();
     expect(text(el)).toContain("Other");
     expect(text(el)).not.toContain("MyCase");
   });

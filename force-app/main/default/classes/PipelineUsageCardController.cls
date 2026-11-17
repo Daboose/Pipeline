@@ -16,11 +16,16 @@
  * own object access, not by country.
  *
  * Rules kept from Pipeline's bookings: a surgery counts when it has already happened and has at least one usage item; Procedure
- * Z02 (demo, non-billable) is left out; Type A01 is a revision (never for CMFT); the type comes from Case__c.Surgery_Type__c
+ * Z02 (demo, non-billable) is left out; a cancelled booking never counts (SAP surgery status C or R, or SAP booking status C; Robert, 2026-11-17); Type A01 is a revision (never for CMFT); the type comes from Case__c.Surgery_Type__c
  * (201 Hip, 202 Knee, 205 Shoulder, 209 CMFT). The window is the last 12 months, today not included.
  *
- * Usage records on the hospital view: a usage line counts for the company named on the line; the cases of every product line
- * of a portfolio are added together (a hip's stems and cups both count), as in the mockup Robert reviewed (to confirm).
+ * Usage records on the hospital view: a usage line counts for the company named on the line. A hip counts its STEMS only
+ * (Robert, 2026-11-17: a hip is a stem that has a cup, so a stem alone or a stem with a cup is one usage and the cups are never
+ * counted; the ratings on the account roll up from the stems the same way).
+ *
+ * The surgeon's usages are also handed over whole, one record per usage with every field of its portfolio's layout (companies,
+ * products, stem type, bearing, segment, procedure types, supporting technologies, cases), as `usages`, so the card can show and
+ * edit a usage the way PROD's usage layouts do. They are saved by PipelineUsageEditController.
  */
 public with sharing class PipelineUsageCardController {
   /** One area's rating (PLATINUM, GOLD, SILVER or BRONZE), stored on the surgeon's account. */
@@ -59,6 +64,25 @@ public with sharing class PipelineUsageCardController {
     /** True for a product line of the portfolio that has no data yet (shown only while editing, so it can be filled in). */
     @AuraEnabled
     public Boolean empty = false;
+  }
+
+  /** One whole usage record of a surgeon: where, which portfolio and the value of every layout field (by Usage__c field name, as text). */
+  public class UsageRec {
+    @AuraEnabled
+    public Id usageId;
+    @AuraEnabled
+    public String hospital;
+    @AuraEnabled
+    public Id hospitalId;
+    /** Hip, Knee, Shoulder or CMF. */
+    @AuraEnabled
+    public String portfolio;
+    @AuraEnabled
+    public String recordType;
+    @AuraEnabled
+    public Id recordTypeId;
+    @AuraEnabled
+    public Map<String, String> values = new Map<String, String>();
   }
 
   /** The surgeon's MyCase bookings of one type of surgery. */
@@ -104,6 +128,9 @@ public with sharing class PipelineUsageCardController {
     public Datetime newest;
     @AuraEnabled
     public List<Line> lines = new List<Line>();
+    /** The same usages as whole records, for the usage tiles. */
+    @AuraEnabled
+    public List<UsageRec> usages = new List<UsageRec>();
     @AuraEnabled
     public Boolean canEdit = false;
     @AuraEnabled
@@ -194,7 +221,35 @@ public with sharing class PipelineUsageCardController {
     'Id, LastModifiedDate, RecordTypeId, RecordType.Name, Healthcare_Facility__c, Healthcare_Facility__r.Name, ' +
     'HCP2__c, HCP2__r.Name, CompanyHipStems__c, CasesPAHipStem__c, CompanyHipCups__c, CasesPAHipCup__c, ' +
     'CompanyTotalKnee__c, CasesPATotalKnee__c, CompanyAnatomical__c, CasesPAAnatomical__c, CompanyReverse__c, ' +
-    'CasesPAReverse__c, Company_CMFT__c, Cases_PA_CMFT__c';
+    'CasesPAReverse__c, Company_CMFT__c, Cases_PA_CMFT__c, ' +
+    'ProductHipStems__c, Hip_Stem_Type__c, HipBearingType__c, ProductHipCups__c, ProductTotalKnee__c, ' +
+    'ProductAnatomical__c, ProductReverse__c, Product_CMFT__c, SegmentCMFT__c, Procedure_Types__c, Supporting_Technologies__c';
+
+  /** Every Usage__c field a usage tile shows or edits (cases of a hip's cups are not among them: the stems drive the cases). */
+  public static final List<String> TILE_FIELDS = new List<String>{
+    'CompanyHipStems__c',
+    'ProductHipStems__c',
+    'Hip_Stem_Type__c',
+    'CasesPAHipStem__c',
+    'CompanyHipCups__c',
+    'ProductHipCups__c',
+    'HipBearingType__c',
+    'CompanyTotalKnee__c',
+    'ProductTotalKnee__c',
+    'CasesPATotalKnee__c',
+    'CompanyAnatomical__c',
+    'ProductAnatomical__c',
+    'CasesPAAnatomical__c',
+    'CompanyReverse__c',
+    'ProductReverse__c',
+    'CasesPAReverse__c',
+    'SegmentCMFT__c',
+    'Company_CMFT__c',
+    'Product_CMFT__c',
+    'Cases_PA_CMFT__c',
+    'Procedure_Types__c',
+    'Supporting_Technologies__c'
+  };
 
   /** An error whose message reaches the screen (Salesforce otherwise shows "Script-thrown exception"). */
   private static AuraHandledException fail(String message) {
@@ -263,6 +318,7 @@ public with sharing class PipelineUsageCardController {
         c.newest = u.LastModifiedDate;
       }
       c.lines.addAll(linesOf(u));
+      c.usages.add(recordOf(u));
     }
     Schema.DescribeSObjectResult info = Usage__c.SObjectType.getDescribe();
     c.canEdit = info.isUpdateable();
@@ -274,6 +330,42 @@ public with sharing class PipelineUsageCardController {
     if (c.canMyCase) {
       c.bookings = bookingsOf(surgeon);
     }
+  }
+
+  /** One usage as a whole record for the usage tiles: every layout field that holds a value, as text. */
+  @TestVisible
+  private static UsageRec recordOf(Usage__c u) {
+    UsageRec r = new UsageRec();
+    r.usageId = u.Id;
+    r.hospital = u.Healthcare_Facility__r?.Name;
+    r.hospitalId = u.Healthcare_Facility__c;
+    r.portfolio = PipelineUsageController.portfolioOf(u.RecordType?.Name);
+    if (r.portfolio == null) {
+      // a record type whose name does not say its portfolio: read it from the lines that hold data, so it is still shown
+      r.portfolio = u.CompanyHipStems__c != null
+        ? 'Hip'
+        : u.CompanyTotalKnee__c != null
+            ? 'Knee'
+            : (u.CompanyAnatomical__c != null ||
+                u.CompanyReverse__c != null)
+                ? 'Shoulder'
+                : u.Company_CMFT__c != null ? 'CMF' : null;
+    }
+    r.recordType = u.RecordType?.Name;
+    r.recordTypeId = u.RecordTypeId;
+    for (String f : TILE_FIELDS) {
+      Object v = u.get(f);
+      if (v == null) {
+        continue;
+      }
+      r.values.put(
+        f,
+        v instanceof Decimal
+          ? ((Decimal) v).stripTrailingZeros().toPlainString()
+          : String.valueOf(v)
+      );
+    }
+    return r;
   }
 
   private static Rating rating(String area, String value) {
@@ -325,7 +417,7 @@ public with sharing class PipelineUsageCardController {
     Date start = today.addMonths(-12);
     Set<String> types = SURGERY_TYPES;
     List<Case__c> cases = Database.query(
-      'SELECT Id, Surgery_Date__c, Surgery_Type__c, Procedure__c, Physician__c, Physician__r.Name ' +
+      'SELECT Id, Surgery_Date__c, Surgery_Type__c, Procedure__c, Physician__c, Physician__r.Name, Status__c, Booking_Status__c ' +
         'FROM Case__c WHERE ' +
         whoField +
         ' = :who AND Surgery_Date__c >= :start AND Surgery_Date__c < :today ' +
@@ -350,11 +442,22 @@ public with sharing class PipelineUsageCardController {
       withItems.add((Id) ar.get('c'));
     }
     for (Case__c k : cases) {
-      if (withItems.contains(k.Id) && k.Procedure__c != 'Z02') {
+      if (
+        withItems.contains(k.Id) &&
+        k.Procedure__c != 'Z02' &&
+        !isCancelled(k)
+      ) {
         out.add(k);
       }
     }
     return out;
+  }
+
+  /** A cancelled booking (Robert, 2026-11-17: never counted): SAP surgery status C or R (both labelled cancelled) or SAP booking status C. */
+  private static Boolean isCancelled(Case__c k) {
+    return k.Status__c == 'C' ||
+      k.Status__c == 'R' ||
+      k.Booking_Status__c == 'C';
   }
 
   private static Boolean isRevision(Case__c k) {
@@ -397,6 +500,9 @@ public with sharing class PipelineUsageCardController {
     ) {
       SurgeonRow s = rowFor(byId, u.HCP2__c, u.HCP2__r?.Name);
       for (List<String> d : DEFS) {
+        if (d[2] == 'cups') {
+          continue; // a hip is counted by its stems only; the cups are implied
+        }
         String company = (String) u.get(d[3]);
         Decimal cases = (Decimal) u.get(d[4]);
         if (String.isBlank(company) && (cases == null || cases == 0)) {

@@ -92,6 +92,33 @@ private class PipelineUsageCardControllerTest {
     }
   }
 
+  /** A cancelled surgery with a usage item: it must never be counted. */
+  private static void cancelled(
+    Setup s,
+    Id surgeon,
+    String status,
+    String bookingStatus,
+    Integer daysBack
+  ) {
+    Case__c c = new Case__c(
+      Physician__c = surgeon,
+      Surgery_Date__c = Date.today().addDays(-daysBack),
+      Surgery_Type__c = '201',
+      Procedure__c = 'A00',
+      Healthcare_Facility__c = s.hospital.Id,
+      Status__c = status,
+      Booking_Status__c = bookingStatus
+    );
+    insert c;
+    myCase_Usage__c sheet = new myCase_Usage__c(
+      Case__c = c.Id,
+      ManualSheet__c = true,
+      Total_Qty_ZB_Implants__c = 1
+    );
+    insert sheet;
+    insert new myCase_Usage_Item__c(Usage_Sheet_ID__c = sheet.Id);
+  }
+
   private static String lines(String key, String company, Decimal cases) {
     return JSON.serialize(
       new List<Map<String, Object>>{
@@ -115,6 +142,9 @@ private class PipelineUsageCardControllerTest {
     surgery(s, s.surgeon.Id, '201', 'A00', false, 20); // no usage item: left out
     surgery(s, s.surgeon.Id, '209', 'A01', true, 40); // CMFT is never a revision
     surgery(s, s.surgeon.Id, '201', 'A00', true, 400); // older than 12 months: left out
+    cancelled(s, s.surgeon.Id, 'C', null, 5); // cancelled: left out
+    cancelled(s, s.surgeon.Id, 'R', null, 6); // cancelled: left out
+    cancelled(s, s.surgeon.Id, null, 'C', 7); // cancelled: left out
     PipelineUsageCardController.Card c = PipelineUsageCardController.getCard(
       s.surgeon.Id
     );
@@ -208,9 +238,9 @@ private class PipelineUsageCardControllerTest {
       }
     }
     System.assertEquals(
-      115,
+      60,
       mine.zb[0],
-      'Stems and cups for ZB added together'
+      'A hip counts its stems only; the cups (55) are never added'
     );
     System.assertEquals(0, mine.other[0]);
     System.assertEquals(40, mine.other[1], 'Knee for another company');

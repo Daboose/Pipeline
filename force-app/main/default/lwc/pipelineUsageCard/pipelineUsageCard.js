@@ -1,30 +1,27 @@
 import { LightningElement, api } from "lwc";
 import { NavigationMixin } from "lightning/navigation";
 import getCard from "@salesforce/apex/PipelineUsageCardController.getCard";
-import deleteLine from "@salesforce/apex/PipelineUsageCardController.deleteLine";
-import addUsageFor from "@salesforce/apex/PipelineUsageCardController.addUsageFor";
-import saveUsage from "@salesforce/apex/PipelineUsageController.saveUsage";
+import deleteUsage from "@salesforce/apex/PipelineUsageController.deleteUsage";
+import saveWhole from "@salesforce/apex/PipelineUsageEditController.save";
+import addWhole from "@salesforce/apex/PipelineUsageEditController.add";
 import searchLookup from "@salesforce/apex/PipelineLookupController.search";
 import { formatDate } from "c/pipelineFormat";
+import {
+  GRID,
+  buildTile,
+  draftOf,
+  isComplete,
+  payloadOf,
+  portfolioTitle,
+  setField,
+  toggleChip
+} from "c/pipelineUsageModel";
 
 /** Usages not changed for longer than this (days) get the "worth checking" warning. */
 const OLD_DAYS = 365;
 const DAY_MS = 86400000;
 const TYPES = ["Hip", "Knee", "Shoulder", "CMFT"];
 const STARS = { PLATINUM: 4, GOLD: 3, SILVER: 2, BRONZE: 1 };
-/** The product lines of each portfolio, in order: [line key, label]. */
-const PORT_LINES = {
-  Hip: [
-    ["stems", "Stems"],
-    ["cups", "Cups"]
-  ],
-  Knee: [["knee", "Knee"]],
-  Shoulder: [
-    ["anatomical", "Anatomical"],
-    ["reverse", "Reverse"]
-  ],
-  CMF: [["cmft", "CMFT"]]
-};
 const portName = (p) => (p === "CMF" ? "CMFT" : p);
 
 function errorText(e) {
@@ -43,9 +40,11 @@ const sum = (a) => a.reduce((x, y) => x + y, 0);
  * can read the MyCase objects, the MyCase bookings of the last 12 months by type, for information only. A hospital (business
  * account): the cases by surgeon and type, from MyCase bookings (only for people who can read MyCase) or from the usage
  * records, where Zimmer Biomet ("ZB") is split from every other company. Light theme so it sits quietly on the page.
- * Everything changes through Salesforce in the person's own access; the company choices are read live from Salesforce for
- * each usage record type (pipelineUsageChoices) and never typed in here. Opening and closing follow the Pipeline motion
- * standard (a fold over 0.4 s).
+ * Each usage is a tile (pipelineUsageTile) with every field of its portfolio's layout, edited in place or added from a panel
+ * that folds open (mockup docs/mockups/pipeline_usage_card_fields_v2.html; layout and logic in pipelineUsageModel). Everything
+ * changes through Salesforce in the person's own access; the lists (companies, products that follow the company, stem type,
+ * bearing, segment, procedure types, technologies) are read live from Salesforce for each usage record type
+ * (pipelineUsageFieldChoices) and never typed in here. Opening and closing follow the Pipeline motion standard (a fold over 0.4 s).
  */
 export default class PipelineUsageCard extends NavigationMixin(
   LightningElement
@@ -56,14 +55,14 @@ export default class PipelineUsageCard extends NavigationMixin(
   error = "";
   busy = false;
   changedNote = false;
+  keepInView = false;
   hmode = "mc"; // hospital view: mc (MyCase bookings) or us (usage records)
 
-  /* editing a line, taking one off */
-  editKey = null; // "usageId|key"
+  /* editing a usage, deleting one */
+  editId = null;
   editDraft = {};
-  delKey = null;
-  flashKey = null; // a usage id whose lines are highlighted
-  showEmptyFor = null; // a usage id whose empty lines are shown (so they can be filled in)
+  delId = null;
+  flashId = null; // a usage id that is highlighted
   rowMsg = "";
   rowMsgCls = "note warn";
 
@@ -71,16 +70,14 @@ export default class PipelineUsageCard extends NavigationMixin(
   addOpen = false;
   addHospital = null; // { id, name }
   addPortfolio = "";
-  addKey = "";
-  addCompany = "";
-  addCases = "";
+  addDraft = {};
   addMsg = "";
   search = "";
   hits = [];
   searched = false;
   _timer;
 
-  choices = {}; // company choices by record type id, then line key
+  picks = {}; // the lists Salesforce gave, by usage record type id
 
   @api
   get recordId() {
@@ -121,7 +118,9 @@ export default class PipelineUsageCard extends NavigationMixin(
     return this.hasData && !this.data.isPerson;
   }
   get heading() {
-    return this.isPerson ? "Usages" : "Cases by surgeon";
+    if (this.isPerson) return "Usages";
+    const name = this.data && this.data.name;
+    return name ? "Cases by Surgeon at " + name : "Cases by Surgeon";
   }
   get canMyCase() {
     return !!(this.data && this.data.canMyCase);
@@ -189,160 +188,133 @@ export default class PipelineUsageCard extends NavigationMixin(
       : { cls: "note ok", text: `Usages last changed ${when}.` };
   }
 
-  /* ----- the surgeon's usages table ----- */
-  get noLines() {
-    return !(this.data && this.data.lines && this.data.lines.length);
+  /* ----- the surgeon's usages, as tiles under their hospital ----- */
+  get usages() {
+    return ((this.data && this.data.usages) || []).filter(
+      (u) => !!GRID[u.portfolio]
+    );
   }
-  get colCount() {
-    return this.canEdit ? 5 : 4;
+  get noUsages() {
+    return this.usages.length === 0;
   }
   get groups() {
     const byHosp = new Map();
-    ((this.data && this.data.lines) || []).forEach((l) => {
-      if (l.empty && l.usageId !== this.showEmptyFor) return;
-      const h = l.hospital || "No hospital recorded";
+    this.usages.forEach((u) => {
+      const h = u.hospital || "No hospital recorded";
       if (!byHosp.has(h)) byHosp.set(h, []);
-      byHosp.get(h).push(l);
+      byHosp.get(h).push(u);
     });
-    return [...byHosp.entries()].map(([hospital, lines]) => ({
+    return [...byHosp.entries()].map(([hospital, list]) => ({
       hospital,
-      rows: lines.map((l) => this.rowOf(l))
+      tiles: list.map((u) => this.tileOf(u))
     }));
   }
-  rowOf(l) {
-    const k = l.usageId + "|" + l.key;
-    const editing = this.editKey === k;
-    const deleting = this.delKey === k;
-    const flash = this.flashKey === l.usageId;
-    const cls = editing
-      ? "editing"
-      : deleting
-        ? "deleting"
-        : flash
-          ? "flash"
-          : l.empty
-            ? "emptyline"
-            : "";
-    const d = this.editDraft;
+  usageById(id) {
+    return this.usages.find((u) => u.usageId === id);
+  }
+  tileOf(u) {
+    const portfolio = u.portfolio;
+    const editing = this.editId === u.usageId;
+    const deleting = this.delId === u.usageId;
+    const draft = editing ? this.editDraft : draftOf(portfolio, u.values);
+    const title = portfolioTitle(portfolio);
     return {
-      k,
-      cls,
-      editing,
+      ...buildTile(
+        portfolio,
+        draft,
+        editing,
+        this.picks[u.recordTypeId] || {},
+        u.usageId
+      ),
+      id: u.usageId,
+      key: u.usageId,
+      title,
+      cls:
+        "us" +
+        (editing ? " editing" : "") +
+        (this.flashId === u.usageId ? " flash" : ""),
+      showHead: true,
+      showActions: !editing && !deleting && (this.canEdit || this.canDelete),
+      canEdit: this.canEdit,
+      canDelete: this.canDelete,
+      editable: editing,
       deleting,
-      portfolio: portName(l.portfolio),
-      label: l.label,
-      usageId: l.usageId,
-      lineKey: l.key,
-      company: l.company || "–",
-      companyCls: l.company === "ZB" ? "co-zb" : "",
-      cases: l.cases === null || l.cases === undefined ? "–" : l.cases,
-      options: editing
-        ? this.companyOptions(
-            l.recordTypeId,
-            l.key,
-            d.company !== undefined ? d.company : l.company
-          )
-        : [],
-      casesValue:
-        d.cases !== undefined
-          ? d.cases
-          : l.cases === null || l.cases === undefined
-            ? ""
-            : l.cases,
-      normal: !editing && !deleting,
-      actionLabel: l.empty ? "Add" : "Edit",
-      delText: `Take off ${l.label} (${l.company || "no company"}, ${
-        l.cases === null || l.cases === undefined ? 0 : l.cases
-      } cases per year) at ${l.hospital || "this hospital"}?`,
-      delSpan: this.colCount - 1
+      delText: `Delete this ${title} usage at ${u.hospital || "this hospital"}?`,
+      showFoot: editing,
+      saveDisabled: !isComplete(portfolio, draft)
     };
   }
-  /** The options of a company list: a dash for none, the record type's own choices, and the current value if it is not among them. */
-  companyOptions(recordTypeId, key, current) {
-    const list = ((this.choices[recordTypeId] || {})[key] || []).slice();
-    if (current && !list.includes(current)) list.unshift(current);
-    return [{ value: "", label: "–", selected: !current }].concat(
-      list.map((v) => ({ value: v, label: v, selected: v === current }))
-    );
-  }
   handleChoices(event) {
-    const { recordTypeId, byKey } = event.detail;
-    this.choices = { ...this.choices, [recordTypeId]: byKey };
+    const { recordTypeId, picks } = event.detail;
+    this.picks = { ...this.picks, [recordTypeId]: picks };
   }
-  /** The record types whose company choices are needed now: the line being edited, or the portfolio being added. */
+  /** The record types whose lists are needed now: the usage being edited, or the portfolio being added. */
   get neededRts() {
     const ids = new Set();
-    if (this.editKey && this.data) {
-      const [usageId, key] = this.editKey.split("|");
-      const l = this.data.lines.find(
-        (x) => x.usageId === usageId && x.key === key
-      );
-      if (l && l.recordTypeId) ids.add(l.recordTypeId);
-    }
+    const u = this.editId && this.usageById(this.editId);
+    if (u && u.recordTypeId) ids.add(u.recordTypeId);
     if (this.addOpen && this.addRecordTypeId) ids.add(this.addRecordTypeId);
     return [...ids].map((id) => ({ id }));
   }
 
-  /* ----- edit a line ----- */
-  handleEdit(event) {
-    const { k } = event.currentTarget.dataset;
+  /* ----- what the tiles report (edit, field, chip, save, cancel, delete) ----- */
+  handleTileEdit(event) {
+    const u = this.usageById(event.detail.id);
+    if (!u) return;
     this.clearRowState();
-    this.editKey = k;
-    this.editDraft = {};
+    this.editId = u.usageId;
+    this.editDraft = draftOf(u.portfolio, u.values);
   }
-  handleEditCancel() {
+  handleTileCancel() {
     this.clearRowState();
   }
-  handleEditCompany(event) {
-    this.editDraft = { ...this.editDraft, company: event.target.value };
+  handleTileField(event) {
+    const { id, field, value } = event.detail;
+    if (id === "add") {
+      this.addDraft = setField(this.addPortfolio, this.addDraft, field, value);
+      return;
+    }
+    const u = this.usageById(id);
+    if (u && id === this.editId) {
+      this.editDraft = setField(u.portfolio, this.editDraft, field, value);
+    }
   }
-  handleEditCases(event) {
-    const v = event.target.value;
-    this.editDraft = {
-      ...this.editDraft,
-      cases: v === "" ? "" : Number(v)
-    };
+  handleTileChip(event) {
+    const { id, field, value } = event.detail;
+    if (id === "add") {
+      this.addDraft = toggleChip(this.addDraft, field, value);
+    } else if (id === this.editId) {
+      this.editDraft = toggleChip(this.editDraft, field, value);
+    }
   }
-  handleEditSave(event) {
-    const { usage, key } = event.currentTarget.dataset;
-    const cur = this.data.lines.find(
-      (l) => l.usageId === usage && l.key === key
-    );
-    const d = this.editDraft;
-    const company = d.company !== undefined ? d.company : cur.company;
-    const cases = d.cases !== undefined ? d.cases : cur.cases;
+  handleTileSave(event) {
+    const u = this.usageById(event.detail.id);
+    if (!u || u.usageId !== this.editId) return;
+    const usageId = u.usageId;
     this.run(
       () =>
-        saveUsage({
-          usageId: usage,
-          linesJson: JSON.stringify([
-            {
-              key,
-              company: company || null,
-              cases: cases === "" || cases === undefined ? null : cases
-            }
-          ])
+        saveWhole({
+          usageId,
+          fieldsJson: JSON.stringify(payloadOf(u.portfolio, this.editDraft))
         }),
       () => {
         this.clearRowState();
-        this.flashKey = usage;
+        this.flashId = usageId;
         this.touched();
       }
     );
   }
-
-  /* ----- take a line off ----- */
-  handleDelete(event) {
+  handleTileDelete(event) {
     this.clearRowState();
-    this.delKey = event.currentTarget.dataset.k;
+    this.delId = event.detail.id;
   }
-  handleDeleteNo() {
-    this.delKey = null;
+  handleTileDeleteNo() {
+    this.delId = null;
   }
-  handleDeleteYes(event) {
-    const { usage, key } = event.currentTarget.dataset;
+  handleTileDeleteYes(event) {
+    const usageId = event.detail.id;
     this.run(
-      () => deleteLine({ usageId: usage, key }),
+      () => deleteUsage({ usageId }),
       () => {
         this.clearRowState();
         this.touched();
@@ -350,10 +322,10 @@ export default class PipelineUsageCard extends NavigationMixin(
     );
   }
   clearRowState() {
-    this.editKey = null;
+    this.editId = null;
     this.editDraft = {};
-    this.delKey = null;
-    this.flashKey = null;
+    this.delId = null;
+    this.flashId = null;
     this.rowMsg = "";
   }
   touched() {
@@ -398,8 +370,7 @@ export default class PipelineUsageCard extends NavigationMixin(
     this.clearRowState();
     this.addOpen = true;
     this.addPortfolio = this.addable.length ? this.addable[0].portfolio : "";
-    this.addKey = this.addProducts.length ? this.addProducts[0].value : "";
-    this.addCompany = "";
+    this.addDraft = draftOf(this.addPortfolio, {});
   }
   closeAdd() {
     this.addOpen = false;
@@ -412,51 +383,52 @@ export default class PipelineUsageCard extends NavigationMixin(
   }
   resetAdd() {
     this.addHospital = null;
-    this.addCompany = "";
-    this.addCases = "";
+    this.addDraft = {};
     this.search = "";
     this.hits = [];
     this.searched = false;
   }
-  get portfolioChoices() {
+  /** The sliding choice of portfolio (the shared one-pill slider). */
+  get portfolioOptions() {
     return this.addable.map((o) => ({
       value: o.portfolio,
-      label: portName(o.portfolio),
-      selected: o.portfolio === this.addPortfolio
-    }));
-  }
-  get addProducts() {
-    return (PORT_LINES[this.addPortfolio] || []).map(([value, label]) => ({
-      value,
-      label,
-      selected: value === this.addKey
+      label: portfolioTitle(o.portfolio)
     }));
   }
   get addRecordTypeId() {
     const o = this.addable.find((x) => x.portfolio === this.addPortfolio);
     return o ? o.recordTypeId : "";
   }
-  get addCompanies() {
-    return this.companyOptions(
-      this.addRecordTypeId,
-      this.addKey,
-      this.addCompany
-    );
+  get addTile() {
+    if (!GRID[this.addPortfolio]) return null;
+    return {
+      ...buildTile(
+        this.addPortfolio,
+        this.addDraft,
+        true,
+        this.picks[this.addRecordTypeId] || {},
+        "add"
+      ),
+      id: "add",
+      key: "add",
+      cls: "us bare",
+      showHead: false,
+      editable: true,
+      showFoot: false
+    };
   }
   handleAddPortfolio(event) {
-    this.addPortfolio = event.target.value;
-    this.addKey = this.addProducts[0] ? this.addProducts[0].value : "";
-    this.addCompany = "";
+    const next = event.detail && event.detail.value;
+    if (!next || next === this.addPortfolio) return;
+    this.addPortfolio = next;
+    this.addDraft = draftOf(next, {});
   }
-  handleAddProduct(event) {
-    this.addKey = event.target.value;
-    this.addCompany = "";
-  }
-  handleAddCompany(event) {
-    this.addCompany = event.target.value;
-  }
-  handleAddCases(event) {
-    this.addCases = event.target.value;
+  get addDisabled() {
+    return !(
+      this.addHospital &&
+      this.addPortfolio &&
+      isComplete(this.addPortfolio, this.addDraft)
+    );
   }
 
   /* hospital search (one search box: the name with a cross, or the search) */
@@ -524,33 +496,26 @@ export default class PipelineUsageCard extends NavigationMixin(
       this.addMsg = "Pick a hospital first.";
       return;
     }
-    if (this.addCases === "" || Number(this.addCases) < 0) {
-      this.addMsg = "Enter the cases per year (a whole number, 0 or more).";
+    if (!isComplete(this.addPortfolio, this.addDraft)) {
+      this.addMsg = "Fill in the fields marked with a red star.";
       return;
     }
     const portfolio = this.addPortfolio;
     const hospital = this.addHospital;
     this.run(
       () =>
-        addUsageFor({
+        addWhole({
           surgeonId: this._recordId,
           hospitalId: hospital.id,
           portfolio,
-          linesJson: JSON.stringify([
-            {
-              key: this.addKey,
-              company: this.addCompany || null,
-              cases: Number(this.addCases)
-            }
-          ])
+          fieldsJson: JSON.stringify(payloadOf(portfolio, this.addDraft))
         }),
       (res) => {
         this.touched();
-        this.flashKey = res.usageId;
+        this.flashId = res.usageId;
         if (res.existing) {
-          this.showEmptyFor = res.usageId;
           this.rowMsgCls = "note warn";
-          this.rowMsg = `This surgeon already has a ${portName(portfolio)} usage for that company at ${hospital.name}, so nothing was added. It is highlighted below: use Edit (or Add on an empty line) to change it.`;
+          this.rowMsg = `This surgeon already has a ${portfolioTitle(portfolio)} usage for that company at ${hospital.name}, so nothing was added. It is highlighted below: use its pencil to change it.`;
         }
         this.closeAdd();
       }
@@ -590,14 +555,38 @@ export default class PipelineUsageCard extends NavigationMixin(
   get splitView() {
     return !this.canMyCase || this.hmode === "us";
   }
-  get mcBtnCls() {
-    return this.hmode === "mc" ? "on" : "";
-  }
-  get usBtnCls() {
-    return this.hmode === "us" ? "on" : "";
+  /** The sliding choice (Robert, 2026-11-17): short words, the shared one-pill slider. */
+  get modeOptions() {
+    return [
+      { value: "mc", label: "MyCase" },
+      { value: "us", label: "Usage" }
+    ];
   }
   handleMode(event) {
-    this.hmode = event.currentTarget.dataset.m;
+    const next = event.detail && event.detail.value;
+    if (!next || next === this.hmode) return;
+    this.hmode = next;
+    this.keepInView = true;
+  }
+  renderedCallback() {
+    if (!this.keepInView) return;
+    this.keepInView = false;
+    this.fitOnScreen();
+  }
+  /**
+   * After the table changes size, scroll the page just enough to show the whole card: its bottom edge if the card fits the window,
+   * its top edge if the card is taller than the window (Robert, 2026-11-17: no re-scrolling after switching back to the longer table).
+   */
+  fitOnScreen() {
+    const card = this.template.querySelector(".comp");
+    if (!card || !card.scrollIntoView) return;
+    const r = card.getBoundingClientRect();
+    const high = window.innerHeight || document.documentElement.clientHeight;
+    if (r.height >= high) {
+      if (r.top < 0 || r.top > 0) card.scrollIntoView({ block: "start" });
+    } else if (r.bottom > high || r.top < 0) {
+      card.scrollIntoView({ block: "nearest" });
+    }
   }
   get typeHeads() {
     return TYPES.map((t) => ({ t }));
@@ -680,7 +669,7 @@ export default class PipelineUsageCard extends NavigationMixin(
   }
   get hospitalFoot() {
     return this.splitView
-      ? "Cases per year from the usage records, Zimmer Biomet (ZB) against every other company. A hip adds its stems and cups."
+      ? "Cases per year from the usage records, Zimmer Biomet (ZB) against every other company. A hip counts its stems only; the cups are implied."
       : "Zimmer Biomet surgeries booked in MyCase in the last 12 months, past dates only, primary and revision together. MyCase holds Zimmer Biomet surgeries only, so there is no split.";
   }
   handleGo(event) {
