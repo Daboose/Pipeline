@@ -158,8 +158,13 @@ export const REQUIRED = {
   ]
 };
 
-/** Company choices left out of the list (Robert, 2026-11-17: "Other" is not offered for CMFT). */
-const LEFT_OUT = { Company_CMFT__c: ["Other"] };
+/** Company choices left out of the list (Robert, 2026-11-17: "Other" is not offered as a company for CMFT, or for a hip's stem or cup;
+ *  the products "Other" belong to that company only, so they go with it). A record that already holds "Other" still shows it. */
+const LEFT_OUT = {
+  Company_CMFT__c: ["Other"],
+  CompanyHipStems__c: ["Other"],
+  CompanyHipCups__c: ["Other"]
+};
 
 /** The Usage__c fields of a portfolio: its grid cells, its extra fields and the two chip fields when they apply. */
 export function fieldsOf(portfolio) {

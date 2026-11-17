@@ -45,6 +45,30 @@ describe("pipelineUsageModel", () => {
     expect(choicesFor("Product_CMFT__c", picks, {})).toEqual([]);
   });
 
+  it("never offers 'Other' as a hip stem or cup company, but an old usage that has it still shows it", () => {
+    const hip = {
+      CompanyHipStems__c: {
+        values: [{ value: "ZB" }, { value: "Other" }, { value: "Stryker" }],
+        controllerValues: {}
+      },
+      CompanyHipCups__c: {
+        values: [{ value: "Other" }, { value: "Medacta" }],
+        controllerValues: {}
+      }
+    };
+    expect(
+      choicesFor("CompanyHipStems__c", hip, {}).map((c) => c.value)
+    ).toEqual(["ZB", "Stryker"]);
+    expect(
+      choicesFor("CompanyHipCups__c", hip, {}).map((c) => c.value)
+    ).toEqual(["Medacta"]);
+    expect(
+      choicesFor("CompanyHipStems__c", hip, {
+        CompanyHipStems__c: "Other"
+      })[0].value
+    ).toBe("Other");
+  });
+
   it("keeps a current value that is no longer offered, so an old usage still shows", () => {
     expect(
       choicesFor("Product_CMFT__c", picks, {
