@@ -1160,11 +1160,10 @@ textarea.in::placeholder {
   --seg-line: var(--edge);
   --seg-muted: var(--muted);
   --seg-indigo: var(--indigo);
-  --zoom-track-min: 150px;
   --zoom-track-height: 36px;
 }
 /* the Zoom slider sits in the top bar beside the theme switch; compact, so it has no row of numbers under it */
 .top .zoomseg {
   flex: none;
-  width: 250px;
+  width: max-content; /* the label and the slider's own minimum track, so it is never squeezed */
 }

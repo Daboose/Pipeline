@@ -343,57 +343,67 @@ private class PipelineCampaignControllerTest {
     }
   }
   @IsTest
-  static void zoomAndThemeAreSavedInThePersonsOwnSettingsAndKeepTheOtherSettings() {
+  static void zoomAndThemeAreSavedInTheCampaignFieldAndNeverTouchThePipelineScreensSettings() {
     System.runAs(manager()) {
-      // nothing saved yet: Pipeline's own defaults
+      // nothing saved yet: the defaults
       PipelineCampaignController.Context c = PipelineCampaignController.getContext();
       System.assertEquals(80, c.zoom);
       System.assertEquals('dark', c.theme);
       System.assertEquals(false, c.hasTheme);
-      // a first save makes the record
+      // a first save makes the person's one record, keyed by their own Id
       PipelineCampaignController.saveGlobalSettings('light', 80);
       c = PipelineCampaignController.getContext();
       System.assertEquals(80, c.zoom);
       System.assertEquals('light', c.theme);
       System.assertEquals(true, c.hasTheme);
-      System.assertEquals(
-        1,
-        [
-          SELECT COUNT()
-          FROM Pipeline_Filter__c
-          WHERE OwnerId = :UserInfo.getUserId() AND Is_User_Settings__c = TRUE
-          WITH SYSTEM_MODE
-        ]
-      );
-      // the Pipeline screen's other settings are kept, and a null leaves a value as it was
-      Pipeline_Filter__c mine = [
-        SELECT Id
-        FROM Pipeline_Filter__c
-        WHERE OwnerId = :UserInfo.getUserId() AND Is_User_Settings__c = TRUE
+      UserSettings__c mine = [
+        SELECT Id, User_Key__c, Pipeline_JSON__c, Campaign_JSON__c
+        FROM UserSettings__c
+        WHERE OwnerId = :UserInfo.getUserId()
         WITH SYSTEM_MODE
       ];
-      mine.Settings_Json__c = '{"theme":"dark","headColour":"sky","zoom":70,"altTint":true}';
+      System.assertEquals(
+        String.valueOf(UserInfo.getUserId()),
+        mine.User_Key__c
+      );
+      System.assertEquals(
+        null,
+        mine.Pipeline_JSON__c,
+        'The Pipeline screen\'s field is not written'
+      );
+      // the Pipeline screen's own settings are a different field and stay as they are; a null leaves a value as it was
+      mine.Pipeline_JSON__c = '{"theme":"dark","headColour":"sky","zoom":70,"altTint":true}';
       Database.update(mine, AccessLevel.SYSTEM_MODE);
       PipelineCampaignController.saveGlobalSettings(null, 60);
-      Map<String, Object> s = (Map<String, Object>) JSON.deserializeUntyped(
-        [
-          SELECT Settings_Json__c
-          FROM Pipeline_Filter__c
-          WHERE Id = :mine.Id
-          WITH SYSTEM_MODE
-        ]
-        .Settings_Json__c
+      mine = [
+        SELECT Pipeline_JSON__c, Campaign_JSON__c
+        FROM UserSettings__c
+        WHERE OwnerId = :UserInfo.getUserId()
+        WITH SYSTEM_MODE
+      ];
+      Map<String, Object> camp = (Map<String, Object>) JSON.deserializeUntyped(
+        mine.Campaign_JSON__c
       );
-      System.assertEquals(60, Integer.valueOf(String.valueOf(s.get('zoom'))));
-      System.assertEquals('dark', s.get('theme'));
-      System.assertEquals('sky', s.get('headColour'));
-      System.assertEquals(true, s.get('altTint'));
+      System.assertEquals(
+        60,
+        Integer.valueOf(String.valueOf(camp.get('zoom')))
+      );
+      System.assertEquals(
+        'light',
+        camp.get('theme'),
+        'The theme saved earlier is kept'
+      );
+      System.assertEquals(
+        '{"theme":"dark","headColour":"sky","zoom":70,"altTint":true}',
+        mine.Pipeline_JSON__c,
+        'The Pipeline screen\'s settings are untouched'
+      );
       System.assertEquals(
         1,
         [
           SELECT COUNT()
-          FROM Pipeline_Filter__c
-          WHERE OwnerId = :UserInfo.getUserId() AND Is_User_Settings__c = TRUE
+          FROM UserSettings__c
+          WHERE OwnerId = :UserInfo.getUserId()
           WITH SYSTEM_MODE
         ]
       );
@@ -415,14 +425,10 @@ private class PipelineCampaignControllerTest {
       } catch (AuraHandledException e) {
         System.assert(true);
       }
-      Database.insert(
-        new Pipeline_Filter__c(
-          Name = 'Pipeline Settings (do not delete)',
-          Is_User_Settings__c = true,
-          Settings_Json__c = '{"zoom":55}'
-        ),
-        AccessLevel.SYSTEM_MODE
-      );
+      UserSettings__c odd = new UserSettings__c(Name = 'UserSettings');
+      odd.put('User_Key__c', String.valueOf(UserInfo.getUserId()));
+      odd.put('Campaign_JSON__c', '{"zoom":55}');
+      Database.insert(odd, AccessLevel.SYSTEM_MODE);
       System.assertEquals(80, PipelineCampaignController.getContext().zoom);
     }
   }

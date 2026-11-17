@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <PermissionSet xmlns="http://soap.sforce.com/2006/04/metadata">
   <classAccesses>
+    <apexClass>PipelineUserSettings</apexClass>
+    <enabled>true</enabled>
+  </classAccesses>
+  <classAccesses>
     <apexClass>PipelineSurgeonController</apexClass>
     <enabled>true</enabled>
   </classAccesses>
@@ -46,6 +50,24 @@
   <label>Pipeline User</label>
   <objectPermissions>
     <allowCreate>true</allowCreate>
+    <allowDelete>false</allowDelete>
+    <allowEdit>true</allowEdit>
+    <allowRead>true</allowRead>
+    <modifyAllRecords>false</modifyAllRecords>
+    <object>UserSettings__c</object>
+    <viewAllRecords>false</viewAllRecords>
+  </objectPermissions>
+  <objectPermissions>
+    <allowCreate>true</allowCreate>
+    <allowDelete>true</allowDelete>
+    <allowEdit>true</allowEdit>
+    <allowRead>true</allowRead>
+    <modifyAllRecords>false</modifyAllRecords>
+    <object>UserFilter__c</object>
+    <viewAllRecords>false</viewAllRecords>
+  </objectPermissions>
+  <objectPermissions>
+    <allowCreate>true</allowCreate>
     <allowDelete>true</allowDelete>
     <allowEdit>true</allowEdit>
     <allowRead>true</allowRead>
@@ -89,6 +111,21 @@
     <object>Sales_Campaign_Deal__c</object>
     <viewAllRecords>false</viewAllRecords>
   </objectPermissions>
+  <fieldPermissions>
+    <editable>true</editable>
+    <field>UserSettings__c.Pipeline_JSON__c</field>
+    <readable>true</readable>
+  </fieldPermissions>
+  <fieldPermissions>
+    <editable>true</editable>
+    <field>UserFilter__c.Filter_Json__c</field>
+    <readable>true</readable>
+  </fieldPermissions>
+  <fieldPermissions>
+    <editable>true</editable>
+    <field>UserFilter__c.Is_Default__c</field>
+    <readable>true</readable>
+  </fieldPermissions>
   <fieldPermissions>
     <editable>true</editable>
     <field>Pipeline_Filter__c.Filter_Json__c</field>

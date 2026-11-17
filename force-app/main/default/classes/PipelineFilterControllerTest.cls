@@ -95,8 +95,9 @@ private class PipelineFilterControllerTest {
         1,
         [
           SELECT COUNT()
-          FROM Pipeline_Filter__c
+          FROM UserFilter__c
           WHERE Is_Default__c = TRUE AND OwnerId = :me.Id
+          WITH SYSTEM_MODE
         ]
       );
       PipelineFilterController.setDefault(null);
@@ -104,8 +105,9 @@ private class PipelineFilterControllerTest {
         0,
         [
           SELECT COUNT()
-          FROM Pipeline_Filter__c
+          FROM UserFilter__c
           WHERE Is_Default__c = TRUE AND OwnerId = :me.Id
+          WITH SYSTEM_MODE
         ]
       );
 
@@ -115,25 +117,43 @@ private class PipelineFilterControllerTest {
   }
 
   @IsTest
-  static void thePersonsSettingsRecordIsNeverAFilter() {
+  static void thePersonsSettingsAreNeverFiltersAndAnotherSolutionsFiltersAreNeverListedOrTouched() {
     User me = pipelineUser('SettingsOwner');
+    // a filter that belongs to another solution, owned by the same person
+    insert new UserFilter__c(
+      Name = 'Other solution filter',
+      OwnerId = me.Id,
+      Solution__c = 'SomethingElse',
+      Filter_Json__c = JSON_A
+    );
+    Id otherId = [
+      SELECT Id
+      FROM UserFilter__c
+      WHERE Solution__c = 'SomethingElse' AND OwnerId = :me.Id
+      WITH SYSTEM_MODE
+    ]
+    .Id;
     System.runAs(me) {
       PipelineController.saveSettings('{"theme":"light"}');
       PipelineFilterController.saveFilter(null, 'A filter', JSON_A);
       System.assertEquals(
         1,
         PipelineFilterController.listFilters().size(),
-        'The settings record is not listed as a filter'
+        'Neither the settings nor another solution\'s filter is listed'
       );
-      Id settingsId = [
-        SELECT Id
-        FROM Pipeline_Filter__c
-        WHERE Is_User_Settings__c = TRUE AND OwnerId = :me.Id
-      ]
-      .Id;
+      System.assertEquals(
+        0,
+        [
+          SELECT COUNT()
+          FROM UserFilter__c
+          WHERE Name = 'UserSettings' AND OwnerId = :me.Id
+          WITH SYSTEM_MODE
+        ],
+        'Saving settings makes no filter'
+      );
       try {
-        PipelineFilterController.deleteFilter(settingsId);
-        System.assert(false, 'The filter screen must not delete the settings');
+        PipelineFilterController.deleteFilter(otherId);
+        System.assert(false, 'Another solution\'s filter must not be deleted');
       } catch (AuraHandledException e) {
         System.assert(true);
       }
@@ -142,16 +162,32 @@ private class PipelineFilterControllerTest {
         1,
         [
           SELECT COUNT()
-          FROM Pipeline_Filter__c
-          WHERE Is_User_Settings__c = TRUE AND OwnerId = :me.Id
+          FROM UserFilter__c
+          WHERE Solution__c = 'SomethingElse' AND OwnerId = :me.Id
+          WITH SYSTEM_MODE
         ],
-        'The settings record is still there'
+        'Another solution\'s filter is still there'
       );
       PipelineController.saveSettings('{"theme":"dark"}');
       System.assertEquals(
+        1,
+        [
+          SELECT COUNT()
+          FROM UserSettings__c
+          WHERE OwnerId = :me.Id
+          WITH SYSTEM_MODE
+        ],
+        'Saving settings again adds no record'
+      );
+      System.assertEquals(
         2,
-        [SELECT COUNT() FROM Pipeline_Filter__c WHERE OwnerId = :me.Id],
-        'One settings record and one filter: saving settings again adds no record'
+        [
+          SELECT COUNT()
+          FROM UserFilter__c
+          WHERE OwnerId = :me.Id
+          WITH SYSTEM_MODE
+        ],
+        'The Pipeline filter and the other solution\'s filter: settings add none'
       );
     }
   }
@@ -206,15 +242,21 @@ private class PipelineFilterControllerTest {
       );
       System.assertEquals(0, PipelineFilterController.searchOwners('S').size());
     }
-    List<Pipeline_Filter__c> copies = [
-      SELECT Name, OwnerId, Filter_Json__c, Is_Default__c
-      FROM Pipeline_Filter__c
+    List<UserFilter__c> copies = [
+      SELECT Name, OwnerId, Filter_Json__c, Is_Default__c, Solution__c
+      FROM UserFilter__c
       WHERE OwnerId = :other.Id
+      WITH SYSTEM_MODE
     ];
     System.assertEquals(1, copies.size(), 'The receiver owns a copy');
     System.assertEquals('To share', copies[0].Name);
     System.assertEquals(JSON_A, copies[0].Filter_Json__c);
     System.assertEquals(false, copies[0].Is_Default__c);
+    System.assertEquals(
+      'Pipeline',
+      copies[0].Solution__c,
+      'A copy is a Pipeline filter too'
+    );
     System.runAs(other) {
       try {
         PipelineFilterController.deleteFilter(mine);
@@ -231,7 +273,12 @@ private class PipelineFilterControllerTest {
     }
     System.assertEquals(
       1,
-      [SELECT COUNT() FROM Pipeline_Filter__c WHERE OwnerId = :me.Id],
+      [
+        SELECT COUNT()
+        FROM UserFilter__c
+        WHERE OwnerId = :me.Id
+        WITH SYSTEM_MODE
+      ],
       'The original is untouched'
     );
   }
@@ -263,7 +310,12 @@ private class PipelineFilterControllerTest {
     }
     System.assertEquals(
       1,
-      [SELECT COUNT() FROM Pipeline_Filter__c WHERE OwnerId = :member.Id]
+      [
+        SELECT COUNT()
+        FROM UserFilter__c
+        WHERE OwnerId = :member.Id
+        WITH SYSTEM_MODE
+      ]
     );
     System.runAs(member) {
       Id f = PipelineFilterController.saveFilter(null, 'Not a manager', JSON_A)

@@ -6,12 +6,12 @@
  * Who calls it: the pipelineCampaigns component, the Pipeline app (pipelineApp, pipelineCampaignMaintain) and PipelineCampaignControllerTest.
  * What it touches: Sales_Campaign__c, Sales_Campaign_Member__c and Sales_Campaign_Deal__c (read counts only) in the signed-in
  * person's own access (user mode). It reads Account (surgeons) and User (managers) in user mode too. It reads the surgeon's
- * hospitals from Healthcare_Surgeon_Relationship__c and the person's own Pipeline settings in system mode, because those are
+ * hospitals from Healthcare_Surgeon_Relationship__c and the person's own Campaign Management settings in system mode, because those are
  * only used to help choose and to show the person's own theme and Zoom. maintainDeals reads the deals of a campaign's members (opportunities and risks, never ROSA) in system mode, sharing still applying,
  * for the Maintain mode of Pipeline's campaign view; putting a deal in or out is done by PipelineDealCampaignController.setLink. currencyRates reads the exchange rates held in Salesforce (CurrencyType) for the campaign
  * view's US dollar totals; Pipeline holds no rates of its own. saveGlobalSettings writes the person's light or dark choice
- * and their Zoom into their own Pipeline settings record (Pipeline_Filter__c, flagged Is_User_Settings__c; only that record, only
- * those two entries, the rest of its settings kept). It never changes an Account or a deal.
+ * and their Zoom into Campaign_JSON__c on their own UserSettings__c record, through PipelineUserSettings (only that field, only
+ * those two entries, the rest of the Campaign settings kept; the Pipeline screen's settings are a different field and are never touched). It never changes an Account or a deal.
  *
  * Who may be a member: only an Account that is a person account of record type Physician or Emerging Consultant. Staging
  * accounts, demo accounts and clinic contacts are never offered. The surgeon search needs at least two characters, looks in the
@@ -254,18 +254,15 @@ public with sharing class PipelineCampaignController {
     c.headColour = 'pink';
     c.hasTheme = false;
     c.zoom = DEFAULT_ZOOM;
-    // the person's own Pipeline screen settings: the dark or light theme, the heading colour and the Zoom
-    List<Pipeline_Filter__c> mine = [
-      SELECT Settings_Json__c
-      FROM Pipeline_Filter__c
-      WHERE OwnerId = :UserInfo.getUserId() AND Is_User_Settings__c = TRUE
-      WITH SYSTEM_MODE
-      LIMIT 1
-    ];
-    if (!mine.isEmpty() && String.isNotBlank(mine[0].Settings_Json__c)) {
+    // the person's own Campaign Management screen settings: the dark or light theme, the heading colour and the Zoom
+    String mine = PipelineUserSettings.read(
+      PipelineUserSettings.CAMPAIGN_FIELD,
+      AccessLevel.SYSTEM_MODE
+    );
+    if (String.isNotBlank(mine)) {
       try {
         Map<String, Object> s = (Map<String, Object>) JSON.deserializeUntyped(
-          mine[0].Settings_Json__c
+          mine
         );
         if (s.get('theme') == 'light' || s.get('theme') == 'dark') {
           c.theme = (String) s.get('theme');
@@ -312,10 +309,10 @@ public with sharing class PipelineCampaignController {
   }
 
   /**
-   * Saves the signed-in person's own light or dark choice and Zoom into their one Pipeline settings record (the same record the
-   * Pipeline screen keeps its settings in), leaving every other setting in it as it is. Either value may be left null to keep what is
-   * saved. It only ever touches the person's own record; it is written in system mode because a campaign manager may not hold the
-   * Pipeline permission set, and the record is theirs alone (private, owned by them).
+   * Saves the signed-in person's own light or dark choice and Zoom into Campaign_JSON__c on their one UserSettings__c record, leaving
+   * every other Campaign setting as it is and never touching the Pipeline screen's settings (a different field). Either value may be
+   * left null to keep what is saved. It only ever touches the person's own record; it is written in system mode because the record
+   * is theirs alone (private, owned by them) and the person is not asked to hold access to the field.
    */
   @AuraEnabled
   public static void saveGlobalSettings(String theme, Integer zoom) {
@@ -325,21 +322,14 @@ public with sharing class PipelineCampaignController {
     if (zoom != null && !ZOOM_STEPS.contains(zoom)) {
       throw new AuraHandledException('The zoom must be 100, 90, 80, 70 or 60.');
     }
-    Id me = UserInfo.getUserId();
-    List<Pipeline_Filter__c> mine = [
-      SELECT Id, Settings_Json__c
-      FROM Pipeline_Filter__c
-      WHERE OwnerId = :me AND Is_User_Settings__c = TRUE
-      WITH SYSTEM_MODE
-      ORDER BY LastModifiedDate DESC
-      LIMIT 1
-    ];
+    String current = PipelineUserSettings.read(
+      PipelineUserSettings.CAMPAIGN_FIELD,
+      AccessLevel.SYSTEM_MODE
+    );
     Map<String, Object> settings = new Map<String, Object>();
-    if (!mine.isEmpty() && String.isNotBlank(mine[0].Settings_Json__c)) {
+    if (String.isNotBlank(current)) {
       try {
-        settings = (Map<String, Object>) JSON.deserializeUntyped(
-          mine[0].Settings_Json__c
-        );
+        settings = (Map<String, Object>) JSON.deserializeUntyped(current);
       } catch (Exception e) {
         settings = new Map<String, Object>(); // unreadable: start again with just these
       }
@@ -354,19 +344,11 @@ public with sharing class PipelineCampaignController {
     if (json.length() > 30000) {
       throw new AuraHandledException('The settings are too long to save.');
     }
-    if (mine.isEmpty()) {
-      Database.insert(
-        new Pipeline_Filter__c(
-          Name = 'Pipeline Settings (do not delete)',
-          Is_User_Settings__c = true,
-          Settings_Json__c = json
-        ),
-        AccessLevel.SYSTEM_MODE
-      );
-    } else {
-      mine[0].Settings_Json__c = json;
-      Database.update(mine[0], AccessLevel.SYSTEM_MODE);
-    }
+    PipelineUserSettings.save(
+      PipelineUserSettings.CAMPAIGN_FIELD,
+      json,
+      AccessLevel.SYSTEM_MODE
+    );
   }
 
   private static List<Option> options(List<Schema.PicklistEntry> entries) {

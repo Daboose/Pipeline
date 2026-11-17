@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+  <fullName>Is_Default__c</fullName>
+  <defaultValue>false</defaultValue>
+  <description
+  >Ticked on the one saved filter a solution opens on for its owner. At most one per person per solution; set by the solution's own code.</description>
+  <inlineHelpText
+  >The solution opens on the filter that is ticked here. Set by the screen, not by hand.</inlineHelpText>
+  <label>Opens by Default</label>
+  <trackTrending>false</trackTrending>
+  <type>Checkbox</type>
+</CustomField>

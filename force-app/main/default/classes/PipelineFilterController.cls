@@ -2,8 +2,8 @@
  * Pipeline: a person's saved filters (the "My filters" part of the Pipeline screen).
  *
  * Who calls it: the pipelineFilters component (the My filters panel) and the pipelineApp component, and PipelineFilterControllerTest.
- * What it touches: reads, creates, changes and deletes Pipeline_Filter__c records that the signed-in person owns,
- * never the person's settings record (the one flagged Is_User_Settings__c on the same object), reads active users (to find a person to share with), and reads the Teams through PipelineScope (so a team manager can
+ * What it touches: reads, creates, changes and deletes UserFilter__c records (the shared saved-filters object, Solution__c = 'Pipeline')
+ * that the signed-in person owns, never another solution's filters or the person's settings (those are on UserSettings__c), reads active users (to find a person to share with), and reads the Teams through PipelineScope (so a team manager can
  * share with their team). It never touches a deal.
  *
  * Rules (Robert, 2026-10-24): a filter is the person's own; one of them may be the default Pipeline opens on; sharing
@@ -11,6 +11,7 @@
  * manager, to everyone on their team; never to everybody.
  */
 public with sharing class PipelineFilterController {
+  private static final String SOLUTION = 'Pipeline'; // the Solution__c value on every Pipeline filter in the shared UserFilter__c object
   private static final Integer MAX_FILTERS = 50;
   private static final Integer MAX_PEOPLE = 25;
 
@@ -34,7 +35,7 @@ public with sharing class PipelineFilterController {
     public String title;
   }
 
-  private static FilterRow rowOf(Pipeline_Filter__c f) {
+  private static FilterRow rowOf(UserFilter__c f) {
     FilterRow r = new FilterRow();
     r.id = f.Id;
     r.name = f.Name;
@@ -47,10 +48,10 @@ public with sharing class PipelineFilterController {
   @AuraEnabled
   public static List<FilterRow> listFilters() {
     List<FilterRow> out = new List<FilterRow>();
-    for (Pipeline_Filter__c f : [
+    for (UserFilter__c f : [
       SELECT Id, Name, Filter_Json__c, Is_Default__c
-      FROM Pipeline_Filter__c
-      WHERE OwnerId = :UserInfo.getUserId() AND Is_User_Settings__c = FALSE
+      FROM UserFilter__c
+      WHERE OwnerId = :UserInfo.getUserId() AND Solution__c = :SOLUTION
       WITH USER_MODE
       ORDER BY Name
       LIMIT :MAX_FILTERS
@@ -74,7 +75,7 @@ public with sharing class PipelineFilterController {
       );
     }
     checkJson(filterJson);
-    Pipeline_Filter__c f;
+    UserFilter__c f;
     if (existingId != null) {
       f = ownFilter(existingId);
       f.Name = nm;
@@ -84,16 +85,17 @@ public with sharing class PipelineFilterController {
       if (
         [
           SELECT COUNT()
-          FROM Pipeline_Filter__c
-          WHERE OwnerId = :UserInfo.getUserId() AND Is_User_Settings__c = FALSE
+          FROM UserFilter__c
+          WHERE OwnerId = :UserInfo.getUserId() AND Solution__c = :SOLUTION
         ] >= MAX_FILTERS
       ) {
         throw new AuraHandledException(
           'You already have ' + MAX_FILTERS + ' filters. Delete one first.'
         );
       }
-      f = new Pipeline_Filter__c(
+      f = new UserFilter__c(
         Name = nm,
+        Solution__c = SOLUTION,
         Filter_Json__c = filterJson,
         Is_Default__c = false
       );
@@ -111,7 +113,7 @@ public with sharing class PipelineFilterController {
         'Give the filter a name of up to 80 characters.'
       );
     }
-    Pipeline_Filter__c f = ownFilter(filterId);
+    UserFilter__c f = ownFilter(filterId);
     f.Name = nm;
     update as user f;
     return rowOf(f);
@@ -125,11 +127,11 @@ public with sharing class PipelineFilterController {
   /** Makes one filter the one Pipeline opens on (every other of the person's filters is cleared). Null clears them all. */
   @AuraEnabled
   public static void setDefault(Id filterId) {
-    List<Pipeline_Filter__c> changed = new List<Pipeline_Filter__c>();
-    for (Pipeline_Filter__c f : [
+    List<UserFilter__c> changed = new List<UserFilter__c>();
+    for (UserFilter__c f : [
       SELECT Id, Is_Default__c
-      FROM Pipeline_Filter__c
-      WHERE OwnerId = :UserInfo.getUserId() AND Is_User_Settings__c = FALSE
+      FROM UserFilter__c
+      WHERE OwnerId = :UserInfo.getUserId() AND Solution__c = :SOLUTION
       WITH USER_MODE
     ]) {
       Boolean want = f.Id == filterId;
@@ -241,7 +243,7 @@ public with sharing class PipelineFilterController {
     return copyTo(ownFilter(filterId), people);
   }
 
-  private static Integer copyTo(Pipeline_Filter__c source, Set<Id> userIds) {
+  private static Integer copyTo(UserFilter__c source, Set<Id> userIds) {
     Set<Id> active = new Map<Id, User>(
         [
           SELECT Id
@@ -254,12 +256,13 @@ public with sharing class PipelineFilterController {
         ]
       )
       .keySet();
-    List<Pipeline_Filter__c> copies = new List<Pipeline_Filter__c>();
+    List<UserFilter__c> copies = new List<UserFilter__c>();
     for (Id u : active) {
       if (u != UserInfo.getUserId()) {
         copies.add(
-          new Pipeline_Filter__c(
+          new UserFilter__c(
             Name = source.Name,
+            Solution__c = SOLUTION,
             Filter_Json__c = source.Filter_Json__c,
             Is_Default__c = false,
             OwnerId = u
@@ -271,14 +274,14 @@ public with sharing class PipelineFilterController {
     return copies.size();
   }
 
-  private static Pipeline_Filter__c ownFilter(Id filterId) {
-    List<Pipeline_Filter__c> rows = [
+  private static UserFilter__c ownFilter(Id filterId) {
+    List<UserFilter__c> rows = [
       SELECT Id, Name, Filter_Json__c, Is_Default__c
-      FROM Pipeline_Filter__c
+      FROM UserFilter__c
       WHERE
         Id = :filterId
         AND OwnerId = :UserInfo.getUserId()
-        AND Is_User_Settings__c = FALSE
+        AND Solution__c = :SOLUTION
       WITH USER_MODE
       LIMIT 1
     ];

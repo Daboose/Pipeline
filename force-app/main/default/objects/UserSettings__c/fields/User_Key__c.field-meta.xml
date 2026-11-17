@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+  <fullName>User_Key__c</fullName>
+  <caseSensitive>false</caseSensitive>
+  <description
+  >The person's own 18-character user Id, set by whichever solution creates their UserSettings record. Unique, so a person can never have two records (for example when two browser tabs save at the same moment). Never edited by hand.</description>
+  <inlineHelpText
+  >Set automatically. Not meant to be edited by hand.</inlineHelpText>
+  <label>User Key</label>
+  <length>18</length>
+  <required>true</required>
+  <trackTrending>false</trackTrending>
+  <type>Text</type>
+  <unique>true</unique>
+</CustomField>

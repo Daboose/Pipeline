@@ -3,8 +3,9 @@
  *
  * Who calls it: the pipelineApp component and the components inside it.
  * What it touches: reads SalesRisks__c (Opportunities & Risks) in the signed-in person's own access (user mode, so
- * org-wide sharing and field access apply as normal), reads the Teams through PipelineScope, and reads and writes one
- * Pipeline_Filter__c settings record per person (flagged Is_User_Settings__c; their own screen choices as one JSON string). It also reads
+ * org-wide sharing and field access apply as normal), reads the Teams through PipelineScope, and reads and writes the person's
+ * Pipeline settings (their own screen choices as one JSON string in Pipeline_JSON__c on their one UserSettings__c record, through
+ * PipelineUserSettings; saved filters are PipelineFilterController's). It also reads
  * each opportunity's and risk's Primary HCP usage ratings (Account roll-up fields) in system mode, to show the surgeon's rating for the
  * deal's portfolio. It never changes a deal.
  *
@@ -162,14 +163,10 @@ public with sharing class PipelineController {
     c.quarters = activeValues(
       SalesRisks__c.Expected_Closure_Quarter__c.getDescribe()
     );
-    List<Pipeline_Filter__c> mine = [
-      SELECT Settings_Json__c
-      FROM Pipeline_Filter__c
-      WHERE OwnerId = :c.userId AND Is_User_Settings__c = TRUE
-      ORDER BY LastModifiedDate DESC
-      LIMIT 1
-    ];
-    c.settingsJson = mine.isEmpty() ? null : mine[0].Settings_Json__c;
+    c.settingsJson = PipelineUserSettings.read(
+      PipelineUserSettings.PIPELINE_FIELD,
+      AccessLevel.USER_MODE
+    );
     return c;
   }
 
@@ -387,24 +384,11 @@ public with sharing class PipelineController {
     } catch (Exception e) {
       throw new AuraHandledException('The settings could not be read.');
     }
-    Id me = UserInfo.getUserId();
-    List<Pipeline_Filter__c> mine = [
-      SELECT Id
-      FROM Pipeline_Filter__c
-      WHERE OwnerId = :me AND Is_User_Settings__c = TRUE
-      ORDER BY LastModifiedDate DESC
-      LIMIT 1
-    ];
-    if (mine.isEmpty()) {
-      insert as user new Pipeline_Filter__c(
-        Name = 'Pipeline Settings (do not delete)',
-        Is_User_Settings__c = true,
-        Settings_Json__c = settingsJson
-      );
-    } else {
-      mine[0].Settings_Json__c = settingsJson;
-      update as user mine[0];
-    }
+    PipelineUserSettings.save(
+      PipelineUserSettings.PIPELINE_FIELD,
+      settingsJson,
+      AccessLevel.USER_MODE
+    );
   }
 
   private static Deal toDeal(SalesRisks__c r) {

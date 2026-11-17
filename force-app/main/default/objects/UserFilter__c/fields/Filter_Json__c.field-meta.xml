@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+  <fullName>Filter_Json__c</fullName>
+  <description
+  >The choices a saved filter holds, written by the owning solution's screen as one JSON string in that solution's own format. Only the solution named in the Solution field reads it. Not meant to be edited by hand.</description>
+  <inlineHelpText
+  >Written by the screen that saved the filter. Not meant to be edited by hand.</inlineHelpText>
+  <label>Filter JSON</label>
+  <length>131072</length>
+  <trackTrending>false</trackTrending>
+  <type>LongTextArea</type>
+  <visibleLines>6</visibleLines>
+</CustomField>

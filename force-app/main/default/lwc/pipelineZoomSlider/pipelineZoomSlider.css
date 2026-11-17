@@ -25,7 +25,9 @@
 .choices {
   position: relative;
   flex: 1 1 auto;
-  min-width: var(--zoom-track-min, 0);
+  /* never narrower than this, whatever the screen asks for: the handle is 58px wide, so the steps must be at least about 43px apart
+     or the neighbouring ticks peek out half-hidden from under it (the same 230px track as the APAC Events slider) */
+  min-width: max(var(--zoom-track-min, 0px), 226px);
   height: var(--zoom-track-height, 40px);
   margin: -1px -1px -1px 0;
   border-radius: 999px;

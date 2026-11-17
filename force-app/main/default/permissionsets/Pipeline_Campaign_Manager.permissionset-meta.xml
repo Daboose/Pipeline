@@ -5,6 +5,10 @@
     <visible>true</visible>
   </applicationVisibilities>
   <classAccesses>
+    <apexClass>PipelineUserSettings</apexClass>
+    <enabled>true</enabled>
+  </classAccesses>
+  <classAccesses>
     <apexClass>PipelineCampaignController</apexClass>
     <enabled>true</enabled>
   </classAccesses>
@@ -12,6 +16,15 @@
   >Pipeline: lets a person manage Sales Campaigns: create, change and delete campaigns and their members, and open the Campaign Management app. Give it to campaign managers. It reads deals only as the link object needs. Reps get access through profiles.</description>
   <hasActivationRequired>false</hasActivationRequired>
   <label>Pipeline Campaign Manager</label>
+  <objectPermissions>
+    <allowCreate>true</allowCreate>
+    <allowDelete>false</allowDelete>
+    <allowEdit>true</allowEdit>
+    <allowRead>true</allowRead>
+    <modifyAllRecords>false</modifyAllRecords>
+    <object>UserSettings__c</object>
+    <viewAllRecords>false</viewAllRecords>
+  </objectPermissions>
   <objectPermissions>
     <allowCreate>false</allowCreate>
     <allowDelete>false</allowDelete>
@@ -48,6 +61,11 @@
     <object>Sales_Campaign_Deal__c</object>
     <viewAllRecords>false</viewAllRecords>
   </objectPermissions>
+  <fieldPermissions>
+    <editable>true</editable>
+    <field>UserSettings__c.Campaign_JSON__c</field>
+    <readable>true</readable>
+  </fieldPermissions>
   <fieldPermissions>
     <editable>true</editable>
     <field>Sales_Campaign__c.Campaign_Manager__c</field>

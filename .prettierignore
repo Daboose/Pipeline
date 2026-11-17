@@ -9,3 +9,7 @@
 .vscode
 
 coverage/
+
+# shared objects: must stay byte for byte identical in every repo (AAADESIGN/user-settings-and-filters.md)
+force-app/main/default/objects/UserSettings__c/**
+force-app/main/default/objects/UserFilter__c/**

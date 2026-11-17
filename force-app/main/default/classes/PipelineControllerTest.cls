@@ -295,8 +295,9 @@ private class PipelineControllerTest {
         1,
         [
           SELECT COUNT()
-          FROM Pipeline_Filter__c
-          WHERE OwnerId = :u.Id AND Is_User_Settings__c = TRUE
+          FROM UserSettings__c
+          WHERE OwnerId = :u.Id AND Name = 'UserSettings'
+          WITH SYSTEM_MODE
         ]
       );
     }
