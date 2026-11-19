@@ -54,8 +54,45 @@ private class PipelineHospitalBookingsTest {
     return s;
   }
 
-  /** A surgery `monthsBack` months before this month (1 is the last whole month, the last of the 12 columns). */
-  private static Case__c surgery(
+  /**
+   * The surgeries to make are queued and inserted together by flush(): one insert for all the cases, one for their usage sheets and one
+   * for the usage items. Inserting them one at a time ran the mycase automations (such as the "mycase - Update Sales Agent Details" flow)
+   * once per record, which exceeded PROD's limits when the tests were validated there (Robert, 2026-11-19). Call flush() before reading.
+   */
+  private static List<Case__c> queued = new List<Case__c>();
+  private static List<Boolean> queuedItem = new List<Boolean>();
+
+  private static void flush() {
+    if (queued.isEmpty()) {
+      return;
+    }
+    insert queued;
+    List<myCase_Usage__c> sheets = new List<myCase_Usage__c>();
+    for (Integer i = 0; i < queued.size(); i++) {
+      if (queuedItem[i]) {
+        sheets.add(
+          new myCase_Usage__c(
+            Case__c = queued[i].Id,
+            ManualSheet__c = true,
+            Total_Qty_ZB_Implants__c = 1
+          )
+        );
+      }
+    }
+    if (!sheets.isEmpty()) {
+      insert sheets;
+      List<myCase_Usage_Item__c> items = new List<myCase_Usage_Item__c>();
+      for (myCase_Usage__c sheet : sheets) {
+        items.add(new myCase_Usage_Item__c(Usage_Sheet_ID__c = sheet.Id));
+      }
+      insert items;
+    }
+    queued.clear();
+    queuedItem.clear();
+  }
+
+  /** A surgery `monthsBack` months before this month (1 is the last whole month, the last of the 12 columns); queued, flush() makes it. */
+  private static void surgery(
     Setup s,
     String anatomy,
     String procedure,
@@ -64,24 +101,16 @@ private class PipelineHospitalBookingsTest {
     Integer monthsBack
   ) {
     Date day = Date.today().toStartOfMonth().addMonths(-monthsBack).addDays(4);
-    Case__c c = new Case__c(
-      Physician__c = s.surgeon.Id,
-      Surgery_Date__c = day,
-      Surgery_Type__c = anatomy,
-      Procedure__c = procedure,
-      Healthcare_Facility__c = hospital
+    queued.add(
+      new Case__c(
+        Physician__c = s.surgeon.Id,
+        Surgery_Date__c = day,
+        Surgery_Type__c = anatomy,
+        Procedure__c = procedure,
+        Healthcare_Facility__c = hospital
+      )
     );
-    insert c;
-    if (withItem) {
-      myCase_Usage__c sheet = new myCase_Usage__c(
-        Case__c = c.Id,
-        ManualSheet__c = true,
-        Total_Qty_ZB_Implants__c = 1
-      );
-      insert sheet;
-      insert new myCase_Usage_Item__c(Usage_Sheet_ID__c = sheet.Id);
-    }
-    return c;
+    queuedItem.add(withItem);
   }
 
   @IsTest
@@ -93,6 +122,7 @@ private class PipelineHospitalBookingsTest {
     surgery(s, '205', 'A00', s.hospital.Id, true, 6); // shoulder
     surgery(s, '209', 'A01', s.hospital.Id, true, 3); // CMFT
     surgery(s, '201', 'A00', s.other.Id, true, 1); // another hospital: left out
+    flush();
     PipelineBookingsController.HospitalBookings h = PipelineBookingsController.getHospitalBookings(
       s.deal.Id
     );
@@ -133,6 +163,7 @@ private class PipelineHospitalBookingsTest {
     surgery(s, '201', 'A00', s.hospital.Id, false, 1); // no usage item
     surgery(s, '201', 'A00', s.hospital.Id, true, 13); // before the window
     surgery(s, '201', 'A00', s.hospital.Id, true, 0); // this month is not a whole month
+    flush();
     PipelineBookingsController.HospitalBookings h = PipelineBookingsController.getHospitalBookings(
       s.deal.Id
     );

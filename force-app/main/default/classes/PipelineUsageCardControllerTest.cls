@@ -64,7 +64,44 @@ private class PipelineUsageCardControllerTest {
     return u;
   }
 
-  /** A surgery in the last 12 months, with or without a usage item. */
+  /**
+   * The surgeries to make are queued and inserted together by flush(): one insert for all the cases, one for their usage sheets and one
+   * for the usage items. Inserting them one at a time ran the mycase automations (such as the "mycase - Update Sales Agent Details" flow)
+   * once per record, which exceeded PROD's limits when the tests were validated there (Robert, 2026-11-19). Call flush() before reading.
+   */
+  private static List<Case__c> queued = new List<Case__c>();
+  private static List<Boolean> queuedItem = new List<Boolean>();
+
+  private static void flush() {
+    if (queued.isEmpty()) {
+      return;
+    }
+    insert queued;
+    List<myCase_Usage__c> sheets = new List<myCase_Usage__c>();
+    for (Integer i = 0; i < queued.size(); i++) {
+      if (queuedItem[i]) {
+        sheets.add(
+          new myCase_Usage__c(
+            Case__c = queued[i].Id,
+            ManualSheet__c = true,
+            Total_Qty_ZB_Implants__c = 1
+          )
+        );
+      }
+    }
+    if (!sheets.isEmpty()) {
+      insert sheets;
+      List<myCase_Usage_Item__c> items = new List<myCase_Usage_Item__c>();
+      for (myCase_Usage__c sheet : sheets) {
+        items.add(new myCase_Usage_Item__c(Usage_Sheet_ID__c = sheet.Id));
+      }
+      insert items;
+    }
+    queued.clear();
+    queuedItem.clear();
+  }
+
+  /** A surgery in the last 12 months, with or without a usage item (queued; flush() makes it). */
   private static void surgery(
     Setup s,
     Id surgeon,
@@ -73,26 +110,19 @@ private class PipelineUsageCardControllerTest {
     Boolean withItem,
     Integer daysBack
   ) {
-    Case__c c = new Case__c(
-      Physician__c = surgeon,
-      Surgery_Date__c = Date.today().addDays(-daysBack),
-      Surgery_Type__c = type,
-      Procedure__c = procedure,
-      Healthcare_Facility__c = s.hospital.Id
+    queued.add(
+      new Case__c(
+        Physician__c = surgeon,
+        Surgery_Date__c = Date.today().addDays(-daysBack),
+        Surgery_Type__c = type,
+        Procedure__c = procedure,
+        Healthcare_Facility__c = s.hospital.Id
+      )
     );
-    insert c;
-    if (withItem) {
-      myCase_Usage__c sheet = new myCase_Usage__c(
-        Case__c = c.Id,
-        ManualSheet__c = true,
-        Total_Qty_ZB_Implants__c = 1
-      );
-      insert sheet;
-      insert new myCase_Usage_Item__c(Usage_Sheet_ID__c = sheet.Id);
-    }
+    queuedItem.add(withItem);
   }
 
-  /** A cancelled surgery with a usage item: it must never be counted. */
+  /** A cancelled surgery with a usage item: it must never be counted (queued; flush() makes it). */
   private static void cancelled(
     Setup s,
     Id surgeon,
@@ -100,23 +130,18 @@ private class PipelineUsageCardControllerTest {
     String bookingStatus,
     Integer daysBack
   ) {
-    Case__c c = new Case__c(
-      Physician__c = surgeon,
-      Surgery_Date__c = Date.today().addDays(-daysBack),
-      Surgery_Type__c = '201',
-      Procedure__c = 'A00',
-      Healthcare_Facility__c = s.hospital.Id,
-      Status__c = status,
-      Booking_Status__c = bookingStatus
+    queued.add(
+      new Case__c(
+        Physician__c = surgeon,
+        Surgery_Date__c = Date.today().addDays(-daysBack),
+        Surgery_Type__c = '201',
+        Procedure__c = 'A00',
+        Healthcare_Facility__c = s.hospital.Id,
+        Status__c = status,
+        Booking_Status__c = bookingStatus
+      )
     );
-    insert c;
-    myCase_Usage__c sheet = new myCase_Usage__c(
-      Case__c = c.Id,
-      ManualSheet__c = true,
-      Total_Qty_ZB_Implants__c = 1
-    );
-    insert sheet;
-    insert new myCase_Usage_Item__c(Usage_Sheet_ID__c = sheet.Id);
+    queuedItem.add(true);
   }
 
   private static String lines(String key, String company, Decimal cases) {
@@ -145,6 +170,7 @@ private class PipelineUsageCardControllerTest {
     cancelled(s, s.surgeon.Id, 'C', null, 5); // cancelled: left out
     cancelled(s, s.surgeon.Id, 'R', null, 6); // cancelled: left out
     cancelled(s, s.surgeon.Id, null, 'C', 7); // cancelled: left out
+    flush();
     PipelineUsageCardController.Card c = PipelineUsageCardController.getCard(
       s.surgeon.Id
     );
@@ -183,6 +209,7 @@ private class PipelineUsageCardControllerTest {
     Setup s = make();
     hipUsage(s, s.surgeon.Id, 'ZB', 20, null);
     surgery(s, s.surgeon.Id, '201', 'A00', true, 30);
+    flush();
     PipelineUsageCardController.testNoMyCase = true;
     PipelineUsageCardController.Card c = PipelineUsageCardController.getCard(
       s.surgeon.Id
@@ -222,6 +249,7 @@ private class PipelineUsageCardControllerTest {
     surgery(s, s.surgeon.Id, '201', 'A00', true, 31);
     surgery(s, s.surgeon.Id, '202', 'A00', true, 32);
     surgery(s, s.other.Id, '201', 'A00', true, 33);
+    flush();
     PipelineUsageCardController.Card c = PipelineUsageCardController.getCard(
       s.hospital.Id
     );
