@@ -5,6 +5,7 @@ module.exports = {
   moduleNameMapper: {
     ...jestConfig.moduleNameMapper,
     "^c/pipelineStyles$": "<rootDir>/jest-mocks/pipelineStyles.js",
+    "^c/pipelineRatingStyles$": "<rootDir>/jest-mocks/pipelineStyles.js",
     "^@salesforce/resourceUrl/(.*)$": "<rootDir>/jest-mocks/resourceUrl.js"
   },
   modulePathIgnorePatterns: ["<rootDir>/.localdevserver"]

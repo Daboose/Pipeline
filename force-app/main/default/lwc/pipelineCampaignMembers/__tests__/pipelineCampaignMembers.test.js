@@ -127,8 +127,12 @@ describe("c-pipeline-campaign-members", () => {
     expect(el.shadowRoot.querySelectorAll(".tile")[0].textContent).toContain(
       "2"
     );
-    expect(el.shadowRoot.querySelector(".rate.Gold").textContent).toBe("Gold");
-    expect(t).toContain("Not rated");
+    expect(el.shadowRoot.querySelector(".rplate.Gold").textContent).toBe(
+      "Gold"
+    );
+    expect(el.shadowRoot.querySelector(".rplate.none").textContent).toBe(
+      "Not rated"
+    );
     expect(el.shadowRoot.querySelectorAll("tr.deal2").length).toBe(1);
     expect(t).toContain("No deal yet");
   });
@@ -354,6 +358,17 @@ describe("c-pipeline-campaign-members", () => {
     expect(chips[2]).toContain("S$95k");
     expect(chips[5]).toContain("Not rated");
     expect(chips[5]).toContain("S$95k");
+    // the five rating chips use the same small plates as the lists, Not rated as the flat black one
+    const plates = [...el.shadowRoot.querySelectorAll(".vl .rplate")].map(
+      (p) => p.className
+    );
+    expect(plates).toEqual([
+      "rplate Platinum",
+      "rplate Gold",
+      "rplate Silver",
+      "rplate Bronze",
+      "rplate none"
+    ]);
   });
 
   it("starts in local currencies, reads the Salesforce rates the first time USD is chosen, and shows one dollar amount", async () => {
@@ -519,6 +534,109 @@ describe("c-pipeline-campaign-members", () => {
     expect(handler.mock.calls[1][0].detail.id).toBe("d2");
     el.shadowRoot.querySelectorAll("tbody tr")[2].click(); // no deal yet
     expect(handler).toHaveBeenCalledTimes(2);
+  });
+
+  it("opens the deal on its Surgeon Usages screen when a surgeon's rating plate is pressed, and the surgeon alone when there is no deal yet (Pipeline only)", async () => {
+    const el = make({ dealsOpenable: true });
+    await flush();
+    const dealHandler = jest.fn();
+    const surgeonHandler = jest.fn();
+    el.addEventListener("dealopen", dealHandler);
+    el.addEventListener("surgeonopen", surgeonHandler);
+    const plates = [...el.shadowRoot.querySelectorAll("button.rplate")];
+    // Mei Tan has deals: her Hip plate (Gold) opens her newest deal on usages, the line's own click does not fire as well
+    plates.find((p) => p.textContent.trim() === "Gold").click();
+    expect(dealHandler).toHaveBeenCalledTimes(1);
+    expect(dealHandler.mock.calls[0][0].detail).toEqual({
+      id: "d2",
+      ids: ["d2", "d1"],
+      screen: "usages"
+    });
+    // Mei Tan's unrated Knee plate does the same
+    plates.find((p) => p.textContent.trim() === "Not rated").click();
+    expect(dealHandler).toHaveBeenCalledTimes(2);
+    // Priya Nair has no deal yet: the plate names the surgeon instead
+    plates.find((p) => p.textContent.trim() === "Silver").click();
+    expect(dealHandler).toHaveBeenCalledTimes(2);
+    expect(surgeonHandler).toHaveBeenCalledTimes(1);
+    expect(surgeonHandler.mock.calls[0][0].detail).toEqual({
+      accountId: "a2",
+      name: "Dr Priya Nair",
+      screen: "usages"
+    });
+  });
+
+  it("opens the surgeon's New Deal screen when No deal yet is pressed (Pipeline only), and leaves it as plain words otherwise", async () => {
+    const el = make({ dealsOpenable: true });
+    await flush();
+    const handler = jest.fn();
+    el.addEventListener("surgeonopen", handler);
+    const press = el.shadowRoot.querySelector("button.nodeal");
+    expect(press.textContent.trim()).toBe("No deal yet");
+    press.click();
+    expect(handler).toHaveBeenCalledTimes(1);
+    expect(handler.mock.calls[0][0].detail).toEqual({
+      accountId: "a2",
+      name: "Dr Priya Nair",
+      screen: "new"
+    });
+    const plain = make();
+    await flush();
+    expect(plain.shadowRoot.querySelector("button.nodeal")).toBeNull();
+    expect(plain.shadowRoot.querySelector("span.nodeal")).not.toBeNull();
+  });
+
+  it("draws the plates as plain plates, not buttons, when the list is not openable (Campaign Management)", async () => {
+    const el = make();
+    await flush();
+    expect(el.shadowRoot.querySelectorAll("button.rplate").length).toBe(0);
+    expect(
+      el.shadowRoot.querySelectorAll("span.rplate").length
+    ).toBeGreaterThan(0);
+  });
+
+  it("takes the columns turned off from the host and reports every change, so Pipeline can keep them in the person's settings", async () => {
+    const el = make({ hiddenColumns: ["hospitals"] });
+    await flush();
+    const headText = () =>
+      [...el.shadowRoot.querySelectorAll("th")].map((h) => h.textContent);
+    expect(headText().join(" ")).not.toContain("Current Hospitals");
+    expect(headText().join(" ")).toContain("Country");
+    const handler = jest.fn();
+    el.addEventListener("columnschange", handler);
+    // turn Country off through the Columns picker (the cog in the table's corner)
+    el.shadowRoot.querySelector("button.cog").click();
+    await flush();
+    const box = [...el.shadowRoot.querySelectorAll(".picker input")].find(
+      (i) => i.dataset.id === "place"
+    );
+    box.checked = false;
+    box.dispatchEvent(new CustomEvent("change"));
+    await flush();
+    expect(handler).toHaveBeenCalledTimes(1);
+    expect(handler.mock.calls[0][0].detail.hidden).toEqual([
+      "hospitals",
+      "place"
+    ]);
+  });
+
+  it("makes each surgeon's name a link to their Account record that opens in a new tab, without opening the deal", async () => {
+    const el = make({ dealsOpenable: true });
+    await flush();
+    const links = [...el.shadowRoot.querySelectorAll("a.slink")];
+    expect(links.map((a) => a.textContent.trim())).toEqual([
+      "Dr Mei Tan",
+      "Dr Priya Nair"
+    ]);
+    expect(links[0].getAttribute("href")).toBe("/lightning/r/Account/a1/view");
+    expect(links[0].getAttribute("target")).toBe("_blank");
+    expect(links[0].getAttribute("rel")).toContain("noopener");
+    // pressing the link does not also open the deal on the line
+    const handler = jest.fn();
+    el.addEventListener("dealopen", handler);
+    links[0].addEventListener("click", (e) => e.preventDefault());
+    links[0].click();
+    expect(handler).not.toHaveBeenCalled();
   });
 
   it("steps through only what is listed: a search narrows the ids", async () => {

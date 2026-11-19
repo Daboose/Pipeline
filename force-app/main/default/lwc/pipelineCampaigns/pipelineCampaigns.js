@@ -29,7 +29,7 @@ import {
 import { localWidth, zoomStyle, cleanZoom, DEFAULT_ZOOM } from "c/pipelineZoom";
 
 /** Shown on the screen; raise it with each change that goes out. */
-export const CAMPAIGN_VERSION = "0.40";
+export const CAMPAIGN_VERSION = "0.44";
 const THEME_KEY = "pipelineCampaignTheme";
 const WIDTHS_KEY = "pipelineCampaignWidths";
 

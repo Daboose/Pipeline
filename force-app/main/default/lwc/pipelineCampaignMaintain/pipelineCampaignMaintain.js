@@ -155,7 +155,7 @@ export default class PipelineCampaignMaintain extends LightningElement {
             text:
               (m.ratings.length > 1 ? (r.area || r.portfolio) + " " : "") +
               proper(r.rating),
-            cls: "rate " + proper(r.rating)
+            cls: "rplate " + proper(r.rating)
           })),
         count: list.length
           ? `${list.length} ${openWord}${word}${plural} · ${inCount} in the campaign`

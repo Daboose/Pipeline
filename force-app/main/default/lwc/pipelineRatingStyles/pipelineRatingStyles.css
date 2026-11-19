@@ -1,0 +1,150 @@
+/* Pipeline: the small rating plates of the lists (Robert, 2026-11-19; mockup docs/mockups/archive/pipeline_list_rating_plates_v3.html).
+   Imported with  @import "c/pipelineRatingStyles";  by the Pipeline lists, the campaign members list and the Maintain list.
+   One plate per rating (Platinum, Gold, Silver, Bronze) in the brushed metal of the big rating plates, and a flat black one for
+   "not rated" (class "none"); white lettering with a soft dark shadow; every plate the same width, wide enough for NOT RATED. */
+.rplate {
+  display: inline-block;
+  width: 116px;
+  height: 24px;
+  line-height: 24px;
+  text-align: center;
+  vertical-align: middle;
+  border-radius: 5px;
+  overflow: hidden;
+  white-space: nowrap;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #fff;
+  text-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.7),
+    0 0 1px rgba(0, 0, 0, 0.6);
+  background:
+    repeating-radial-gradient(
+      circle at 50% 52%,
+      rgba(255, 255, 255, 0.07) 0 1px,
+      rgba(0, 0, 0, 0.06) 1px 2px
+    ),
+    var(--sheet);
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.75),
+    inset 0 -2px 2px rgba(0, 0, 0, 0.3),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.25);
+}
+.rplate.Platinum {
+  --sheet: conic-gradient(
+    from 0deg at 50% 52%,
+    #bdb49c,
+    #e2d9be 20deg,
+    #b3a88f 40deg,
+    #9f947b 60deg,
+    #aba089 80deg,
+    #a59a82 100deg,
+    #897d64 120deg,
+    #988c75 140deg,
+    #beb49f 160deg,
+    #ada28d 180deg,
+    #968b74 200deg,
+    #afa68d 220deg,
+    #c7bea3 240deg,
+    #796e58 260deg,
+    #766853 280deg,
+    #b5aa93 300deg,
+    #a89d84 320deg,
+    #978b75 340deg,
+    #bdb49c 360deg
+  );
+}
+.rplate.Gold {
+  --sheet: conic-gradient(
+    from 0deg at 50% 52%,
+    #dfc16e,
+    #fce68b 20deg,
+    #dcb856 40deg,
+    #cea441 60deg,
+    #e0b75e 80deg,
+    #d6ae56 100deg,
+    #a37821 120deg,
+    #b78b31 140deg,
+    #edc35c 160deg,
+    #d5ab4b 180deg,
+    #ba9137 200deg,
+    #d3af4d 220deg,
+    #e5cc73 240deg,
+    #ab8327 260deg,
+    #af8629 280deg,
+    #e6be57 300deg,
+    #ddb457 320deg,
+    #c19848 340deg,
+    #dfc16e 360deg
+  );
+}
+.rplate.Silver {
+  --sheet: conic-gradient(
+    from 0deg at 50% 52%,
+    #a3a7b1,
+    #c8cdd7 20deg,
+    #9599a2 40deg,
+    #808591 60deg,
+    #868a93 80deg,
+    #818691 100deg,
+    #676c77 120deg,
+    #777e89 140deg,
+    #a1a7b2 160deg,
+    #9096a0 180deg,
+    #7f858f 200deg,
+    #9aa0aa 220deg,
+    #a8aeb7 240deg,
+    #686c74 260deg,
+    #6c707a 280deg,
+    #9a9da7 300deg,
+    #969ba5 320deg,
+    #7e838d 340deg,
+    #a3a7b1 360deg
+  );
+}
+.rplate.Bronze {
+  --sheet: conic-gradient(
+    from 0deg at 50% 52%,
+    #bc7951,
+    #e39361 20deg,
+    #ae6946 40deg,
+    #a46a47 60deg,
+    #ab6d4a 80deg,
+    #a66b48 100deg,
+    #8b5839 120deg,
+    #996240 140deg,
+    #be7f56 160deg,
+    #ad714c 180deg,
+    #9a6142 200deg,
+    #b67851 220deg,
+    #c4794f 240deg,
+    #7f4e32 260deg,
+    #855335 280deg,
+    #b87952 300deg,
+    #b2754f 320deg,
+    #9b6242 340deg,
+    #bc7951 360deg
+  );
+}
+.rplate.none {
+  background: linear-gradient(135deg, #2e3137, #0c0d10);
+}
+/* a plate that can be pressed (in the lists where it opens the deal on its Surgeon Usages screen) is a button drawn as the same plate */
+button.rplate {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  font-family: inherit;
+  cursor: pointer;
+}
+button.rplate:focus-visible {
+  outline: 2px solid var(--indigo2, #a5b4fc);
+  outline-offset: 2px;
+}
+@media (hover: hover) {
+  button.rplate:hover {
+    filter: brightness(1.15);
+  }
+}

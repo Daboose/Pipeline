@@ -1,0 +1,65 @@
+<template>
+  <section class="wrap">
+    <div class="none" lwc:if={loading}>Reading the bookings…</div>
+    <div class="none" lwc:if={error}>{error}</div>
+    <div class="none" lwc:if={noHospital}>This deal has no hospital.</div>
+    <div class="none" lwc:if={noBookings}>{noBookingsText}</div>
+
+    <template lwc:if={hasChart}>
+      <div class="ph">
+        <h2>MyCase bookings</h2>
+        <span class="win">{hospitalText} &middot; {windowLabel}</span>
+        <span class="sp"></span>
+        <span class="big">{grand}</span>
+        <span class="bigl">cases in the last 12 months</span>
+      </div>
+      <div class="legend">
+        <template for:each={legend} for:item="l">
+          <span class="lg" key={l.key}
+            ><i style={l.style}></i>{l.label} <b>{l.booked}</b></span
+          >
+        </template>
+      </div>
+      <div class="box">
+        <svg
+          viewBox={chart.viewBox}
+          role="img"
+          aria-label="Cases booked per month at the hospital, by type of surgery"
+        >
+          <template for:each={chart.grid} for:item="g">
+            <g key={g.key}>
+              <line class="gl" x1={g.x1} x2={g.x2} y1={g.y} y2={g.y}></line>
+              <text x={g.tx} y={g.ty} text-anchor="end">{g.label}</text>
+            </g>
+          </template>
+          <template for:each={chart.bars} for:item="b">
+            <g key={b.key} class="bar">
+              <template for:each={b.segments} for:item="seg">
+                <rect
+                  key={seg.key}
+                  class="seg"
+                  x={seg.x}
+                  y={seg.y}
+                  width={seg.w}
+                  height={seg.h}
+                  fill={seg.fill}
+                  data-m={seg.m}
+                  data-t={seg.t}
+                  onmousemove={handleMove}
+                  onmouseleave={handleLeave}
+                ></rect>
+              </template>
+              <text class="tot" x={b.tx} y={b.ty} text-anchor="middle">
+                {b.total}
+              </text>
+              <text x={b.lx} y={b.ly} text-anchor="middle">{b.label}</text>
+            </g>
+          </template>
+        </svg>
+        <div class="tip" lwc:if={tip.on} style={tip.style}>
+          <b>{tip.month}</b><br />{tip.line}<br />{tip.total}
+        </div>
+      </div>
+    </template>
+  </section>
+</template>

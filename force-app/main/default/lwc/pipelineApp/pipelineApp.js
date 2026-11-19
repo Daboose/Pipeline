@@ -49,7 +49,7 @@ function stableJson(value) {
  * Usages, Surgeries and Chatter, saved filters); 0.10 follows the final mockup: a filter bar with chips and a Change
  * selection panel with Apply, in place of the always-visible Choose Your Data panel.
  */
-const PIPELINE_VERSION = "0.143";
+const PIPELINE_VERSION = "0.159";
 
 /** The colours a person can choose for the headings (Robert, 2026-11-02); the look of each is in pipelineApp.css. */
 const HEAD_COLOURS = [
@@ -114,6 +114,10 @@ export default class PipelineApp extends LightningElement {
   filtersMounted = false; // the My filters panel: on the page (it stays a moment after closing, to slide away)
   filtersOn = false; // and slid into view
   flyOn = false; // the same for the deal flyout
+  flyScreen = "deal"; // the screen the deal flyout opens on: "usages" when a rating plate was pressed (Robert, 2026-11-19)
+  flySurgeon = null; // a surgeon with no deal whose plate was pressed in the campaign list: { accountId, name }; the flyout shows just their usages
+  flySurgeonOn = false; // and slid into view
+  usagesDirty = false; // a usage was changed in a flyout: the lists read the ratings again when it closes
   sumOpen = false;
   fsOn = false;
   settings = {
@@ -124,6 +128,7 @@ export default class PipelineApp extends LightningElement {
     altTint: false,
     cols: {},
     widths: {},
+    campHidden: null, // the campaign list's columns the person turned off (null until they choose; Robert, 2026-11-19)
     ui: {},
     last: null
   };
@@ -280,6 +285,7 @@ export default class PipelineApp extends LightningElement {
     document.removeEventListener("fullscreenchange", this.onFullScreenChange);
     clearTimeout(this.panelTimer);
     clearTimeout(this.flyTimer);
+    clearTimeout(this.surgeonTimer);
     clearTimeout(this.filtersTimer);
     clearTimeout(this.leaveTimer);
   }
@@ -368,6 +374,9 @@ export default class PipelineApp extends LightningElement {
         altTint: !!s.altTint,
         cols: s.cols && typeof s.cols === "object" ? s.cols : {},
         widths: s.widths && typeof s.widths === "object" ? s.widths : {},
+        campHidden: Array.isArray(s.campHidden)
+          ? s.campHidden.filter((x) => typeof x === "string")
+          : null,
         ui: s.ui && typeof s.ui === "object" ? s.ui : {},
         last: s.last && typeof s.last === "object" ? s.last : null
       };
@@ -536,6 +545,24 @@ export default class PipelineApp extends LightningElement {
   handleCampaignDealChange() {
     this.loadCampaign(true);
     this.loadDeals(true);
+  }
+  /**
+   * The refresh button in the top row (Robert, 2026-11-19): reads again what the screen is showing, the deals and, on a campaign, the
+   * campaign's members, so changes made elsewhere in Salesforce show without leaving the screen. The "Please wait" cover is on while it
+   * reads, and the "As at" time moves.
+   */
+  async handleRefresh() {
+    if (this.busy) return;
+    const deals = this.loadDeals(true);
+    const campaign = this.linkedCampaignId
+      ? this.loadCampaign(true)
+      : Promise.resolve();
+    this.busy = true; // loadDeals(true) switches the cover off at the start, so it goes on after
+    try {
+      await Promise.all([deals, campaign]);
+    } finally {
+      this.busy = false;
+    }
   }
   async loadCampaign(quiet) {
     const id = this.linkedCampaignId;
@@ -924,6 +951,7 @@ export default class PipelineApp extends LightningElement {
     this.flyExtra = [];
     this.flyIds = event.detail.ids;
     this.flyId = event.detail.id;
+    this.flyScreen = event.detail.screen || "deal";
     if (!this.flyOn) {
       this.flyTimer = this.slideIn(() => {
         this.flyOn = true;
@@ -936,7 +964,7 @@ export default class PipelineApp extends LightningElement {
    * order they are listed.
    */
   async handleCampaignDealOpen(event) {
-    const { id, ids } = event.detail;
+    const { id, ids, screen } = event.detail;
     this.busy = true;
     let deals = [];
     try {
@@ -958,13 +986,29 @@ export default class PipelineApp extends LightningElement {
     this.flyExtra = deals;
     this.flyIds = ids.filter((i) => have.has(i));
     this.flyId = id;
+    this.flyScreen = screen || "deal";
     if (!this.flyOn) {
       this.flyTimer = this.slideIn(() => {
         this.flyOn = true;
       });
     }
   }
+  /**
+   * A usage was added, changed or deleted from a flyout (Robert, 2026-11-19: a new usage got a rating but the table did not show it). The
+   * lists read the ratings again quietly when the flyout is closed, a little later than the change, because Salesforce recalculates a
+   * surgeon's rating in the background.
+   */
+  handleUsagesChanged() {
+    this.usagesDirty = true;
+  }
+  refreshAfterUsages() {
+    if (!this.usagesDirty) return;
+    this.usagesDirty = false;
+    this.loadDeals(true);
+    this.loadCampaign(true);
+  }
   handleDealClose() {
+    this.refreshAfterUsages();
     clearTimeout(this.flyTimer);
     this.flyOn = false;
     this.flyTimer = this.slideOut(() => {
@@ -972,6 +1016,47 @@ export default class PipelineApp extends LightningElement {
       this.flyLeaving = undefined;
       this.flyFromCampaign = false;
       this.flyExtra = [];
+      this.flyScreen = "deal";
+    });
+  }
+  /**
+   * A rating plate of a surgeon with no deal yet was pressed in the campaign list (Robert, 2026-11-19): there is no deal to open, so a
+   * flyout of the same kind opens with just the surgeon's usages (the Usage Card), where a usage can be added. A screen to add a deal
+   * for them is planned next.
+   */
+  handleSurgeonOpen(event) {
+    clearTimeout(this.surgeonTimer);
+    this.flySurgeon = event.detail;
+    if (!this.flySurgeonOn) {
+      this.surgeonTimer = this.slideIn(() => {
+        this.flySurgeonOn = true;
+      });
+    }
+  }
+  /**
+   * A new deal was made for a surgeon with none, from the campaign list (Robert, 2026-11-19): it has joined the campaign (or the screen says
+   * why not), the surgeon's flyout slides away and the deal's own flyout (the four screens) slides in on it; the lists read the deals again.
+   */
+  async handleDealCreated(event) {
+    const { id, linkError } = event.detail;
+    this.handleSurgeonClose();
+    this.loadCampaign(true);
+    this.loadDeals(true);
+    await this.handleCampaignDealOpen({
+      detail: { id, ids: [id], screen: "deal" }
+    });
+    this.error = linkError
+      ? `The deal was created, but it could not be added to the campaign: ${linkError}`
+      : this.flyId === id
+        ? ""
+        : "The deal was created, but you cannot open it here.";
+  }
+  handleSurgeonClose() {
+    this.refreshAfterUsages();
+    clearTimeout(this.surgeonTimer);
+    this.flySurgeonOn = false;
+    this.surgeonTimer = this.slideOut(() => {
+      this.flySurgeon = null;
     });
   }
   /**
@@ -1052,6 +1137,11 @@ export default class PipelineApp extends LightningElement {
     if (columns) cols[kind] = columns;
     else delete cols[kind];
     this.settings = { ...this.settings, cols };
+    this.persist();
+  }
+  /** The campaign list's Columns picker was used: the columns turned off are kept in the person's settings. */
+  handleCampaignColumns(event) {
+    this.settings = { ...this.settings, campHidden: event.detail.hidden };
     this.persist();
   }
   handleWidthsChange(event) {

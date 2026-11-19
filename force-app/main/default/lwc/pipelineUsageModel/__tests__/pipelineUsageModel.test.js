@@ -8,6 +8,7 @@ import {
   setField,
   toggleChip,
   GRID,
+  COLUMNS,
   buildTile
 } from "c/pipelineUsageModel";
 
@@ -125,7 +126,23 @@ describe("pipelineUsageModel", () => {
     expect(p.Supporting_Technologies__c).toEqual([]);
   });
 
-  it("builds one set of headings with the bearing under the Company column and hides empty rows when viewing", () => {
+  it("uses the same four columns for every portfolio, and the bearing type is in the Type column of the cup line", () => {
+    expect(COLUMNS).toEqual(["Company", "Product", "Type", "Cases / year"]);
+    Object.keys(GRID).forEach((k) => {
+      GRID[k].rows.forEach((r) => expect(r.cells).toHaveLength(4));
+    });
+    expect(GRID.Hip.rows[0].cells[2]).toBe("Hip_Stem_Type__c");
+    expect(GRID.Hip.rows[1].cells).toEqual([
+      "CompanyHipCups__c",
+      "ProductHipCups__c",
+      "HipBearingType__c",
+      null
+    ]);
+    expect(GRID.CMF.rows[0].cells[2]).toBe("SegmentCMFT__c");
+    expect(GRID.Knee.rows[0].cells[2]).toBeNull();
+  });
+
+  it("builds a flat list of cells, a line per product line, and hides empty lines when viewing", () => {
     const view = buildTile(
       "Hip",
       draftOf("Hip", {
@@ -138,16 +155,75 @@ describe("pipelineUsageModel", () => {
       {},
       "t"
     );
-    expect(view.heads.map((h) => h.text)).toEqual([
-      "Company",
-      "Product",
-      "Stem type",
-      "Cases per year"
+    // portfolio, line, then company, product, type, cases: six cells, one line, no cup to show
+    expect(view.lines).toBe(1);
+    expect(view.cells.map((c) => c.text)).toEqual([
+      "Hip",
+      "Stem",
+      "ZB",
+      "Taperloc",
+      "Cemented",
+      "20"
     ]);
-    expect(view.rows).toHaveLength(1); // no cup, no bearing: nothing to show
+    expect(view.cells[1].star).toBe(true); // the stem line has the mandatory fields
+    expect(view.showSide).toBe(true);
+    expect(view.sideStyle).toBe("grid-row: 1 / span 1");
     expect(view.hasChips).toBe(false);
+    expect(view.showEditChips).toBe(false);
+    const keys = view.cells.map((c) => c.key);
+    expect(new Set(keys).size).toBe(keys.length);
+  });
+
+  it("puts the bearing type on the cup line, greys the cup until the stem is filled, and spans the chips over the lines", () => {
+    const cup = buildTile(
+      "Hip",
+      draftOf("Hip", {
+        CompanyHipStems__c: "ZB",
+        ProductHipStems__c: "Taperloc",
+        CompanyHipCups__c: "ZB",
+        ProductHipCups__c: "G7",
+        HipBearingType__c: "Ceramic on Poly",
+        Procedure_Types__c: "Total"
+      }),
+      false,
+      {},
+      "t"
+    );
+    expect(cup.lines).toBe(2);
+    // the second line: no portfolio name, "Cup", company, product, bearing type, nothing for cases
+    expect(cup.cells.slice(6).map((c) => c.text)).toEqual([
+      "",
+      "Cup",
+      "ZB",
+      "G7",
+      "Ceramic on Poly",
+      ""
+    ]);
+    expect(cup.sideStyle).toBe("grid-row: 1 / span 2");
+    expect(cup.hasChips).toBe(true);
     const edit = buildTile("Hip", draftOf("Hip", {}), true, {}, "t");
-    expect(edit.rows).toHaveLength(4); // stem, cup, bearing heading, bearing choice
+    expect(edit.lines).toBe(2);
+    expect(edit.showSide).toBe(false);
+    expect(edit.showEditChips).toBe(false); // no chip choices from Salesforce here
+    const cupLine = edit.cells.slice(6);
+    expect(cupLine.map((c) => c.cls)).toContain("lc off");
+    const hint = cupLine.find((c) => c.cls === "hn");
+    expect(hint.text).toBe("Fill the stem company and product first.");
+    const bearing = cupLine.find((c) => c.field === "HipBearingType__c");
+    expect(bearing.options[0].label).toBe("Bearing type…");
+    expect(bearing.disabled).toBe(true);
+    const product = edit.cells.find((c) => c.field === "ProductHipStems__c");
+    expect(product.options[0].label).toBe("Product (company first)");
+    const cases = edit.cells.find((c) => c.field === "CasesPAHipStem__c");
+    expect(cases.placeholder).toBe("Cases per year");
+  });
+
+  it("marks a single-line portfolio's mandatory fields on the portfolio name, and shoulders have no star", () => {
+    const knee = buildTile("Knee", draftOf("Knee", {}), true, {}, "t");
+    expect(knee.cells[0]).toMatchObject({ text: "Knee", star: true });
+    expect(knee.cells[1]).toMatchObject({ text: "", star: false });
+    const cmft = buildTile("CMF", draftOf("CMF", {}), true, {}, "t");
+    expect(cmft.cells[0]).toMatchObject({ text: "CMFT", star: true });
     const shoulders = buildTile(
       "Shoulder",
       draftOf("Shoulder", {}),
@@ -155,10 +231,33 @@ describe("pipelineUsageModel", () => {
       {},
       "t"
     );
-    expect(shoulders.heads).toHaveLength(3);
-    expect(shoulders.rows.map((r) => r.label)).toEqual([
-      "Anatomical",
-      "Reverse"
+    expect(
+      shoulders.cells.filter((c) => c.cls.startsWith("lc")).map((c) => c.text)
+    ).toEqual(["Anatomical", "Reverse"]);
+    expect(shoulders.cells.some((c) => c.star)).toBe(false);
+    expect(shoulders.cells[0].text).toBe("Shoulders");
+  });
+
+  it("offers the chips as their own line while editing, with every choice Salesforce gives", () => {
+    const picks2 = {
+      Procedure_Types__c: {
+        values: [{ value: "Total" }, { value: "Revision" }]
+      },
+      Supporting_Technologies__c: { values: [{ value: "ROSA" }] }
+    };
+    const edit = buildTile(
+      "Knee",
+      draftOf("Knee", { Procedure_Types__c: "Total" }),
+      true,
+      picks2,
+      "t"
+    );
+    expect(edit.showEditChips).toBe(true);
+    expect(edit.proc.map((c) => [c.label, c.on])).toEqual([
+      ["Total", true],
+      ["Revision", false]
     ]);
+    expect(edit.chipGap).toBe(true);
+    expect(edit.showSide).toBe(false);
   });
 });

@@ -293,4 +293,135 @@ public with sharing class PipelineBookingsController {
     }
     return out;
   }
+
+  /** One type of surgery in the hospital's chart: its cases by month (the 12 whole months, oldest first). */
+  public class HospitalType {
+    /** Hip, Knee, Shoulder or CMFT. */
+    @AuraEnabled
+    public String name;
+    @AuraEnabled
+    public List<Integer> months = new List<Integer>();
+    @AuraEnabled
+    public Integer booked = 0;
+  }
+
+  /** What the hospital chart needs: the hospital, the 12 whole months and the four types' counts (always all four, in order). */
+  public class HospitalBookings {
+    @AuraEnabled
+    public Id hospitalId;
+    @AuraEnabled
+    public String hospitalName;
+    /** The first day of the first of the 12 whole months, and the last day of the last one (the current month is not included). */
+    @AuraEnabled
+    public Date windowStart;
+    @AuraEnabled
+    public Date windowEnd;
+    /** False when the hospital had no counted surgery in the window. */
+    @AuraEnabled
+    public Boolean hasBookings = false;
+    @AuraEnabled
+    public Integer booked = 0;
+    @AuraEnabled
+    public List<HospitalType> types = new List<HospitalType>();
+  }
+
+  /**
+   * ROSA deals (Robert, 2026-11-19): the MyCase bookings seen from the hospital's side. For the deal's Healthcare Facility, the
+   * surgeries of the last 12 whole months (a rolling window that leaves out the current month), by month and by type of surgery
+   * (Hip, Knee, Shoulder, CMFT), primary and revision together: it is cases booked. The same counting rules as the surgeon's
+   * panel (see the class header): the surgery has happened, has at least one usage item, is not a Z02 demo, and the anatomy comes
+   * from Case__c.Surgery_Type__c. A deal with no hospital returns no hospital; a hospital with no surgeries returns zeros and
+   * hasBookings false. No error either way.
+   *
+   * Who calls it: the pipelineHospitalBookings component (the MyCase Bookings screen of a ROSA deal) and its test class.
+   * What it touches: reads SalesRisks__c (the deal's hospital), Account (the name), Case__c and myCase_Usage_Item__c, in the
+   * signed-in person's own access (user mode). Changes nothing.
+   */
+  @AuraEnabled
+  public static HospitalBookings getHospitalBookings(Id dealId) {
+    HospitalBookings out = new HospitalBookings();
+    Date thisMonth = Date.today().toStartOfMonth();
+    out.windowStart = thisMonth.addMonths(-12);
+    out.windowEnd = thisMonth.addDays(-1);
+    Map<String, HospitalType> byAnatomy = new Map<String, HospitalType>();
+    for (String a : ORDER) {
+      HospitalType t = new HospitalType();
+      t.name = ANATOMY.get(a);
+      t.months = zeros();
+      byAnatomy.put(a, t);
+      out.types.add(t);
+    }
+    List<SalesRisks__c> d = [
+      SELECT Healthcare_Facility__c, Healthcare_Facility__r.Name
+      FROM SalesRisks__c
+      WHERE Id = :dealId
+      WITH USER_MODE
+      LIMIT 1
+    ];
+    if (d.isEmpty() || d[0].Healthcare_Facility__c == null) {
+      return out;
+    }
+    out.hospitalId = d[0].Healthcare_Facility__c;
+    out.hospitalName = d[0].Healthcare_Facility__r?.Name;
+    for (
+      Counted k : countedAtHospital(out.hospitalId, out.windowStart, thisMonth)
+    ) {
+      HospitalType t = byAnatomy.get(k.anatomy);
+      t.months[k.month] = t.months[k.month] + 1;
+      t.booked++;
+      out.booked++;
+    }
+    out.hasBookings = out.booked > 0;
+    return out;
+  }
+
+  /** The hospital's counted surgeries from `start` up to (not including) `endExclusive`: the surgeon rules, by facility. */
+  private static List<Counted> countedAtHospital(
+    Id hospital,
+    Date start,
+    Date endExclusive
+  ) {
+    List<Case__c> cases = [
+      SELECT Id, Surgery_Date__c, Surgery_Type__c, Procedure__c
+      FROM Case__c
+      WHERE
+        Healthcare_Facility__c = :hospital
+        AND Surgery_Date__c >= :start
+        AND Surgery_Date__c < :endExclusive
+        AND Surgery_Type__c IN :ORDER
+      WITH USER_MODE
+      LIMIT 20000
+    ];
+    List<Counted> out = new List<Counted>();
+    if (cases.isEmpty()) {
+      return out;
+    }
+    Set<Id> withItems = new Set<Id>();
+    for (AggregateResult ar : [
+      SELECT Usage_Sheet_ID__r.Case__c c
+      FROM myCase_Usage_Item__c
+      WHERE
+        Usage_Sheet_ID__r.Case__r.Healthcare_Facility__c = :hospital
+        AND Usage_Sheet_ID__r.Case__r.Surgery_Date__c >= :start
+        AND Usage_Sheet_ID__r.Case__r.Surgery_Date__c < :endExclusive
+      WITH USER_MODE
+      GROUP BY Usage_Sheet_ID__r.Case__c
+    ]) {
+      withItems.add((Id) ar.get('c'));
+    }
+    for (Case__c c : cases) {
+      if (!withItems.contains(c.Id) || c.Procedure__c == 'Z02') {
+        continue;
+      }
+      Counted k = new Counted();
+      k.anatomy = c.Surgery_Type__c;
+      k.revision = c.Procedure__c == 'A01' && c.Surgery_Type__c != '209';
+      k.month =
+        (c.Surgery_Date__c.year() - start.year()) * 12 +
+        c.Surgery_Date__c.month() -
+        start.month();
+      out.add(k);
+    }
+    return out;
+  }
 }

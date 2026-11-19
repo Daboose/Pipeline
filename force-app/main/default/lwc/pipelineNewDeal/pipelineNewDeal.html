@@ -1,0 +1,285 @@
+<template>
+  <div class="scroll">
+    <p class="err" lwc:if={noTypes}>
+      No record type is available for new deals for you.
+    </p>
+    <div class="errs" lwc:if={hasErrors}>
+      <template for:each={errors} for:item="e">
+        <div key={e.key}>{e.text}</div>
+      </template>
+    </div>
+    <div class="cols">
+      <div class="col">
+        <section class="card">
+          <h3>The new deal</h3>
+          <div class="grid">
+            <div class="wide">
+              <div class="top">
+                <div>
+                  <div class="fl">Portfolio <span class="req">*</span></div>
+                  <c-pipeline-segmented
+                    label="Portfolio of the new deal"
+                    options={portfolioOptions}
+                    value={port}
+                    onchange={handlePortfolio}
+                  ></c-pipeline-segmented>
+                </div>
+                <div>
+                  <div class="fl">Country <span class="req">*</span></div>
+                  <select
+                    class="in country"
+                    aria-label="Country"
+                    onchange={handleCountry}
+                  >
+                    <option value="" selected={noCountry}>Country…</option>
+                    <template for:each={countryOptions} for:item="o">
+                      <option
+                        key={o.value}
+                        value={o.value}
+                        selected={o.selected}
+                      >
+                        {o.label}
+                      </option>
+                    </template>
+                  </select>
+                </div>
+                <span class="rtype">{typeName}</span>
+              </div>
+            </div>
+            <template lwc:if={ready}>
+              <div class="wide stagerow" lwc:if={hasStages}>
+                <div class="fl">Stage <span class="req">*</span></div>
+                <div class="band">
+                  <c-pipeline-stage-slider
+                    steps={stages}
+                    won={stageWon}
+                    lost={stageLost}
+                    value={stageNow}
+                    onchange={handleStage}
+                  ></c-pipeline-stage-slider>
+                </div>
+              </div>
+              <div>
+                <div class="fl">Primary HCP <span class="req">*</span></div>
+                <c-pipeline-lookup
+                  field-name="Account__c"
+                  value-id={hcpId}
+                  value-name={hcpName}
+                  placeholder="Search by name…"
+                  onchange={handleHcp}
+                ></c-pipeline-lookup>
+              </div>
+              <div>
+                <div class="fl">Healthcare facility</div>
+                <c-pipeline-lookup
+                  field-name="Healthcare_Facility__c"
+                  value-id={facilityId}
+                  value-name={facilityName}
+                  placeholder="Search by name…"
+                  onchange={handleFacility}
+                ></c-pipeline-lookup>
+              </div>
+              <div>
+                <div class="fl">
+                  Expected closing quarter and year <span class="req">*</span>
+                </div>
+                <div class="pair">
+                  <select
+                    class="in"
+                    data-api="Expected_Closure_Quarter__c"
+                    aria-label="Expected closing quarter"
+                    onchange={handleQuarter}
+                  >
+                    <option value="" selected={quarterNone}>Quarter…</option>
+                    <template for:each={quarterOptions} for:item="o">
+                      <option
+                        key={o.value}
+                        value={o.value}
+                        selected={o.selected}
+                      >
+                        {o.label}
+                      </option>
+                    </template>
+                  </select>
+                  <select
+                    class="in"
+                    data-api="Expected_Closing_Year__c"
+                    aria-label="Expected closing year"
+                    onchange={handleYear}
+                  >
+                    <option value="" selected={yearNone}>Year…</option>
+                    <template for:each={yearOptions} for:item="o">
+                      <option
+                        key={o.value}
+                        value={o.value}
+                        selected={o.selected}
+                      >
+                        {o.label}
+                      </option>
+                    </template>
+                  </select>
+                </div>
+              </div>
+              <div>
+                <div class="fl">
+                  Expected annual value <span class="req">*</span>
+                </div>
+                <div class="money">
+                  <input
+                    class="in"
+                    type="text"
+                    inputmode="decimal"
+                    value={value}
+                    aria-label="Expected annual value"
+                    oninput={handleValue}
+                  />
+                  <select
+                    class="in"
+                    data-api="CurrencyIsoCode"
+                    aria-label="Currency"
+                    onchange={handleSelect}
+                  >
+                    <template for:each={currencyOptions} for:item="o">
+                      <option
+                        key={o.value}
+                        value={o.value}
+                        selected={o.selected}
+                      >
+                        {o.label}
+                      </option>
+                    </template>
+                  </select>
+                </div>
+              </div>
+              <div>
+                <div class="fl">Expected annual units / cases</div>
+                <input
+                  class="in"
+                  type="text"
+                  inputmode="numeric"
+                  value={units}
+                  aria-label="Expected annual units / cases"
+                  oninput={handleUnits}
+                />
+              </div>
+              <div>
+                <div class="fl">Owner <span class="req">*</span></div>
+                <span class="chosen" lwc:if={showOwnerChip}>
+                  <span class="nm">{ownerName}</span>
+                  <span class="you" lwc:if={ownerIsMe}>(you)</span>
+                  <button
+                    type="button"
+                    class="xcirc"
+                    aria-label="Change the owner"
+                    onclick={handleOwnerOpen}
+                  ></button>
+                </span>
+                <div class="search" lwc:if={ownerOpen}>
+                  <input
+                    class="in ownerin"
+                    type="text"
+                    placeholder="Search people…"
+                    autocomplete="off"
+                    onchange={handleOwnerTerm}
+                    oninput={handleOwnerTerm}
+                  />
+                  <div class="pick" lwc:if={showOwnerList}>
+                    <template for:each={ownerHits} for:item="h">
+                      <div
+                        key={h.id}
+                        class="opt"
+                        data-id={h.id}
+                        data-name={h.name}
+                        onclick={handleOwnerPick}
+                      >
+                        {h.name}<small>{h.sub}</small>
+                      </div>
+                    </template>
+                    <div class="opt none" lwc:if={ownerNone}>No one found</div>
+                  </div>
+                  <button
+                    type="button"
+                    class="btn ghost keep"
+                    onclick={handleOwnerCancel}
+                  >
+                    Keep {ownerName}
+                  </button>
+                </div>
+              </div>
+            </template>
+          </div>
+        </section>
+
+        <section class="card" lwc:if={ready}>
+          <h3>Brand and switches</h3>
+          <div class="fl">Brand <span class="req">*</span></div>
+          <div class="chips" lwc:if={hasBrands}>
+            <template for:each={brandChoices} for:item="b">
+              <button
+                key={b.value}
+                type="button"
+                class={b.cls}
+                data-value={b.value}
+                onclick={handleBrand}
+              >
+                {b.label}
+              </button>
+            </template>
+          </div>
+          <p class="note" lwc:else>
+            Choose a portfolio first: the brands follow it.
+          </p>
+          <div class="flags">
+            <template for:each={flags} for:item="f">
+              <div key={f.api} class="flag">
+                <c-pipeline-segmented
+                  heading={f.label}
+                  label={f.label}
+                  options={f.options}
+                  value={f.value}
+                  data-api={f.api}
+                  onchange={handleFlag}
+                ></c-pipeline-segmented>
+              </div>
+            </template>
+          </div>
+          <div class="stage" lwc:if={showMyMoStage}>
+            <div class="fl">MyMobility stage</div>
+            <select
+              class="in"
+              data-api="myMo_Stage__c"
+              aria-label="MyMobility stage"
+              onchange={handleSelect}
+            >
+              <option value="">Choose…</option>
+              <template for:each={myMoStageOptions} for:item="o">
+                <option key={o.value} value={o.value} selected={o.selected}>
+                  {o.label}
+                </option>
+              </template>
+            </select>
+          </div>
+        </section>
+      </div>
+      <div class="col" lwc:if={ready}>
+        <section class="card bgcard">
+          <h3>Background information</h3>
+          <textarea
+            class="in area"
+            data-api="Objective__c"
+            aria-label="Background information"
+            onchange={handleText}
+          ></textarea>
+        </section>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <span class="note">{footNote}</span>
+    <span class="sp"></span>
+    <button type="button" class="btn sec" onclick={handleCancel}>Cancel</button>
+    <button type="button" class="btn" disabled={cantSave} onclick={handleSave}>
+      {saveWord}
+    </button>
+  </div>
+</template>

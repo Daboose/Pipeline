@@ -24,8 +24,6 @@ import {
 } from "c/pipelineFormat";
 import { usdAmount } from "c/pipelineCurrency";
 
-const SLIDE_IN_DELAY_MS = 30; // lets the closed position be drawn first, so the slide runs
-const SLIDE_OUT_MS = 450; // a little longer than the slide itself (0.4 s in the style sheet)
 /**
  * Fields that exist in only some orgs and that only some people may see: a row for one of them is shown only when Salesforce
  * reports the field to this person. None at the moment (the Link to APAC Event field was taken out on 2026-11-07).
@@ -49,6 +47,7 @@ const FIELDS = {
     ["AmountPerYear__c", "Expected annual value", "number"],
     ["CurrencyIsoCode", "Currency", "picklist"],
     ["UnitsCasesPerYear__c", "Expected annual units / cases", "number"],
+    ["OwnerId", "Owner", "lookup"],
     ["Brand__c", "Brand", "multi", false, true],
     ["OnHold__c", "On hold", "bool"],
     ["Priority__c", "Rep priority", "bool"],
@@ -65,6 +64,7 @@ const FIELDS = {
     ["Expected_Closing_Year__c", "Expected closing year", "picklist"],
     ["AmountPerYear__c", "Annual value at risk", "number"],
     ["CurrencyIsoCode", "Currency", "picklist"],
+    ["OwnerId", "Owner", "lookup"],
     ["Portfolio__c", "Portfolio", "multi", false, true],
     ["Brand__c", "Brand", "multi", false, true],
     ["Priority__c", "Rep priority", "bool"],
@@ -78,6 +78,7 @@ const FIELDS = {
     ["ROSA_Sales_Type__c", "ROSA sales type", "multi", false, true],
     ["ROSAGrowthDollar__c", "ROSA growth $", "number"],
     ["CurrencyIsoCode", "Currency", "picklist"],
+    ["OwnerId", "Owner", "lookup"],
     ["Expected_Closure_Quarter__c", "Expected closing quarter", "picklist"],
     ["Expected_Closing_Year__c", "Expected closing year", "picklist"],
     ["Install_Date__c", "Install date", "date"],
@@ -92,6 +93,38 @@ const FIELDS = {
     ["Priority__c", "Rep priority", "bool"],
     ["State_Priority__c", "State priority", "bool"],
     ["Objective__c", "Background information", "textarea", false, true]
+  ]
+};
+/**
+ * What a deal must have to be saved (Robert, 2026-11-19: the same rules on a new deal and when editing one, for every kind of deal). Each is
+ * checked when Save is pressed and shown with a red star. An implant opportunity: the surgeon, the expected annual value, the expected
+ * closing quarter and year (both), at least one brand and an owner (the units / cases is optional). A risk: the same, with its own value
+ * (the annual value at risk). A ROSA deal: the healthcare facility (its customer; it has no brand), the ROSA growth value, the closing
+ * quarter and year (both) and an owner; the surgeon is optional there, as before.
+ */
+const MUST = {
+  opp: [
+    ["Account__c", "Primary HCP"],
+    ["AmountPerYear__c", "Expected annual value"],
+    [QUARTER_FIELD, "Expected closing quarter"],
+    [YEAR_FIELD, "Expected closing year"],
+    ["Brand__c", "Brand"],
+    ["OwnerId", "Owner"]
+  ],
+  risk: [
+    ["Account__c", "Primary HCP"],
+    ["AmountPerYear__c", "Annual value at risk"],
+    [QUARTER_FIELD, "Expected closing quarter"],
+    [YEAR_FIELD, "Expected closing year"],
+    ["Brand__c", "Brand"],
+    ["OwnerId", "Owner"]
+  ],
+  rosa: [
+    ["Healthcare_Facility__c", "Healthcare facility"],
+    ["ROSAGrowthDollar__c", "ROSA growth $"],
+    [QUARTER_FIELD, "Expected closing quarter"],
+    [YEAR_FIELD, "Expected closing year"],
+    ["OwnerId", "Owner"]
   ]
 };
 const MYMO_FIELD = "myMo__c";
@@ -111,11 +144,11 @@ const VALUE_LABEL = {
   risk: "Annual value at risk",
   rosa: "ROSA growth value"
 };
-const KIND_NAME = {
-  opp: "Opportunity",
-  risk: "Risk",
-  rosa: "ROSA opportunity"
-};
+
+/** The relationship that holds a lookup's record: Account__c is Account__r, but the owner (OwnerId) is Owner. */
+function relationOf(fieldName) {
+  return fieldName === "OwnerId" ? "Owner" : fieldName.replace(/__c$/, "__r");
+}
 
 function parseErrors(e) {
   const out = [];
@@ -136,6 +169,9 @@ function parseErrors(e) {
 /**
  * Pipeline: the deal flyout. Opens over the screen (the screen behind it is blurred and switched off) with the stage
  * path across the top, a strip of the deal's key numbers, the deal's fields on the left and its Chatter on the right.
+ * The top row holds four pills (the first names the deal, then Surgeon Usages, MyCase Bookings, Campaigns): each swaps the whole
+ * space under the top row for its own screen (the Usage Card, the surgeon's or the hospital's bookings, the campaigns); a ROSA deal
+ * has no surgeon, so no Surgeon Usages and hospital bookings. Mockup docs/mockups/pipeline_deal_screens_v1.html.
  * Previous and Next move through the list the deal was opened from. Fields are changed and saved with Salesforce's own
  * record service, so field access, validation rules and the deal's existing automations all behave exactly as they do
  * on the standard page. Nothing is saved until Save changes is pressed.
@@ -148,9 +184,18 @@ export default class PipelineDeal extends LightningElement {
     return this._open;
   }
   set open(value) {
+    const wasOpen = this._open;
     this._open = value;
-    if (!value) this.resetPanel(); // the flyout is sliding away; it opens next time with no panel over it
+    if (!value)
+      this.screen = "deal"; // the flyout is sliding away; it opens next time on the deal itself
+    else if (!wasOpen) {
+      // opened from a rating plate it starts on Surgeon Usages (a ROSA deal has none, so it starts on the deal)
+      this.screen = this.startScreen || "deal";
+      if (this.screen === "usages" && !this.showSurgeon) this.screen = "deal";
+    }
   }
+  /** The screen to open on: "deal" (the default) or "usages" (Robert, 2026-11-19: a click on a rating plate opens the surgeon's usages). */
+  @api startScreen = "deal";
   _deal;
   /** USD chosen and the Salesforce rates read: the expected annual value in the top row is shown in US dollars (the field below stays in the deal's own currency, which is what is edited). */
   @api usd = false;
@@ -162,15 +207,10 @@ export default class PipelineDeal extends LightningElement {
 
   draft = {};
   draftNames = {}; // the names of records picked in this edit, by field
-  savedTick = 0; // counts saves, so the Usages and Case Bookings panels read again
-  campaignsNow = null; // the campaign count after a change made in the Campaigns panel; null until then
-  panel = ""; // which panel is over the deal: usages, cases or none
-  panelMounted = false; // the panel is on the page (it stays a moment after closing, to slide away)
-  panelOn = false; // and slid into view
-  panelTimer;
-  usageTick = 0; // counts changes to the surgeon's usages (from either panel), so both panels and the button badges read again
-  badges; // what the MyCase Bookings button shows: { booked } (the usages' age is no longer shown)
-  usageAction = null; // what the Surgeon Usages panel wants in the bottom row: { kind: "" | "edit" | "add", canSubmit, saving }
+  savedTick = 0; // counts saves, so the MyCase Bookings screens read again
+  campaignsNow = null; // the campaign count after a change made on the Campaigns screen; null until then
+  screen = "deal"; // which of the four screens is shown under the top row: deal, usages, cases or campaigns
+  badges; // what the MyCase Bookings pill shows: { booked }
   errors = [];
   savedMsg = false;
   saving = false;
@@ -181,61 +221,37 @@ export default class PipelineDeal extends LightningElement {
     return this.open ? "scrim on" : "scrim";
   }
 
-  /* ----- the Usages and Case Bookings panels (slide in over everything under the header; the header and bottom bar stay) ----- */
+  /* ----- the four screens (Robert, 2026-11-19): the top row stays, the pills choose what fills the space under it ----- */
+  get onDeal() {
+    return this.screen === "deal";
+  }
   get usagesOpen() {
-    return this.panelMounted && this.panel === "usages";
+    return this.screen === "usages";
   }
   get casesOpen() {
-    return this.panelMounted && this.panel === "cases";
+    return this.screen === "cases" && this.showSurgeon;
+  }
+  /** A ROSA deal has no surgeon: its MyCase Bookings are the hospital's. */
+  get hospitalCasesOpen() {
+    return this.screen === "cases" && !this.showSurgeon;
   }
   get campaignsOpen() {
-    return this.panelMounted && this.panel === "campaigns";
+    return this.screen === "campaigns";
   }
-  /**
-   * The bottom row holds only action buttons (Robert, 2026-11-04): over the deal itself, Open in Salesforce, Cancel and Save
-   * changes; while the Surgeon Usages panel is editing or adding, its Cancel and Save changes / Add usage; otherwise nothing.
-   */
-  get showDealActions() {
-    return !this.panelMounted;
+  /** The usages, the surgeon's bookings and the campaigns scroll inside the flyout; the hospital chart fits the space it is given. */
+  get scrollScreen() {
+    return !this.hospitalCasesOpen;
   }
-  get showPanelActions() {
-    return (
-      this.panelMounted &&
-      this.panel === "usages" &&
-      !!this.usageAction &&
-      !!this.usageAction.kind
-    );
-  }
-  get panelSubmitLabel() {
-    return this.usageAction && this.usageAction.kind === "add"
-      ? "Add usage"
-      : "Save changes";
-  }
-  get panelSubmitDisabled() {
-    return (
-      !this.usageAction ||
-      !this.usageAction.canSubmit ||
-      this.usageAction.saving
-    );
-  }
-  handleActionState(event) {
-    this.usageAction = event.detail;
-  }
-  handlePanelCancel() {
-    const u = this.template.querySelector("c-pipeline-usages");
-    if (u) u.cancel();
-  }
-  handlePanelSubmit() {
-    const u = this.template.querySelector("c-pipeline-usages");
-    if (u) u.submit();
-  }
-  /** Goes up when the deal is saved or the usages change, so the panels read their data again. */
-  get panelRefresh() {
-    return this.savedTick + this.usageTick;
-  }
+  /** A usage was added, changed or deleted on the Usages screen: the screen is told, so the lists read the ratings again. */
   handleUsagesChanged() {
-    this.usageTick += 1;
-    this.loadBadges();
+    this.dispatchEvent(new CustomEvent("usageschanged"));
+  }
+  handleScreen(event) {
+    this.screen = event.currentTarget.dataset.screen;
+  }
+  /** Goes up when the deal is saved, so the bookings read their data again. */
+  get panelRefresh() {
+    return this.savedTick;
   }
   loadBadges() {
     const id = this.recordId;
@@ -257,14 +273,32 @@ export default class PipelineDeal extends LightningElement {
     if (!b || !b.surgeonId) return null;
     return { text: String(b.booked), cls: "badge" };
   }
-  get layerCls() {
-    return this.panelOn ? "layer on" : "layer";
+  /** The lit pill is the screen on show (a filled indigo pill; the others are filled slate). */
+  pillCls(name) {
+    return this.screen === name ? "btn nav on" : "btn nav";
+  }
+  get dealBtnCls() {
+    return this.pillCls("deal");
   }
   get usagesBtnCls() {
-    return this.panelOn && this.panel === "usages" ? "btn nav on" : "btn nav";
+    return this.pillCls("usages");
   }
   get casesBtnCls() {
-    return this.panelOn && this.panel === "cases" ? "btn nav on" : "btn nav";
+    return this.pillCls("cases");
+  }
+  get campaignsBtnCls() {
+    return this.pillCls("campaigns");
+  }
+  /** The first pill names the deal: "Extremities Opportunity", "Knee Risk", "ROSA". A risk with several portfolios is just "Risk". */
+  get kindLabel() {
+    const d = this._deal || {};
+    if (this.kind === "rosa") return "ROSA";
+    const seg = d.segment && !d.segment.includes(";") ? d.segment + " " : "";
+    return seg + (this.kind === "risk" ? "Risk" : "Opportunity");
+  }
+  /** The surgeon (Primary HCP) of the deal as saved: the Usages screen reads and edits this account's usages. */
+  get accountId() {
+    return this.current("Account__c") || undefined;
   }
   /** How many campaigns the deal is in: from the list, and kept right while the person puts the deal in or out. */
   get campaignsCount() {
@@ -273,69 +307,6 @@ export default class PipelineDeal extends LightningElement {
   }
   handleCampaignsChanged(event) {
     this.campaignsNow = event.detail.linkedCount;
-  }
-  get campaignsBtnCls() {
-    return this.panelOn && this.panel === "campaigns"
-      ? "btn nav on"
-      : "btn nav";
-  }
-  get panelTitle() {
-    if (this.panel === "cases") return "MyCase bookings";
-    if (this.panel === "campaigns") return "Campaigns";
-    return "Surgeon usages";
-  }
-  get panelSubtitle() {
-    return (this._deal && this._deal.hcp) || "";
-  }
-  /** Opens a panel (put on the page first, switched on a moment later so the slide runs), or swaps to it if another is open. */
-  openPanel(kind) {
-    clearTimeout(this.panelTimer);
-    this.usageAction = null;
-    this.panel = kind;
-    if (this.panelMounted && this.panelOn) return;
-    this.panelMounted = true;
-    this.panelOn = false;
-    // eslint-disable-next-line @lwc/lwc/no-async-operation
-    this.panelTimer = setTimeout(() => {
-      this.panelOn = true;
-    }, SLIDE_IN_DELAY_MS);
-  }
-  /** Closes the panel: switched off first, taken off the page once it has slid away. */
-  closePanel() {
-    if (!this.panelMounted) return;
-    this.usageAction = null;
-    clearTimeout(this.panelTimer);
-    this.panelOn = false;
-    // eslint-disable-next-line @lwc/lwc/no-async-operation
-    this.panelTimer = setTimeout(() => {
-      this.panelMounted = false;
-      this.panel = "";
-    }, SLIDE_OUT_MS);
-  }
-  resetPanel() {
-    clearTimeout(this.panelTimer);
-    this.usageAction = null;
-    this.panelOn = false;
-    this.panelMounted = false;
-    this.panel = "";
-  }
-  handleUsagesButton() {
-    if (this.panelOn && this.panel === "usages") this.closePanel();
-    else this.openPanel("usages");
-  }
-  handleCasesButton() {
-    if (this.panelOn && this.panel === "cases") this.closePanel();
-    else this.openPanel("cases");
-  }
-  handleCampaignsButton() {
-    if (this.panelOn && this.panel === "campaigns") this.closePanel();
-    else this.openPanel("campaigns");
-  }
-  handlePanelClose() {
-    this.closePanel();
-  }
-  disconnectedCallback() {
-    clearTimeout(this.panelTimer);
   }
   get flyCls() {
     return this.open ? "fly on" : "fly";
@@ -355,6 +326,8 @@ export default class PipelineDeal extends LightningElement {
     }
     const changed = !this._deal || !value || this._deal.id !== value.id;
     this._deal = value;
+    // Next or Previous may land on a ROSA deal, which has no Surgeon Usages: it shows the deal itself instead
+    if (this.screen === "usages" && !this.showSurgeon) this.screen = "deal";
     if (changed) {
       this.campaignsNow = null;
       this.badges = undefined;
@@ -365,41 +338,6 @@ export default class PipelineDeal extends LightningElement {
   get showSurgeon() {
     return this.kind !== "rosa";
   }
-  /** The deal's own area for the usage ratings: Hip, Knee, Shoulder (Extremities) or CMF. */
-  get area() {
-    return (
-      { Hip: "Hip", Knee: "Knee", Extremities: "Shoulder", CMFT: "CMF" }[
-        this._deal && this._deal.segment
-      ] || ""
-    );
-  }
-  get ownerName() {
-    return (this._deal && this._deal.ownerName) || "";
-  }
-  get country() {
-    return (this._deal && this._deal.ownerCountry) || "";
-  }
-  /** A manager looking at someone else's deal may ask the rep to check the usages. */
-  get canAsk() {
-    return !!(
-      this.isManager &&
-      this._deal &&
-      this._deal.ownerId !== this.viewerId
-    );
-  }
-  get isRep() {
-    return !this.isManager;
-  }
-  handleAskCheck() {
-    const d = this._deal;
-    const chatter = this.template.querySelector("c-pipeline-chatter");
-    if (chatter && d) {
-      chatter.prefill(
-        `@${d.ownerName} could you please check ${d.hcp}'s usages? They were last updated a while ago and the rating may be out of date.`
-      );
-    }
-  }
-
   /**
    * Salesforce's page puts a text box's value on as an attribute, which a text box does not show, so the Background
    * Information (and any other text box) would stay blank. Its value is set here as a property instead; a box the
@@ -426,9 +364,7 @@ export default class PipelineDeal extends LightningElement {
     FIELDS[this.kind].forEach((f) => out.push(`SalesRisks__c.${f[0]}`));
     FIELDS[this.kind]
       .filter((f) => f[2] === "lookup")
-      .forEach((f) =>
-        out.push(`SalesRisks__c.${f[0].replace(/__c$/, "__r")}.Name`)
-      );
+      .forEach((f) => out.push(`SalesRisks__c.${relationOf(f[0])}.Name`));
     return out;
   }
 
@@ -539,14 +475,6 @@ export default class PipelineDeal extends LightningElement {
     if (!this.updateable("Stage__c")) return;
     this.setDraft("Stage__c", event.detail.value);
   }
-  /** The kind of deal, which used to sit under the surgeon's name: an opportunity shows its portfolio, the others their name. */
-  typeItem(d) {
-    if (this.kind === "opp") {
-      return { label: "Opportunity", value: d.segment || "–" };
-    }
-    const seg = this.kind === "risk" && d.segment ? d.segment + " " : "";
-    return { label: "Type", value: seg + KIND_NAME[this.kind] };
-  }
   stripMoney(d) {
     if (this.usd && this.rates) {
       const u = usdAmount(d.value, d.currencyCode, this.rates);
@@ -562,7 +490,6 @@ export default class PipelineDeal extends LightningElement {
     const quiet = d.isClosed || d.onHold;
     return [
       { label: "Owner", value: d.ownerName || "–" },
-      this.typeItem(d),
       {
         label: VALUE_LABEL[this.kind],
         value: this.stripMoney(d)
@@ -660,7 +587,7 @@ export default class PipelineDeal extends LightningElement {
           api: fieldName,
           label,
           hasLabel: true,
-          req: !!req,
+          req: !!req || this.isMust(fieldName),
           value: value === null || value === undefined ? "" : value,
           cls:
             "field" +
@@ -734,7 +661,7 @@ export default class PipelineDeal extends LightningElement {
     const rel =
       this.record &&
       this.record.data &&
-      this.record.data.fields[fieldName.replace(/__c$/, "__r")];
+      this.record.data.fields[relationOf(fieldName)];
     const name = rel && rel.value && rel.value.fields && rel.value.fields.Name;
     return name ? name.value : "";
   }
@@ -810,7 +737,38 @@ export default class PipelineDeal extends LightningElement {
   get hasErrors() {
     return this.errors.length > 0;
   }
+  /** True for a field this kind of deal must have filled in (shown with a red star, and checked when Save is pressed). */
+  isMust(fieldName) {
+    return (MUST[this.kind] || []).some(([field]) => field === fieldName);
+  }
+  /** What a deal must have that is empty now (counting what has been typed but not saved), as messages. The quarter and the year are named together. */
+  get missingMust() {
+    const empty = (fieldName) => {
+      const v = this.valueOf(fieldName);
+      return v === null || v === undefined || v === "";
+    };
+    const out = [];
+    (MUST[this.kind] || []).forEach(([field, label]) => {
+      if (!empty(field) || !this.fieldAvailable(field)) return;
+      if (field === QUARTER_FIELD || field === YEAR_FIELD) {
+        const text = "Expected closing quarter and year are both needed.";
+        if (!out.includes(text)) out.push(text);
+      } else if (field === "Brand__c") {
+        out.push("Choose at least one brand.");
+      } else {
+        out.push(`${label} is needed.`);
+      }
+    });
+    return out;
+  }
   handleSave() {
+    const missing = this.missingMust;
+    if (missing.length) {
+      this.errors = missing.map((text, key) => ({ key, text }));
+      const body = this.template.querySelector(".body");
+      if (body) body.scrollTop = 0;
+      return;
+    }
     const fields = { Id: this.recordId };
     Object.entries(this.draft).forEach(([k, v]) => {
       fields[k] = v === "" ? null : v;

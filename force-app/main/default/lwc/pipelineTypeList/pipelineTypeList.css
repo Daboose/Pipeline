@@ -1,4 +1,5 @@
 @import "c/pipelineStyles";
+@import "c/pipelineRatingStyles";
 
 :host {
   display: block;
@@ -100,6 +101,10 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+/* a rating plate is never cut with dots: the column may be a little narrower than the plate (Robert, 2026-11-19) */
+.tbl td.ratecell {
+  text-overflow: clip;
 }
 .num {
   text-align: right;
@@ -379,32 +384,4 @@
 /* the Sales rep on a plain (one rep) list: the name on each row, in the first column, like any other cell */
 .tbl td.repplain {
   font-weight: 700;
-}
-
-/* the rating plates: the same brushed-metal colours as the Campaign list (Robert, 2026-11-16) */
-.rate {
-  display: inline-block;
-  border-radius: 6px;
-  padding: 0 10px;
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  line-height: 1.7;
-  color: #1b2640;
-}
-.rate.Platinum {
-  background: linear-gradient(135deg, #f1f4f8, #aeb9c8);
-}
-.rate.Gold {
-  background: linear-gradient(135deg, #ffe08a, #d9a21b);
-}
-.rate.Silver {
-  background: linear-gradient(135deg, #eef0f3, #b4b8bf);
-}
-.rate.Bronze {
-  background: linear-gradient(135deg, #f0c9a0, #b8763a);
-}
-.norate {
-  color: var(--muted);
 }

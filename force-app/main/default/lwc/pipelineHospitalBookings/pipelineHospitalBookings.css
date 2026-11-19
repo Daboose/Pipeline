@@ -1,0 +1,115 @@
+/* the component fills the space its parent gives it: a column of heading, legend and the chart box, which takes what is left */
+:host {
+  display: block;
+  height: 100%;
+}
+.wrap {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.none {
+  color: var(--muted);
+  padding: 6px 0;
+}
+.ph {
+  flex: none;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+}
+h2 {
+  margin: 0;
+  font-size: 18px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--head);
+}
+.win {
+  color: var(--muted);
+  font-size: 15px;
+}
+.sp {
+  flex: 1;
+}
+.big {
+  font-size: 34px;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--text);
+}
+.bigl {
+  color: var(--muted);
+  font-size: 15px;
+}
+.legend {
+  flex: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.lg {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 16px 6px 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--panel);
+  color: var(--text);
+  font-size: 16px;
+}
+.lg i {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+}
+.lg b {
+  font-size: 18px;
+}
+/* the chart box takes what is left; the floor only matters if the parent gives no height at all */
+.box {
+  flex: 1;
+  min-height: 200px;
+  position: relative;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 8px;
+}
+svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+svg text {
+  fill: var(--muted);
+  font-size: 15px;
+  font-family: inherit;
+}
+svg text.tot {
+  fill: var(--text);
+  font-size: 17px;
+  font-weight: 800;
+}
+svg .gl {
+  stroke: var(--grid-line, rgba(93, 107, 133, 0.3));
+  stroke-width: 1;
+}
+svg rect.seg:hover {
+  opacity: 0.8;
+}
+.tip {
+  position: absolute;
+  pointer-events: none;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: var(--text);
+  color: var(--panel);
+  font-size: 15px;
+  line-height: 1.35;
+  white-space: nowrap;
+  z-index: 5;
+}

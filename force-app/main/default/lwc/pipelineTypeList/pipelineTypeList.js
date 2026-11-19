@@ -507,14 +507,15 @@ export default class PipelineTypeList extends LightningElement {
         };
       }
       case "rating": {
-        // the metal plate the Campaign list uses, or "Not rated" in quiet words
+        // a small plate: brushed metal for a rating, flat black for "Not rated" (Robert, 2026-11-19)
         const r = ratingRank(d.rating) === null ? "" : properRating(d.rating);
         return {
           ...base,
-          tag: !!r,
-          tagCls: "rate " + r,
-          text: r || "Not rated",
-          textCls: r ? "" : "norate"
+          cls: "ratecell",
+          tag: true,
+          plate: true,
+          tagCls: "rplate " + (r || "none"),
+          text: r || "Not rated"
         };
       }
       case "value":
@@ -617,6 +618,23 @@ export default class PipelineTypeList extends LightningElement {
       this.sortDir = def && def[3] ? -1 : 1;
     }
     this.shown = PAGE;
+  }
+  /**
+   * A press on a rating plate (Robert, 2026-11-19): opens the deal as a click on its line does, but on its Surgeon Usages screen, so a
+   * rating can be put right (or a usage added for a surgeon who is not rated) at once. The line's own click does not also fire.
+   */
+  handlePlate(event) {
+    event.stopPropagation();
+    const row = event.currentTarget.closest("tr");
+    this.dispatchEvent(
+      new CustomEvent("dealopen", {
+        detail: {
+          id: row.dataset.id,
+          ids: this.orderedDeals.map((d) => d.id),
+          screen: "usages"
+        }
+      })
+    );
   }
   handleOpenDeal(event) {
     this.dispatchEvent(

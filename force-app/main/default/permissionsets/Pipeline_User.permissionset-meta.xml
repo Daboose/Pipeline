@@ -17,6 +17,14 @@
     <enabled>true</enabled>
   </classAccesses>
   <classAccesses>
+    <apexClass>PipelineUsageCardController</apexClass>
+    <enabled>true</enabled>
+  </classAccesses>
+  <classAccesses>
+    <apexClass>PipelineUsageEditController</apexClass>
+    <enabled>true</enabled>
+  </classAccesses>
+  <classAccesses>
     <apexClass>PipelineLookupController</apexClass>
     <enabled>true</enabled>
   </classAccesses>
@@ -45,7 +53,7 @@
     <enabled>true</enabled>
   </classAccesses>
   <description
-  >Pipeline: lets a person open Pipeline, keep their screen choices, see a campaign&apos;s members, and put a deal they can edit in or out of sales campaigns. No other extra access to deals. Everyone who uses Pipeline needs this.</description>
+  >Pipeline: lets a person open Pipeline, keep their screen choices, see a campaign&apos;s members, use a deal's Usages screen and put a deal they can edit in or out of campaigns. No other extra access to deals. Everyone who uses Pipeline needs this.</description>
   <hasActivationRequired>false</hasActivationRequired>
   <label>Pipeline User</label>
   <objectPermissions>

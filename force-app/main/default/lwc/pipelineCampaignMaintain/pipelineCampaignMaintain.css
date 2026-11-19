@@ -1,3 +1,4 @@
+@import "c/pipelineRatingStyles";
 /* the Maintain list: one heading row per surgeon, then a row per deal with a round + or minus (Robert, 2026-11-16; mockup pipeline_campaign_maintain_v1.html) */
 :host {
   display: block;
@@ -160,30 +161,12 @@ tr.dl.lock td {
   color: var(--muted);
   font-size: 12px;
 }
-/* the rating plates, the same brushed-metal colours as the lists */
-.rate {
-  display: inline-block;
-  border-radius: 6px;
-  padding: 0 10px;
+/* the rating plates are the shared small plates (c/pipelineRatingStyles); beside a surgeon's name they keep a gap */
+.rplate {
   margin-right: 6px;
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  line-height: 1.7;
-  color: #1b2640;
-}
-.rate.Platinum {
-  background: linear-gradient(135deg, #f1f4f8, #aeb9c8);
-}
-.rate.Gold {
-  background: linear-gradient(135deg, #ffe08a, #d9a21b);
-}
-.rate.Silver {
-  background: linear-gradient(135deg, #eef0f3, #b4b8bf);
-}
-.rate.Bronze {
-  background: linear-gradient(135deg, #f0c9a0, #b8763a);
+  width: auto; /* a surgeon with several ratings reads "Shoulder Platinum": the plate grows to fit its words */
+  min-width: 116px;
+  padding: 0 12px;
 }
 /* the message that says what was done, and the "Please wait" cover over everything while a press is saved */
 .toast {

@@ -74,6 +74,29 @@
       </button>
       <button
         type="button"
+        class="icb"
+        lwc:if={ready}
+        onclick={handleRefresh}
+        title="Refresh the data"
+        aria-label="Refresh the data"
+      >
+        <svg
+          viewBox="0 0 24 24"
+          width="22"
+          height="22"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <polyline points="23 4 23 10 17 10"></polyline>
+          <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+        </svg>
+      </button>
+      <button
+        type="button"
         class={fsCls}
         onclick={handleFullScreen}
         title={fsText}
@@ -134,11 +157,14 @@
         members={campaignDetail.members}
         maintainable
         deals-openable
+        hidden-columns={settings.campHidden}
+        oncolumnschange={handleCampaignColumns}
         value-row
         currency={settings.currency}
         oncurrencychange={handleCurrencyChange}
         oncampaigndealchange={handleCampaignDealChange}
         ondealopen={handleCampaignDealOpen}
+        onsurgeonopen={handleSurgeonOpen}
       >
         <div slot="heading" class="ctrail">
           <span class="cname">{campaignName}</span>
@@ -240,11 +266,25 @@
       total={flyTotal}
       is-manager={isManager}
       viewer-id={viewerId}
+      start-screen={flyScreen}
+      onusageschanged={handleUsagesChanged}
       onclose={handleDealClose}
       onprev={handleDealPrev}
       onnext={handleDealNext}
       ondealsaved={handleDealSaved}
     ></c-pipeline-deal>
+
+    <c-pipeline-surgeon-flyout
+      lwc:if={flySurgeon}
+      open={flySurgeonOn}
+      account-id={flySurgeon.accountId}
+      name={flySurgeon.name}
+      start-screen={flySurgeon.screen}
+      campaign-id={linkedCampaignId}
+      ondealcreated={handleDealCreated}
+      onusageschanged={handleUsagesChanged}
+      onclose={handleSurgeonClose}
+    ></c-pipeline-surgeon-flyout>
 
     <div class={settingsScrimCls} onclick={handleSettingsClose}></div>
     <aside

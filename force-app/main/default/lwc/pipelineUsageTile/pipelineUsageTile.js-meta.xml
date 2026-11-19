@@ -2,6 +2,6 @@
 <LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
   <apiVersion>68.0</apiVersion>
   <description
-  >Pipeline: draws one usage (or one being added) as a tile with one set of column headings, a row per product line and the procedure and technology chips, for the Usage card. Changes nothing itself; it tells the card what the person did.</description>
+  >Pipeline: draws one usage (or one being added) for the Usage card in the compact layout: a row per product line in shared columns, with the procedure and technology chips. Changes nothing itself; it tells the card what the person did.</description>
   <isExposed>false</isExposed>
 </LightningComponentBundle>

@@ -81,6 +81,20 @@ export default class PipelineCampaignMembers extends LightningElement {
   @api maintainable = false;
   /** Pipeline only (Robert, 2026-11-19): a click on a deal's line opens the deal flyout; with it the lines are highlighted when the mouse is over them. */
   @api dealsOpenable = false;
+  /**
+   * The columns the person has turned off, kept by the screen that hosts the list (Pipeline keeps them in the person's own settings, so
+   * they follow them to any computer; Robert, 2026-11-19: "I constantly turn off the hospitals"). null (the default) means the host keeps
+   * nothing, and the list remembers them on this computer only, as Campaign Management does. Every change is reported as `columnschange`.
+   */
+  @api
+  get hiddenColumns() {
+    return this._hiddenColumns;
+  }
+  set hiddenColumns(value) {
+    this._hiddenColumns = Array.isArray(value) ? value : null;
+    if (this._hiddenColumns) this.hidden = [...this._hiddenColumns];
+  }
+  _hiddenColumns = null;
 
   usd = false; // the value chips in US dollars; local currencies until the person flicks the switch
   rates = null; // the exchange rates held in Salesforce, read the first time USD is chosen
@@ -378,7 +392,7 @@ export default class PipelineCampaignMembers extends LightningElement {
         plateCls:
           key === "total"
             ? ""
-            : `rate ${key === "NONE" ? "none" : key.charAt(0) + key.slice(1).toLowerCase()}`
+            : `rplate ${key === "NONE" ? "none" : key.charAt(0) + key.slice(1).toLowerCase()}`
       };
     };
     return [chip("total", "Value / year", v.total, "tot")].concat(
@@ -603,11 +617,19 @@ export default class PipelineCampaignMembers extends LightningElement {
     this.visibleMembers.forEach((m) => {
       const deals = [...(m.deals || [])].sort(byNewest);
       const lead = {
-        name: {
-          isText: true,
-          cls: "who",
-          text: withEnglish(m.name, m.preferredName)
-        },
+        // the surgeon's name opens their Account record in a NEW tab (Robert, 2026-11-19), so the person keeps their place here
+        name: m.accountId
+          ? {
+              isLink: true,
+              cls: "who",
+              href: "/lightning/r/Account/" + m.accountId + "/view",
+              text: withEnglish(m.name, m.preferredName)
+            }
+          : {
+              isText: true,
+              cls: "who",
+              text: withEnglish(m.name, m.preferredName)
+            },
         hospitals: { isText: true, text: m.hospitals || "" },
         place: {
           isText: true,
@@ -619,8 +641,14 @@ export default class PipelineCampaignMembers extends LightningElement {
         const r = this.ratingOf(m, p);
         lead["rate:" + p] = {
           isRate: true,
+          cls: "ratecell",
+          // in Pipeline (dealsOpenable) a plate is pressed to open the surgeon's usages (Robert, 2026-11-19)
+          rateOpen: this.dealsOpenable && !!m.accountId,
+          dealId: deals.length ? deals[0].id : "",
+          accountId: m.accountId,
+          who: withEnglish(m.name, m.preferredName),
           text: r ? proper(r) : "Not rated",
-          rateCls: r ? "rate " + proper(r) : "rate none"
+          rateCls: "rplate " + (r ? proper(r) : "none")
         };
       });
       const cells = [];
@@ -641,6 +669,9 @@ export default class PipelineCampaignMembers extends LightningElement {
         cells.push({
           key: "nd",
           isNoDeal: true,
+          noDealOpen: this.dealsOpenable && !!m.accountId, // in Pipeline "No deal yet" is pressed to make the surgeon's first deal
+          accountId: m.accountId,
+          who: withEnglish(m.name, m.preferredName),
           colspan: this.dealDefs.length
         });
       }
@@ -697,6 +728,42 @@ export default class PipelineCampaignMembers extends LightningElement {
           id,
           ids: this.rows.filter((r) => r.dealId).map((r) => r.dealId)
         }
+      })
+    );
+  }
+  /**
+   * A press on a surgeon's rating plate (Robert, 2026-11-19), in Pipeline only: with a deal listed it opens that deal on its Surgeon
+   * Usages screen (the same event as a click on the line, plus the screen); a surgeon with no deal yet has no deal to open, so the screen
+   * is told the surgeon, and shows just the surgeon's usages.
+   */
+  handlePlate(event) {
+    event.stopPropagation();
+    const { deal, account, who } = event.currentTarget.dataset;
+    if (deal) {
+      this.dispatchEvent(
+        new CustomEvent("dealopen", {
+          detail: {
+            id: deal,
+            ids: this.rows.filter((r) => r.dealId).map((r) => r.dealId),
+            screen: "usages"
+          }
+        })
+      );
+    } else {
+      this.dispatchEvent(
+        new CustomEvent("surgeonopen", {
+          detail: { accountId: account, name: who, screen: "usages" }
+        })
+      );
+    }
+  }
+  /** "No deal yet" was pressed (Pipeline only): the surgeon's flyout opens on its New Deal screen. */
+  handleNoDeal(event) {
+    event.stopPropagation();
+    const { account, who } = event.currentTarget.dataset;
+    this.dispatchEvent(
+      new CustomEvent("surgeonopen", {
+        detail: { accountId: account, name: who, screen: "new" }
       })
     );
   }
@@ -757,6 +824,9 @@ export default class PipelineCampaignMembers extends LightningElement {
     this.handleWidthsReset();
   }
   saveHidden() {
+    this.dispatchEvent(
+      new CustomEvent("columnschange", { detail: { hidden: [...this.hidden] } })
+    );
     try {
       window.localStorage.setItem(HIDDEN_KEY, JSON.stringify(this.hidden));
     } catch {

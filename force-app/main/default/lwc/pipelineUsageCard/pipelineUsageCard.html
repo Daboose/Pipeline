@@ -8,7 +8,7 @@
       ></c-pipeline-usage-field-choices>
     </template>
 
-    <div class="head">
+    <div class="head" lwc:if={showHead}>
       <h2>{heading}</h2>
       <span class="sp"></span>
       <template lwc:if={isHospital}>
@@ -174,6 +174,15 @@
         </template>
         <template lwc:else>
           <div class="tiles">
+            <div class="cgh">
+              <div></div>
+              <div></div>
+              <template for:each={columnHeads} for:item="h">
+                <div key={h}>{h}</div>
+              </template>
+              <div class="xh">Procedures and technologies</div>
+              <div></div>
+            </div>
             <template for:each={groups} for:item="g">
               <div key={g.hospital} class="uhosp">{g.hospital}</div>
               <template for:each={g.tiles} for:item="t">
@@ -195,7 +204,7 @@
         </template>
       </div>
 
-      <div class="sec" lwc:if={canMyCase}>
+      <div class="sec" lwc:if={showBookings}>
         <template lwc:if={noBookings}>
           <h3 class="solo">
             MyCase: there were 0 MyCase bookings in the last 12 months

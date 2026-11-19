@@ -1,21 +1,33 @@
-/* Pipeline Usage Card: light theme, so it sits quietly on an Account page. Everything inside is ours. */
+/* Pipeline Usage Card. On an Account page it is light and sits quietly; inside the Pipeline deal (embedded) the deal sets the --pcu-* custom
+   properties below so it takes the deal's dark or light look. Every colour reads its --pcu-* name first, the light value is the fallback,
+   so with nothing set the Account page looks as it always has. Everything inside is ours. */
 :host {
   display: block;
-  --pc-line: #dddbda;
-  --pc-line2: #c9c7c5;
-  --pc-text: #181818;
-  --pc-muted: #5c5c5c;
-  --pc-blue: #0176d3;
-  --pc-blue2: #014486;
-  --pc-bluebg: #eef4ff;
-  --pc-ok: #2e844a;
-  --pc-okbg: #ebf7e6;
-  --pc-warn: #8a5a00;
-  --pc-warnbg: #fff6dd;
+  --pc-card: var(--pcu-card, #fff);
+  --pc-line: var(--pcu-line, #dddbda);
+  --pc-line2: var(--pcu-line2, #c9c7c5);
+  --pc-text: var(--pcu-text, #181818);
+  --pc-muted: var(--pcu-muted, #5c5c5c);
+  --pc-blue: var(--pcu-blue, #0176d3);
+  --pc-blue2: var(--pcu-blue2, #014486);
+  --pc-bluebg: var(--pcu-bluebg, #eef4ff);
+  --pc-ok: var(--pcu-ok, #2e844a);
+  --pc-okbg: var(--pcu-okbg, #ebf7e6);
+  --pc-warn: var(--pcu-warn, #8a5a00);
+  --pc-warnbg: var(--pcu-warnbg, #fff6dd);
   --pc-warnline: #e4a600;
-  --pc-bad: #ba0517;
-  --pc-badbg: #fdeaea;
+  --pc-bad: var(--pcu-bad, #ba0517);
+  --pc-badbg: var(--pcu-badbg, #fdeaea);
+  --pc-inputbg: var(--pcu-inputbg, #fff);
+  --pc-inputoff: var(--pcu-inputoff, #f3f3f3);
+  --pc-panel: var(--pcu-panel, #f8f9fb);
   --pc-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  /* the usage rows' columns, the same list as the tile's (pipelineUsageTile.css): the heading row below uses it too */
+  --pc-cols: var(
+    --pcu-cols,
+    96px 100px minmax(80px, 0.8fr) minmax(110px, 1.2fr) minmax(120px, 1.1fr)
+      96px minmax(260px, 2.7fr) 88px
+  );
   color: var(--pc-text);
 }
 button,
@@ -27,7 +39,7 @@ select {
 
 .comp {
   position: relative;
-  background: #fff;
+  background: var(--pc-card);
   border: 1px solid var(--pc-line);
   border-radius: 4px;
 }
@@ -79,7 +91,7 @@ select {
 .wait {
   position: absolute;
   inset: 0;
-  background: rgba(255, 255, 255, 0.72);
+  background: color-mix(in srgb, var(--pc-card) 72%, transparent);
   display: grid;
   place-items: center;
   font-weight: 800;
@@ -105,7 +117,7 @@ select {
   color: #fff;
 }
 .btn.sec2 {
-  background: #fff;
+  background: var(--pc-card);
   color: var(--pc-blue);
 }
 .btn.danger {
@@ -147,23 +159,55 @@ select {
 .tiles {
   margin: 0 -16px -14px;
   border-top: 1px solid var(--pc-line);
+  /* the heading row below and the tiles both drop the chips column when the card is narrow (a narrow column on a record page) */
+  container-type: inline-size;
+}
+/* the column headings, once for the whole list, locked at the top while the usages scroll under them */
+.cgh {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  display: grid;
+  grid-template-columns: var(--pc-cols);
+  column-gap: 12px;
+  align-items: center;
+  padding: 8px 16px;
+  background: var(--pc-card);
+  border-bottom: 1px solid var(--pc-line2);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--pc-muted);
+}
+@container (max-width: 1065px) {
+  .cgh {
+    grid-template-columns: var(
+      --pcu-cols-narrow,
+      96px 100px minmax(60px, 0.8fr) minmax(80px, 1.2fr) minmax(90px, 1.2fr)
+        72px 88px
+    );
+  }
+  .cgh .xh {
+    display: none;
+  }
 }
 .uhosp {
   padding: 8px 16px;
-  background: #f3f3f3;
+  background: var(--pcu-hosp, #f3f3f3);
   border-bottom: 1px solid var(--pc-line);
   font-weight: 800;
 }
 
 /* the hospital switch: the shared sliding one-pill choice; it reads its colours from these (the card is light) */
 .modeswitch {
-  --seg-track: #e3e8f4;
-  --seg-line: #c4cde2;
-  --seg-lab: #ffffff;
-  --seg-optx: #5d6b85;
+  --seg-track: var(--pcu-segtrack, #e3e8f4);
+  --seg-line: var(--pcu-segline, #c4cde2);
+  --seg-lab: var(--pcu-seglab, #ffffff);
+  --seg-optx: var(--pcu-segopt, #5d6b85);
   --seg-indigo: #4f46e5;
   --seg-shadow: rgba(79, 70, 229, 0.35);
-  --seg-muted: #5d6b85;
+  --seg-muted: var(--pcu-segopt, #5d6b85);
 }
 
 /* notes */
@@ -253,13 +297,13 @@ th.act {
   width: 1%;
 }
 tr.hosp td {
-  background: #eef1f6;
+  background: var(--pcu-hosp, #eef1f6);
   font-weight: 800;
   border-bottom: 1px solid var(--pc-line2);
   padding: 7px 10px;
 }
 tr.flash td {
-  background: #fff3c4;
+  background: var(--pcu-flash, #fff3c4);
 }
 tr.editing td {
   background: var(--pc-bluebg);
@@ -279,7 +323,7 @@ td.dash {
   color: #a3a3a3;
 }
 td.zbc {
-  background: #f4f8ff;
+  background: var(--pcu-bluebg, #f4f8ff);
 }
 td.strong {
   font-weight: 800;
@@ -305,7 +349,7 @@ a.lnk:hover {
   border: 1px solid var(--pc-line2);
   border-radius: 4px;
   padding: 7px 30px 7px 10px;
-  background: #fff
+  background: var(--pc-inputbg)
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%235c5c5c' stroke-width='2'/%3E%3C/svg%3E")
     no-repeat right 10px center;
   color: var(--pc-text);
@@ -315,7 +359,7 @@ a.lnk:hover {
   border: 1px solid var(--pc-line2);
   border-radius: 4px;
   padding: 7px 10px;
-  background: #fff;
+  background: var(--pc-inputbg);
   color: var(--pc-text);
   width: 100px;
   text-align: right;
@@ -337,6 +381,8 @@ a.lnk:hover {
   width: 290px;
   max-width: 100%;
   font-size: 16px;
+  background: var(--pc-inputbg);
+  color: var(--pc-text);
 }
 .xcirc {
   width: 20px;
@@ -384,7 +430,7 @@ a.lnk:hover {
   margin-top: 4px;
   width: 360px;
   max-width: 90vw;
-  background: #fff;
+  background: var(--pc-card);
   border: 1px solid var(--pc-line2);
   border-radius: 6px;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
@@ -413,7 +459,7 @@ a.lnk:hover {
   align-items: center;
   gap: 8px;
   border: 1px solid var(--pc-line2);
-  background: #f8f9fb;
+  background: var(--pc-panel);
   border-radius: 999px;
   padding: 5px 8px 5px 14px;
   font-weight: 700;
@@ -441,13 +487,14 @@ a.lnk:hover {
   padding: 12px;
   border: 1px solid var(--pc-line);
   border-radius: 4px;
-  background: #f8f9fb;
+  background: var(--pc-panel);
 }
 .addgrid {
   display: flex;
   flex-wrap: wrap;
   gap: 12px 16px;
   align-items: flex-end;
+  margin-bottom: 12px; /* the portfolio slider no longer touches the first row of boxes under it (Robert, 2026-11-19) */
 }
 .fld label {
   display: block;

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+  <apiVersion>68.0</apiVersion>
+  <description
+  >Pipeline: the MyCase Bookings screen of a ROSA deal. A stacked bar chart of the deal's hospital's surgeries per month for the last 12 whole months, split into Hip, Knee, Shoulder and CMFT. Read only.</description>
+  <isExposed>false</isExposed>
+</LightningComponentBundle>

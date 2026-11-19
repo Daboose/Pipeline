@@ -1,0 +1,57 @@
+<template>
+  <div class={scrimCls} onclick={handleClose}></div>
+  <aside class={flyCls} role="dialog" aria-label="Surgeon usages">
+    <div class="fhead">
+      <div class="h1">
+        <div class="name">{name}</div>
+        <span class="sp"></span>
+        <div class="fm">
+          <button
+            type="button"
+            class={newBtnCls}
+            data-screen="new"
+            onclick={handleScreen}
+          >
+            New Deal
+          </button>
+          <button
+            type="button"
+            class={usagesBtnCls}
+            data-screen="usages"
+            onclick={handleScreen}
+          >
+            Surgeon Usages
+          </button>
+        </div>
+        <button
+          type="button"
+          class="rbtn"
+          onclick={handleClose}
+          title="Close"
+          aria-label="Close"
+        >
+          &#10005;
+        </button>
+      </div>
+    </div>
+    <div class="under">
+      <c-pipeline-new-deal
+        lwc:if={onNew}
+        class="newdeal"
+        account-id={accountId}
+        account-name={name}
+        campaign-id={campaignId}
+        oncreated={handleCreated}
+        oncancel={handleClose}
+      ></c-pipeline-new-deal>
+      <div class="screen" lwc:else>
+        <c-pipeline-usage-card
+          class="usagecard"
+          embedded
+          record-id={accountId}
+          onusageschanged={handleUsagesChanged}
+        ></c-pipeline-usage-card>
+      </div>
+    </div>
+  </aside>
+</template>

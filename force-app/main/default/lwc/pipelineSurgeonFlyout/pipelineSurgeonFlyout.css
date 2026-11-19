@@ -1,0 +1,166 @@
+@import "c/pipelineStyles";
+
+:host {
+  display: block;
+}
+.scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: rgba(6, 11, 20, 0.55);
+  -webkit-backdrop-filter: blur(5px);
+  backdrop-filter: blur(5px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+.scrim.on {
+  opacity: 1;
+  pointer-events: auto;
+}
+.fly {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: calc(
+    96vw / var(--z, 1)
+  ); /* vw is not corrected by Zoom (see pipelineZoom) */
+  z-index: 61;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  border-left: 3px solid var(--indigo);
+  box-shadow: var(--shadow);
+  transform: translateX(105%);
+  visibility: hidden;
+  transition:
+    transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+    visibility 0s linear 0.4s;
+}
+.fly.on {
+  transform: none;
+  visibility: visible;
+  transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .scrim,
+  .fly,
+  .fly.on {
+    transition: none;
+  }
+}
+/* the header: the surgeon's name, the one lit pill and the close button (same look as the deal flyout's top row) */
+.fhead {
+  border-bottom: 1px solid var(--line);
+}
+.h1 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 20px 6px;
+}
+/* the stage slider sits centred in a tinted band of its own under the summary line: the overall stage of the deal (Robert, 2026-11-07;
+   mockup pipeline_deal_header_order_v2.html). Clicking a step changes the stage, so the form has no Stage field. The band is at the top of
+   the area the Surgeon Usages, MyCase Bookings and Campaigns panels slide over, so a panel covers it and its heading sits where the stage bar was. */
+.name {
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1.1;
+}
+.sp {
+  flex: 1;
+}
+.under {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+/* the two panel buttons sit in the top row, beside the stage path */
+.fm {
+  flex: none;
+  display: flex;
+  gap: 10px;
+  margin-right: 8px;
+}
+/* the panel buttons (Surgeon Usages, MyCase Bookings, Campaigns): filled slate, filled indigo while their panel is open
+   (Robert, 2026-11-07: buttons are always filled in) */
+.btn.nav {
+  background: #475569;
+  color: #fff;
+  border-color: #475569;
+}
+.btn.nav.on {
+  background: var(--indigo);
+  border-color: var(--indigo);
+  color: #fff;
+}
+/* ----- the three screens that replace the deal under the top row (Robert, 2026-11-19): Surgeon Usages, MyCase Bookings and Campaigns
+   each take the whole space, as the deal itself does; they arrive with the motion standard's 0.4 s ease. The usages, the surgeon's
+   bookings and the campaigns scroll inside the flyout (the top row never moves); the hospital chart fits the space it is given. ----- */
+.screen {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 16px 20px 24px;
+  animation: screenin 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+@keyframes screenin {
+  from {
+    opacity: 0;
+    transform: translateX(28px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .screen {
+    animation: none;
+  }
+}
+/* the Usage Card in the dark or light flyout: it takes its colours from the flyout's (the card's own custom properties) */
+.usagecard {
+  display: block;
+  --pcu-card: var(--panel);
+  --pcu-page: var(--bg);
+  --pcu-line: var(--line);
+  --pcu-line2: var(--edge);
+  --pcu-text: var(--text);
+  --pcu-muted: var(--muted);
+  --pcu-blue: var(--indigo2);
+  --pcu-blue2: var(--indigo2);
+  --pcu-bluebg: var(--panel2);
+  --pcu-bad: var(--bad);
+  --pcu-badbg: color-mix(in srgb, var(--bad) 14%, transparent);
+  --pcu-proc: #7c5ce6; /* procedure types stay purple and technologies green, in both themes */
+  --pcu-procbg: color-mix(in srgb, #7c5ce6 20%, transparent);
+  --pcu-tech: #1e9e57;
+  --pcu-techbg: color-mix(in srgb, #1e9e57 20%, transparent);
+  --pcu-inputbg: var(--pfield);
+  --pcu-inputoff: var(--pgroup);
+  --pcu-hosp: var(--panel2);
+  --pcu-flash: color-mix(in srgb, var(--warn) 16%, transparent);
+  --pcu-btn2: var(--panel2);
+  --pcu-btn2text: var(--text);
+  --pcu-ok: var(--ok);
+  --pcu-okbg: color-mix(in srgb, var(--ok) 16%, transparent);
+  --pcu-warn: var(--warn);
+  --pcu-warnbg: color-mix(in srgb, var(--warn) 16%, transparent);
+  --pcu-panel: var(--panel2);
+  --pcu-segtrack: var(--pfield);
+  --pcu-segline: var(--pline);
+  --pcu-seglab: var(--pgroup);
+  --pcu-segopt: var(--muted);
+}
+
+.newdeal {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}

@@ -182,33 +182,74 @@ describe("pipeline-usage-card, a surgeon", () => {
     expect(text(el)).toContain("Latest booking");
   });
 
-  it("draws a hip with one set of headings, the stem then the cup, the bearing, and the chips", async () => {
+  it("draws the column headings once, and a hip as a stem line then a cup line with the bearing on the cup, and the chips", async () => {
     const el = await mount(surgeon());
-    const hip = tiles(el)[0];
-    const t = ttext(hip);
-    expect(tq(hip, "b").textContent).toBe("Hip");
-    expect(tqa(hip, ".gh").map((h) => h.textContent.trim())).toEqual([
+    expect(
+      Array.from(q(el, ".cgh").children).map((c) => c.textContent.trim())
+    ).toEqual([
+      "",
+      "",
       "Company",
       "Product",
-      "Stem type",
-      "Cases per year",
-      "Bearing type"
+      "Type",
+      "Cases / year",
+      "Procedures and technologies",
+      ""
     ]);
+    expect(qa(el, ".cgh")).toHaveLength(1);
+    const hip = tiles(el)[0];
+    const t = ttext(hip);
+    expect(tq(hip, ".pc").textContent).toContain("Hip");
+    expect(tqa(hip, ".gh")).toHaveLength(0);
     expect(
-      tqa(hip, ".rl").map((h) => h.textContent.trim().replace("*", ""))[0]
-    ).toBe("Stem");
+      tqa(hip, ".lc").map((h) => h.textContent.trim().replace("*", ""))
+    ).toEqual(["Stem", "Cup"]);
     expect(t).toContain("Taperloc");
     expect(t).toContain("Trinity");
     expect(t).toContain("Ceramic on Poly");
-    expect(tqa(hip, ".chip.p").map((c) => c.textContent.trim())).toEqual([
+    expect(tqa(hip, ".xc .chip.p").map((c) => c.textContent.trim())).toEqual([
       "Total",
       "Revision"
     ]);
-    expect(tqa(hip, ".chip.t").map((c) => c.textContent.trim())).toEqual([
+    expect(tqa(hip, ".xc .chip.t").map((c) => c.textContent.trim())).toEqual([
       "ROSA"
     ]);
-    expect(tq(hip, ".gap")).not.toBeNull();
+    expect(tq(hip, ".xc .gap")).not.toBeNull();
     expect(ttext(tiles(el)[1])).toContain("Triathlon");
+  });
+
+  it("when embedded in the deal leaves out the Usages heading row and the MyCase bookings, and keeps the rest", async () => {
+    getCard.mockResolvedValue(surgeon());
+    const el = createElement("c-pipeline-usage-card", {
+      is: PipelineUsageCard
+    });
+    el.recordId = "001";
+    el.embedded = true;
+    document.body.appendChild(el);
+    await flush();
+    expect(q(el, ".head")).toBeNull();
+    expect(text(el)).not.toContain("MyCase");
+    expect(qa(el, ".plate")).toHaveLength(4);
+    expect(tiles(el)).toHaveLength(2);
+    expect(q(el, "h3 button.btn").textContent).toContain("Add usage");
+  });
+
+  it("keeps the heading row and the MyCase bookings on an Account page", async () => {
+    const el = await mount(surgeon());
+    expect(q(el, ".head h2").textContent).toBe("Usages");
+    expect(text(el)).toContain("MyCase bookings, last 12 months");
+  });
+
+  it("keeps a hospital's heading and switch even when embedded", async () => {
+    getCard.mockResolvedValue(hospital());
+    const el = createElement("c-pipeline-usage-card", {
+      is: PipelineUsageCard
+    });
+    el.recordId = "001h";
+    el.embedded = true;
+    document.body.appendChild(el);
+    await flush();
+    expect(q(el, ".head h2").textContent).toContain("North Hospital");
   });
 
   it("warns when the usages have not changed for over a year", async () => {
@@ -255,6 +296,8 @@ describe("pipeline-usage-card, a surgeon", () => {
   it("edits a usage in place and saves every field of its layout", async () => {
     saveWhole.mockResolvedValue();
     const el = await mount(surgeon());
+    const changed = jest.fn();
+    el.addEventListener("usageschanged", changed);
     tq(tiles(el)[0], ".ib").click();
     await flush();
     const hip = tiles(el)[0];
@@ -279,6 +322,7 @@ describe("pipeline-usage-card, a surgeon", () => {
     expect(sent.Supporting_Technologies__c).toEqual(["ROSA"]);
     expect(getCard).toHaveBeenCalledTimes(2); // read again after the change
     expect(text(el)).toContain("Usages changed just now");
+    expect(changed).toHaveBeenCalledTimes(1); // so the host can read the lists' ratings again
   });
 
   it("will not save while a mandatory field is empty, and clearing a company clears its product", async () => {
@@ -311,7 +355,8 @@ describe("pipeline-usage-card, a surgeon", () => {
     );
     tq(tiles(el)[0], ".ib").click();
     await flush();
-    expect(tqa(tiles(el)[0], ".gc.off").length).toBe(2);
+    expect(tqa(tiles(el)[0], ".cc.off").length).toBeGreaterThan(0);
+    expect(tqa(tiles(el)[0], ".lc.off")).toHaveLength(1);
     expect(ttext(tiles(el)[0])).toContain(
       "Fill the stem company and product first."
     );
@@ -406,19 +451,22 @@ describe("pipeline-usage-card, a surgeon", () => {
     const el = await mount(surgeon());
     q(el, "h3 button.btn").click();
     await flush();
+    const addTile = () => q(el, ".addbox c-pipeline-usage-tile");
+    // a hip: a stem line and a cup line, the bearing type on the cup line
     expect(
-      tqa(q(el, ".addbox c-pipeline-usage-tile"), ".gh").map((h) =>
-        h.textContent.trim()
-      )
-    ).toContain("Stem type");
+      tqa(addTile(), ".lc").map((l) => l.textContent.trim().replace("*", ""))
+    ).toEqual(["Stem", "Cup"]);
+    expect(
+      tqa(addTile(), "select").map((x) => x.getAttribute("aria-label"))
+    ).toContain("Bearing type");
     q(el, ".addbox c-pipeline-segmented").dispatchEvent(
       new CustomEvent("change", { detail: { value: "Knee" } })
     );
     await flush();
-    const heads = tqa(q(el, ".addbox c-pipeline-usage-tile"), ".gh").map((h) =>
-      h.textContent.trim().replace("*", "")
-    );
-    expect(heads).toEqual(["Company", "Product", "Cases per year"]);
+    expect(
+      tqa(addTile(), "select").map((x) => x.getAttribute("aria-label"))
+    ).toEqual(["Company", "Product"]);
+    expect(tqa(addTile(), "input")).toHaveLength(1);
   });
 
   it("will not add without a hospital", async () => {

@@ -215,11 +215,45 @@
                     checked={c.checked}
                     onchange={handleTick}
                   />
-                  <span lwc:if={c.isRate} class={c.rateCls}>{c.text}</span>
+                  <template lwc:if={c.isRate}>
+                    <button
+                      type="button"
+                      lwc:if={c.rateOpen}
+                      class={c.rateCls}
+                      data-deal={c.dealId}
+                      data-account={c.accountId}
+                      data-who={c.who}
+                      title="Open this surgeon's usages"
+                      onclick={handlePlate}
+                    >
+                      {c.text}
+                    </button>
+                    <span lwc:else class={c.rateCls}>{c.text}</span>
+                  </template>
                   <span lwc:if={c.isTag} class={c.tagCls}>{c.text}</span>
                   <template lwc:if={c.isNoDeal}>
-                    <span class="nodeal">No deal yet</span>
+                    <button
+                      type="button"
+                      lwc:if={c.noDealOpen}
+                      class="nodeal nodealbtn"
+                      data-account={c.accountId}
+                      data-who={c.who}
+                      title="Make this surgeon's first deal"
+                      onclick={handleNoDeal}
+                    >
+                      No deal yet
+                    </button>
+                    <span lwc:else class="nodeal">No deal yet</span>
                   </template>
+                  <a
+                    lwc:if={c.isLink}
+                    class="slink"
+                    href={c.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title="Open this surgeon's record in a new tab"
+                    >{c.text}</a
+                  >
                   <template lwc:if={c.isText}>{c.text}</template>
                 </td>
               </template>

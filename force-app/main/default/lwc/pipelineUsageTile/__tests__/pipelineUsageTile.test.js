@@ -67,10 +67,81 @@ describe("c-pipeline-usage-tile", () => {
     });
   });
 
-  it("shows the headings once and the chosen values when not editing", () => {
+  it("shows the chosen values in a row of cells, the pencil beside them, and no boxes when not editing", () => {
     const el = mount(base(false));
     expect(el.shadowRoot.textContent).toContain("Attune");
-    expect(el.shadowRoot.querySelectorAll(".gh")).toHaveLength(3);
+    expect(el.shadowRoot.querySelectorAll(".cg .cc")).toHaveLength(4);
+    expect(el.shadowRoot.querySelectorAll(".gh")).toHaveLength(0); // the card draws the headings once
+    expect(q(el, ".pe .ib")).not.toBeNull();
     expect(q(el, "select")).toBeNull();
+  });
+
+  it("draws a hip as two lines with the chips and the pencil spanning both, and the bearing on the cup line", () => {
+    const tile = {
+      ...buildTile(
+        "Hip",
+        draftOf("Hip", {
+          CompanyHipStems__c: "ZB",
+          ProductHipStems__c: "Taperloc",
+          Hip_Stem_Type__c: "Cementless",
+          CasesPAHipStem__c: "60",
+          CompanyHipCups__c: "ZB",
+          ProductHipCups__c: "G7",
+          HipBearingType__c: "Ceramic on Poly",
+          Procedure_Types__c: "Total;Revision",
+          Supporting_Technologies__c: "ROSA"
+        }),
+        false,
+        {},
+        "h"
+      ),
+      id: "h",
+      title: "Hip",
+      cls: "us",
+      showActions: true,
+      canDelete: true
+    };
+    const el = mount(tile);
+    expect(
+      Array.from(el.shadowRoot.querySelectorAll(".lc")).map((l) =>
+        l.textContent.replace("*", "").trim()
+      )
+    ).toEqual(["Stem", "Cup"]);
+    expect(el.shadowRoot.textContent).toContain("Ceramic on Poly");
+    expect(q(el, ".xc").getAttribute("style")).toContain("span 2");
+    expect(q(el, ".pe").getAttribute("style")).toContain("span 2");
+    expect(
+      Array.from(el.shadowRoot.querySelectorAll(".xc .chip")).map((c) =>
+        c.textContent.trim()
+      )
+    ).toEqual(["Total", "Revision", "ROSA"]);
+    expect(q(el, ".pe .iconbtn.del")).not.toBeNull();
+  });
+
+  it("puts the chips on their own line when editing, under Company, with Save and Cancel below", () => {
+    const tile = {
+      ...base(true),
+      ...buildTile(
+        "Knee",
+        draftOf("Knee", { Procedure_Types__c: "Total" }),
+        true,
+        {
+          Procedure_Types__c: {
+            values: [{ value: "Total" }, { value: "Revision" }]
+          }
+        },
+        "u1"
+      )
+    };
+    const el = mount(tile);
+    expect(q(el, ".xc")).toBeNull();
+    expect(q(el, ".pe")).toBeNull();
+    const chips = el.shadowRoot.querySelectorAll(".cg .chips button.chip");
+    expect(chips).toHaveLength(2);
+    const chip = jest.fn();
+    el.addEventListener("chip", chip);
+    chips[1].click();
+    expect(chip.mock.calls[0][0].detail.value).toBe("Revision");
+    expect(q(el, ".tfoot")).not.toBeNull();
   });
 });

@@ -7,6 +7,7 @@ import addWhole from "@salesforce/apex/PipelineUsageEditController.add";
 import searchLookup from "@salesforce/apex/PipelineLookupController.search";
 import { formatDate } from "c/pipelineFormat";
 import {
+  COLUMNS,
   GRID,
   buildTile,
   draftOf,
@@ -34,17 +35,21 @@ function errorText(e) {
 const sum = (a) => a.reduce((x, y) => x + y, 0);
 
 /**
- * Pipeline: the Usage card on an Account record page. One component, two behaviours chosen by the account it sits on.
- * A surgeon (person account): the four usage ratings as metal plates (Platinum, Gold, Silver, Bronze), a note on when the
- * usages last changed, the usages grouped by hospital (edit a line, take a line off, add a usage), and, only for people who
- * can read the MyCase objects, the MyCase bookings of the last 12 months by type, for information only. A hospital (business
- * account): the cases by surgeon and type, from MyCase bookings (only for people who can read MyCase) or from the usage
- * records, where Zimmer Biomet ("ZB") is split from every other company. Light theme so it sits quietly on the page.
- * Each usage is a tile (pipelineUsageTile) with every field of its portfolio's layout, edited in place or added from a panel
- * that folds open (mockup docs/mockups/pipeline_usage_card_fields_v2.html; layout and logic in pipelineUsageModel). Everything
- * changes through Salesforce in the person's own access; the lists (companies, products that follow the company, stem type,
- * bearing, segment, procedure types, technologies) are read live from Salesforce for each usage record type
- * (pipelineUsageFieldChoices) and never typed in here. Opening and closing follow the Pipeline motion standard (a fold over 0.4 s).
+ * Pipeline: the Usage card on an Account record page, and the Usages screen of the Pipeline deal. One component, two behaviours chosen
+ * by the account it is given. A surgeon (person account): the four usage ratings as metal plates (Platinum, Gold, Silver, Bronze), a
+ * note on when the usages last changed, the usages grouped by hospital (edit a line, take a line off, add a usage), and, only for
+ * people who can read the MyCase objects, the MyCase bookings of the last 12 months by type, for information only. A hospital
+ * (business account): the cases by surgeon and type, from MyCase bookings (only for people who can read MyCase) or from the usage
+ * records, where Zimmer Biomet ("ZB") is split from every other company. Light theme by default so it sits quietly on the page; the
+ * Pipeline deal restyles it by setting the --pcu-* custom properties (see pipelineUsageCard.css).
+ * `embedded` (set by the Pipeline deal's Usages screen): a surgeon shows no "Usages" heading row and no MyCase bookings section,
+ * because the deal has its own MyCase Bookings screen; nothing else changes.
+ * Each usage is a tile (pipelineUsageTile) in the compact layout (Robert, 2026-11-19; mockup docs/mockups/pipeline_deal_screens_v1.html):
+ * a row per product line in the same columns for every portfolio, the column headings once, locked at the top of the list (layout
+ * and logic in pipelineUsageModel). Everything changes through Salesforce in the person's own access; the lists (companies, products
+ * that follow the company, stem type, bearing, segment, procedure types, technologies) are read live from Salesforce for each
+ * usage record type (pipelineUsageFieldChoices) and never typed in here. Opening and closing follow the Pipeline motion standard
+ * (a fold over 0.4 s).
  */
 export default class PipelineUsageCard extends NavigationMixin(
   LightningElement
@@ -57,6 +62,8 @@ export default class PipelineUsageCard extends NavigationMixin(
   changedNote = false;
   keepInView = false;
   hmode = "mc"; // hospital view: mc (MyCase bookings) or us (usage records)
+  /** True inside the Pipeline deal's Usages screen: no heading row and no MyCase section for a surgeon. */
+  @api embedded = false;
 
   /* editing a usage, deleting one */
   editId = null;
@@ -124,6 +131,18 @@ export default class PipelineUsageCard extends NavigationMixin(
   }
   get canMyCase() {
     return !!(this.data && this.data.canMyCase);
+  }
+  /** The heading row ("Usages" or "Cases by Surgeon at ..." with the hospital switch); an embedded surgeon card has none. */
+  get showHead() {
+    return !this.embedded || this.isHospital;
+  }
+  /** A surgeon's MyCase bookings table; the deal has its own MyCase Bookings screen, so an embedded card leaves it out. */
+  get showBookings() {
+    return this.canMyCase && !this.embedded;
+  }
+  /** The headings of the four field columns, drawn once above the whole list of usages. */
+  get columnHeads() {
+    return COLUMNS;
   }
   get canEdit() {
     return !!(this.data && this.data.canEdit);
@@ -233,7 +252,6 @@ export default class PipelineUsageCard extends NavigationMixin(
         "us" +
         (editing ? " editing" : "") +
         (this.flashId === u.usageId ? " flash" : ""),
-      showHead: true,
       showActions: !editing && !deleting && (this.canEdit || this.canDelete),
       canEdit: this.canEdit,
       canDelete: this.canDelete,
@@ -330,6 +348,8 @@ export default class PipelineUsageCard extends NavigationMixin(
   }
   touched() {
     this.changedNote = true;
+    // tells whoever hosts the card (the deal flyout, the surgeon flyout) that a usage was added, changed or deleted, so the lists can read the ratings again
+    this.dispatchEvent(new CustomEvent("usageschanged"));
   }
 
   /** Runs a change with the "please wait" cover on, then reads the card again; an error is shown and nothing else changes. */
@@ -412,7 +432,6 @@ export default class PipelineUsageCard extends NavigationMixin(
       id: "add",
       key: "add",
       cls: "us bare",
-      showHead: false,
       editable: true,
       showFoot: false
     };

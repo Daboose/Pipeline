@@ -1,0 +1,1080 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>
+      Pipeline mockup: a new deal for a surgeon with no deal, version 1
+    </title>
+    <style>
+      :root,
+      [data-theme="light"] {
+        --page: #e9edf4;
+        --bg: #f4f6fa;
+        --panel: #ffffff;
+        --panel2: #eef2fa;
+        --line: #d5dcea;
+        --edge: #b3bfd6;
+        --text: #1b2640;
+        --muted: #5d6b85;
+        --pipe: #b7791f;
+        --head: #db2777;
+        --indigo: #4f46e5;
+        --bad: #dc2626;
+        --ok: #0f9d74;
+        --warn: #c2570c;
+        --field: #ffffff;
+        --seg-track: #e3e8f4;
+      }
+      [data-theme="dark"] {
+        --page: #0e1623;
+        --bg: #141e2e;
+        --panel: #1a2740;
+        --panel2: #20304f;
+        --line: #2f4163;
+        --edge: #5b6f93;
+        --text: #e8edf5;
+        --muted: #8b9bb0;
+        --pipe: #fdb827;
+        --head: #f472b6;
+        --indigo: #6366f1;
+        --bad: #f87171;
+        --ok: #4ee0b0;
+        --warn: #fb923c;
+        --field: #11151c;
+        --seg-track: #11151c;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        height: 100%;
+      }
+      body {
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        background: var(--page);
+        color: var(--text);
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-size: 15px;
+      }
+      button,
+      input,
+      select,
+      textarea {
+        font-family: inherit;
+        font-size: inherit;
+        color: inherit;
+      }
+      button {
+        cursor: pointer;
+      }
+      .sp {
+        flex: 1;
+      }
+      .sfnav {
+        flex: none;
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        height: 44px;
+        padding: 0 16px;
+        background: #0b1220;
+        border-bottom: 1px solid #2f4163;
+        color: #cdd6e6;
+        font-size: 14px;
+      }
+      .sfnav .app {
+        font-weight: 800;
+        letter-spacing: 0.14em;
+      }
+      .sfnav .app b {
+        color: #fdb827;
+      }
+      .sfnav .tab {
+        color: #9fb0cc;
+      }
+      .sfnav .tab.on {
+        color: #fff;
+        border-bottom: 2px solid #6366f1;
+        padding-bottom: 2px;
+      }
+      .pill {
+        border: 0;
+        background: var(--indigo);
+        color: #fff;
+        border-radius: 999px;
+        padding: 8px 18px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      .pill.slate {
+        background: var(--panel2);
+        color: var(--text);
+        border: 1px solid var(--edge);
+      }
+      .pill.slate.on {
+        background: var(--indigo);
+        border-color: var(--indigo);
+        color: #fff;
+      }
+      .pill:disabled {
+        opacity: 0.45;
+        cursor: default;
+      }
+      .about {
+        flex: none;
+        margin: 8px 16px 0;
+        padding: 8px 18px;
+        background: var(--panel);
+        border: 1px solid var(--edge);
+        border-radius: 12px;
+        line-height: 1.45;
+      }
+      .about summary {
+        cursor: pointer;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        color: var(--pipe);
+      }
+      .about ul {
+        margin: 4px 0 6px;
+        padding-left: 22px;
+      }
+      .about p {
+        margin: 6px 0;
+      }
+      .tools {
+        flex: none;
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px;
+        padding: 8px 16px 0;
+      }
+      .tools .lab {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        margin: 0 4px 0 10px;
+      }
+      .tools .lab:first-child {
+        margin-left: 0;
+      }
+      .stage {
+        flex: 1;
+        min-height: 0;
+        margin: 8px 16px 16px;
+        position: relative;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        overflow: hidden;
+        background: color-mix(in srgb, var(--page) 70%, #000 30%);
+        display: flex;
+        justify-content: flex-end;
+      }
+      .fly {
+        width: 92%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        background: var(--bg);
+        border-left: 3px solid var(--indigo);
+        box-shadow: -12px 0 30px rgba(0, 0, 0, 0.25);
+      }
+      .fhead {
+        flex: none;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 20px;
+        background: var(--panel);
+        border-bottom: 1px solid var(--line);
+      }
+      .fhead .name {
+        font-size: 22px;
+        font-weight: 800;
+        white-space: nowrap;
+      }
+      .nav {
+        border: 1px solid var(--edge);
+        background: var(--panel2);
+        color: var(--text);
+        border-radius: 999px;
+        padding: 8px 14px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        white-space: nowrap;
+      }
+      .nav.on {
+        background: var(--indigo);
+        border-color: var(--indigo);
+        color: #fff;
+      }
+      .pillrow {
+        display: flex;
+        gap: 8px;
+      }
+      .rbtn {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        border: 1px solid var(--edge);
+        background: var(--panel2);
+        color: var(--text);
+        padding: 0;
+        line-height: 1;
+      }
+      .scroll {
+        flex: 1;
+        min-height: 0;
+        overflow: auto;
+        padding: 14px 20px 18px;
+      }
+      .cols {
+        display: grid;
+        grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+        gap: 16px;
+        align-items: start;
+      }
+      .card {
+        background: var(--panel);
+        border: 1px solid var(--edge);
+        border-radius: 14px;
+        padding: 12px 18px 16px;
+      }
+      .card h3 {
+        margin: 0 0 8px;
+        font-size: 13px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--head);
+      }
+      .grid2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px 14px;
+      }
+      .wide {
+        grid-column: 1 / -1;
+      }
+      .fl {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: 3px;
+      }
+      .req {
+        color: var(--bad);
+      }
+      .in,
+      select.in,
+      textarea.in {
+        width: 100%;
+        height: 38px;
+        background: var(--field);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 0 10px;
+      }
+      select.in {
+        appearance: none;
+        padding-right: 30px;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%238b9bb0' stroke-width='2'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 10px center;
+      }
+      textarea.in {
+        height: 96px;
+        padding: 8px 10px;
+        resize: vertical;
+      }
+      .in.bad {
+        border-color: var(--bad);
+      }
+      .pair {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+      .money {
+        display: grid;
+        grid-template-columns: 1fr 96px;
+        gap: 8px;
+      }
+      .chosen {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        height: 38px;
+        padding: 0 8px 0 14px;
+        border: 1px solid var(--edge);
+        border-radius: 999px;
+        background: var(--panel2);
+        font-weight: 700;
+        max-width: 100%;
+      }
+      .xcirc {
+        position: relative;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        border: 0;
+        background: var(--muted);
+        padding: 0;
+        flex: none;
+      }
+      .xcirc::before,
+      .xcirc::after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 10px;
+        height: 2px;
+        background: var(--panel);
+        border-radius: 1px;
+      }
+      .xcirc::before {
+        transform: translate(-50%, -50%) rotate(45deg);
+      }
+      .xcirc::after {
+        transform: translate(-50%, -50%) rotate(-45deg);
+      }
+      .search {
+        position: relative;
+      }
+      .search input {
+        width: 100%;
+        height: 38px;
+        background: var(--field);
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 0 14px;
+      }
+      .pick {
+        display: none;
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 42px;
+        z-index: 5;
+        background: var(--panel);
+        border: 1px solid var(--edge);
+        border-radius: 10px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+        overflow: hidden;
+      }
+      .search:focus-within .pick {
+        display: block;
+      }
+      .pick div {
+        padding: 8px 14px;
+        cursor: pointer;
+      }
+      .pick div:hover {
+        background: var(--panel2);
+      }
+      .pick small {
+        color: var(--muted);
+        margin-left: 8px;
+      }
+      .seg {
+        display: inline-flex;
+        gap: 2px;
+        padding: 3px;
+        border-radius: 999px;
+        background: var(--seg-track);
+        border: 1px solid var(--line);
+      }
+      .seg button {
+        border: 0;
+        background: transparent;
+        color: var(--muted);
+        border-radius: 999px;
+        padding: 7px 16px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      .seg button.on {
+        background: var(--indigo);
+        color: #fff;
+      }
+      .seg.yn button.on.yes {
+        background: #1e9e57;
+      }
+      .seg.yn button.on.warn {
+        background: #d97706;
+      }
+      .rtype {
+        color: var(--muted);
+        font-size: 13px;
+        margin-left: 12px;
+      }
+      .flags {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px 14px;
+      }
+      .flag .fl {
+        margin-bottom: 4px;
+      }
+      .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .chip {
+        border: 1px solid var(--edge);
+        background: var(--panel2);
+        color: var(--text);
+        border-radius: 999px;
+        padding: 6px 14px;
+        font-weight: 700;
+      }
+      .chip.on {
+        background: var(--indigo);
+        border-color: var(--indigo);
+        color: #fff;
+      }
+      .note {
+        color: var(--muted);
+        font-size: 13px;
+        margin-top: 4px;
+      }
+      .err {
+        color: var(--bad);
+        font-size: 13px;
+        margin-top: 4px;
+      }
+      .foot {
+        flex: none;
+        display: flex;
+        gap: 10px;
+        padding: 10px 20px;
+        background: var(--panel);
+        border-top: 1px solid var(--line);
+        min-height: 54px;
+        align-items: center;
+      }
+      .ok {
+        padding: 14px 18px;
+        border-radius: 12px;
+        border: 1px solid var(--ok);
+        color: var(--ok);
+        background: color-mix(in srgb, var(--ok) 12%, transparent);
+        font-weight: 700;
+      }
+      .view {
+        display: none;
+        flex: 1;
+        min-height: 0;
+        flex-direction: column;
+      }
+      .view.on {
+        display: flex;
+      }
+      .usagesbox {
+        padding: 40px;
+        color: var(--muted);
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="sfnav">
+      <span class="app"><b>PIPE</b>LINE</span>
+      <span class="tab on">Pipeline</span>
+      <span class="tab">Sales Campaigns</span>
+      <span class="sp"></span>
+      <button class="pill" type="button" id="full">Full screen</button>
+    </div>
+
+    <details class="about" open>
+      <summary>ABOUT THIS MOCKUP</summary>
+      <p>
+        <b>What it shows:</b> the screen for a <b>new deal</b>, opened from the
+        campaign list for a surgeon marked "No deal yet". It is the surgeon
+        flyout (the one the rating plate opens) with a second pill,
+        <b>New Deal</b>, beside <b>Surgeon Usages</b>. The form looks like a
+        standard implant opportunity, everything editable. The
+        <b>record type</b> is a choice (the portfolio, plus the country when the
+        person works in more than one), the <b>owner</b> is the person using
+        Pipeline and can be changed, the <b>currency</b> is the person's own and
+        can be changed. Mandatory fields have a red *: the Primary HCP, the
+        expected closing quarter and year (not in the past), the expected annual
+        value and the expected annual units / cases (one box). Save stays off
+        until they are filled. Invented data; the brand, owner and surgeon lists
+        are typed in here (the real ones are read live from Salesforce).
+      </p>
+      <b>Try it:</b>
+      <ul>
+        <li>
+          Press a <b>Portfolio</b>: the record type and the brand choices follow
+          it. Switch <b>Several countries</b> to <b>Yes</b> above to see the
+          Country list appear.
+        </li>
+        <li>
+          Open the <b>Owner</b> (press the round x) and pick someone else; open
+          the surgeon (round x) to see the search.
+        </li>
+        <li>
+          Pick a quarter and a year in the past: the list for 2026 offers only
+          the current quarter and later. Press the <b>MyMobility</b> Yes to see
+          its stage.
+        </li>
+        <li>
+          Leave a mandatory box empty (Save stays grey), fill them in and press
+          <b>Save deal</b>.
+        </li>
+        <li>
+          Under <b>Opened by</b> choose pressing the rating plate (opens on
+          Surgeon Usages) or pressing "No deal yet" (opens on New Deal). Press
+          <b>Light</b> or <b>Dark</b>.
+        </li>
+      </ul>
+      <b>Decided:</b> a new deal made here is added to the campaign being looked
+      at, and a deal can be created from the campaign only.
+      <b>Not shown yet:</b> what the flyout does after Save (it could show the
+      new deal's own screens, or close), a risk or a ROSA deal, the stage (a new
+      deal starts at the first stage of its record type), the real lists, and
+      the slide-in motion.
+    </details>
+
+    <div class="tools">
+      <span class="lab">Several countries</span>
+      <button class="pill slate on" type="button" data-multi="no">No</button>
+      <button class="pill slate" type="button" data-multi="yes">Yes</button>
+      <span class="lab">Opened by</span>
+      <button class="pill slate on" type="button" data-open="new">
+        Pressing No deal yet
+      </button>
+      <button class="pill slate" type="button" data-open="usages">
+        Pressing the rating plate
+      </button>
+      <span class="lab">Look</span>
+      <button class="pill slate" type="button" data-look="light">Light</button>
+      <button class="pill slate" type="button" data-look="dark">Dark</button>
+      <button class="pill slate" type="button" id="again">Start again</button>
+    </div>
+
+    <div class="stage">
+      <div class="fly">
+        <div class="fhead">
+          <span class="name">Dr Priya Nair</span>
+          <span class="sp"></span>
+          <div class="pillrow" id="pills"></div>
+          <button type="button" class="rbtn" aria-label="Close">
+            &#10005;
+          </button>
+        </div>
+
+        <div class="view on" id="v-new">
+          <div class="scroll"><div id="formhost"></div></div>
+          <div class="foot">
+            <span class="note" id="foot-note"></span>
+            <span class="sp"></span>
+            <button type="button" class="pill slate" id="cancel">Cancel</button>
+            <button type="button" class="pill" id="save">Save deal</button>
+          </div>
+        </div>
+        <div class="view" id="v-usages">
+          <div class="usagesbox">
+            The surgeon's usages (the Usage Card), as built.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      var $ = function (id) {
+        return document.getElementById(id);
+      };
+      var USER = { name: "Robert Reeves", currency: "AUD", countries: ["AU"] };
+      var USERS = [
+        "Robert Reeves",
+        "Alex Example",
+        "Sam Example",
+        "Pat Recon",
+        "Casey Sales"
+      ];
+      var SURGEONS = ["Dr Priya Nair", "Dr Mei Tan", "Dr Sam Taylor"];
+      var FACILITIES = [
+        ["Mercy Private Hospital", "Auckland"],
+        ["North Hospital", "Sydney"],
+        ["Royal Northside Hospital", "Sydney"]
+      ];
+      var PORTS = ["Hip", "Knee", "Extremities", "CMFT"];
+      var BRANDS = {
+        Hip: ["Taperloc", "G7", "Avenir", "Continuum"],
+        Knee: ["Persona", "NexGen", "OptimiZe", "Attune"],
+        Extremities: ["Comprehensive", "Identity", "Nano"],
+        CMFT: ["CFx", "RibFix", "Rib Plates"]
+      };
+      var CURRENCIES = ["AUD", "NZD", "USD", "SGD"];
+      var now = { q: 4, y: 2026 }; // the current quarter in the mockup
+      var YEARS = [2026, 2027, 2028, 2029];
+      var MYMO = ["Awareness", "Trial", "Adopted"];
+      var state;
+      function fresh() {
+        state = {
+          port: "",
+          country: "AU",
+          owner: USER.name,
+          ownerOpen: false,
+          hcp: "Dr Priya Nair",
+          hcpOpen: false,
+          fac: "",
+          facOpen: false,
+          q: "",
+          y: "",
+          value: "",
+          cur: USER.currency,
+          units: "",
+          brands: [],
+          hold: "no",
+          rep: "no",
+          st: "no",
+          mymo: "no",
+          mymoStage: "",
+          bg: "",
+          tried: false,
+          saved: false
+        };
+      }
+      function rtName() {
+        if (!state.port) return "";
+        return state.country + " " + state.port.toUpperCase() + " Opportunity";
+      }
+      function quarterOptions() {
+        var all = [1, 2, 3, 4];
+        return state.y === 2026 || state.y === "2026"
+          ? all.filter(function (q) {
+              return q >= now.q;
+            })
+          : all;
+      }
+      function missing() {
+        var m = [];
+        if (!state.port) m.push("Portfolio");
+        if (!state.hcp) m.push("Primary HCP");
+        if (!state.q || !state.y) m.push("Closing quarter and year");
+        if (!state.value) m.push("Expected annual value");
+        if (!state.units) m.push("Expected annual units / cases");
+        return m;
+      }
+      function esc(t) {
+        return String(t).replace(/[&<>"]/g, function (c) {
+          return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
+        });
+      }
+      function star(on) {
+        return on ? ' <span class="req">*</span>' : "";
+      }
+      function bad(cond) {
+        return state.tried && cond ? " bad" : "";
+      }
+      function lookup(key, label, list, req, chosenName, openKey, withSub) {
+        var h =
+          '<div class="' +
+          (key === "fac" ? "" : "") +
+          '"><div class="fl">' +
+          label +
+          star(req) +
+          "</div>";
+        if (chosenName && !state[openKey]) {
+          h +=
+            '<span class="chosen">' +
+            esc(chosenName) +
+            (key === "owner" && chosenName === USER.name
+              ? ' <span class="note" style="margin:0">(you)</span>'
+              : "") +
+            '<button type="button" class="xcirc" data-clear="' +
+            key +
+            '" aria-label="Change"></button></span>';
+        } else {
+          h +=
+            '<div class="search"><input type="text" placeholder="Search…" data-search="' +
+            key +
+            '" class="' +
+            bad(req && !chosenName) +
+            '" />' +
+            '<div class="pick" id="pick-' +
+            key +
+            '">' +
+            list
+              .map(function (x) {
+                var nm = withSub ? x[0] : x;
+                return (
+                  '<div data-pick="' +
+                  key +
+                  '" data-v="' +
+                  esc(nm) +
+                  '">' +
+                  esc(nm) +
+                  (withSub ? "<small>" + esc(x[1]) + "</small>" : "") +
+                  "</div>"
+                );
+              })
+              .join("") +
+            "</div></div>";
+        }
+        return h + "</div>";
+      }
+      function yn(key, label, warn) {
+        return (
+          '<div class="flag"><div class="fl">' +
+          label +
+          '</div><div class="seg yn"><button type="button" data-yn="' +
+          key +
+          '" data-v="no" class="' +
+          (state[key] === "no" ? "on" : "") +
+          '">No</button>' +
+          '<button type="button" data-yn="' +
+          key +
+          '" data-v="yes" class="' +
+          (state[key] === "yes" ? "on " + (warn ? "warn" : "yes") : "") +
+          '">Yes</button></div></div>'
+        );
+      }
+      function render() {
+        var multi = USER.countries.length > 1;
+        var qo = quarterOptions();
+        var left =
+          '<section class="card"><h3>The new deal</h3><div class="grid2">' +
+          '<div class="wide"><div class="fl">Portfolio' +
+          star(true) +
+          '</div><div class="seg">' +
+          PORTS.map(function (p) {
+            return (
+              '<button type="button" data-port="' +
+              p +
+              '" class="' +
+              (state.port === p ? "on" : "") +
+              '">' +
+              p +
+              "</button>"
+            );
+          }).join("") +
+          "</div>" +
+          '<span class="rtype">' +
+          (state.port ? "Record type: " + rtName() : "") +
+          "</span>" +
+          (state.tried && !state.port
+            ? '<div class="err">Choose a portfolio.</div>'
+            : "") +
+          "</div>" +
+          (multi
+            ? '<div><div class="fl">Country</div><select class="in" data-country>' +
+              USER.countries
+                .map(function (c) {
+                  return (
+                    "<option" +
+                    (c === state.country ? " selected" : "") +
+                    ">" +
+                    c +
+                    "</option>"
+                  );
+                })
+                .join("") +
+              "</select></div><div></div>"
+            : "") +
+          "<div>" +
+          lookup("hcp", "Primary HCP", SURGEONS, true, state.hcp, "hcpOpen") +
+          "</div>" +
+          "<div>" +
+          lookup(
+            "fac",
+            "Healthcare facility",
+            FACILITIES,
+            false,
+            state.fac,
+            "facOpen",
+            true
+          ) +
+          "</div>" +
+          '<div><div class="fl">Expected closing quarter and year' +
+          star(true) +
+          '</div><div class="pair"><select class="in' +
+          bad(!state.q) +
+          '" data-q><option value="">Quarter…</option>' +
+          qo
+            .map(function (q) {
+              return (
+                '<option value="' +
+                q +
+                '"' +
+                (String(state.q) === String(q) ? " selected" : "") +
+                ">Q" +
+                q +
+                "</option>"
+              );
+            })
+            .join("") +
+          '</select><select class="in' +
+          bad(!state.y) +
+          '" data-y><option value="">Year…</option>' +
+          YEARS.map(function (y) {
+            return (
+              '<option value="' +
+              y +
+              '"' +
+              (String(state.y) === String(y) ? " selected" : "") +
+              ">" +
+              y +
+              "</option>"
+            );
+          }).join("") +
+          "</select></div>" +
+          '<div class="note">Not before the current quarter (Q' +
+          now.q +
+          " " +
+          now.y +
+          ").</div></div>" +
+          '<div><div class="fl">Expected annual value' +
+          star(true) +
+          '</div><div class="money"><input class="in' +
+          bad(!state.value) +
+          '" data-value inputmode="numeric" value="' +
+          esc(state.value) +
+          '" />' +
+          '<select class="in" data-cur>' +
+          CURRENCIES.map(function (c) {
+            return (
+              "<option" +
+              (c === state.cur ? " selected" : "") +
+              ">" +
+              c +
+              "</option>"
+            );
+          }).join("") +
+          "</select></div></div>" +
+          '<div><div class="fl">Expected annual units / cases' +
+          star(true) +
+          '</div><input class="in' +
+          bad(!state.units) +
+          '" data-units inputmode="numeric" value="' +
+          esc(state.units) +
+          '" /></div>' +
+          "<div>" +
+          lookup("owner", "Owner", USERS, true, state.owner, "ownerOpen") +
+          "</div>" +
+          "</div></section>";
+        var right =
+          '<section class="card"><h3>Brand and switches</h3>' +
+          '<div class="fl">Brand</div><div class="chips" style="margin-bottom:12px">' +
+          (state.port
+            ? BRANDS[state.port]
+                .map(function (b) {
+                  return (
+                    '<button type="button" class="chip' +
+                    (state.brands.indexOf(b) > -1 ? " on" : "") +
+                    '" data-brand="' +
+                    b +
+                    '">' +
+                    b +
+                    "</button>"
+                  );
+                })
+                .join("")
+            : '<span class="note">Choose a portfolio first: the brands follow it.</span>') +
+          '</div><div class="flags">' +
+          yn("hold", "On hold", true) +
+          yn("rep", "Rep priority") +
+          yn("st", "State priority") +
+          yn("mymo", "MyMobility") +
+          "</div>" +
+          (state.mymo === "yes"
+            ? '<div style="margin-top:10px"><div class="fl">MyMobility stage</div><select class="in" data-mymostage><option value="">Choose…</option>' +
+              MYMO.map(function (m) {
+                return (
+                  "<option" +
+                  (m === state.mymoStage ? " selected" : "") +
+                  ">" +
+                  m +
+                  "</option>"
+                );
+              }).join("") +
+              "</select></div>"
+            : "") +
+          '<div style="margin-top:12px"><div class="fl">Background information</div><textarea class="in" data-bg>' +
+          esc(state.bg) +
+          "</textarea></div></section>";
+        $("formhost").innerHTML = state.saved
+          ? '<div class="ok">Deal created for ' +
+            esc(state.hcp) +
+            ": " +
+            esc(rtName()) +
+            ", owned by " +
+            esc(state.owner) +
+            ". It has been added to the campaign \u201cShoulder Sydney Meeting AU-NZ\u201d. (What the flyout does after this is still to be decided.)</div>"
+          : '<div class="cols">' + left + right + "</div>";
+        var m = missing();
+        $("save").disabled = m.length > 0 || state.saved;
+        $("foot-note").textContent = state.saved
+          ? ""
+          : m.length
+            ? "Still to fill in: " + m.join(", ") + "."
+            : "Ready to save.";
+      }
+      var screen = "new";
+      function pills() {
+        $("pills").innerHTML = [
+          ["new", "New Deal"],
+          ["usages", "Surgeon Usages"]
+        ]
+          .map(function (p) {
+            return (
+              '<button type="button" class="nav' +
+              (screen === p[0] ? " on" : "") +
+              '" data-screen="' +
+              p[0] +
+              '">' +
+              p[1] +
+              "</button>"
+            );
+          })
+          .join("");
+        $("v-new").classList.toggle("on", screen === "new");
+        $("v-usages").classList.toggle("on", screen === "usages");
+      }
+      function onPress(e) {
+        var t = e.target.closest("button, [data-pick]");
+        if (!t) return;
+        if (e.type === "mousedown" && !t.dataset.pick) return;
+        var d = t.dataset;
+        if (d.screen) {
+          screen = d.screen;
+          pills();
+          return;
+        }
+        if (d.port) {
+          state.port = d.port;
+          state.brands = [];
+          render();
+          return;
+        }
+        if (d.clear) {
+          state[d.clear + "Open"] = true;
+          render();
+          return;
+        }
+        if (d.pick) {
+          state[d.pick] = d.v;
+          state[d.pick + "Open"] = false;
+          render();
+          return;
+        }
+        if (d.yn) {
+          state[d.yn] = d.v;
+          render();
+          return;
+        }
+        if (d.brand) {
+          var i = state.brands.indexOf(d.brand);
+          if (i > -1) state.brands.splice(i, 1);
+          else state.brands.push(d.brand);
+          render();
+          return;
+        }
+        if (d.multi) {
+          USER.countries = d.multi === "yes" ? ["AU", "NZ"] : ["AU"];
+          state.country = "AU";
+          document.querySelectorAll("[data-multi]").forEach(function (b) {
+            b.classList.toggle("on", b === t);
+          });
+          render();
+          return;
+        }
+        if (d.open) {
+          screen = d.open;
+          document.querySelectorAll("[data-open]").forEach(function (b) {
+            b.classList.toggle("on", b === t);
+          });
+          pills();
+          return;
+        }
+        if (d.look) {
+          document.documentElement.setAttribute("data-theme", d.look);
+          return;
+        }
+        if (t.id === "again") {
+          fresh();
+          screen = "new";
+          pills();
+          render();
+          return;
+        }
+        if (t.id === "cancel") {
+          fresh();
+          render();
+          return;
+        }
+        if (t.id === "save") {
+          if (missing().length) {
+            state.tried = true;
+          } else {
+            state.saved = true;
+          }
+          render();
+          return;
+        }
+        if (t.id === "full") {
+          if (document.fullscreenElement) document.exitFullscreen();
+          else document.documentElement.requestFullscreen();
+        }
+      }
+      document.addEventListener("click", function (e) {
+        if (!e.target.closest("[data-pick]")) onPress(e);
+      });
+      document.addEventListener("mousedown", function (e) {
+        if (e.target.closest("[data-pick]")) onPress(e);
+      });
+      document.addEventListener("change", function (e) {
+        var t = e.target;
+        if (t.hasAttribute("data-q")) state.q = t.value;
+        else if (t.hasAttribute("data-y")) {
+          state.y = t.value;
+          if (String(state.y) === "2026" && state.q && Number(state.q) < now.q)
+            state.q = "";
+        } else if (t.hasAttribute("data-cur")) state.cur = t.value;
+        else if (t.hasAttribute("data-country")) state.country = t.value;
+        else if (t.hasAttribute("data-mymostage")) state.mymoStage = t.value;
+        else return;
+        render();
+      });
+      document.addEventListener("input", function (e) {
+        var t = e.target;
+        if (t.hasAttribute("data-value")) {
+          t.value = t.value.replace(/[^0-9]/g, "");
+          state.value = t.value;
+        } else if (t.hasAttribute("data-units")) {
+          t.value = t.value.replace(/[^0-9]/g, "");
+          state.units = t.value;
+        } else if (t.hasAttribute("data-bg")) state.bg = t.value;
+        else return;
+        var m = missing();
+        $("save").disabled = m.length > 0;
+        $("foot-note").textContent = m.length
+          ? "Still to fill in: " + m.join(", ") + "."
+          : "Ready to save.";
+      });
+      fresh();
+      pills();
+      render();
+    </script>
+  </body>
+</html>

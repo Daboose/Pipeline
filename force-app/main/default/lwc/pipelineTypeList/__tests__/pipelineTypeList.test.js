@@ -232,14 +232,41 @@ describe("c-pipeline-type-list", () => {
     );
     expect(heads.indexOf("Rating")).toBe(heads.indexOf("Portfolio") + 1);
     expect(heads.indexOf("Brand")).toBe(heads.indexOf("Rating") + 1);
-    const plates = [...el.shadowRoot.querySelectorAll("span.rate")];
+    const plates = [...el.shadowRoot.querySelectorAll("button.rplate")];
     expect(plates.map((p) => p.textContent)).toContain("Gold");
     expect(
       plates.find((p) => p.textContent === "Gold").classList.contains("Gold")
     ).toBe(true);
-    expect(el.shadowRoot.querySelector("span.norate").textContent).toBe(
+    // Not rated is a flat black plate of the same size, not quiet words
+    expect(el.shadowRoot.querySelector("button.rplate.none").textContent).toBe(
       "Not rated"
     );
+  });
+
+  it("opens the deal on its Surgeon Usages screen when a rating plate is pressed (Gold or Not rated), and the line's own click does not fire as well", async () => {
+    const el = make({
+      kind: "opp",
+      deals: [
+        deal("1", "Ann", { rating: "GOLD" }),
+        deal("2", "Ann", { rating: null })
+      ]
+    });
+    await Promise.resolve();
+    const handler = jest.fn();
+    el.addEventListener("dealopen", handler);
+    const plates = [...el.shadowRoot.querySelectorAll("button.rplate")];
+    plates.find((p) => p.textContent.trim() === "Gold").click();
+    expect(handler).toHaveBeenCalledTimes(1);
+    expect(handler.mock.calls[0][0].detail.id).toBe("1");
+    expect(handler.mock.calls[0][0].detail.screen).toBe("usages");
+    plates.find((p) => p.textContent.trim() === "Not rated").click();
+    expect(handler).toHaveBeenCalledTimes(2);
+    expect(handler.mock.calls[1][0].detail.id).toBe("2");
+    expect(handler.mock.calls[1][0].detail.screen).toBe("usages");
+    // the line itself still opens the deal on its first screen (no screen named)
+    el.shadowRoot.querySelector("tr[data-id='1']").click();
+    expect(handler).toHaveBeenCalledTimes(3);
+    expect(handler.mock.calls[2][0].detail.screen).toBeUndefined();
   });
 
   it("has a Rating column for opportunities and risks but not for ROSA", async () => {

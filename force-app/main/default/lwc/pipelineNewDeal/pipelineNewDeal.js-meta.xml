@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+  <apiVersion>68.0</apiVersion>
+  <description
+  >Pipeline: the New Deal screen of the surgeon flyout. Makes an implant opportunity for a surgeon with no deal, from the campaign list, and puts it into that campaign.</description>
+  <isExposed>false</isExposed>
+</LightningComponentBundle>

@@ -4,7 +4,7 @@
   <isExposed>true</isExposed>
   <masterLabel>Pipeline Usage Card</masterLabel>
   <description
-  >Pipeline: the Usage card for an Account record page. On a surgeon (person account) it shows the four usage ratings as metal plates, the surgeon's usages (add, edit, delete) and MyCase bookings for information. On a hospital it shows cases by surgeon.</description>
+  >Pipeline: the Usage card for an Account record page. On a surgeon (person account) it shows the four usage ratings as metal plates, the usages in a compact layout (add, edit, delete) and MyCase bookings. On a hospital it shows cases by surgeon.</description>
   <targets>
     <target>lightning__RecordPage</target>
   </targets>

@@ -1,7 +1,7 @@
 import { createElement } from "lwc";
 import PipelineDeal from "c/pipelineDeal";
 import { registerLdsTestWireAdapter } from "@salesforce/sfdx-lwc-jest";
-import { getRecord } from "lightning/uiRecordApi";
+import { getRecord, updateRecord } from "lightning/uiRecordApi";
 import getBadges from "@salesforce/apex/PipelineBookingsController.getBadges";
 import {
   getObjectInfo,
@@ -29,7 +29,19 @@ jest.mock(
   { virtual: true }
 );
 jest.mock(
-  "c/pipelineUsages",
+  "c/pipelineUsageCard",
+  () => {
+    const { LightningElement, registerDecorators } = require("lwc");
+    class Stub extends LightningElement {}
+    registerDecorators(Stub, {
+      publicProps: { embedded: { config: 0 }, recordId: { config: 0 } }
+    });
+    return { __esModule: true, default: Stub };
+  },
+  { virtual: true }
+);
+jest.mock(
+  "c/pipelineHospitalBookings",
   () => {
     const { LightningElement } = require("lwc");
     return { __esModule: true, default: class extends LightningElement {} };
@@ -148,7 +160,7 @@ describe("c-pipeline-deal", () => {
   });
 
   describe("the header order and the stage", () => {
-    it("puts the summary line under the name in the header, and the stage slider in a band of its own at the top of the area the panels slide over", async () => {
+    it("puts the summary line under the name in the header, and the stage slider in a band of its own at the top of the area under the header", async () => {
       const el = createElement("c-pipeline-deal", { is: PipelineDeal });
       el.deal = { ...deal, kind: "opp", stage: "Commit" };
       document.body.appendChild(el);
@@ -318,10 +330,10 @@ describe("c-pipeline-deal", () => {
     });
   });
 
-  describe("surgeon usages and case bookings panels", () => {
-    async function mount(kind = "opp") {
+  describe("the four screens: the deal, surgeon usages, MyCase bookings and campaigns", () => {
+    async function mount(kind = "opp", extra = {}) {
       const el = createElement("c-pipeline-deal", { is: PipelineDeal });
-      el.deal = { ...deal, kind, hcp: "Dr Test" };
+      el.deal = { ...deal, kind, hcp: "Dr Test", ...extra };
       el.index = 0;
       el.total = 1;
       document.body.appendChild(el);
@@ -329,204 +341,443 @@ describe("c-pipeline-deal", () => {
       await Promise.resolve();
       return el;
     }
-    const button = (el, text) =>
-      [...el.shadowRoot.querySelectorAll(".fhead .btn.nav")].find((b) =>
-        b.textContent.trim().startsWith(text)
-      );
+    const pills = (el) => [
+      ...el.shadowRoot.querySelectorAll(".fhead .btn.nav")
+    ];
+    const pill = (el, text) =>
+      pills(el).find((b) => b.textContent.trim().startsWith(text));
+    const lit = (el) =>
+      pills(el)
+        .filter((b) => b.className.includes(" on"))
+        .map((b) => b.textContent.trim().replace(/\s+/g, " "));
 
-    afterEach(() => jest.useRealTimers());
-
-    it("has the two panel buttons in the top row for an opportunity, none for a ROSA deal, and none in the bottom row", async () => {
-      const opp = await mount("opp");
-      expect(button(opp, "Surgeon Usages")).toBeTruthy();
-      expect(button(opp, "MyCase Bookings")).toBeTruthy();
-      expect(opp.shadowRoot.querySelectorAll(".foot .btn.nav").length).toBe(0);
-      expect(button(opp, "Campaigns")).toBeTruthy();
-      const rosa = await mount("rosa");
-      // a ROSA deal has no surgeon panels, but it can still be put in a campaign
-      expect(rosa.shadowRoot.querySelectorAll(".fhead .btn.nav").length).toBe(
-        1
-      );
-      expect(button(rosa, "Campaigns")).toBeTruthy();
-      expect(button(rosa, "Surgeon Usages")).toBeFalsy();
+    it("names the deal on the first pill (Extremities Opportunity, Knee Risk, ROSA) and lights only that pill on the deal screen", async () => {
+      const opp = await mount("opp", { segment: "Extremities" });
+      expect(
+        pills(opp).map((b) => b.textContent.trim().split("\n")[0].trim())
+      ).toEqual([
+        "Extremities Opportunity",
+        "Surgeon Usages",
+        "MyCase Bookings",
+        "Campaigns0"
+      ]);
+      expect(lit(opp)).toEqual(["Extremities Opportunity"]);
+      const risk = await mount("risk", { segment: "Knee" });
+      expect(pill(risk, "Knee Risk")).toBeTruthy();
+      const several = await mount("risk", { segment: "Hip;Knee" });
+      expect(pill(several, "Risk")).toBeTruthy();
+      const rosa = await mount("rosa", { segment: undefined });
+      expect(pill(rosa, "ROSA")).toBeTruthy();
     });
 
-    it("shows how many campaigns the deal is in on the Campaigns button", async () => {
+    it("gives a ROSA deal three pills (no Surgeon Usages) and the other kinds four", async () => {
+      expect(pills(await mount("opp")).length).toBe(4);
+      expect(pills(await mount("risk")).length).toBe(4);
+      const rosa = await mount("rosa");
+      expect(pills(rosa).length).toBe(3);
+      expect(pill(rosa, "Surgeon Usages")).toBeFalsy();
+      expect(pill(rosa, "MyCase Bookings")).toBeTruthy();
+      expect(pill(rosa, "Campaigns")).toBeTruthy();
+    });
+
+    it("keeps the facts row, stage path and fields on the deal screen only, and the bottom row too", async () => {
+      const el = await mount();
+      expect(el.shadowRoot.querySelector(".fhead .strip")).not.toBeNull();
+      expect(el.shadowRoot.querySelector(".under .band")).not.toBeNull();
+      expect(el.shadowRoot.querySelector(".under .body")).not.toBeNull();
+      expect(el.shadowRoot.querySelector(".foot")).not.toBeNull();
+      pill(el, "Surgeon Usages").click();
+      await Promise.resolve();
+      expect(el.shadowRoot.querySelector(".fhead .strip")).toBeNull();
+      expect(el.shadowRoot.querySelector(".under .band")).toBeNull();
+      expect(el.shadowRoot.querySelector(".under .body")).toBeNull();
+      expect(el.shadowRoot.querySelector(".foot")).toBeNull();
+      expect(el.shadowRoot.querySelector(".fhead .h1")).not.toBeNull();
+      pills(el)[0].click();
+      await Promise.resolve();
+      expect(el.shadowRoot.querySelector(".fhead .strip")).not.toBeNull();
+      expect(el.shadowRoot.querySelector(".foot")).not.toBeNull();
+    });
+
+    it("shows the Usage Card for the deal's surgeon, filling the flyout, and lights the Surgeon Usages pill", async () => {
+      const el = await mount();
+      pill(el, "Surgeon Usages").click();
+      await Promise.resolve();
+      const card = el.shadowRoot.querySelector("c-pipeline-usage-card");
+      expect(card).not.toBeNull();
+      expect(card.embedded).toBe(true);
+      expect(lit(el)).toEqual(["Surgeon Usages"]);
+      expect(el.shadowRoot.querySelector("c-pipeline-usages")).toBeNull();
+      expect(el.shadowRoot.querySelector(".layer")).toBeNull();
+    });
+
+    it("shows the surgeon's MyCase bookings for an opportunity and the hospital's for a ROSA deal", async () => {
+      const opp = await mount("opp");
+      pill(opp, "MyCase Bookings").click();
+      await Promise.resolve();
+      expect(
+        opp.shadowRoot.querySelector("c-pipeline-bookings")
+      ).not.toBeNull();
+      expect(
+        opp.shadowRoot.querySelector("c-pipeline-hospital-bookings")
+      ).toBeNull();
+      expect(lit(opp)).toEqual(["MyCase Bookings"]);
+      const rosa = await mount("rosa");
+      pill(rosa, "MyCase Bookings").click();
+      await Promise.resolve();
+      expect(
+        rosa.shadowRoot.querySelector("c-pipeline-hospital-bookings")
+      ).not.toBeNull();
+      expect(rosa.shadowRoot.querySelector("c-pipeline-bookings")).toBeNull();
+      expect(rosa.shadowRoot.querySelector(".screen.fill")).not.toBeNull();
+    });
+
+    it("shows how many campaigns the deal is in on the Campaigns pill, and opens Campaigns for any kind of deal", async () => {
       const el = await mount("opp");
       const count = () =>
-        button(el, "Campaigns").querySelector(".badge").textContent;
+        pill(el, "Campaigns").querySelector(".badge").textContent;
       expect(count()).toBe("0");
       el.deal = { ...el.deal, campaignCount: 3 };
       await Promise.resolve();
       expect(count()).toBe("3");
+      const rosa = await mount("rosa");
+      pill(rosa, "Campaigns").click();
+      await Promise.resolve();
+      expect(
+        rosa.shadowRoot.querySelector("c-pipeline-deal-campaigns")
+      ).not.toBeNull();
+      expect(lit(rosa)).toEqual(["Campaigns0"]);
     });
 
-    it("opens the Campaigns panel for any kind of deal", async () => {
-      jest.useFakeTimers();
-      const el = await mount("rosa");
-      button(el, "Campaigns").click();
-      jest.advanceTimersByTime(40);
+    it("swaps screens in place: one screen at a time, the top row never goes", async () => {
+      const el = await mount();
+      pill(el, "Surgeon Usages").click();
       await Promise.resolve();
+      pill(el, "MyCase Bookings").click();
+      await Promise.resolve();
+      expect(el.shadowRoot.querySelector("c-pipeline-usage-card")).toBeNull();
+      expect(el.shadowRoot.querySelector("c-pipeline-bookings")).not.toBeNull();
+      pill(el, "Campaigns").click();
+      await Promise.resolve();
+      expect(el.shadowRoot.querySelector("c-pipeline-bookings")).toBeNull();
       expect(
         el.shadowRoot.querySelector("c-pipeline-deal-campaigns")
       ).not.toBeNull();
-      expect(el.shadowRoot.querySelector(".shead h2").textContent).toBe(
-        "Campaigns"
-      );
-      jest.useRealTimers();
+      expect(el.shadowRoot.querySelector(".fhead .h1")).not.toBeNull();
     });
 
-    it("keeps the bottom row for actions only: the deal's three buttons, nothing over a panel, the panel's own while editing", async () => {
-      jest.useFakeTimers();
-      const el = await mount();
-      const foot = () =>
-        [...el.shadowRoot.querySelectorAll(".foot .btn")].map((b) =>
-          b.textContent.trim()
-        );
-      expect(foot()).toEqual(["Open in Salesforce", "Cancel", "Save changes"]);
-      button(el, "MyCase Bookings").click();
-      jest.advanceTimersByTime(40);
+    it("has no ask-to-check button and no old sliding panel", async () => {
+      const el = await mount("opp", { ownerId: "005other" });
+      el.isManager = true;
+      el.viewerId = "005me";
+      pill(el, "Surgeon Usages").click();
       await Promise.resolve();
-      expect(foot()).toEqual([]);
-      button(el, "Surgeon Usages").click();
-      jest.advanceTimersByTime(40);
-      await Promise.resolve();
-      expect(foot()).toEqual([]);
-      const usages = el.shadowRoot.querySelector("c-pipeline-usages");
-      usages.submit = jest.fn();
-      usages.cancel = jest.fn();
-      usages.dispatchEvent(
-        new CustomEvent("actionstate", {
-          detail: { kind: "edit", canSubmit: false, saving: false }
-        })
-      );
-      await Promise.resolve();
-      expect(foot()).toEqual(["Cancel", "Save changes"]);
-      const save = () =>
-        [...el.shadowRoot.querySelectorAll(".foot .btn")].find(
-          (b) => b.textContent.trim() !== "Cancel"
-        );
-      expect(save().disabled).toBe(true);
-      usages.dispatchEvent(
-        new CustomEvent("actionstate", {
-          detail: { kind: "edit", canSubmit: true, saving: false }
-        })
-      );
-      await Promise.resolve();
-      expect(save().disabled).toBe(false);
-      save().click();
-      expect(usages.submit).toHaveBeenCalledTimes(1);
-      usages.dispatchEvent(
-        new CustomEvent("actionstate", {
-          detail: { kind: "add", canSubmit: true, saving: false }
-        })
-      );
-      await Promise.resolve();
-      expect(foot()).toEqual(["Cancel", "Add usage"]);
-      el.shadowRoot.querySelector(".foot .btn.sec").click();
-      expect(usages.cancel).toHaveBeenCalledTimes(1);
-      usages.dispatchEvent(
-        new CustomEvent("actionstate", {
-          detail: { kind: "", canSubmit: false, saving: false }
-        })
-      );
-      await Promise.resolve();
-      expect(foot()).toEqual([]);
+      expect(el.shadowRoot.textContent).not.toContain("check them");
+      expect(el.shadowRoot.querySelector(".sheet")).toBeNull();
+      expect(el.shadowRoot.querySelector(".shade")).toBeNull();
     });
 
-    it("slides the usages panel in and out, and keeps the header and bottom bar", async () => {
-      jest.useFakeTimers();
-      const el = await mount();
-      expect(el.shadowRoot.querySelector(".layer")).toBeNull();
-      button(el, "Surgeon Usages").click();
+    it("stays on Surgeon Usages when Next lands on another opportunity, and shows the deal when it lands on a ROSA deal", async () => {
+      const el = await mount("opp");
+      pill(el, "Surgeon Usages").click();
       await Promise.resolve();
-      // on the page first, not yet slid in
-      expect(el.shadowRoot.querySelector(".layer")).not.toBeNull();
-      expect(el.shadowRoot.querySelector(".layer.on")).toBeNull();
-      jest.advanceTimersByTime(40);
+      el.deal = { ...deal, id: "a01000000000002", kind: "risk", hcp: "Dr Two" };
       await Promise.resolve();
-      expect(el.shadowRoot.querySelector(".layer.on")).not.toBeNull();
-      expect(el.shadowRoot.querySelector("c-pipeline-usages")).not.toBeNull();
-      expect(el.shadowRoot.querySelector(".shead h2").textContent).toBe(
-        "Surgeon usages"
-      );
-      expect(button(el, "Surgeon Usages").className).toContain("on");
-      expect(el.shadowRoot.querySelector(".fhead")).not.toBeNull();
-      expect(el.shadowRoot.querySelector(".foot")).not.toBeNull();
-      // Open in Salesforce belongs to the deal page, so it is hidden while a panel is open
-      expect(el.shadowRoot.querySelector(".fl2 .btn")).toBeNull();
-      // the same button again slides it away, then takes it off the page
-      button(el, "Surgeon Usages").click();
+      expect(
+        el.shadowRoot.querySelector("c-pipeline-usage-card")
+      ).not.toBeNull();
+      el.deal = { ...deal, id: "a01000000000003", kind: "rosa" };
       await Promise.resolve();
-      expect(el.shadowRoot.querySelector(".layer.on")).toBeNull();
-      expect(el.shadowRoot.querySelector(".layer")).not.toBeNull();
-      jest.advanceTimersByTime(460);
-      await Promise.resolve();
-      expect(el.shadowRoot.querySelector(".layer")).toBeNull();
-      expect(el.shadowRoot.querySelector(".fl2 .btn")).not.toBeNull();
+      expect(el.shadowRoot.querySelector("c-pipeline-usage-card")).toBeNull();
+      expect(el.shadowRoot.querySelector(".fhead .strip")).not.toBeNull();
+      expect(lit(el)).toEqual(["ROSA"]);
     });
 
-    it("swaps to the other panel, and the dimmed deal behind closes it", async () => {
-      jest.useFakeTimers();
-      const el = await mount();
-      button(el, "Surgeon Usages").click();
-      jest.advanceTimersByTime(40);
-      await Promise.resolve();
-      button(el, "MyCase Bookings").click();
-      await Promise.resolve();
-      expect(el.shadowRoot.querySelector("c-pipeline-usages")).toBeNull();
-      expect(el.shadowRoot.querySelector("c-pipeline-bookings")).not.toBeNull();
-      expect(el.shadowRoot.querySelector(".layer.on")).not.toBeNull();
-      el.shadowRoot.querySelector(".shade").click();
-      await Promise.resolve();
-      expect(el.shadowRoot.querySelector(".layer.on")).toBeNull();
-      jest.advanceTimersByTime(460);
-      await Promise.resolve();
-      expect(el.shadowRoot.querySelector(".layer")).toBeNull();
-    });
-
-    it("shows the surgery count on the MyCase Bookings button only, and reads it again when usages change", async () => {
-      getBadges.mockResolvedValue({
-        surgeonId: "001",
-        hasUsages: true,
-        usagesNewest: new Date(Date.now() - 114 * 86400000).toISOString(),
-        booked: 38
-      });
+    it("shows the surgery count on the MyCase Bookings pill only", async () => {
+      getBadges.mockResolvedValue({ surgeonId: "001", booked: 38 });
       const el = await mount();
       await Promise.resolve();
       await Promise.resolve();
-      expect(button(el, "Surgeon Usages").textContent.trim()).toBe(
+      expect(pill(el, "Surgeon Usages").textContent.trim()).toBe(
         "Surgeon Usages"
       );
-      expect(button(el, "MyCase Bookings").textContent).toContain("38");
-      getBadges.mockResolvedValue({
-        surgeonId: "001",
-        hasUsages: false,
-        booked: 39
-      });
-      button(el, "Surgeon Usages").click();
-      jest.useFakeTimers();
-      jest.advanceTimersByTime(40);
-      await Promise.resolve();
-      el.shadowRoot
-        .querySelector("c-pipeline-usages")
-        .dispatchEvent(new CustomEvent("usageschanged"));
-      await Promise.resolve();
-      await Promise.resolve();
-      await Promise.resolve();
-      expect(getBadges).toHaveBeenCalledTimes(2);
-      expect(button(el, "MyCase Bookings").textContent).toContain("39");
+      expect(pill(el, "MyCase Bookings").textContent).toContain("38");
     });
 
-    it("opens next time with no panel over the deal", async () => {
-      jest.useFakeTimers();
+    it("opens on Surgeon Usages when told to start there (a rating plate was pressed), and on the deal for a ROSA deal", async () => {
+      const el = createElement("c-pipeline-deal", { is: PipelineDeal });
+      el.deal = { ...deal, kind: "opp", hcp: "Dr Test" };
+      el.startScreen = "usages";
+      el.index = 0;
+      el.total = 1;
+      document.body.appendChild(el);
+      await Promise.resolve();
+      el.open = true;
+      await Promise.resolve();
+      expect(
+        el.shadowRoot.querySelector("c-pipeline-usage-card")
+      ).not.toBeNull();
+      expect(el.shadowRoot.querySelector(".fhead .strip")).toBeNull();
+      const rosa = createElement("c-pipeline-deal", { is: PipelineDeal });
+      rosa.deal = { ...deal, kind: "rosa" };
+      rosa.startScreen = "usages";
+      document.body.appendChild(rosa);
+      rosa.open = true;
+      await Promise.resolve();
+      expect(rosa.shadowRoot.querySelector("c-pipeline-usage-card")).toBeNull();
+      expect(rosa.shadowRoot.querySelector(".fhead .strip")).not.toBeNull();
+    });
+
+    it("opens next time on the deal itself", async () => {
       const el = await mount();
-      button(el, "Surgeon Usages").click();
-      jest.advanceTimersByTime(40);
+      pill(el, "Surgeon Usages").click();
       await Promise.resolve();
       el.open = false;
       await Promise.resolve();
-      expect(el.shadowRoot.querySelector(".layer")).toBeNull();
+      expect(el.shadowRoot.querySelector("c-pipeline-usage-card")).toBeNull();
+      expect(el.shadowRoot.querySelector(".fhead .strip")).not.toBeNull();
+    });
+  });
+
+  describe("the owner and the rules when editing an opportunity", () => {
+    const FIELDS_ON = [
+      "Account__c",
+      "OwnerId",
+      "AmountPerYear__c",
+      "UnitsCasesPerYear__c",
+      "Brand__c",
+      "Expected_Closure_Quarter__c",
+      "Expected_Closing_Year__c",
+      "Objective__c",
+      "Healthcare_Facility__c",
+      "ROSAGrowthDollar__c"
+    ];
+    const BASE = {
+      Account__c: { value: "001SURGEON" },
+      Account__r: { value: { fields: { Name: { value: "Dr Priya Nair" } } } },
+      OwnerId: { value: "005ME" },
+      Owner: { value: { fields: { Name: { value: "Robert Reeves" } } } },
+      AmountPerYear__c: { value: 120000 },
+      UnitsCasesPerYear__c: { value: "24" },
+      Brand__c: { value: "Persona" },
+      Expected_Closure_Quarter__c: { value: "Q1" },
+      Expected_Closing_Year__c: { value: "2027" }
+    };
+    const list = (values) => values.map((v) => ({ value: v, label: v }));
+    async function openDeal(kind = "opp", record = {}) {
+      const el = createElement("c-pipeline-deal", { is: PipelineDeal });
+      el.deal = { ...deal, kind, hcp: "Dr Priya Nair" };
+      el.index = 0;
+      el.total = 1;
+      document.body.appendChild(el);
+      const info = {};
+      FIELDS_ON.forEach((f) => {
+        info[f] = { updateable: true };
+      });
+      infoAdapter.emit({ fields: info });
+      recordAdapter.emit({
+        recordTypeId: "012000000000001",
+        fields: { ...BASE, ...record }
+      });
+      picklistAdapter.emit({
+        picklistFieldValues: {
+          Brand__c: { values: list(["Persona", "OptimiZe"]) },
+          Expected_Closure_Quarter__c: {
+            values: list(["Q1", "Q2", "Q3", "Q4"])
+          },
+          Expected_Closing_Year__c: { values: list(["2026", "2027"]) }
+        }
+      });
+      await Promise.resolve();
+      await Promise.resolve();
+      return el;
+    }
+    const root = (el) => el.shadowRoot;
+    const save = (el) =>
+      [...root(el).querySelectorAll(".foot .btn")].find((b) =>
+        b.textContent.includes("Save changes")
+      );
+    const errors = (el) =>
+      [...root(el).querySelectorAll(".errs div")].map((d) => d.textContent);
+    const type = async (el, api, value) => {
+      const box = root(el).querySelector(`input[data-api=${api}]`);
+      box.value = value;
+      box.dispatchEvent(new CustomEvent("change"));
+      await Promise.resolve();
+    };
+    const brand = (el) =>
+      root(el).querySelector("button.pill[data-value=Persona]");
+    const star = (el, text) =>
+      [...root(el).querySelectorAll(".fl")].some(
+        (n) => n.textContent.includes(text) && n.querySelector(".req")
+      );
+    beforeEach(() => {
+      updateRecord.mockReset();
+      updateRecord.mockResolvedValue({});
+    });
+
+    it("shows the Owner as a person search with the current owner's name, starred, for an opportunity, a risk and a ROSA deal", async () => {
+      for (const kind of ["opp", "risk", "rosa"]) {
+        // eslint-disable-next-line no-await-in-loop
+        const el = await openDeal(kind);
+        const owner = [...root(el).querySelectorAll("c-pipeline-lookup")].find(
+          (l) => l.fieldName === "OwnerId"
+        );
+        expect(owner.valueId).toBe("005ME");
+        expect(owner.valueName).toBe("Robert Reeves");
+        expect(star(el, "Owner")).toBe(true);
+      }
+    });
+
+    it("saves a new owner with the deal", async () => {
+      const el = await openDeal("opp");
+      const owner = [...root(el).querySelectorAll("c-pipeline-lookup")].find(
+        (l) => l.fieldName === "OwnerId"
+      );
+      owner.dispatchEvent(
+        new CustomEvent("change", {
+          detail: { id: "005ALEX", name: "Alex Example" }
+        })
+      );
+      await Promise.resolve();
+      expect(save(el).disabled).toBe(false);
+      save(el).click();
+      await Promise.resolve();
+      expect(updateRecord).toHaveBeenCalledTimes(1);
+      expect(updateRecord.mock.calls[0][0].fields).toEqual({
+        Id: deal.id,
+        OwnerId: "005ALEX"
+      });
+    });
+
+    it("will not save an opportunity with no brand left: it says so, saves nothing and keeps the changes", async () => {
+      const el = await openDeal("opp");
+      expect(star(el, "Brand")).toBe(true);
+      brand(el).click(); // the only brand comes off
+      await Promise.resolve();
+      save(el).click();
+      await Promise.resolve();
+      expect(errors(el)).toEqual(["Choose at least one brand."]);
+      expect(updateRecord).not.toHaveBeenCalled();
+      brand(el).click();
+      await Promise.resolve();
+      expect(brand(el).className).toContain("on");
+    });
+
+    it("will not save without an expected annual value, even when cases are typed", async () => {
+      const el = await openDeal("opp");
+      expect(star(el, "Expected annual value")).toBe(true);
+      await type(el, "AmountPerYear__c", "");
+      await type(el, "UnitsCasesPerYear__c", "30");
+      save(el).click();
+      await Promise.resolve();
+      expect(errors(el)).toEqual(["Expected annual value is needed."]);
+      expect(updateRecord).not.toHaveBeenCalled();
+      await type(el, "AmountPerYear__c", "5000");
+      save(el).click();
+      await Promise.resolve();
+      expect(updateRecord).toHaveBeenCalledTimes(1);
+    });
+
+    it("needs both the closing quarter and the year, and does not need the units / cases", async () => {
+      const el = await openDeal("opp", {
+        Expected_Closure_Quarter__c: { value: null }
+      });
+      expect(star(el, "Expected closing quarter and year")).toBe(true);
+      await type(el, "UnitsCasesPerYear__c", "");
+      save(el).click();
+      await Promise.resolve();
+      expect(errors(el)).toEqual([
+        "Expected closing quarter and year are both needed."
+      ]);
+      expect(star(el, "units")).toBe(false);
+      expect(updateRecord).not.toHaveBeenCalled();
+    });
+
+    it("lists everything that is missing at once", async () => {
+      const el = await openDeal("opp", {
+        AmountPerYear__c: { value: null },
+        Brand__c: { value: null },
+        OwnerId: { value: null }
+      });
+      await type(el, "UnitsCasesPerYear__c", "31");
+      save(el).click();
+      await Promise.resolve();
+      expect(errors(el)).toEqual([
+        "Expected annual value is needed.",
+        "Choose at least one brand.",
+        "Owner is needed."
+      ]);
+    });
+
+    it("applies the rules to a risk too: its annual value at risk, the quarter and year, at least one brand and an owner", async () => {
+      const el = await openDeal("risk", {
+        AmountPerYear__c: { value: null },
+        Brand__c: { value: null },
+        Expected_Closing_Year__c: { value: null }
+      });
+      expect(star(el, "Annual value at risk")).toBe(true);
+      expect(star(el, "Brand")).toBe(true);
+      const note = root(el).querySelector("textarea[data-api=Objective__c]");
+      note.value = "A note";
+      note.dispatchEvent(new CustomEvent("change"));
+      await Promise.resolve();
+      save(el).click();
+      await Promise.resolve();
+      expect(errors(el)).toEqual([
+        "Annual value at risk is needed.",
+        "Expected closing quarter and year are both needed.",
+        "Choose at least one brand."
+      ]);
+      expect(updateRecord).not.toHaveBeenCalled();
+    });
+
+    it("applies the rules to a ROSA deal: the facility, the ROSA growth value, the quarter and year and an owner, with no brand and the surgeon optional", async () => {
+      const el = await openDeal("rosa", {
+        Healthcare_Facility__c: { value: null },
+        ROSAGrowthDollar__c: { value: null },
+        OwnerId: { value: null },
+        Account__c: { value: null },
+        Brand__c: { value: null }
+      });
+      expect(star(el, "Healthcare facility")).toBe(true);
+      expect(star(el, "ROSA growth $")).toBe(true);
+      expect(star(el, "Primary HCP")).toBe(false);
+      expect(star(el, "Brand")).toBe(false);
+      const note = root(el).querySelector("textarea[data-api=Objective__c]");
+      note.value = "A note";
+      note.dispatchEvent(new CustomEvent("change"));
+      await Promise.resolve();
+      save(el).click();
+      await Promise.resolve();
+      expect(errors(el)).toEqual([
+        "Healthcare facility is needed.",
+        "ROSA growth $ is needed.",
+        "Owner is needed."
+      ]);
+      expect(updateRecord).not.toHaveBeenCalled();
+    });
+
+    it("saves a risk and a ROSA deal that have everything", async () => {
+      const risk = await openDeal("risk");
+      const note = root(risk).querySelector("textarea[data-api=Objective__c]");
+      note.value = "A note";
+      note.dispatchEvent(new CustomEvent("change"));
+      await Promise.resolve();
+      save(risk).click();
+      await Promise.resolve();
+      expect(updateRecord).toHaveBeenCalledTimes(1);
+      const rosa = await openDeal("rosa", {
+        Healthcare_Facility__c: { value: "001HOSP" },
+        ROSAGrowthDollar__c: { value: 50000 }
+      });
+      const note2 = root(rosa).querySelector("textarea[data-api=Objective__c]");
+      note2.value = "Another note";
+      note2.dispatchEvent(new CustomEvent("change"));
+      await Promise.resolve();
+      save(rosa).click();
+      await Promise.resolve();
+      expect(updateRecord).toHaveBeenCalledTimes(2);
     });
   });
 
@@ -688,12 +939,15 @@ describe("c-pipeline-deal", () => {
       expect(slider(el).value).toBe("Unsuccessful Conversion");
     });
 
-    it("puts the kind of deal in the subheader, not under the name", async () => {
+    it("names the kind of deal on the first pill, not under the name and not again in the facts row", async () => {
       const el = await open("opp", "Action", OPP);
       const strip = el.shadowRoot
         .querySelector(".strip")
         .textContent.replace(/\s+/g, " ");
-      expect(strip).toContain("Opportunity");
+      expect(strip).not.toContain("Opportunity");
+      expect(
+        el.shadowRoot.querySelector(".fhead .btn.nav.on").textContent
+      ).toContain("Opportunity");
       expect(el.shadowRoot.querySelector(".ttl")).toBeNull();
     });
   });

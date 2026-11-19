@@ -362,75 +362,73 @@ input.in {
   cursor: default;
 }
 
-/* ----- the Usages and Case Bookings panels: they slide in from the right over everything under the header (the motion
-   standard: 0.4 s, a blurred darkened scrim fading in, a 3 px indigo edge on the side they came from) ----- */
-.layer {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  overflow: hidden;
-}
-.shade {
-  position: absolute;
-  inset: 0;
-  background: rgba(6, 11, 20, 0.55);
-  -webkit-backdrop-filter: blur(4px);
-  backdrop-filter: blur(4px);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  cursor: pointer;
-}
-.layer.on .shade {
-  opacity: 1;
-}
-.sheet {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  right: 0;
-  width: 92%;
-  display: flex;
-  flex-direction: column;
-  background: var(--bg);
-  border-left: 3px solid var(--indigo);
-  box-shadow: var(--shadow);
-  transform: translateX(105%);
-  transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-.layer.on .sheet {
-  transform: none;
-}
-@media (prefers-reduced-motion: reduce) {
-  .shade,
-  .sheet {
-    transition: none;
-  }
-}
-.shead {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 20px;
-  background: color-mix(in srgb, var(--head) 16%, transparent);
-  border-bottom: 1px solid color-mix(in srgb, var(--head) 38%, transparent);
-}
-.shead h2 {
-  margin: 0;
-  font-size: 18px;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--head);
-}
-.shead small {
-  color: var(--muted);
-  font-size: 14px;
-}
-.sbody {
+/* ----- the three screens that replace the deal under the top row (Robert, 2026-11-19): Surgeon Usages, MyCase Bookings and Campaigns
+   each take the whole space, as the deal itself does; they arrive with the motion standard's 0.4 s ease. The usages, the surgeon's
+   bookings and the campaigns scroll inside the flyout (the top row never moves); the hospital chart fits the space it is given. ----- */
+.screen {
   flex: 1;
   min-height: 0;
   overflow: auto;
   padding: 16px 20px 24px;
+  animation: screenin 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.screen.fill {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.screen.fill > * {
+  flex: 1;
+  min-height: 0;
+}
+@keyframes screenin {
+  from {
+    opacity: 0;
+    transform: translateX(28px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .screen {
+    animation: none;
+  }
+}
+/* the Usage Card in the dark or light flyout: it takes its colours from the flyout's (the card's own custom properties) */
+.usagecard {
+  display: block;
+  --pcu-card: var(--panel);
+  --pcu-page: var(--bg);
+  --pcu-line: var(--line);
+  --pcu-line2: var(--edge);
+  --pcu-text: var(--text);
+  --pcu-muted: var(--muted);
+  --pcu-blue: var(--indigo2);
+  --pcu-blue2: var(--indigo2);
+  --pcu-bluebg: var(--panel2);
+  --pcu-bad: var(--bad);
+  --pcu-badbg: color-mix(in srgb, var(--bad) 14%, transparent);
+  --pcu-proc: #7c5ce6; /* procedure types stay purple and technologies green, in both themes */
+  --pcu-procbg: color-mix(in srgb, #7c5ce6 20%, transparent);
+  --pcu-tech: #1e9e57;
+  --pcu-techbg: color-mix(in srgb, #1e9e57 20%, transparent);
+  --pcu-inputbg: var(--pfield);
+  --pcu-inputoff: var(--pgroup);
+  --pcu-hosp: var(--panel2);
+  --pcu-flash: color-mix(in srgb, var(--warn) 16%, transparent);
+  --pcu-btn2: var(--panel2);
+  --pcu-btn2text: var(--text);
+  --pcu-ok: var(--ok);
+  --pcu-okbg: color-mix(in srgb, var(--ok) 16%, transparent);
+  --pcu-warn: var(--warn);
+  --pcu-warnbg: color-mix(in srgb, var(--warn) 16%, transparent);
+  --pcu-panel: var(--panel2);
+  --pcu-segtrack: var(--pfield);
+  --pcu-segline: var(--pline);
+  --pcu-seglab: var(--pgroup);
+  --pcu-segopt: var(--muted);
 }
 
 /* the small badge on the MyCase Bookings button: how many surgeries */

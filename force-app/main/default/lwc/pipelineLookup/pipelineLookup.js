@@ -1,14 +1,15 @@
 import { LightningElement, api } from "lwc";
 import search from "@salesforce/apex/PipelineLookupController.search";
+import searchOwners from "@salesforce/apex/PipelineFilterController.searchOwners";
 
 /**
- * Pipeline: a picker for a lookup field (the deal's Primary HCP, Healthcare facility, Link To ROSA Deal). The person types
+ * Pipeline: a picker for a lookup field (the deal's Primary HCP, Healthcare facility, Link To ROSA Deal, and, for an opportunity, its Owner: a person). The person types
  * two letters or more and the matching records are offered (what may be offered follows the field's own lookup filter,
  * written down in PipelineLookupController). Choosing one announces a "change" event with its Id and name; the cross clears
  * it, and the same place then turns into the search box (one box: the name with a cross, or the search). It saves nothing: the deal flyout does, through Salesforce, which applies the real lookup filter again.
  */
 export default class PipelineLookup extends LightningElement {
-  @api fieldName = ""; // the field on the deal: Account__c, Healthcare_Facility__c or Link_To_ROSA_Deal__c
+  @api fieldName = ""; // the field on the deal: Account__c, Healthcare_Facility__c, Link_To_ROSA_Deal__c or OwnerId
   @api valueId = "";
   @api valueName = "";
   @api placeholder = "Search…";
@@ -51,7 +52,14 @@ export default class PipelineLookup extends LightningElement {
     }
     // eslint-disable-next-line @lwc/lwc/no-async-operation
     this.timer = setTimeout(() => {
-      search({ fieldName: this.fieldName, term: t })
+      // the deal's Owner is a person: only active people inside the company are offered (searchOwners), not a record search
+      const call =
+        this.fieldName === "OwnerId"
+          ? searchOwners({ term: t }).then((rows) =>
+              rows.map((r) => ({ id: r.id, name: r.name, sub: r.title }))
+            )
+          : search({ fieldName: this.fieldName, term: t });
+      call
         .then((rows) => {
           if (t === this.term) {
             this.results = rows.map((r) => ({

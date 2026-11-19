@@ -3,6 +3,10 @@
  * it for the usage tiles of the Usage card: which fields each portfolio has, in which rows and columns, which are mandatory, how a
  * product list follows its company, and what is sent to Salesforce. No screen here. Used by pipelineUsageCard.
  *
+ * The compact layout (Robert, 2026-11-19; mockup docs/mockups/pipeline_deal_screens_v1.html): every portfolio uses the SAME four field
+ * columns, Company, Product, Type (stem type, bearing type or segment) and Cases per year, with a row per product line. A hip's
+ * bearing type therefore sits on the Cup line in the Type column. The column headings are drawn once by the card (COLUMNS).
+ *
  * Portfolios use the names of the Apex side: Hip, Knee, Shoulder and CMF (shown as CMFT).
  */
 
@@ -57,15 +61,17 @@ export const FIELD = {
   Cases_PA_CMFT__c: { label: "Cases per year", kind: "num" }
 };
 
+/** The four field columns every usage row uses, in order. The Usage card draws them once as the heading row of the whole list. */
+export const COLUMNS = ["Company", "Product", "Type", "Cases / year"];
+
 /**
- * One set of column headings per portfolio and a row per product line (a row's cells are field names, null for a cell the line does not
- * have). A row's `needs` greys it until those fields are filled (a cup needs its stem). `extra` fields sit under the Company column.
- * `chips` says whether procedure types and supporting technologies apply.
+ * A row per product line; each row's `cells` are the field names for the four columns (Company, Product, Type, Cases per year), null for
+ * a cell the line does not have. A row's `needs` greys it until those fields are filled (a cup needs its stem). `chips` says whether
+ * procedure types and supporting technologies apply.
  */
 export const GRID = {
   Hip: {
     title: "Hip",
-    cols: ["Company", "Product", "Stem type", "Cases per year"],
     rows: [
       {
         label: "Stem",
@@ -78,64 +84,69 @@ export const GRID = {
       },
       {
         label: "Cup",
-        cells: ["CompanyHipCups__c", "ProductHipCups__c", null, null],
+        cells: [
+          "CompanyHipCups__c",
+          "ProductHipCups__c",
+          "HipBearingType__c",
+          null
+        ],
         needs: ["CompanyHipStems__c", "ProductHipStems__c"]
       }
     ],
-    extra: ["HipBearingType__c"],
     chips: true
   },
   Knee: {
     title: "Knee",
-    cols: ["Company", "Product", "Cases per year"],
     rows: [
       {
         label: "",
         cells: [
           "CompanyTotalKnee__c",
           "ProductTotalKnee__c",
+          null,
           "CasesPATotalKnee__c"
         ]
       }
     ],
-    extra: [],
     chips: true
   },
   Shoulder: {
     title: "Shoulders",
-    cols: ["Company", "Product", "Cases per year"],
     rows: [
       {
         label: "Anatomical",
         cells: [
           "CompanyAnatomical__c",
           "ProductAnatomical__c",
+          null,
           "CasesPAAnatomical__c"
         ]
       },
       {
         label: "Reverse",
-        cells: ["CompanyReverse__c", "ProductReverse__c", "CasesPAReverse__c"]
+        cells: [
+          "CompanyReverse__c",
+          "ProductReverse__c",
+          null,
+          "CasesPAReverse__c"
+        ]
       }
     ],
-    extra: [],
     chips: true
   },
   CMF: {
     title: "CMFT",
-    cols: ["Segment", "Company", "Product", "Cases per year"],
     rows: [
       {
         label: "",
         cells: [
-          "SegmentCMFT__c",
           "Company_CMFT__c",
           "Product_CMFT__c",
+          "SegmentCMFT__c",
           "Cases_PA_CMFT__c"
         ]
       }
     ],
-    extra: [],
     chips: false
   }
 };
@@ -166,13 +177,12 @@ const LEFT_OUT = {
   CompanyHipCups__c: ["Other"]
 };
 
-/** The Usage__c fields of a portfolio: its grid cells, its extra fields and the two chip fields when they apply. */
+/** The Usage__c fields of a portfolio: its grid cells and the two chip fields when they apply. */
 export function fieldsOf(portfolio) {
   const g = GRID[portfolio];
   if (!g) return [];
   const out = [];
   g.rows.forEach((r) => r.cells.forEach((c) => c && out.push(c)));
-  g.extra.forEach((f) => out.push(f));
   if (g.chips) out.push(PROC, TECH);
   return out;
 }
@@ -294,20 +304,21 @@ export function isRequired(portfolio, field) {
   return REQUIRED[portfolio].includes(field);
 }
 
-function cellOf(portfolio, field, draft, edit, off, picks, scope) {
+function cellOf(portfolio, field, draft, edit, off, picks, scope, ci) {
   const def = FIELD[field];
   const base = {
     key: scope + "-" + field,
     field,
     isCell: true,
-    isHead: false,
-    isGap: false,
-    cls: "gc" + (off ? " off" : ""),
+    cls: "cc" + (ci === 3 ? " num" : "") + (off ? " off" : ""),
+    style: "",
+    star: false,
     isText: !edit,
     isSelect: edit && def.kind !== "num",
     isNumber: edit && def.kind === "num",
     text: draft[field] || "",
     value: draft[field] || "",
+    placeholder: def.label,
     disabled: off,
     bad: edit && isMissing(portfolio, draft, field)
   };
@@ -322,7 +333,7 @@ function cellOf(portfolio, field, draft, edit, off, picks, scope) {
   base.options = [
     {
       value: "",
-      label: needCompany ? "Choose the company first" : "Choose…",
+      label: needCompany ? "Product (company first)" : def.label + "…",
       selected: !draft[field]
     }
   ].concat(
@@ -336,94 +347,61 @@ function cellOf(portfolio, field, draft, edit, off, picks, scope) {
 }
 
 /**
- * Everything the tile component draws for one usage (or for one being added): one set of column headings, a row per product line,
- * the extra field under the Company column, and the two chip lists. `edit` false shows values only, hiding empty rows and fields.
- * `picks` are the lists Salesforce gave for the record type. `scope` makes the keys unique.
+ * Everything the tile component draws for one usage (or for one being added), as ONE flat list of grid cells (compact layout): for each
+ * product line the portfolio name (first line only), the line name, then the four field cells (or, on a greyed cup line, a hint in
+ * place of the cases cell). `edit` false shows values only, hiding empty lines; the chip lists sit beside the lines when viewing and
+ * on their own line when editing. `picks` are the lists Salesforce gave for the record type. `scope` makes the keys unique.
  */
 export function buildTile(portfolio, draft, edit, picks, scope) {
   const g = GRID[portfolio];
-  const hasLabel = g.rows.some((r) => r.label);
-  const n = g.cols.length;
-  const heads = g.cols.map((text, i) => {
-    const f = g.rows[0].cells[i];
-    return {
-      key: scope + "-h" + i,
-      text,
-      star: !hasLabel && !!f && isRequired(portfolio, f)
-    };
-  });
-  const rows = [];
-  const gap = (key, span, hint) => ({
+  const cells = [];
+  let lines = 0;
+  const text = (key, cls, value, star) => ({
     key,
-    isGap: true,
-    isCell: false,
-    isHead: false,
-    style: "grid-column: span " + span,
-    hint: hint || ""
+    cls,
+    style: "",
+    isText: true,
+    isSelect: false,
+    isNumber: false,
+    text: value,
+    star: !!star
   });
   g.rows.forEach((r, ri) => {
     if (!edit && !r.cells.some((f) => f && draft[f])) return;
     const off = edit && rowOff(r, draft);
-    const cells = [];
-    let i = 0;
-    while (i < n) {
-      const f = r.cells[i];
-      if (f) {
-        cells.push(cellOf(portfolio, f, draft, edit, off, picks, scope));
-        i++;
-      } else {
-        let j = i;
-        while (j < n && !r.cells[j]) j++;
+    const hasStar = r.cells.some((f) => f && isRequired(portfolio, f));
+    cells.push(
+      text(
+        scope + "-p" + ri,
+        "pc",
+        lines === 0 ? portfolioTitle(portfolio) : "",
+        lines === 0 && !r.label && hasStar
+      )
+    );
+    cells.push(
+      text(
+        scope + "-l" + ri,
+        "lc" + (off ? " off" : ""),
+        r.label,
+        !!r.label && hasStar
+      )
+    );
+    r.cells.forEach((f, ci) => {
+      if (off && ci === 3) {
         cells.push(
-          gap(
-            scope + "-g" + ri + "-" + i,
-            j - i,
-            off ? "Fill the stem company and product first." : ""
+          text(
+            scope + "-h" + ri,
+            "hn",
+            "Fill the stem company and product first."
           )
         );
-        i = j;
+      } else if (f) {
+        cells.push(cellOf(portfolio, f, draft, edit, off, picks, scope, ci));
+      } else {
+        cells.push(text(scope + "-e" + ri + "-" + ci, "cc", ""));
       }
-    }
-    rows.push({
-      key: scope + "-r" + ri,
-      label: r.label,
-      hasLabel,
-      cls: off ? "rl off" : "rl",
-      star: hasLabel && r.cells.some((f) => f && isRequired(portfolio, f)),
-      cells
     });
-  });
-  // an extra field (the bearing type) sits on its own two lines under the Company column: its heading, then its choice
-  g.extra.forEach((f, xi) => {
-    if (!edit && !draft[f]) return;
-    rows.push({
-      key: scope + "-xh" + xi,
-      label: "",
-      hasLabel,
-      cls: "rl",
-      star: false,
-      cells: [
-        {
-          key: scope + "-xht" + xi,
-          isHead: true,
-          isCell: false,
-          isGap: false,
-          text: FIELD[f].label
-        },
-        gap(scope + "-xhg" + xi, n - 1)
-      ]
-    });
-    rows.push({
-      key: scope + "-xc" + xi,
-      label: "",
-      hasLabel,
-      cls: "rl",
-      star: false,
-      cells: [
-        cellOf(portfolio, f, draft, edit, false, picks, scope),
-        gap(scope + "-xcg" + xi, n - 1)
-      ]
-    });
+    lines++;
   });
   /** While editing every choice Salesforce offers (and any chosen value it no longer offers); otherwise only what is chosen. */
   const chip = (field) => {
@@ -450,20 +428,18 @@ export function buildTile(portfolio, draft, edit, picks, scope) {
   };
   const proc = g.chips ? chip(PROC) : [];
   const tech = g.chips ? chip(TECH) : [];
+  const hasChips = proc.length + tech.length > 0;
   return {
-    gridStyle:
-      "grid-template-columns: " +
-      (hasLabel ? "104px " : "") +
-      "repeat(" +
-      n +
-      ", minmax(0, 1fr))",
-    hasLabel,
-    heads,
-    rows,
-    hasGrid: rows.length > 0,
+    cells,
+    hasGrid: cells.length > 0,
+    lines,
+    /** the chips and the pencil span the usage's lines when viewing */
+    sideStyle: "grid-row: 1 / span " + Math.max(lines, 1),
+    showSide: !edit && cells.length > 0,
     proc,
     tech,
-    hasChips: proc.length + tech.length > 0,
+    hasChips,
+    showEditChips: edit && hasChips,
     chipGap: proc.length > 0 && tech.length > 0
   };
 }

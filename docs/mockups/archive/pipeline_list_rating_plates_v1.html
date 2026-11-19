@@ -1,0 +1,620 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Pipeline mockup: small rating plates for the lists, version 1</title>
+    <style>
+      :root,
+      [data-theme="light"] {
+        --page: #e9edf4;
+        --panel: #ffffff;
+        --panel2: #eef2fa;
+        --line: #d5dcea;
+        --edge: #b3bfd6;
+        --text: #1b2640;
+        --muted: #5d6b85;
+        --pipe: #b7791f;
+        --head: #db2777;
+        --indigo: #4f46e5;
+        --star: #e0a100;
+        --rep: #db2777;
+      }
+      [data-theme="dark"] {
+        --page: #0e1623;
+        --panel: #1a2740;
+        --panel2: #20304f;
+        --line: #2f4163;
+        --edge: #5b6f93;
+        --text: #e8edf5;
+        --muted: #8b9bb0;
+        --pipe: #fdb827;
+        --head: #f472b6;
+        --indigo: #6366f1;
+        --star: #ffc400;
+        --rep: #f472b6;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        height: 100%;
+      }
+      body {
+        margin: 0;
+        background: var(--page);
+        color: var(--text);
+        display: flex;
+        flex-direction: column;
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-size: 15px;
+      }
+      button {
+        font-family: inherit;
+        cursor: pointer;
+      }
+      .sp {
+        flex: 1;
+      }
+      .sfnav {
+        flex: none;
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        height: 44px;
+        padding: 0 16px;
+        background: #0b1220;
+        border-bottom: 1px solid #2f4163;
+        color: #cdd6e6;
+        font-size: 14px;
+      }
+      .sfnav .app {
+        font-weight: 800;
+        letter-spacing: 0.14em;
+      }
+      .sfnav .app b {
+        color: #fdb827;
+      }
+      .sfnav .tab {
+        color: #9fb0cc;
+      }
+      .sfnav .tab.on {
+        color: #fff;
+        border-bottom: 2px solid #6366f1;
+        padding-bottom: 2px;
+      }
+      .pill {
+        border: 0;
+        background: var(--indigo);
+        color: #fff;
+        border-radius: 999px;
+        padding: 8px 18px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      .pill.slate {
+        background: var(--panel2);
+        color: var(--text);
+        border: 1px solid var(--edge);
+      }
+      .about {
+        flex: none;
+        margin: 8px 16px 0;
+        padding: 8px 18px;
+        background: var(--panel);
+        border: 1px solid var(--edge);
+        border-radius: 12px;
+        line-height: 1.45;
+      }
+      .about summary {
+        cursor: pointer;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        color: var(--pipe);
+      }
+      .about ul {
+        margin: 4px 0 6px;
+        padding-left: 22px;
+      }
+      .about p {
+        margin: 6px 0;
+      }
+      .tools {
+        flex: none;
+        display: flex;
+        gap: 8px;
+        padding: 8px 16px 0;
+      }
+      .scroll {
+        flex: 1;
+        min-height: 0;
+        overflow: auto;
+        padding: 10px 16px 24px;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+        align-content: start;
+      }
+      .opt {
+        background: var(--panel);
+        border: 1px solid var(--edge);
+        border-radius: 12px;
+        padding: 10px 14px 14px;
+        min-width: 0;
+      }
+      .opt h3 {
+        margin: 0 0 2px;
+        font-size: 13px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--head);
+      }
+      .opt p {
+        margin: 0 0 8px;
+        color: var(--muted);
+        font-size: 14px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: fixed;
+      }
+      th {
+        text-align: left;
+        padding: 8px 10px;
+        font-size: 12px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--muted);
+        border-bottom: 2px solid var(--edge);
+      }
+      td {
+        height: 40px;
+        padding: 4px 10px;
+        border-top: 1px solid var(--line);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .st {
+        color: var(--star);
+      }
+      .rp {
+        color: var(--rep);
+      }
+      .norate {
+        color: var(--muted);
+      }
+      .c {
+        text-align: left;
+      }
+
+      /* ---- A: today's plates: a flat gradient, as wide as the word ---- */
+      .a {
+        display: inline-block;
+        border-radius: 6px;
+        padding: 0 10px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        line-height: 1.7;
+        color: #1b2640;
+      }
+      .a.Platinum {
+        background: linear-gradient(135deg, #f1f4f8, #aeb9c8);
+      }
+      .a.Gold {
+        background: linear-gradient(135deg, #ffe08a, #d9a21b);
+      }
+      .a.Silver {
+        background: linear-gradient(135deg, #eef0f3, #b4b8bf);
+      }
+      .a.Bronze {
+        background: linear-gradient(135deg, #f0c9a0, #b8763a);
+      }
+
+      /* ---- the real plate metals (from the Usage Card) ---- */
+      .m-PLATINUM {
+        --sheet: conic-gradient(
+          from 0deg at 50% 52%,
+          #bdb49c,
+          #e2d9be 20deg,
+          #b3a88f 40deg,
+          #9f947b 60deg,
+          #aba089 80deg,
+          #a59a82 100deg,
+          #897d64 120deg,
+          #988c75 140deg,
+          #beb49f 160deg,
+          #ada28d 180deg,
+          #968b74 200deg,
+          #afa68d 220deg,
+          #c7bea3 240deg,
+          #796e58 260deg,
+          #766853 280deg,
+          #b5aa93 300deg,
+          #a89d84 320deg,
+          #978b75 340deg,
+          #bdb49c 360deg
+        );
+        --hi: #f4efe0;
+        --mid: #b3a88f;
+        --lo: #6d6250;
+        --ink: #3a3326;
+        --glow: rgba(244, 239, 224, 0.9);
+      }
+      .m-GOLD {
+        --sheet: conic-gradient(
+          from 0deg at 50% 52%,
+          #dfc16e,
+          #fce68b 20deg,
+          #dcb856 40deg,
+          #cea441 60deg,
+          #e0b75e 80deg,
+          #d6ae56 100deg,
+          #a37821 120deg,
+          #b78b31 140deg,
+          #edc35c 160deg,
+          #d5ab4b 180deg,
+          #ba9137 200deg,
+          #d3af4d 220deg,
+          #e5cc73 240deg,
+          #ab8327 260deg,
+          #af8629 280deg,
+          #e6be57 300deg,
+          #ddb457 320deg,
+          #c19848 340deg,
+          #dfc16e 360deg
+        );
+        --hi: #fff1b0;
+        --mid: #d6ae56;
+        --lo: #8a6513;
+        --ink: #4a3406;
+        --glow: rgba(255, 241, 176, 0.95);
+      }
+      .m-SILVER {
+        --sheet: conic-gradient(
+          from 0deg at 50% 52%,
+          #a3a7b1,
+          #c8cdd7 20deg,
+          #9599a2 40deg,
+          #808591 60deg,
+          #868a93 80deg,
+          #818691 100deg,
+          #676c77 120deg,
+          #777e89 140deg,
+          #a1a7b2 160deg,
+          #9096a0 180deg,
+          #7f858f 200deg,
+          #9aa0aa 220deg,
+          #a8aeb7 240deg,
+          #686c74 260deg,
+          #6c707a 280deg,
+          #9a9da7 300deg,
+          #969ba5 320deg,
+          #7e838d 340deg,
+          #a3a7b1 360deg
+        );
+        --hi: #e6eaf2;
+        --mid: #9599a2;
+        --lo: #565b66;
+        --ink: #23272f;
+        --glow: rgba(230, 234, 242, 0.95);
+      }
+      .m-BRONZE {
+        --sheet: conic-gradient(
+          from 0deg at 50% 52%,
+          #bc7951,
+          #e39361 20deg,
+          #ae6946 40deg,
+          #a46a47 60deg,
+          #ab6d4a 80deg,
+          #a66b48 100deg,
+          #8b5839 120deg,
+          #996240 140deg,
+          #be7f56 160deg,
+          #ad714c 180deg,
+          #9a6142 200deg,
+          #b67851 220deg,
+          #c4794f 240deg,
+          #7f4e32 260deg,
+          #855335 280deg,
+          #b87952 300deg,
+          #b2754f 320deg,
+          #9b6242 340deg,
+          #bc7951 360deg
+        );
+        --hi: #f3b58c;
+        --mid: #ad714c;
+        --lo: #6e4128;
+        --ink: #3d1f0e;
+        --glow: rgba(243, 181, 140, 0.95);
+      }
+
+      /* small plates need darker lettering than the big ones to stay legible */
+      .m.m-PLATINUM,
+      .d.m-PLATINUM {
+        --ink: #1f1a10;
+      }
+      .m.m-GOLD,
+      .d.m-GOLD {
+        --ink: #2e1f02;
+      }
+      .m.m-SILVER,
+      .d.m-SILVER {
+        --ink: #12161d;
+      }
+      .m.m-BRONZE,
+      .d.m-BRONZE {
+        --ink: #1f0e03;
+      }
+      .m,
+      .d {
+        text-shadow:
+          0 1px 0 rgba(255, 255, 255, 0.8),
+          0 0 3px rgba(255, 255, 255, 0.45);
+      }
+
+      /* ---- B: the same flat plates, all one width ---- */
+      .b {
+        display: inline-block;
+        width: 104px;
+        text-align: center;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        line-height: 1.7;
+        color: #1b2640;
+      }
+      .b.Platinum {
+        background: linear-gradient(135deg, #f1f4f8, #aeb9c8);
+      }
+      .b.Gold {
+        background: linear-gradient(135deg, #ffe08a, #d9a21b);
+      }
+      .b.Silver {
+        background: linear-gradient(135deg, #eef0f3, #b4b8bf);
+      }
+      .b.Bronze {
+        background: linear-gradient(135deg, #f0c9a0, #b8763a);
+      }
+
+      /* ---- C: the brushed metal of the big plates, small, one width ---- */
+      .m {
+        position: relative;
+        display: inline-block;
+        width: 104px;
+        height: 24px;
+        line-height: 24px;
+        text-align: center;
+        border-radius: 5px;
+        overflow: hidden;
+        vertical-align: middle;
+        font-size: 12px;
+        font-weight: 900;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--ink);
+        background:
+          repeating-radial-gradient(
+            circle at 50% 52%,
+            rgba(255, 255, 255, 0.07) 0 1px,
+            rgba(0, 0, 0, 0.06) 1px 2px
+          ),
+          var(--sheet);
+        box-shadow:
+          inset 0 1px 1px rgba(255, 255, 255, 0.75),
+          inset 0 -2px 2px rgba(0, 0, 0, 0.3),
+          inset 0 0 0 1px rgba(0, 0, 0, 0.25);
+        text-shadow: 0 1px 0 rgba(255, 255, 255, 0.55);
+      }
+
+      /* ---- D: the brushed metal with a tiny star coin and the screws ---- */
+      .d {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        width: 128px;
+        height: 26px;
+        border-radius: 5px;
+        overflow: hidden;
+        vertical-align: middle;
+        font-size: 12px;
+        font-weight: 900;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--ink);
+        background:
+          repeating-radial-gradient(
+            circle at 50% 52%,
+            rgba(255, 255, 255, 0.07) 0 1px,
+            rgba(0, 0, 0, 0.06) 1px 2px
+          ),
+          var(--sheet);
+        box-shadow:
+          inset 0 1px 1px rgba(255, 255, 255, 0.75),
+          inset 0 -2px 2px rgba(0, 0, 0, 0.3),
+          inset 0 0 0 1px rgba(0, 0, 0, 0.25);
+        text-shadow: 0 1px 0 rgba(255, 255, 255, 0.55);
+      }
+      .d .coin {
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: var(--sheet);
+        display: grid;
+        place-items: center;
+        box-shadow:
+          inset 0 1px 1px rgba(255, 255, 255, 0.7),
+          inset 0 -1px 2px rgba(0, 0, 0, 0.35),
+          0 0 0 1px rgba(0, 0, 0, 0.28),
+          0 0 0 2px var(--hi);
+      }
+      .d .coin svg {
+        width: 10px;
+        height: 10px;
+      }
+      .d .coin svg path {
+        fill: var(--hi);
+        stroke: var(--mid);
+        stroke-width: 1;
+        stroke-linejoin: round;
+      }
+      .d .screw {
+        position: absolute;
+        top: 50%;
+        width: 4px;
+        height: 4px;
+        margin-top: -2px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 35% 30%, var(--hi), var(--lo));
+      }
+      .d .screw.l {
+        left: 5px;
+      }
+      .d .screw.r {
+        right: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="sfnav">
+      <span class="app"><b>PIPE</b>LINE</span>
+      <span class="tab on">Pipeline</span>
+      <span class="tab">Sales Campaigns</span>
+      <span class="sp"></span>
+      <button class="pill" type="button" id="full">Full screen</button>
+    </div>
+
+    <details class="about" open>
+      <summary>ABOUT THIS MOCKUP</summary>
+      <p>
+        <b>What it shows:</b> the Rating column of a Pipeline list, drawn four
+        ways, side by side, at the size the real list uses, with the same
+        invented rows in each. <b>A</b> is what the list has today (a flat
+        colour, as wide as the word, so the plates are different widths).
+        <b>B</b> keeps the flat colour but gives every plate the same width,
+        wide enough for PLATINUM. <b>C</b> uses the brushed metal of the big
+        plates, small, one width. <b>D</b> is C with the tiny star coin and the
+        screws, as on the big plates. Invented data only.
+      </p>
+      <b>Try it:</b>
+      <ul>
+        <li>Compare the four boxes: the Rating column is the third one.</li>
+        <li>Press <b>Light</b> or <b>Dark</b> to see both themes.</li>
+        <li>Press <b>Full screen</b> (top right) for the whole screen.</li>
+      </ul>
+      <b>Not shown yet:</b> the rest of the list, the hover effect (the big
+      plates have a sheen that sweeps across), and the Campaign list.
+    </details>
+
+    <div class="tools">
+      <button class="pill slate" type="button" data-look="light">Light</button>
+      <button class="pill slate" type="button" data-look="dark">Dark</button>
+    </div>
+
+    <div class="scroll" id="boxes"></div>
+
+    <script>
+      var COIN =
+        '<span class="coin"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3 6.8 7.4.7-5.6 4.9 1.7 7.3L12 17.9 5.5 21.7l1.7-7.3L1.6 9.5l7.4-.7z"></path></svg></span>';
+      var ROWS = [
+        ["Stephen Andrews", "Extremities", "", 0, 0],
+        ["Praveen Vijaysegaran", "Extremities", "Bronze", 0, 1],
+        ["Jai Kumar", "Extremities", "Gold", 1, 1],
+        ["Natasha Van Zyl", "Hip", "Silver", 0, 1],
+        ["Damian Mansour", "Knee", "Platinum", 0, 0],
+        ["Rishi Narasimhan", "Extremities", "", 1, 1],
+        ["Matthew Howard", "Knee", "Gold", 0, 1]
+      ];
+      var OPTS = [
+        [
+          "A",
+          "As today",
+          "A flat colour, as wide as the word, so the plates differ in width.",
+          function (r) {
+            return '<span class="a ' + r + '">' + r + "</span>";
+          }
+        ],
+        [
+          "B",
+          "Flat, one width",
+          "The same flat colour, every plate as wide as PLATINUM.",
+          function (r) {
+            return '<span class="b ' + r + '">' + r + "</span>";
+          }
+        ],
+        [
+          "C",
+          "Brushed metal, small",
+          "The big plates' metal, in a small plate of one width.",
+          function (r) {
+            return '<span class="m m-' + r.toUpperCase() + '">' + r + "</span>";
+          }
+        ],
+        [
+          "D",
+          "Metal with a star coin",
+          "As C, with the tiny star coin and the screws.",
+          function (r) {
+            return (
+              '<span class="d m-' +
+              r.toUpperCase() +
+              '"><span class="screw l"></span><span class="screw r"></span>' +
+              COIN +
+              r +
+              "</span>"
+            );
+          }
+        ]
+      ];
+      document.getElementById("boxes").innerHTML = OPTS.map(function (o) {
+        var rows = ROWS.map(function (x) {
+          return (
+            "<tr><td>" +
+            x[0] +
+            (x[3] ? ' <span class="rp">\u2605</span>' : "") +
+            (x[4] ? ' <span class="st">\u2605</span>' : "") +
+            "</td><td>" +
+            x[1] +
+            "</td><td>" +
+            (x[2] ? o[3](x[2]) : '<span class="norate">Not rated</span>') +
+            "</td></tr>"
+          );
+        }).join("");
+        return (
+          '<section class="opt"><h3>' +
+          o[0] +
+          ": " +
+          o[1] +
+          "</h3><p>" +
+          o[2] +
+          '</p><table><colgroup><col style="width:44%"><col style="width:26%"><col style="width:30%"></colgroup><thead><tr><th>Surgeon</th><th>Portfolio</th><th>Rating</th></tr></thead><tbody>' +
+          rows +
+          "</tbody></table></section>"
+        );
+      }).join("");
+      document.querySelectorAll("[data-look]").forEach(function (b) {
+        b.addEventListener("click", function () {
+          document.documentElement.setAttribute(
+            "data-theme",
+            b.getAttribute("data-look")
+          );
+        });
+      });
+      document.getElementById("full").addEventListener("click", function () {
+        if (document.fullscreenElement) document.exitFullscreen();
+        else document.documentElement.requestFullscreen();
+      });
+    </script>
+  </body>
+</html>

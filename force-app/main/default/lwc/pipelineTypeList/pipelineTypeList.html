@@ -123,7 +123,18 @@
                     <td lwc:if={r.plainRep} class="repplain">{r.rep}</td>
                     <template for:each={r.cells} for:item="c">
                       <td key={c.id} class={c.cls} title={c.title}>
-                        <span lwc:if={c.tag} class={c.tagCls}>{c.text}</span>
+                        <button
+                          type="button"
+                          lwc:if={c.plate}
+                          class={c.tagCls}
+                          title="Open this surgeon's usages"
+                          onclick={handlePlate}
+                        >
+                          {c.text}
+                        </button>
+                        <span lwc:elseif={c.tag} class={c.tagCls}
+                          >{c.text}</span
+                        >
                         <template lwc:else
                           ><span class={c.textCls}>{c.text}</span
                           ><span lwc:if={c.star} class="star">&nbsp;★</span

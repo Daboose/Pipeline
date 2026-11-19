@@ -9,29 +9,39 @@
         >
         <span class="sp"></span>
         <div class="fm">
-          <template lwc:if={showSurgeon}>
-            <button
-              type="button"
-              class={usagesBtnCls}
-              onclick={handleUsagesButton}
+          <button
+            type="button"
+            class={dealBtnCls}
+            data-screen="deal"
+            onclick={handleScreen}
+          >
+            {kindLabel}
+          </button>
+          <button
+            type="button"
+            lwc:if={showSurgeon}
+            class={usagesBtnCls}
+            data-screen="usages"
+            onclick={handleScreen}
+          >
+            Surgeon Usages
+          </button>
+          <button
+            type="button"
+            class={casesBtnCls}
+            data-screen="cases"
+            onclick={handleScreen}
+          >
+            MyCase Bookings
+            <span lwc:if={casesBadge} class={casesBadge.cls}
+              >{casesBadge.text}</span
             >
-              Surgeon Usages
-            </button>
-            <button
-              type="button"
-              class={casesBtnCls}
-              onclick={handleCasesButton}
-            >
-              MyCase Bookings
-              <span lwc:if={casesBadge} class={casesBadge.cls}
-                >{casesBadge.text}</span
-              >
-            </button>
-          </template>
+          </button>
           <button
             type="button"
             class={campaignsBtnCls}
-            onclick={handleCampaignsButton}
+            data-screen="campaigns"
+            onclick={handleScreen}
           >
             Campaigns
             <span class="badge">{campaignsCount}</span>
@@ -68,7 +78,7 @@
           &#10005;
         </button>
       </div>
-      <div class="strip">
+      <div class="strip" lwc:if={onDeal}>
         <template for:each={strip} for:item="s">
           <div class="st" key={s.label}>
             <div class="l">{s.label}</div>
@@ -93,193 +103,177 @@
     </div>
 
     <div class="under">
-      <div class="band">
-        <c-pipeline-stage-slider
-          steps={stageSteps}
-          won={stageWon}
-          lost={stageLost}
-          value={stageNow}
-          readonly={stageReadonly}
-          onchange={handleStageChange}
-        ></c-pipeline-stage-slider>
-      </div>
-      <div class="body">
-        <div class="col">
-          <section class="card">
-            <h3>The deal</h3>
-            <div class="errs" lwc:if={hasErrors}>
-              <template for:each={errors} for:item="e">
-                <div key={e.key}>{e.text}</div>
-              </template>
-            </div>
-            <div class="okmsg" lwc:if={savedMsg}>Saved.</div>
-            <div class="grid">
-              <template for:each={fieldRows} for:item="f">
-                <div key={f.api} class={f.wrapCls}>
-                  <div class={f.cls}>
-                    <div class="fl" lwc:if={f.hasLabel}>
-                      {f.label}<span class="req" lwc:if={f.req}> *</span>
+      <template lwc:if={onDeal}>
+        <div class="band">
+          <c-pipeline-stage-slider
+            steps={stageSteps}
+            won={stageWon}
+            lost={stageLost}
+            value={stageNow}
+            readonly={stageReadonly}
+            onchange={handleStageChange}
+          ></c-pipeline-stage-slider>
+        </div>
+        <div class="body">
+          <div class="col">
+            <section class="card">
+              <h3>The deal</h3>
+              <div class="errs" lwc:if={hasErrors}>
+                <template for:each={errors} for:item="e">
+                  <div key={e.key}>{e.text}</div>
+                </template>
+              </div>
+              <div class="okmsg" lwc:if={savedMsg}>Saved.</div>
+              <div class="grid">
+                <template for:each={fieldRows} for:item="f">
+                  <div key={f.api} class={f.wrapCls}>
+                    <div class={f.cls}>
+                      <div class="fl" lwc:if={f.hasLabel}>
+                        {f.label}<span class="req" lwc:if={f.req}> *</span>
+                      </div>
+                      <div class="flags" lwc:if={f.isFlags}>
+                        <template for:each={f.flags} for:item="g">
+                          <div key={g.api} class={g.cls}>
+                            <c-pipeline-segmented
+                              heading={g.label}
+                              label={g.label}
+                              options={g.options}
+                              value={g.value}
+                              disabled={g.locked}
+                              data-api={g.api}
+                              onchange={handleFlag}
+                            ></c-pipeline-segmented>
+                          </div>
+                        </template>
+                      </div>
+                      <select
+                        lwc:if={f.isSelect}
+                        class="in"
+                        data-api={f.api}
+                        onchange={handleSelect}
+                      >
+                        <template for:each={f.options} for:item="o">
+                          <option
+                            key={o.value}
+                            value={o.value}
+                            selected={o.selected}
+                          >
+                            {o.label}
+                          </option>
+                        </template>
+                      </select>
+                      <select
+                        lwc:if={f.pair}
+                        class="in yearsel"
+                        data-api={f.pair.api}
+                        aria-label="Expected closing year"
+                        onchange={handleSelect}
+                      >
+                        <template for:each={f.pair.options} for:item="o">
+                          <option
+                            key={o.value}
+                            value={o.value}
+                            selected={o.selected}
+                          >
+                            {o.label}
+                          </option>
+                        </template>
+                      </select>
+                      <div class="pills" lwc:if={f.isMulti}>
+                        <template for:each={f.options} for:item="o">
+                          <button
+                            type="button"
+                            key={o.value}
+                            class={o.cls}
+                            data-api={f.api}
+                            data-value={o.value}
+                            onclick={handleMulti}
+                          >
+                            {o.label}
+                          </button>
+                        </template>
+                      </div>
+                      <c-pipeline-lookup
+                        lwc:if={f.isLookup}
+                        field-name={f.api}
+                        value-id={f.value}
+                        value-name={f.lookupName}
+                        data-api={f.api}
+                        placeholder="Search by name…"
+                        onchange={handleLookup}
+                      ></c-pipeline-lookup>
+                      <input
+                        lwc:if={f.isNumber}
+                        class="in"
+                        type="number"
+                        step="any"
+                        data-api={f.api}
+                        value={f.value}
+                        onchange={handleNumber}
+                      />
+                      <input
+                        lwc:if={f.isDate}
+                        class="in"
+                        type="date"
+                        data-api={f.api}
+                        value={f.value}
+                        onchange={handleText}
+                      />
+                      <textarea
+                        lwc:if={f.isTextarea}
+                        class="in area"
+                        data-api={f.api}
+                        value={f.value}
+                        onchange={handleText}
+                      ></textarea>
+                      <div class="ro" lwc:if={f.isReadOnly}>{f.text}</div>
                     </div>
-                    <div class="flags" lwc:if={f.isFlags}>
-                      <template for:each={f.flags} for:item="g">
-                        <div key={g.api} class={g.cls}>
-                          <c-pipeline-segmented
-                            heading={g.label}
-                            label={g.label}
-                            options={g.options}
-                            value={g.value}
-                            disabled={g.locked}
-                            data-api={g.api}
-                            onchange={handleFlag}
-                          ></c-pipeline-segmented>
-                        </div>
-                      </template>
-                    </div>
-                    <select
-                      lwc:if={f.isSelect}
-                      class="in"
-                      data-api={f.api}
-                      onchange={handleSelect}
-                    >
-                      <template for:each={f.options} for:item="o">
-                        <option
-                          key={o.value}
-                          value={o.value}
-                          selected={o.selected}
-                        >
-                          {o.label}
-                        </option>
-                      </template>
-                    </select>
-                    <select
-                      lwc:if={f.pair}
-                      class="in yearsel"
-                      data-api={f.pair.api}
-                      aria-label="Expected closing year"
-                      onchange={handleSelect}
-                    >
-                      <template for:each={f.pair.options} for:item="o">
-                        <option
-                          key={o.value}
-                          value={o.value}
-                          selected={o.selected}
-                        >
-                          {o.label}
-                        </option>
-                      </template>
-                    </select>
-                    <div class="pills" lwc:if={f.isMulti}>
-                      <template for:each={f.options} for:item="o">
-                        <button
-                          type="button"
-                          key={o.value}
-                          class={o.cls}
-                          data-api={f.api}
-                          data-value={o.value}
-                          onclick={handleMulti}
-                        >
-                          {o.label}
-                        </button>
-                      </template>
-                    </div>
-                    <c-pipeline-lookup
-                      lwc:if={f.isLookup}
-                      field-name={f.api}
-                      value-id={f.value}
-                      value-name={f.lookupName}
-                      data-api={f.api}
-                      placeholder="Search by name…"
-                      onchange={handleLookup}
-                    ></c-pipeline-lookup>
-                    <input
-                      lwc:if={f.isNumber}
-                      class="in"
-                      type="number"
-                      step="any"
-                      data-api={f.api}
-                      value={f.value}
-                      onchange={handleNumber}
-                    />
-                    <input
-                      lwc:if={f.isDate}
-                      class="in"
-                      type="date"
-                      data-api={f.api}
-                      value={f.value}
-                      onchange={handleText}
-                    />
-                    <textarea
-                      lwc:if={f.isTextarea}
-                      class="in area"
-                      data-api={f.api}
-                      value={f.value}
-                      onchange={handleText}
-                    ></textarea>
-                    <div class="ro" lwc:if={f.isReadOnly}>{f.text}</div>
                   </div>
-                </div>
-              </template>
-            </div>
-          </section>
+                </template>
+              </div>
+            </section>
+          </div>
+          <div class="col">
+            <c-pipeline-chatter
+              record-id={recordId}
+              onposted={handlePosted}
+            ></c-pipeline-chatter>
+          </div>
         </div>
-        <div class="col">
-          <c-pipeline-chatter
+      </template>
+      <template lwc:else>
+        <div class="screen" lwc:if={scrollScreen}>
+          <c-pipeline-usage-card
+            lwc:if={usagesOpen}
+            class="usagecard"
+            embedded
+            record-id={accountId}
+            onusageschanged={handleUsagesChanged}
+          ></c-pipeline-usage-card>
+          <c-pipeline-bookings
+            lwc:if={casesOpen}
             record-id={recordId}
-            onposted={handlePosted}
-          ></c-pipeline-chatter>
+            refresh-key={panelRefresh}
+          ></c-pipeline-bookings>
+          <c-pipeline-deal-campaigns
+            lwc:if={campaignsOpen}
+            record-id={recordId}
+            oncampaignschanged={handleCampaignsChanged}
+          ></c-pipeline-deal-campaigns>
         </div>
-      </div>
-
-      <div lwc:if={panelMounted} class={layerCls}>
-        <div class="shade" onclick={handlePanelClose}></div>
-        <div class="sheet" role="dialog" aria-label={panelTitle}>
-          <div class="shead">
-            <h2>{panelTitle}</h2>
-            <small>{panelSubtitle}</small>
-            <span class="sp"></span>
-            <button
-              type="button"
-              class="rbtn"
-              onclick={handlePanelClose}
-              title="Close"
-              aria-label="Close"
-            >
-              &#10005;
-            </button>
-          </div>
-          <div class="sbody">
-            <c-pipeline-usages
-              lwc:if={usagesOpen}
-              bare
-              record-id={recordId}
-              refresh-key={panelRefresh}
-              area={area}
-              owner-name={ownerName}
-              can-ask={canAsk}
-              is-rep={isRep}
-              onaskcheck={handleAskCheck}
-              onusageschanged={handleUsagesChanged}
-              onactionstate={handleActionState}
-            ></c-pipeline-usages>
-            <c-pipeline-bookings
-              lwc:if={casesOpen}
-              record-id={recordId}
-              refresh-key={panelRefresh}
-            ></c-pipeline-bookings>
-            <c-pipeline-deal-campaigns
-              lwc:if={campaignsOpen}
-              record-id={recordId}
-              oncampaignschanged={handleCampaignsChanged}
-            ></c-pipeline-deal-campaigns>
-          </div>
+        <div class="screen fill" lwc:else>
+          <c-pipeline-hospital-bookings
+            record-id={recordId}
+            refresh-key={panelRefresh}
+          ></c-pipeline-hospital-bookings>
         </div>
-      </div>
+      </template>
     </div>
 
-    <div class="foot">
+    <div class="foot" lwc:if={onDeal}>
       <div class="fl2">
         <button
-          lwc:if={showDealActions}
+          lwc:if={onDeal}
           type="button"
           class="btn ghost"
           onclick={handleOpenRecord}
@@ -288,7 +282,7 @@
         </button>
       </div>
       <div class="fr">
-        <template lwc:if={showDealActions}>
+        <template lwc:if={onDeal}>
           <button
             type="button"
             class="btn sec"
@@ -304,19 +298,6 @@
             disabled={cantSave}
           >
             Save changes
-          </button>
-        </template>
-        <template lwc:if={showPanelActions}>
-          <button type="button" class="btn sec" onclick={handlePanelCancel}>
-            Cancel
-          </button>
-          <button
-            type="button"
-            class="btn"
-            onclick={handlePanelSubmit}
-            disabled={panelSubmitDisabled}
-          >
-            {panelSubmitLabel}
           </button>
         </template>
       </div>

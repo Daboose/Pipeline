@@ -1,4 +1,5 @@
 @import "c/pipelineStyles";
+@import "c/pipelineRatingStyles";
 
 :host {
   display: block;
@@ -256,6 +257,10 @@ td {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+/* a rating plate is never cut with dots: the column may be a little narrower than the plate (Robert, 2026-11-19) */
+td.ratecell {
+  text-overflow: clip;
+}
 tr.deal2 td {
   border-top: 0;
   padding-top: 0;
@@ -295,39 +300,6 @@ input[type="checkbox"] {
 .nodeal {
   color: var(--warn);
   font-weight: 700;
-}
-
-/* the rating chips: brushed-metal colours */
-.rate {
-  display: inline-block;
-  border-radius: 6px;
-  padding: 0 10px;
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  line-height: 1.7;
-  color: #1b2640;
-}
-.rate.Platinum {
-  background: linear-gradient(135deg, #f1f4f8, #aeb9c8);
-}
-.rate.Gold {
-  background: linear-gradient(135deg, #ffe08a, #d9a21b);
-}
-.rate.Silver {
-  background: linear-gradient(135deg, #eef0f3, #b4b8bf);
-}
-.rate.Bronze {
-  background: linear-gradient(135deg, #f0c9a0, #b8763a);
-}
-.rate.none {
-  background: none;
-  color: var(--muted);
-  font-weight: 600;
-  letter-spacing: 0;
-  text-transform: none;
-  padding: 0;
 }
 
 /* the cog in the table's top bar (always in reach, never off to the right of the columns) opens the Columns dialog */
@@ -505,33 +477,6 @@ input[type="checkbox"] {
 .vchip.zero .vv {
   color: var(--muted);
 }
-.vl .rate {
-  display: inline-block;
-  padding: 2px 12px;
-  border-radius: 6px;
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  line-height: 1.6;
-  color: #1b2640;
-}
-.vl .rate.Platinum {
-  background: linear-gradient(135deg, #f1f4f8, #aeb9c8);
-}
-.vl .rate.Gold {
-  background: linear-gradient(135deg, #ffe08a, #d9a21b);
-}
-.vl .rate.Silver {
-  background: linear-gradient(135deg, #eef0f3, #b4b8bf);
-}
-.vl .rate.Bronze {
-  background: linear-gradient(135deg, #f0c9a0, #b8763a);
-}
-.vl .rate.none {
-  padding: 0;
-  background: none;
-  color: var(--muted);
-}
 .currencyseg {
   margin-left: auto;
   align-self: center;
@@ -563,4 +508,30 @@ input[type="checkbox"] {
   flex-direction: column;
   justify-content: center; /* the number and its wording stay centred in the taller tile */
   text-align: center;
+}
+
+/* "No deal yet" pressed to make the surgeon's first deal (Pipeline only): the same words, as a plain button */
+button.nodealbtn {
+  border: 0;
+  background: none;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* the surgeon's name, a link to their record in a new tab */
+a.slink {
+  color: var(--indigo2);
+  text-decoration: none;
+}
+@media (hover: hover) {
+  a.slink:hover {
+    text-decoration: underline;
+  }
+}
+a.slink:focus-visible {
+  outline: 2px solid var(--indigo2);
+  outline-offset: 2px;
 }
