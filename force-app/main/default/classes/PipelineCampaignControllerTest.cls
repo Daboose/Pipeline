@@ -476,7 +476,13 @@ private class PipelineCampaignControllerTest {
         Stage__c = 'Plan',
         Expected_Closure_Quarter__c = 'Q4'
       );
-      insert new List<SalesRisks__c>{ ext, risk, hip, rosa, hipLinked };
+      SalesRisks__c won = new SalesRisks__c(
+        RecordTypeId = rt(SalesRisks__c.SObjectType, 'AUEXTREMITIES'),
+        Account__c = a.Id,
+        Stage__c = 'Closed Won',
+        AmountPerYear__c = 700
+      );
+      insert new List<SalesRisks__c>{ ext, risk, hip, rosa, hipLinked, won };
       insert new Sales_Campaign_Deal__c(
         Campaign__c = id,
         Deal__c = hipLinked.Id
@@ -484,7 +490,8 @@ private class PipelineCampaignControllerTest {
       Map<Id, PipelineCampaignController.MaintainDeal> byId = new Map<Id, PipelineCampaignController.MaintainDeal>();
       for (
         PipelineCampaignController.MaintainDeal d : PipelineCampaignController.maintainDeals(
-          id
+          id,
+          false
         )
       ) {
         byId.put(d.id, d);
@@ -508,10 +515,26 @@ private class PipelineCampaignControllerTest {
       // a deal already in the campaign is always listed, so it can be taken out
       System.assert(byId.containsKey(hipLinked.Id));
       System.assertEquals(true, byId.get(hipLinked.Id).inCampaign);
+      // a closed deal is offered only when Include Closed is on
+      System.assertEquals(false, byId.containsKey(won.Id));
+      Set<Id> withClosed = new Set<Id>();
+      for (
+        PipelineCampaignController.MaintainDeal d : PipelineCampaignController.maintainDeals(
+          id,
+          true
+        )
+      ) {
+        withClosed.add(d.id);
+      }
+      System.assert(withClosed.contains(won.Id), 'the closed deal is offered');
+      System.assert(
+        withClosed.contains(ext.Id),
+        'open deals are still offered'
+      );
       // nothing is offered for a campaign with no members, or none
       System.assertEquals(
         0,
-        PipelineCampaignController.maintainDeals(null).size()
+        PipelineCampaignController.maintainDeals(null, false).size()
       );
     }
   }

@@ -79,6 +79,15 @@
         >
           Risks <span class={riskTickCls}></span>
         </button>
+        <button
+          type="button"
+          role="checkbox"
+          aria-checked={closedOn}
+          class={closedCls}
+          onclick={handleClosed}
+        >
+          Include Closed <span class={closedTickCls}></span>
+        </button>
       </div>
       <c-pipeline-segmented
         lwc:if={notMaintain}
@@ -146,6 +155,7 @@
         campaign={campaign}
         members={maintainMembers}
         types={types}
+        include-closed={includeClosed}
         usd={showUsd}
         rates={rates}
         ondealchange={handleDealChange}
@@ -190,7 +200,12 @@
         </thead>
         <tbody>
           <template for:each={rows} for:item="r">
-            <tr key={r.key} class={r.cls}>
+            <tr
+              key={r.key}
+              class={r.cls}
+              data-deal={r.dealId}
+              onclick={handleRowClick}
+            >
               <template for:each={r.cells} for:item="c">
                 <td key={c.key} class={c.cls} colspan={c.colspan}>
                   <input

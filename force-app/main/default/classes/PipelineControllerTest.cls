@@ -351,6 +351,46 @@ private class PipelineControllerTest {
   }
 
   @IsTest
+  static void dealsCanBeReadByIdInTheOrderAskedIncludingClosedOnes() {
+    SalesRisks__c open = new SalesRisks__c(
+      RecordTypeId = recordTypeId('AUHIP'),
+      Stage__c = 'Plan',
+      Expected_Closure_Quarter__c = 'Q4',
+      Expected_Closing_Year__c = '2033',
+      AmountPerYear__c = 1000
+    );
+    SalesRisks__c risk = new SalesRisks__c(
+      RecordTypeId = recordTypeId('AURISK'),
+      Stage__c = 'Unhappy',
+      Expected_Closure_Quarter__c = 'Q4',
+      AmountPerYear__c = 500
+    );
+    SalesRisks__c won = new SalesRisks__c(
+      RecordTypeId = recordTypeId('AUHIP'),
+      Stage__c = 'Closed Won',
+      AmountPerYear__c = 700
+    );
+    insert new List<SalesRisks__c>{ open, risk, won };
+    List<PipelineController.Deal> got = PipelineController.getDealsByIds(
+      new List<Id>{ won.Id, open.Id, null, won.Id, risk.Id }
+    );
+    System.assertEquals(3, got.size(), 'Each deal once, nothing for a null');
+    System.assertEquals(won.Id, got[0].id, 'In the order asked');
+    System.assertEquals(open.Id, got[1].id);
+    System.assertEquals(risk.Id, got[2].id);
+    System.assertEquals('risk', got[2].kind);
+    System.assertEquals(
+      0,
+      PipelineController.getDealsByIds(null).size(),
+      'Nothing asked, nothing returned'
+    );
+    System.assertEquals(
+      0,
+      PipelineController.getDealsByIds(new List<Id>()).size()
+    );
+  }
+
+  @IsTest
   static void dealsComeBackByKind() {
     List<SalesRisks__c> deals = new List<SalesRisks__c>{
       new SalesRisks__c(

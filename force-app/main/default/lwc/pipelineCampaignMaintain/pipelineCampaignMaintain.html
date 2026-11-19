@@ -8,6 +8,15 @@
     Tick Opportunities or Risks above to list deals.
   </div>
   <table class="mtbl" lwc:else>
+    <colgroup>
+      <col style="width: 18%" />
+      <col style="width: 16%" />
+      <col style="width: 12%" />
+      <col style="width: 17%" />
+      <col style="width: 17%" />
+      <col style="width: 10%" />
+      <col style="width: 10%" />
+    </colgroup>
     <thead>
       <tr>
         <th>Deal</th>
@@ -20,48 +29,45 @@
       </tr>
     </thead>
     <tbody>
-      <template for:each={groups} for:item="g">
-        <tr key={g.key} class="sg">
-          <td colspan="7">
-            <span class="sn">{g.name}</span>
-            <template for:each={g.plates} for:item="p">
-              <span key={p.key} class={p.cls}>{p.text}</span>
-            </template>
-            <span class="cnt">{g.count}</span>
-          </td>
-        </tr>
-        <tr key={g.noneKey} class="none" lwc:if={g.none}>
-          <td colspan="7">{g.noneText}</td>
-        </tr>
-        <template for:each={g.rows} for:item="r">
-          <tr key={r.key} class={r.cls}>
-            <td>
-              <b>{r.name}</b><span class="kind" lwc:if={r.risk}>RISK</span>
+      <template for:each={lines} for:item="l">
+        <tr key={l.key} class={l.cls}>
+          <template lwc:if={l.isHead}>
+            <td colspan="7">
+              <span class="sn">{l.g.name}</span>
+              <template for:each={l.g.plates} for:item="p">
+                <span key={p.key} class={p.cls}>{p.text}</span>
+              </template>
+              <span class="cnt">{l.g.count}</span>
             </td>
-            <td>{r.brand}</td>
-            <td class="num">{r.value}</td>
-            <td>{r.owner}</td>
-            <td>{r.stage}</td>
+          </template>
+          <template lwc:else>
             <td>
-              <span class="inpill" lwc:if={r.inCampaign}>In campaign</span>
+              <b>{l.r.name}</b><span class="kind" lwc:if={l.r.risk}>RISK</span>
+            </td>
+            <td>{l.r.brand}</td>
+            <td class="num">{l.r.value}</td>
+            <td>{l.r.owner}</td>
+            <td>{l.r.stage}</td>
+            <td>
+              <span class="inpill" lwc:if={l.r.inCampaign}>In campaign</span>
               <span class="outpill" lwc:else>Not in</span>
             </td>
             <td class="mid">
               <button
                 type="button"
-                class={r.btnCls}
-                data-id={r.id}
-                disabled={r.disabled}
-                title={r.title}
-                aria-label={r.title}
+                class={l.r.btnCls}
+                data-id={l.r.id}
+                disabled={l.r.disabled}
+                title={l.r.title}
+                aria-label={l.r.title}
                 onclick={handlePress}
               >
                 <span class="mark"></span>
               </button>
-              <span class="lockn" lwc:if={r.note}>{r.note}</span>
+              <span class="lockn" lwc:if={l.r.note}>{l.r.note}</span>
             </td>
-          </tr>
-        </template>
+          </template>
+        </tr>
       </template>
     </tbody>
   </table>

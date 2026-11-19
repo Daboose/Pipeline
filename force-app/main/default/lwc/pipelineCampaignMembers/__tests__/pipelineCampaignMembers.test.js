@@ -259,8 +259,10 @@ describe("c-pipeline-campaign-members", () => {
     const kids = el.shadowRoot.querySelectorAll(".kchip");
     expect([...kids].map((k) => k.textContent.trim())).toEqual([
       "Opportunities",
-      "Risks"
+      "Risks",
+      "Include Closed"
     ]);
+    expect(kids[2].classList.contains("on")).toBe(false);
     expect(kids[0].classList.contains("on")).toBe(true);
     expect(kids[1].classList.contains("on")).toBe(false);
     const maintain = el.shadowRoot.querySelector(
@@ -285,6 +287,30 @@ describe("c-pipeline-campaign-members", () => {
       opp: true,
       risk: true
     });
+    // ticking Include Closed passes that on too
+    expect(
+      el.shadowRoot.querySelector("c-pipeline-campaign-maintain").includeClosed
+    ).toBe(false);
+    kids[2].click();
+    await flush();
+    expect(
+      el.shadowRoot.querySelector("c-pipeline-campaign-maintain").includeClosed
+    ).toBe(true);
+    // the three chips follow every press, however many times they are pressed
+    for (let i = 0; i < 4; i++) {
+      kids[2].click();
+      kids[0].click();
+      kids[1].click();
+      // eslint-disable-next-line no-await-in-loop
+      await flush();
+      const now = [...el.shadowRoot.querySelectorAll(".kchip")].map((k) =>
+        k.classList.contains("on")
+      );
+      const ticks = [...el.shadowRoot.querySelectorAll(".kchip > span")].map(
+        (t) => t.classList.contains("ktick")
+      );
+      expect(ticks).toEqual(now);
+    }
     const handler = jest.fn();
     el.addEventListener("campaigndealchange", handler);
     maintain.dispatchEvent(
@@ -469,6 +495,56 @@ describe("c-pipeline-campaign-members", () => {
       .querySelector("c-pipeline-segmented.currencyseg")
       .dispatchEvent(new CustomEvent("change", { detail: { value: "usd" } }));
     await flush();
+    expect(handler).not.toHaveBeenCalled();
+  });
+  it("opens a deal from its own line when the list is openable: each deal line is highlighted, the click names the deal and every deal listed, in the order listed", async () => {
+    const el = make({ dealsOpenable: true });
+    await flush();
+    const lines = el.shadowRoot.querySelectorAll("tr.dealrow");
+    expect(lines.length).toBe(2); // Mei Tan's two deals; Priya Nair has no deal yet
+    expect(
+      [...el.shadowRoot.querySelectorAll("tbody tr")].filter(
+        (r) => !r.classList.contains("dealrow")
+      ).length
+    ).toBe(1); // the surgeon with no deal yet is not clickable
+    const handler = jest.fn();
+    el.addEventListener("dealopen", handler);
+    lines[1].click(); // the second line: the older deal
+    expect(handler).toHaveBeenCalledTimes(1);
+    expect(handler.mock.calls[0][0].detail).toEqual({
+      id: "d1",
+      ids: ["d2", "d1"]
+    });
+    lines[0].click();
+    expect(handler.mock.calls[1][0].detail.id).toBe("d2");
+    el.shadowRoot.querySelectorAll("tbody tr")[2].click(); // no deal yet
+    expect(handler).toHaveBeenCalledTimes(2);
+  });
+
+  it("steps through only what is listed: a search narrows the ids", async () => {
+    const el = make({ dealsOpenable: true });
+    await flush();
+    const handler = jest.fn();
+    el.addEventListener("dealopen", handler);
+    const box = el.shadowRoot.querySelector("input.fin");
+    box.value = "Priya";
+    box.dispatchEvent(new CustomEvent("input"));
+    await flush();
+    expect(el.shadowRoot.querySelectorAll("tr.dealrow").length).toBe(0);
+    box.value = "Mei";
+    box.dispatchEvent(new CustomEvent("input"));
+    await flush();
+    el.shadowRoot.querySelector("tr.dealrow").click();
+    expect(handler.mock.calls[0][0].detail.ids).toEqual(["d2", "d1"]);
+  });
+
+  it("does nothing on a click when the list is not openable (Campaign Management)", async () => {
+    const el = make();
+    await flush();
+    expect(el.shadowRoot.querySelectorAll("tr.dealrow").length).toBe(0);
+    const handler = jest.fn();
+    el.addEventListener("dealopen", handler);
+    el.shadowRoot.querySelectorAll("tbody tr")[0].click();
     expect(handler).not.toHaveBeenCalled();
   });
 });

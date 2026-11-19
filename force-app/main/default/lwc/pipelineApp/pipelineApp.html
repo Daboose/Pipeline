@@ -133,10 +133,12 @@
         campaign={campaignDetail.campaign}
         members={campaignDetail.members}
         maintainable
+        deals-openable
         value-row
         currency={settings.currency}
         oncurrencychange={handleCurrencyChange}
         oncampaigndealchange={handleCampaignDealChange}
+        ondealopen={handleCampaignDealOpen}
       >
         <div slot="heading" class="ctrail">
           <span class="cname">{campaignName}</span>

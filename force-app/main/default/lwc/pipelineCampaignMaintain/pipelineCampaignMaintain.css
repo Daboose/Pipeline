@@ -19,6 +19,8 @@
 }
 .mtbl {
   width: 100%;
+  /* fixed column widths (Robert, 2026-11-19): the columns never move when the data changes, such as when Include Closed brings in a longer stage */
+  table-layout: fixed;
   border-collapse: collapse;
   font-size: 15px;
 }
@@ -69,13 +71,13 @@ tr.sg td {
 tr.dl td:first-child {
   padding-left: 34px;
 }
+/* a long value is cut with dots, never allowed to push its column wider */
+tr.dl td {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 tr.dl.lock td {
   opacity: 0.55;
-}
-tr.none td {
-  color: var(--muted);
-  font-style: italic;
-  padding-left: 34px;
 }
 .kind {
   display: inline-block;

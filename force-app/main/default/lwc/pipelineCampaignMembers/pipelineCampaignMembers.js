@@ -79,11 +79,14 @@ export default class PipelineCampaignMembers extends LightningElement {
   @api valueRow = false;
   /** Pipeline: offer the Maintain mode (put deals in and out of the campaign) beside the Report mode (Robert, 2026-11-16). */
   @api maintainable = false;
+  /** Pipeline only (Robert, 2026-11-19): a click on a deal's line opens the deal flyout; with it the lines are highlighted when the mouse is over them. */
+  @api dealsOpenable = false;
 
   usd = false; // the value chips in US dollars; local currencies until the person flicks the switch
   rates = null; // the exchange rates held in Salesforce, read the first time USD is chosen
   ratesError = "";
   mode = "report"; // report (the list as it always was) or maintain
+  includeClosed = false; // Include Closed (Robert, 2026-11-19): Maintain also lists the closed deals that fit
   types = { opp: true, risk: false }; // the kinds of deal Maintain lists: opportunities, not risks, until the person ticks them
   filter = "all";
   q = "";
@@ -438,6 +441,18 @@ export default class PipelineCampaignMembers extends LightningElement {
   get riskTickCls() {
     return this.types.risk ? "ktick" : "kring";
   }
+  get closedOn() {
+    return this.includeClosed;
+  }
+  get closedCls() {
+    return this.includeClosed ? "kchip on" : "kchip";
+  }
+  get closedTickCls() {
+    return this.includeClosed ? "ktick" : "kring";
+  }
+  handleClosed() {
+    this.includeClosed = !this.includeClosed;
+  }
   handleKind(event) {
     const kind = event.currentTarget.dataset.kind;
     this.types = { ...this.types, [kind]: !this.types[kind] };
@@ -636,7 +651,12 @@ export default class PipelineCampaignMembers extends LightningElement {
           text: (def[0] === "y1" ? m.y1Rep : m.y6Rep) || ""
         })
       );
-      out.push({ key: m.memberId, cls: "", cells });
+      out.push({
+        key: m.memberId,
+        cls: deals.length && this.dealsOpenable ? "dealrow" : "",
+        dealId: deals.length ? deals[0].id : "",
+        cells
+      });
       for (let i = 1; i < deals.length; i++) {
         const extra = [];
         if (this.manage) extra.push({ key: "t", isText: true, cls: "tick" });
@@ -650,10 +670,35 @@ export default class PipelineCampaignMembers extends LightningElement {
         this.tailDefs.forEach((def) =>
           extra.push({ key: "t" + def[0], isText: true, text: "" })
         );
-        out.push({ key: m.memberId + "-" + i, cls: "deal2", cells: extra });
+        out.push({
+          key: m.memberId + "-" + i,
+          cls: this.dealsOpenable ? "deal2 dealrow" : "deal2",
+          dealId: deals[i].id,
+          cells: extra
+        });
       }
     });
     return out;
+  }
+  /**
+   * A click on a deal's line opens that deal (Robert, 2026-11-19), in Pipeline only (dealsOpenable): the screen is told the deal and the
+   * ids of every deal listed here, in the order they are listed, so Previous and Next step through the campaign's deals. A click on a
+   * control inside the line (a tick box) does nothing.
+   */
+  handleRowClick(event) {
+    if (!this.dealsOpenable) return;
+    const id = event.currentTarget.dataset.deal;
+    if (!id) return;
+    const t = event.target;
+    if (t && t.closest && t.closest("input, button, a")) return;
+    this.dispatchEvent(
+      new CustomEvent("dealopen", {
+        detail: {
+          id,
+          ids: this.rows.filter((r) => r.dealId).map((r) => r.dealId)
+        }
+      })
+    );
   }
   get noRows() {
     return this.rows.length === 0;

@@ -92,7 +92,7 @@ describe("c-pipeline-campaign-maintain", () => {
     expect(heads[0]).toContain("2 open Knee deals · 1 in the campaign");
     expect(heads[1]).toContain("no open Knee deals");
     expect(qa(el, "tr.dl").length).toBe(2); // the risk is not listed
-    expect(q(el, "tr.none").textContent).toContain("Nothing to add");
+    expect(q(el, "tr.none")).toBeNull(); // no second line for a surgeon with nothing to add; the count at the right says so
     expect(q(el, "tr.dl.in .inpill")).not.toBeNull();
     expect(q(el, "tr.dl.in .rb.rem")).not.toBeNull();
     expect(q(el, "tr.dl:not(.in) .rb.add")).not.toBeNull();
@@ -112,6 +112,31 @@ describe("c-pipeline-campaign-maintain", () => {
     expect(q(el, ".empty").textContent).toContain(
       "Tick Opportunities or Risks"
     );
+  });
+
+  it("asks for open deals only to begin with, and for closed ones too when Include Closed is on, which reads the deals again", async () => {
+    const el = make();
+    await flush();
+    expect(maintainDeals).toHaveBeenLastCalledWith({
+      campaignId: "c1",
+      includeClosed: false
+    });
+    expect(qa(el, "tr.sg")[0].textContent).toContain("open Knee deals");
+    maintainDeals.mockResolvedValue([
+      deal("d1", "a1"),
+      deal("d4", "a1", { stage: "Closed Won" })
+    ]);
+    el.includeClosed = true;
+    await flush();
+    expect(maintainDeals).toHaveBeenLastCalledWith({
+      campaignId: "c1",
+      includeClosed: true
+    });
+    expect(qa(el, "tr.dl").length).toBe(2);
+    const head = qa(el, "tr.sg")[0].textContent.replace(/\s+/g, " ");
+    expect(head).toContain("2 Knee deals");
+    expect(head).not.toContain("open");
+    expect(qa(el, "tr.dl")[1].textContent).toContain("Closed Won");
   });
 
   it("puts a deal in the campaign with a +, saves at once and tells the screen", async () => {

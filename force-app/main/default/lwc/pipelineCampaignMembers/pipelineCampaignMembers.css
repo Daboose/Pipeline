@@ -260,6 +260,15 @@ tr.deal2 td {
   border-top: 0;
   padding-top: 0;
 }
+/* a deal's line opens the deal when clicked (Pipeline only; Robert, 2026-11-19): the same soft blue as Pipeline's lists under the mouse */
+tr.dealrow {
+  cursor: pointer;
+}
+@media (hover: hover) {
+  tr.dealrow:hover td {
+    background: rgba(99, 102, 241, 0.1);
+  }
+}
 th.num,
 td.num {
   text-align: right;

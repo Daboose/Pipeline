@@ -21,7 +21,7 @@ function proper(rating) {
 
 /**
  * Pipeline: the Maintain mode of the campaign view (Robert, 2026-11-16; mockup docs/mockups/pipeline_campaign_maintain_v1.html). For each
- * surgeon the parent hands it, it lists that surgeon's open deals that fit the campaign (opportunities and, when ticked, risks; never ROSA),
+ * surgeon the parent hands it, it lists that surgeon's open deals (open and closed when Include Closed is ticked) that fit the campaign (opportunities and, when ticked, risks; never ROSA),
  * whoever owns them, with the brand, value, owner and stage, and a round + to put the deal in the campaign or a minus to take it out.
  * Each press is saved at once, under a "Please wait" cover, by PipelineDealCampaignController.setLink (which checks the person may edit the
  * deal and that the deal fits the campaign), and announces `dealchange` so the screen can re-read the campaign's tiles and the deals.
@@ -37,6 +37,17 @@ export default class PipelineCampaignMaintain extends LightningElement {
   @api rates = null;
   /** Which kinds of deal to list: { opp: true, risk: false }. */
   @api types = { opp: true, risk: false };
+  /** Include Closed (Robert, 2026-11-19): true also lists the closed deals that fit; false lists open deals only. A change reads the deals again. */
+  @api
+  get includeClosed() {
+    return this._includeClosed;
+  }
+  set includeClosed(value) {
+    const next = value === true;
+    const changed = next !== this._includeClosed;
+    this._includeClosed = next;
+    if (changed && this.connected && this._campaign) this.load();
+  }
   /** The campaign (CampaignRow). A different campaign reads its deals again. */
   @api
   get campaign() {
@@ -53,6 +64,7 @@ export default class PipelineCampaignMaintain extends LightningElement {
   }
 
   _campaign = null;
+  _includeClosed = false;
   connected = false;
   deals = [];
   loaded = false;
@@ -74,10 +86,18 @@ export default class PipelineCampaignMaintain extends LightningElement {
   async load(quiet) {
     const id = this._campaign && this._campaign.id;
     if (!id) return;
+    const includeClosed = this._includeClosed;
     if (!quiet) this.loading = true;
     try {
-      const rows = await maintainDeals({ campaignId: id });
-      if (this._campaign && this._campaign.id === id) {
+      const rows = await maintainDeals({
+        campaignId: id,
+        includeClosed
+      });
+      if (
+        this._campaign &&
+        this._campaign.id === id &&
+        this._includeClosed === includeClosed
+      ) {
         this.deals = rows || [];
         this.loaded = true;
         if (!quiet) this.error = "";
@@ -123,10 +143,10 @@ export default class PipelineCampaignMaintain extends LightningElement {
       const list = byAccount.get(m.accountId) || [];
       const inCount = list.filter((d) => d.inCampaign).length;
       const word = `${this.portfolioWord}${this.kindWord}`;
+      const openWord = this._includeClosed ? "" : "open ";
       const plural = list.length === 1 ? "" : "s";
       return {
         key: m.memberId,
-        noneKey: m.memberId + "-none",
         name: withEnglish(m.name, m.preferredName),
         plates: (m.ratings || [])
           .filter((r) => r.rating)
@@ -138,13 +158,39 @@ export default class PipelineCampaignMaintain extends LightningElement {
             cls: "rate " + proper(r.rating)
           })),
         count: list.length
-          ? `${list.length} open ${word}${plural} · ${inCount} in the campaign`
-          : `no open ${word}s`,
-        none: list.length === 0,
-        noneText: `Nothing to add: this surgeon has no open ${word}s.`,
+          ? `${list.length} ${openWord}${word}${plural} · ${inCount} in the campaign`
+          : `no ${openWord}${word}s`,
         rows: list.map((d) => this.row(d))
       };
     });
+  }
+  /**
+   * The table as one flat list of lines, each with its own stable key: a surgeon's heading, then that surgeon's deals. A surgeon with no
+   * deals is the heading alone, its count ("no open Extremities deals") on the right (Robert, 2026-11-19: no second "Nothing to add" line).
+   * A flat list of the same kind of row because the engine lost track of rows that came and went inside a group when Include Closed was
+   * switched on and off.
+   */
+  get lines() {
+    const out = [];
+    this.groups.forEach((g) => {
+      out.push({
+        key: "h-" + g.key,
+        cls: "sg",
+        isHead: true,
+        isDeal: false,
+        g
+      });
+      g.rows.forEach((r) => {
+        out.push({
+          key: "d-" + r.key,
+          cls: r.cls,
+          isHead: false,
+          isDeal: true,
+          r
+        });
+      });
+    });
+    return out;
   }
   row(d) {
     const cannotEdit = !d.canEdit;

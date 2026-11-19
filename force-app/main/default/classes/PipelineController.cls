@@ -269,6 +269,69 @@ public with sharing class PipelineController {
   }
 
   /**
+   * The named deals, in the same shape as getDeals and in the order asked (Robert, 2026-11-19: opening a deal from Pipeline's campaign view).
+   * The campaign list can hold a deal that Pipeline's own list leaves out (a closed deal, a kind that is switched off), so the deal flyout
+   * reads the campaign's deals by id. In the person's own access (sharing and field access apply); a deal they cannot see is simply not
+   * returned. Never changes anything.
+   */
+  @AuraEnabled
+  public static List<Deal> getDealsByIds(List<Id> ids) {
+    List<Deal> out = new List<Deal>();
+    if (ids == null || ids.isEmpty()) {
+      return out;
+    }
+    Set<Id> wanted = new Set<Id>(ids);
+    wanted.remove(null);
+    Map<Id, SalesRisks__c> byId = new Map<Id, SalesRisks__c>(
+      [
+        SELECT
+          Id,
+          Name,
+          RecordType.DeveloperName,
+          Stage__c,
+          IsClosed__c,
+          OnHold__c,
+          AmountPerYear__c,
+          ROSAGrowthDollar__c,
+          CurrencyIsoCode,
+          Expected_Closure_Quarter__c,
+          Expected_Closing_Year__c,
+          OwnerId,
+          Owner.Name,
+          Owner_State__c,
+          Owner_Country__c,
+          PrimaryHCPName__c,
+          Healthcare_FacilityName__c,
+          Brand__c,
+          Portfolio__c,
+          Priority__c,
+          State_Priority__c,
+          Latest_Chatter_Date__c,
+          Last_Stage_Change_Date__c,
+          CreatedDate,
+          Close_Date__c,
+          Install_Date__c,
+          ROSA_Deal_Type__c
+        FROM SalesRisks__c
+        WHERE
+          Id IN :wanted
+          AND RecordType.DeveloperName NOT IN ('Master', 'SALE')
+        WITH USER_MODE
+        LIMIT 5000
+      ]
+    );
+    Set<Id> done = new Set<Id>();
+    for (Id dealId : ids) {
+      if (dealId != null && byId.containsKey(dealId) && done.add(dealId)) {
+        out.add(toDeal(byId.get(dealId)));
+      }
+    }
+    markCampaignDeals(out);
+    attachRatings(out);
+    return out;
+  }
+
+  /**
    * Gives each opportunity and risk its surgeon's usage rating for the deal's own portfolio (Robert, 2026-11-16: a hip deal shows the
    * surgeon's hip rating, knee the knee rating, extremities the shoulder rating, CMFT the CMF rating; ROSA deals are against a hospital, so
    * they get none). The ratings are stored on the Primary HCP's Account (read-only roll-ups). One query for the whole list, read without

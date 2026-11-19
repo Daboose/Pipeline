@@ -656,3 +656,7 @@ Addition (Robert, 2026-11-01): every user lookup, including the mention list, fi
 **Robert, 2026-11-07: the phone stage control, option B chosen** (a bar of the row's colour down the left edge of the stage you are on; the big wordless chevron in a soft round button; the list joined to the coloured row with one outline all round in its colour). Waiting for "build" (0.9, still read-only).
 
 **Pipeline Mobile: the usage rating plate on the deal screen (Robert, 2026-11-08).** The deal screen's rating tile is to use the same metal plate as the Usages screen (coin, brushed metal, stars). Chosen: Proposal A, the plate in the Portfolio tile's place at the same size, with all five looks (Platinum, Gold, Silver, Bronze, No rating) as drawn in section 4 of `docs/mockups/archive/pipeline_mobile_rating_plate_v1.html`. Built as Pipeline Mobile 0.41 in UAT only (Build Spec "Pipeline Mobile 0.41").
+
+## Opening a deal from the campaign view (Robert, 2026-11-19; decided, not built)
+
+In Pipeline's Campaign view, Report mode, each deal listed under a surgeon (opportunities and risks alike; never a surgeon with no deal yet) shows the same blue hover highlight as the Pipeline lists, and a click opens the same deal flyout from the right, with the same information. Previous and Next step through the deals listed in the campaign (everything that is linked to it and shown in that list), not through the Pipeline list; opened from a Pipeline list, they step through that list as today. The deal opens even when it is not in Pipeline's own list (for example a closed deal).

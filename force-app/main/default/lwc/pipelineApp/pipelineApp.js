@@ -7,6 +7,7 @@ import SALESRISKS from "@salesforce/schema/SalesRisks__c";
 import getContext from "@salesforce/apex/PipelineController.getContext";
 import currencyRates from "@salesforce/apex/PipelineCampaignController.currencyRates";
 import getDeals from "@salesforce/apex/PipelineController.getDeals";
+import getDealsByIds from "@salesforce/apex/PipelineController.getDealsByIds";
 import listCampaigns from "@salesforce/apex/PipelineCampaignController.listCampaigns";
 import getCampaign from "@salesforce/apex/PipelineCampaignController.getCampaign";
 import saveSettings from "@salesforce/apex/PipelineController.saveSettings";
@@ -48,7 +49,7 @@ function stableJson(value) {
  * Usages, Surgeries and Chatter, saved filters); 0.10 follows the final mockup: a filter bar with chips and a Change
  * selection panel with Apply, in place of the always-visible Choose Your Data panel.
  */
-const PIPELINE_VERSION = "0.138";
+const PIPELINE_VERSION = "0.143";
 
 /** The colours a person can choose for the headings (Robert, 2026-11-02); the look of each is in pipelineApp.css. */
 const HEAD_COLOURS = [
@@ -102,6 +103,8 @@ export default class PipelineApp extends LightningElement {
   asAt = "";
   flyId = "";
   flyIds = [];
+  flyFromCampaign = false; // the flyout was opened from the campaign list, so it steps through the campaign's deals and reads them itself (Robert, 2026-11-19)
+  flyExtra = []; // those deals, read by id (the campaign can hold deals Pipeline's own list leaves out, such as closed ones)
   flyLeaving; // the deal whose panel is sliding away because a save moved it out of what the screen shows
   savedFilters = [];
   activeFilterId = "";
@@ -903,9 +906,10 @@ export default class PipelineApp extends LightningElement {
 
   /* ----- the deal flyout ----- */
   get flyDeal() {
-    return this.flyId
-      ? this.allDeals.find((d) => d.id === this.flyId) || this.flyLeaving
-      : undefined;
+    if (!this.flyId) return undefined;
+    const own = this.allDeals.find((d) => d.id === this.flyId);
+    const extra = this.flyExtra.find((d) => d.id === this.flyId);
+    return (this.flyFromCampaign ? extra || own : own) || this.flyLeaving;
   }
   get flyIndex() {
     return this.flyIds.indexOf(this.flyId);
@@ -916,8 +920,44 @@ export default class PipelineApp extends LightningElement {
   handleDealOpen(event) {
     clearTimeout(this.flyTimer);
     this.flyLeaving = undefined;
+    this.flyFromCampaign = false;
+    this.flyExtra = [];
     this.flyIds = event.detail.ids;
     this.flyId = event.detail.id;
+    if (!this.flyOn) {
+      this.flyTimer = this.slideIn(() => {
+        this.flyOn = true;
+      });
+    }
+  }
+  /**
+   * A deal's line in the campaign list was clicked (Robert, 2026-11-19): the deals listed there are read by id (they may include ones
+   * Pipeline's own list leaves out) and the flyout opens on the one clicked, with Previous and Next stepping through those deals in the
+   * order they are listed.
+   */
+  async handleCampaignDealOpen(event) {
+    const { id, ids } = event.detail;
+    this.busy = true;
+    let deals = [];
+    try {
+      deals = await getDealsByIds({ ids });
+    } catch (e) {
+      this.error = errorText(e);
+      return;
+    } finally {
+      this.busy = false;
+    }
+    const have = new Set(deals.map((d) => d.id));
+    if (!have.has(id)) {
+      this.error = "That deal could not be opened.";
+      return;
+    }
+    clearTimeout(this.flyTimer);
+    this.flyLeaving = undefined;
+    this.flyFromCampaign = true;
+    this.flyExtra = deals;
+    this.flyIds = ids.filter((i) => have.has(i));
+    this.flyId = id;
     if (!this.flyOn) {
       this.flyTimer = this.slideIn(() => {
         this.flyOn = true;
@@ -930,6 +970,8 @@ export default class PipelineApp extends LightningElement {
     this.flyTimer = this.slideOut(() => {
       this.flyId = "";
       this.flyLeaving = undefined;
+      this.flyFromCampaign = false;
+      this.flyExtra = [];
     });
   }
   /**
@@ -939,7 +981,7 @@ export default class PipelineApp extends LightningElement {
    * back by itself when the choices later brought that deal into the list again (Robert, 2026-11-07).
    */
   closeFlyoutIfGone(before) {
-    if (!this.flyId) return;
+    if (!this.flyId || this.flyFromCampaign) return; // a deal opened from the campaign is not tied to Pipeline's own list
     const { ids, gone } = reconcileFlyout(
       this.flyId,
       this.flyIds,
@@ -961,6 +1003,28 @@ export default class PipelineApp extends LightningElement {
   /** A deal was saved or posted on: read the deals again quietly so the lists show the new values. */
   handleDealSaved() {
     this.loadDeals(true);
+    if (this.flyFromCampaign) this.refreshCampaignFly();
+  }
+  /**
+   * A deal opened from the campaign list was saved or posted on (Robert, 2026-11-19: "refresh the list after a save"): the campaign's list
+   * behind the flyout is read again quietly, and so are the deals the flyout steps through, so both show the new figures. The deal being
+   * looked at stays open even if the change took it out of the campaign; the others stay only while they are still in it.
+   */
+  async refreshCampaignFly() {
+    const asked = this.flyId;
+    await this.loadCampaign(true);
+    const members = (this.campaignDetail && this.campaignDetail.members) || [];
+    const listed = new Set();
+    members.forEach((m) => (m.deals || []).forEach((d) => listed.add(d.id)));
+    const ids = this.flyIds.filter((i) => i === asked || listed.has(i));
+    try {
+      const deals = await getDealsByIds({ ids });
+      if (!this.flyFromCampaign || this.flyId !== asked) return;
+      this.flyExtra = deals;
+      this.flyIds = ids.filter((i) => deals.some((d) => d.id === i));
+    } catch {
+      // a quiet re-read that fails leaves the flyout as it is
+    }
   }
 
   /* ----- other changes ----- */

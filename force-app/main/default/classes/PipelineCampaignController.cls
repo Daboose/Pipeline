@@ -1032,11 +1032,15 @@ public with sharing class PipelineCampaignController {
    * The deals a manager can put in or take out of a campaign (Robert, 2026-11-16, the Maintain mode of Pipeline's campaign view): for
    * every surgeon who is a member, their opportunities and risks (never ROSA) that are open and fit the campaign (it is active, it
    * covers the owner's country and the deal's portfolio), plus any deal already in the campaign (so it can be taken out even when it no
-   * longer fits or has closed). The deals are read without field-level checks, sharing still applies; canEdit says whether the person
+   * longer fits or has closed). includeClosed (Robert, 2026-11-19, the "Include Closed" chip) also lists the closed deals that fit, won or
+   * lost, so they can be put in too. The deals are read without field-level checks, sharing still applies; canEdit says whether the person
    * may change the deal (setLink in PipelineDealCampaignController checks it again, and the fit, when a deal is put in).
    */
   @AuraEnabled
-  public static List<MaintainDeal> maintainDeals(Id campaignId) {
+  public static List<MaintainDeal> maintainDeals(
+    Id campaignId,
+    Boolean includeClosed
+  ) {
     List<MaintainDeal> out = new List<MaintainDeal>();
     if (campaignId == null) {
       return out;
@@ -1061,6 +1065,10 @@ public with sharing class PipelineCampaignController {
     if (surgeons.isEmpty()) {
       return out;
     }
+    // open deals only, or open and closed (IsClosed__c is never null)
+    List<Boolean> closedFlags = includeClosed == true
+      ? new List<Boolean>{ false, true }
+      : new List<Boolean>{ false };
     Set<Id> linked = new Set<Id>();
     for (Sales_Campaign_Deal__c l : [
       SELECT Deal__c
@@ -1088,7 +1096,7 @@ public with sharing class PipelineCampaignController {
         Account__c IN :surgeons
         AND (NOT RecordType.DeveloperName LIKE '%ROSA%')
         AND RecordType.DeveloperName NOT IN ('Master', 'SALE')
-        AND (IsClosed__c = FALSE
+        AND (IsClosed__c IN :closedFlags
         OR Id IN :linked)
       WITH SYSTEM_MODE
       ORDER BY CreatedDate DESC
