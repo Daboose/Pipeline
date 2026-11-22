@@ -1,10 +1,12 @@
 import { LightningElement, api } from "lwc";
 import maintainDeals from "@salesforce/apex/PipelineCampaignController.maintainDeals";
+import removeMemberAndDeals from "@salesforce/apex/PipelineCampaignController.removeMemberAndDeals";
 import setLink from "@salesforce/apex/PipelineDealCampaignController.setLink";
 import { formatMoney } from "c/pipelineFormat";
 import { usdAmount } from "c/pipelineCampaignModel";
 
 const TOAST_MS = 2500;
+const ASK_MS = 450; // the confirmation fades out over 0.4 s, then comes off the page
 
 /** "Name (English: Name)" the way the members list writes it, so a surgeon is named the same in both modes. */
 function withEnglish(name, english) {
@@ -30,8 +32,25 @@ function proper(rating) {
  * changes only the links between a deal and this campaign. It never changes a deal.
  */
 export default class PipelineCampaignMaintain extends LightningElement {
-  /** The surgeons to list (MemberRow), already searched and in order. */
-  @api members = [];
+  /**
+   * The surgeons to list (MemberRow), in order. When the surgeons themselves change (one was added or taken out in this screen or
+   * elsewhere), the deals are read again, because they are read for the campaign's members: without this a surgeon added just now showed
+   * "no open deals" until the person left Maintain and came back (Robert, 2026-11-20).
+   */
+  @api
+  get members() {
+    return this._members;
+  }
+  set members(value) {
+    this._members = value || [];
+    const key = this._members
+      .map((m) => m.accountId)
+      .sort()
+      .join(",");
+    const changed = this._memberKey !== undefined && key !== this._memberKey;
+    this._memberKey = key;
+    if (changed && this.connected && this._campaign) this.load(true);
+  }
   /** US dollars: the value column shows each deal in US dollars with these Salesforce rates (usd true and rates read), else its own currency. */
   @api usd = false;
   @api rates = null;
@@ -63,6 +82,8 @@ export default class PipelineCampaignMaintain extends LightningElement {
     return this.load(true);
   }
 
+  _members = [];
+  _memberKey; // the accounts of the surgeons listed, to tell when the surgeons (not just their details) change
   _campaign = null;
   _includeClosed = false;
   connected = false;
@@ -73,6 +94,10 @@ export default class PipelineCampaignMaintain extends LightningElement {
   error = "";
   toast = "";
   toastTimer;
+  askMember = null; // the surgeon the "Are you sure?" box is about: { memberId, name }
+  askOpen = false; // the box is on the page
+  askOn = false; // and showing (a moment after it is on the page, so it fades in)
+  askTimer;
 
   connectedCallback() {
     this.connected = true;
@@ -81,6 +106,7 @@ export default class PipelineCampaignMaintain extends LightningElement {
   disconnectedCallback() {
     this.connected = false;
     clearTimeout(this.toastTimer);
+    clearTimeout(this.askTimer);
   }
 
   async load(quiet) {
@@ -147,6 +173,8 @@ export default class PipelineCampaignMaintain extends LightningElement {
       const plural = list.length === 1 ? "" : "s";
       return {
         key: m.memberId,
+        memberId: m.memberId,
+        shortName: m.name,
         name: withEnglish(m.name, m.preferredName),
         plates: (m.ratings || [])
           .filter((r) => r.rating)
@@ -230,6 +258,55 @@ export default class PipelineCampaignMaintain extends LightningElement {
   }
   get busyText() {
     return this.saving ? "Please wait…" : "Reading the deals…";
+  }
+
+  // ---------- a surgeon's minus: ask, then take the surgeon out of the campaign (Robert, 2026-11-20) ----------
+  get askCls() {
+    return this.askOn ? "scrim on" : "scrim";
+  }
+  handleAskMember(event) {
+    if (this.saving) return;
+    const id = event.currentTarget.dataset.member;
+    const g = this.groups.find((x) => x.memberId === id);
+    if (!g) return;
+    this.askMember = { memberId: id, name: g.shortName };
+    this.askOpen = true;
+    // eslint-disable-next-line @lwc/lwc/no-async-operation
+    this.askTimer = setTimeout(() => {
+      this.askOn = true;
+    }, 30);
+  }
+  closeAsk() {
+    this.askOn = false;
+    clearTimeout(this.askTimer);
+    // eslint-disable-next-line @lwc/lwc/no-async-operation
+    this.askTimer = setTimeout(() => {
+      this.askOpen = false;
+      this.askMember = null;
+    }, ASK_MS);
+  }
+  handleAskNo() {
+    this.closeAsk();
+  }
+  async handleAskYes() {
+    const who = this.askMember;
+    if (!who || this.saving) return;
+    this.closeAsk();
+    this.saving = true;
+    this.error = "";
+    try {
+      await removeMemberAndDeals({ memberId: who.memberId });
+      this.say(`${who.name} taken out of the campaign`);
+      this.dispatchEvent(
+        new CustomEvent("memberchange", {
+          detail: { memberId: who.memberId, removed: true }
+        })
+      );
+    } catch (e) {
+      this.error = this.message(e, "That surgeon could not be taken out.");
+    } finally {
+      this.saving = false;
+    }
   }
 
   // ---------- a press on a + or a minus ----------

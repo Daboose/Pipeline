@@ -1,7 +1,7 @@
 /* Pipeline: the small rating plates of the lists (Robert, 2026-11-19; mockup docs/mockups/archive/pipeline_list_rating_plates_v3.html).
    Imported with  @import "c/pipelineRatingStyles";  by the Pipeline lists, the campaign members list and the Maintain list.
    One plate per rating (Platinum, Gold, Silver, Bronze) in the brushed metal of the big rating plates, and a flat black one for
-   "not rated" (class "none"); white lettering with a soft dark shadow; every plate the same width, wide enough for NOT RATED. */
+   "not rated" (class "none", a clear chip: a border and the words, no fill); white lettering with a soft dark shadow; every plate the same width, wide enough for NOT RATED. */
 .rplate {
   display: inline-block;
   width: 116px;
@@ -128,8 +128,16 @@
     #bc7951 360deg
   );
 }
+/* "Not rated" is a clear chip (Robert, 2026-11-20, option 2 of docs/mockups/pipeline_list_not_rated_v2.html): no fill at all, so the row shows
+   through, just a hairline border and the words, so it fades into the background and the metal chips are what the eye goes to. The border and
+   the words take their colours from the app's own theme (so they follow dark and light). */
 .rplate.none {
-  background: linear-gradient(135deg, #2e3137, #0c0d10);
+  background: transparent;
+  box-shadow: inset 0 0 0 1px
+    color-mix(in srgb, var(--muted, #8b9bb0) 50%, var(--edge, #5b6f93));
+  color: color-mix(in srgb, var(--text, #e8edf5) 50%, var(--muted, #8b9bb0));
+  text-shadow: none;
+  font-weight: 700;
 }
 /* a plate that can be pressed (in the lists where it opens the deal on its Surgeon Usages screen) is a button drawn as the same plate */
 button.rplate {
@@ -146,5 +154,9 @@ button.rplate:focus-visible {
 @media (hover: hover) {
   button.rplate:hover {
     filter: brightness(1.15);
+  }
+  button.rplate.none:hover {
+    filter: none;
+    background: color-mix(in srgb, var(--text, #e8edf5) 9%, transparent);
   }
 }

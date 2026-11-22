@@ -161,7 +161,69 @@ afterEach(() => {
   jest.clearAllMocks();
 });
 
+// Jest cannot see a style sheet being wrong, and a rewrite of the plate styles once deleted the category's and the coin's rules without any test
+// noticing (the plates went to UAT with no coin and the words run together). This reads the style sheet and checks each part of a plate still has its rule.
+describe("pipeline-usage-card, the plate style sheet", () => {
+  const css = require("fs").readFileSync(
+    require("path").resolve(__dirname, "../pipelineUsageCard.css"),
+    "utf8"
+  );
+  it("draws no rivets on a plate", () => {
+    const html = require("fs").readFileSync(
+      require("path").resolve(__dirname, "../pipelineUsageCard.html"),
+      "utf8"
+    );
+    expect(html).not.toContain("screw");
+  });
+
+  it("keeps a rule for every part of a plate: the text block, the category, the rating word, the stars and the coin", () => {
+    [
+      ".plate .txt {",
+      ".plate .area {",
+      ".plate .rank {",
+      ".plate .stars {",
+      ".plate .stars svg {",
+      ".plate .coin {",
+      ".plate .coin svg {",
+      ".plate .coin svg path {"
+    ].forEach((selector) => {
+      expect(css).toContain(selector);
+    });
+    // the category is the first row, the rating word the second and the stars the third, so they stack instead of sharing a line
+    expect(css).toMatch(/\.plate \.area \{[^}]*grid-row: 1;/);
+    expect(css).toMatch(/\.plate \.rank \{[^}]*grid-row: 2;/);
+    expect(css).toMatch(/\.plate \.stars \{[^}]*grid-row: 3;/);
+    expect(css).toMatch(/\.plate \.area \{[^}]*#14100a/);
+    // 120 px tall, and no rivets in the corners (Robert, 2026-11-20)
+    expect(css).toMatch(/\.plate \{[^}]*height: 120px;/);
+    expect(css).not.toContain("screw");
+  });
+});
+
 describe("pipeline-usage-card, a surgeon", () => {
+  it("draws a star for each step of the rating: Platinum four, Gold three, Silver two, Bronze one, and none without a rating; the category reads first, then the rating, then the stars", async () => {
+    const el = await mount(
+      surgeon({
+        ratings: [
+          { area: "Hip", rating: "PLATINUM" },
+          { area: "Knee", rating: "GOLD" },
+          { area: "Shoulder", rating: "SILVER" },
+          { area: "CMF", rating: "BRONZE" }
+        ]
+      })
+    );
+    const counts = qa(el, ".plate").map(
+      (p) => p.querySelectorAll(".stars svg").length
+    );
+    expect(counts).toEqual([4, 3, 2, 1]);
+    const first = qa(el, ".plate")[0];
+    expect(
+      [...first.querySelector(".txt").children].map((c) => c.className)
+    ).toEqual(["area", "rank", "stars"]);
+    expect(first.querySelector(".coin")).not.toBeNull();
+    expect(qa(el, ".plate")[3].querySelector(".area").textContent).toBe("CMFT");
+  });
+
   it("shows the four ratings as metal plates, each usage as a tile under its hospital, and the bookings", async () => {
     const el = await mount(surgeon());
     const plates = qa(el, ".plate");
@@ -171,7 +233,9 @@ describe("pipeline-usage-card, a surgeon", () => {
     expect(plates[2].className).toContain("m-BRONZE");
     expect(plates[3].className).toContain("m-NONE");
     expect(plates[0].querySelector(".rank").textContent).toBe("Gold");
-    expect(plates[0].querySelector(".stars").textContent).toBe("★★★");
+    expect(plates[0].querySelectorAll(".stars svg")).toHaveLength(3); // Gold: three drawn stars
+    expect(plates[3].querySelectorAll(".stars svg")).toHaveLength(0); // no rating: none
+    expect(plates[0].querySelector(".txt .area").textContent).toBe("Hip");
     expect(plates[3].querySelector(".rank").textContent).toBe("No rating");
     expect(qa(el, ".uhosp").map((h) => h.textContent)).toEqual([
       "North Hospital",
@@ -194,6 +258,7 @@ describe("pipeline-usage-card, a surgeon", () => {
       "Type",
       "Cases / year",
       "Procedures and technologies",
+      "Last updated",
       ""
     ]);
     expect(qa(el, ".cgh")).toHaveLength(1);
@@ -252,11 +317,51 @@ describe("pipeline-usage-card, a surgeon", () => {
     expect(q(el, ".head h2").textContent).toContain("North Hospital");
   });
 
-  it("warns when the usages have not changed for over a year", async () => {
+  it("says nothing under the plates about when the usages were last changed, even for old usages", async () => {
     const el = await mount(
       surgeon({ newest: new Date(Date.now() - 500 * 86400000).toISOString() })
     );
-    expect(q(el, ".note.warn").textContent).toContain("Worth checking");
+    expect(text(el)).not.toContain("Usages last changed");
+    expect(text(el)).not.toContain("Worth checking");
+    expect(q(el, ".note.warn")).toBeNull();
+    expect(q(el, ".note.ok")).toBeNull();
+  });
+
+  it("shows each usage's own Last updated date as DD/MM/YY, in amber when it is more than a year old", async () => {
+    const recent = new Date(Date.now() - 30 * 86400000);
+    const old = new Date(Date.now() - 500 * 86400000);
+    const two = (n) => String(n).padStart(2, "0");
+    const dmy = (d) =>
+      `${two(d.getDate())}/${two(d.getMonth() + 1)}/${two(d.getFullYear() % 100)}`;
+    const el = await mount(
+      surgeon({
+        usages: [
+          hipUsage({ lastModified: recent.toISOString() }),
+          { ...kneeUsage(), lastModified: old.toISOString() }
+        ]
+      })
+    );
+    const cells = tiles(el).map((tile) => tq(tile, ".lu"));
+    expect(cells.map((c) => c.textContent.trim())).toEqual([
+      dmy(recent),
+      dmy(old)
+    ]);
+    expect(cells[0].classList.contains("old")).toBe(false);
+    expect(cells[1].classList.contains("old")).toBe(true);
+    // a hip's stem and cup are one usage: one date, not two
+    expect(tqa(tiles(el)[0], ".lu")).toHaveLength(1);
+  });
+
+  it("draws no date cell while a usage is being edited", async () => {
+    saveWhole.mockResolvedValue();
+    const el = await mount(
+      surgeon({
+        usages: [hipUsage({ lastModified: new Date().toISOString() })]
+      })
+    );
+    tq(tiles(el)[0], ".ib").click();
+    await flush();
+    expect(tqa(tiles(el)[0], ".lu")).toHaveLength(0);
   });
 
   it("says there were 0 MyCase bookings in one line, with no table, when there are none", async () => {

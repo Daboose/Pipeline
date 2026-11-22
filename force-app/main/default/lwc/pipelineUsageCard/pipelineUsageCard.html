@@ -37,26 +37,39 @@
           Rating by portfolio <span class="sp"></span
           ><span class="tag">stored on the account</span>
         </h3>
-        <div class="ratings">
-          <template for:each={plates} for:item="p">
-            <div key={p.key} class={p.cls} role="img" aria-label={p.label}>
-              <span class="screw l"></span><span class="screw r"></span>
-              <div class="area">{p.area}</div>
-              <div class="coin">
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                  <path
-                    d="M12 2l3 6.8 7.4.7-5.6 4.9 1.7 7.3L12 17.9 5.5 21.7l1.7-7.3L1.6 9.5l7.4-.7z"
-                  ></path>
-                </svg>
+        <div class="ratbox">
+          <div class="ratings">
+            <template for:each={plates} for:item="p">
+              <div key={p.key} class={p.cls} role="img" aria-label={p.label}>
+                <div class="txt">
+                  <div class="area">{p.area}</div>
+                  <div class="rank">{p.rank}</div>
+                  <div class="stars">
+                    <template for:each={p.starList} for:item="st">
+                      <svg
+                        key={st.key}
+                        viewBox="1.5 1.6 21 20"
+                        aria-hidden="true"
+                      >
+                        <path
+                          d="M12 2l3 6.8 7.4.7-5.6 4.9 1.7 7.3L12 17.9 5.5 21.7l1.7-7.3L1.6 9.5l7.4-.7z"
+                        ></path>
+                      </svg>
+                    </template>
+                  </div>
+                </div>
+                <div class="coin">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path
+                      d="M12 2l3 6.8 7.4.7-5.6 4.9 1.7 7.3L12 17.9 5.5 21.7l1.7-7.3L1.6 9.5l7.4-.7z"
+                    ></path>
+                  </svg>
+                </div>
               </div>
-              <div class="rank">{p.rank}</div>
-              <div class="stars">{p.stars}</div>
-            </div>
-          </template>
+            </template>
+          </div>
         </div>
-        <div class={ratingNote.cls}>
-          <b lwc:if={ratingNote.lead}>{ratingNote.lead}</b>{ratingNote.text}
-        </div>
+        <div class={ratingNote.cls} lwc:if={ratingNote}>{ratingNote.text}</div>
       </div>
 
       <div class="sec">
@@ -181,6 +194,7 @@
                 <div key={h}>{h}</div>
               </template>
               <div class="xh">Procedures and technologies</div>
+              <div class="luh">Last updated</div>
               <div></div>
             </div>
             <template for:each={groups} for:item="g">

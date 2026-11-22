@@ -18,6 +18,32 @@ import {
 import { localWidth, zoomOf } from "c/pipelineZoom";
 import { ratingRank } from "c/pipelineCampaignModel";
 
+const MIN_COL_PX = 50; // the narrowest a column may be dragged to
+/**
+ * Makes the columns fit the box (Robert, 2026-11-23). `px` holds each shown column's width in the table's own units. Table cells do not
+ * honour a percentage inside calc() (Chrome gave every column the same width, which is what made a dragged column look like it was
+ * resizing all the others), so the columns are sized in pixels worked out from the measured box. When the widths add up to no more than
+ * the box they are kept as they are (the table is then narrower than the box); when they add up to more, the columns share the box:
+ * the Status column and the column being dragged (`pinId`) keep their widths and the others shrink in proportion. Exported for the test.
+ */
+export function fitWidths(ids, px, box, pinId) {
+  const out = { ...px };
+  const total = ids.reduce((a, id) => a + out[id], 0);
+  if (!box || total <= box) return out;
+  const fixed = (id) => id === "status" || id === pinId;
+  const others = ids.filter((id) => !fixed(id));
+  if (!others.length) return out;
+  const fixedSum = ids.filter(fixed).reduce((a, id) => a + out[id], 0);
+  const othersSum = others.reduce((a, id) => a + out[id], 0);
+  const room = Math.max(box - fixedSum, others.length * MIN_COL_PX);
+  others.forEach((id) => {
+    out[id] = Math.max(MIN_COL_PX, Math.floor((out[id] * room) / othersSum));
+  });
+  const left = room - others.reduce((a, id) => a + out[id], 0);
+  if (left > 0) out[others[others.length - 1]] += left;
+  return out;
+}
+
 const PAGE = 25; // rows shown to start with
 const STEP = 50; // rows added by each "Show more" (Robert, 2026-11-09)
 
@@ -118,7 +144,18 @@ export default class PipelineTypeList extends LightningElement {
     this.bodyMounted = open;
     this.bodyOn = open;
   }
+  connectedCallback() {
+    this.onWindowResize = () => this.measureBox();
+    window.addEventListener("resize", this.onWindowResize);
+  }
+  /** The box the table fits is measured after every draw and when the window changes, so the columns re-fit (never guessed). */
+  measureBox() {
+    const box = this.template.querySelector(".tablewrap");
+    const w = box ? box.clientWidth : 0;
+    if (w && Math.abs(w - this.boxPx) >= 1) this.boxPx = w;
+  }
   renderedCallback() {
+    this.measureBox();
     if (!this.sticky) this.sticky = new StickyHeads(this.template);
     this.sticky.refresh();
     if (this.pickerOpen) this.fitPicker();
@@ -153,6 +190,7 @@ export default class PipelineTypeList extends LightningElement {
     picker.style.maxHeight = `${Math.max(120, Math.floor(up ? above : below))}px`;
   }
   disconnectedCallback() {
+    window.removeEventListener("resize", this.onWindowResize);
     clearTimeout(this.foldTimer);
     if (this.sticky) this.sticky.stop();
     this.sticky = null;
@@ -165,6 +203,8 @@ export default class PipelineTypeList extends LightningElement {
   sortDir = -1;
   shown = PAGE;
   live = null; // widths while a drag is in progress
+  pinId = ""; // the column being dragged: it keeps the width the mouse gave it while the others share what is left
+  boxPx = 0; // the width of the table's box, in the table's own units (measured; see measureBox)
   collapsed = {}; // the sales reps whose block is closed, by name
 
   get dealCount() {
@@ -654,30 +694,29 @@ export default class PipelineTypeList extends LightningElement {
   get hasWidths() {
     return Object.keys(this.widthMap).length > 0;
   }
-  /** Every shown column in order (the rep column first when it is on), each with its width in pixels. */
-  get colWidths() {
-    const ids = (this.showRepCol ? ["__rep"] : []).concat(
+  /** Every shown column in order (the rep column first when it is on) as ids. */
+  get shownIds() {
+    return (this.showRepCol ? ["__rep"] : []).concat(
       this.visibleDefs.map((c) => c[0])
     );
-    const cols = ids.map((id) => ({ id, px: this.widthMap[id] || 140 }));
-    // the Status column never gets narrower than its pill needs (Robert, 2026-11-17: Closed Won did not fit and he had to widen the column by
-    // hand): its width is fixed at the pill's width or the saved width if that is wider, and the other columns share what is left
-    const status = cols.find((c) => c.id === "status");
-    if (status) status.px = Math.max(status.px, STATUS_MIN_PX);
-    const others = cols.filter((c) => c.id !== "status");
-    const othersTotal = others.reduce((a, c) => a + c.px, 0);
-    const total = cols.reduce((a, c) => a + c.px, 0);
-    // each other column is a share of the table (a percentage of what the Status column leaves), and the table is never wider than its box
-    // (see tableStyle), so saved widths that add up to more than the box shrink together instead of making the table scroll sideways, which
-    // would stop the column names locking
-    return cols.map((c) => ({
-      ...c,
-      style:
-        c.id === "status"
-          ? `width:${c.px}px`
-          : status
-            ? `width:calc((100% - ${status.px}px) * ${(c.px / othersTotal).toFixed(5)})`
-            : `width:${((c.px / total) * 100).toFixed(4)}%`
+  }
+  /** The width of each shown column in pixels, fitted to the box (see fitWidths). */
+  get fittedWidths() {
+    const ids = this.shownIds;
+    const px = {};
+    ids.forEach((id) => {
+      px[id] = this.widthMap[id] || 140;
+    });
+    // the Status column never gets narrower than its pill needs (Robert, 2026-11-17: Closed Won did not fit and he had to widen the column by hand)
+    if (px.status !== undefined) px.status = Math.max(px.status, STATUS_MIN_PX);
+    return fitWidths(ids, px, this.boxPx, this.pinId);
+  }
+  get colWidths() {
+    const fitted = this.fittedWidths;
+    return this.shownIds.map((id) => ({
+      id,
+      px: fitted[id],
+      style: `width:${fitted[id]}px`
     }));
   }
   get tableStyle() {
@@ -691,17 +730,32 @@ export default class PipelineTypeList extends LightningElement {
     this.template.querySelectorAll("th[data-id]").forEach((th) => {
       snapshot[th.dataset.id] = Math.round(localWidth(th));
     });
+    this.measureBox();
+    const ids = this.shownIds;
+    // the dragged column may grow until the others are at their narrowest (and Status at its own width)
+    const others = ids.filter((x) => x !== id && x !== "status").length;
+    const statusPx =
+      id !== "status" && snapshot.status !== undefined
+        ? Math.max(snapshot.status, STATUS_MIN_PX)
+        : 0;
+    const maxWidth = this.boxPx
+      ? Math.max(MIN_COL_PX, this.boxPx - statusPx - others * MIN_COL_PX)
+      : Infinity;
+    this.pinId = id;
     this.live = { ...snapshot };
     beginColumnDrag(
       event,
       snapshot[id] || 140,
-      50,
+      MIN_COL_PX,
       (width) => {
-        this.live = { ...this.live, [id]: width };
+        // the column follows the mouse; the others share what is left of the box
+        const px = { ...this.live, [id]: Math.min(width, maxWidth) };
+        this.live = fitWidths(ids, px, this.boxPx, id);
       },
       () => {
         const done = this.live;
         this.live = null;
+        this.pinId = "";
         this.dispatchEvent(
           new CustomEvent("widthschange", {
             detail: { kind: this.kind, widths: done }

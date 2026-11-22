@@ -179,6 +179,16 @@ private class PipelineUsageCardControllerTest {
     System.assertEquals(4, c.ratings.size(), 'Hip, Knee, Shoulder, CMF');
     System.assertEquals('Hip', c.ratings[0].area);
     System.assertNotEquals(null, c.newest);
+    System.assertNotEquals(
+      null,
+      c.usages[0].lastModified,
+      'Each usage carries its own last-updated date for the Last updated column'
+    );
+    System.assertEquals(
+      c.newest,
+      c.usages[0].lastModified,
+      'With one usage the newest change is that usage'
+    );
     System.assertEquals(
       2,
       c.lines.size(),

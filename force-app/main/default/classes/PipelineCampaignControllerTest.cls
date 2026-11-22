@@ -304,6 +304,64 @@ private class PipelineCampaignControllerTest {
   }
 
   @IsTest
+  static void removingASurgeonAlsoTakesTheirDealsOutOfThatCampaign() {
+    System.runAs(manager()) {
+      Id id = PipelineCampaignController.saveCampaign(
+        payload('Both go', new List<String>{ 'SG' })
+      );
+      Id other = PipelineCampaignController.saveCampaign(
+        payload('Stays', new List<String>{ 'SG' })
+      );
+      Account a = surgeon('Both', 'Go', 'SG', 'Physician');
+      PipelineCampaignController.addMember(id, a.Id);
+      PipelineCampaignController.addMember(other, a.Id);
+      SalesRisks__c d = new SalesRisks__c(
+        RecordTypeId = rt(SalesRisks__c.SObjectType, 'AUHIP'),
+        Account__c = a.Id,
+        Stage__c = 'Plan',
+        Expected_Closure_Quarter__c = 'Q4'
+      );
+      insert d;
+      insert new List<Sales_Campaign_Deal__c>{
+        new Sales_Campaign_Deal__c(Campaign__c = id, Deal__c = d.Id),
+        new Sales_Campaign_Deal__c(Campaign__c = other, Deal__c = d.Id)
+      };
+      Id memberId = PipelineCampaignController.getCampaign(id)
+        .members[0]
+        .memberId;
+      System.assertEquals(
+        1,
+        PipelineCampaignController.removeMemberAndDeals(memberId)
+      );
+      System.assertEquals(
+        0,
+        PipelineCampaignController.getCampaign(id).members.size()
+      );
+      System.assertEquals(
+        0,
+        [SELECT COUNT() FROM Sales_Campaign_Deal__c WHERE Campaign__c = :id]
+      );
+      // the other campaign keeps its member and its link, and the deal itself is untouched
+      System.assertEquals(
+        1,
+        [SELECT COUNT() FROM Sales_Campaign_Deal__c WHERE Campaign__c = :other]
+      );
+      System.assertEquals(
+        1,
+        PipelineCampaignController.getCampaign(other).members.size()
+      );
+      System.assertEquals(
+        1,
+        [SELECT COUNT() FROM SalesRisks__c WHERE Id = :d.Id]
+      );
+      System.assertEquals(
+        0,
+        PipelineCampaignController.removeMemberAndDeals(null)
+      );
+    }
+  }
+
+  @IsTest
   static void peopleSearchOffersOnlyActiveNonPortalPeople() {
     System.runAs(manager()) {
       System.assertEquals(

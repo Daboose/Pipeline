@@ -1,7 +1,19 @@
 import { createElement } from "lwc";
 import PipelineCampaignMembers from "c/pipelineCampaignMembers";
 import currencyRates from "@salesforce/apex/PipelineCampaignController.currencyRates";
+import searchSurgeons from "@salesforce/apex/PipelineCampaignController.searchSurgeons";
+import addMember from "@salesforce/apex/PipelineCampaignController.addMember";
 
+jest.mock(
+  "@salesforce/apex/PipelineCampaignController.searchSurgeons",
+  () => ({ default: jest.fn() }),
+  { virtual: true }
+);
+jest.mock(
+  "@salesforce/apex/PipelineCampaignController.addMember",
+  () => ({ default: jest.fn() }),
+  { virtual: true }
+);
 jest.mock(
   "@salesforce/apex/PipelineCampaignController.currencyRates",
   () => ({ default: jest.fn() }),
@@ -9,7 +21,7 @@ jest.mock(
 );
 
 // eslint-disable-next-line @lwc/lwc/no-async-operation
-const flush = () => new Promise((r) => setTimeout(r, 0));
+const flush = (ms = 0) => new Promise((r) => setTimeout(r, ms));
 const daysAgo = (n) => new Date(Date.now() - n * 86400000).toISOString();
 const deal = (extra = {}) => ({
   id: "d1",
@@ -637,6 +649,118 @@ describe("c-pipeline-campaign-members", () => {
     links[0].addEventListener("click", (e) => e.preventDefault());
     links[0].click();
     expect(handler).not.toHaveBeenCalled();
+  });
+
+  it("takes the column widths from the host, and reports a reset to the standard widths, so Pipeline can keep them in the person's settings", async () => {
+    const el = make({ columnWidths: { name: 333 } });
+    await flush();
+    const first = () => el.shadowRoot.querySelector("colgroup col");
+    expect(first().getAttribute("style")).toContain("width:333px");
+    const handler = jest.fn();
+    el.addEventListener("widthschange", handler);
+    el.shadowRoot.querySelector("button.cog").click();
+    await flush();
+    const reset = [...el.shadowRoot.querySelectorAll(".picker .btn")].find(
+      (b) => b.textContent.includes("Reset widths")
+    );
+    reset.click();
+    await flush();
+    expect(handler).toHaveBeenCalledTimes(1);
+    expect(handler.mock.calls[0][0].detail.widths).toBeNull();
+    expect(first().getAttribute("style")).not.toContain("333px");
+  });
+
+  it("starts from the standard widths when the host has none saved (null) or an empty set ({})", async () => {
+    const none = make({ columnWidths: null });
+    const empty = make({ columnWidths: {} });
+    await flush();
+    [none, empty].forEach((el) => {
+      const col = el.shadowRoot.querySelector("colgroup col");
+      expect(col.getAttribute("style")).not.toContain("333px");
+    });
+  });
+
+  it("in Maintain the Search box is the Add box (label Add, amber), finds surgeons, and a plus adds one and tells the screen; in Report it is Search again", async () => {
+    searchSurgeons.mockReset();
+    addMember.mockReset();
+    searchSurgeons.mockResolvedValue({
+      hits: [
+        {
+          id: "s1",
+          name: "Dr Karen Aldous",
+          city: "Sydney",
+          alreadyMember: false
+        },
+        { id: "s2", name: "Dr Mei Tan", city: "Perth", alreadyMember: true }
+      ]
+    });
+    addMember.mockResolvedValue();
+    const el = make({ maintainable: true });
+    await flush();
+    const label = () => el.shadowRoot.querySelector(".fslbl");
+    expect(label().textContent).toBe("Search");
+    expect(label().classList.contains("adding")).toBe(false);
+    const mode = el.shadowRoot.querySelector("c-pipeline-segmented.modeseg");
+    mode.dispatchEvent(
+      new CustomEvent("change", { detail: { value: "maintain" } })
+    );
+    await flush();
+    expect(label().textContent).toBe("Add");
+    expect(label().classList.contains("adding")).toBe(true);
+    const input = el.shadowRoot.querySelector("input.fin");
+    input.value = "ka";
+    input.dispatchEvent(new CustomEvent("input"));
+    await flush(300);
+    expect(searchSurgeons).toHaveBeenCalledWith({
+      campaignId: "c1",
+      term: "ka",
+      wide: false
+    });
+    const hits = el.shadowRoot.querySelectorAll(".addpop .hit");
+    expect(hits).toHaveLength(2);
+    // a surgeon already in the campaign has no plus
+    expect(hits[1].querySelector("button")).toBeNull();
+    expect(hits[1].textContent).toContain("already in the campaign");
+    // the foot says where it searched and offers to widen it; widening searches every country, and a surgeon found there is added the same way
+    const foot = () => el.shadowRoot.querySelector(".afoot.scope");
+    expect(foot().textContent).toContain("Searching");
+    expect(foot().querySelector("button").textContent.trim()).toBe(
+      "Widen search"
+    );
+    searchSurgeons.mockClear();
+    foot().querySelector("button").click();
+    await flush(300);
+    expect(searchSurgeons).toHaveBeenCalledWith({
+      campaignId: "c1",
+      term: "ka",
+      wide: true
+    });
+    expect(foot().querySelector("button").textContent.trim()).toBe(
+      "Back to the campaign's countries"
+    );
+    expect(el.shadowRoot.querySelector(".addlist")).not.toBeNull();
+    const seen = jest.fn();
+    el.addEventListener("campaignmemberchange", seen);
+    el.shadowRoot
+      .querySelectorAll(".addpop .hit")[0]
+      .querySelector("button.rb.add")
+      .click();
+    await flush(20);
+    expect(addMember).toHaveBeenCalledWith({
+      campaignId: "c1",
+      surgeonId: "s1"
+    });
+    expect(seen).toHaveBeenCalledTimes(1);
+    expect(el.shadowRoot.querySelector(".atoast").textContent).toContain(
+      "Dr Karen Aldous"
+    );
+    expect(el.shadowRoot.querySelector(".addpop")).toBeNull();
+    expect(el.shadowRoot.querySelector("input.fin").value).toBe("");
+    mode.dispatchEvent(
+      new CustomEvent("change", { detail: { value: "report" } })
+    );
+    await flush();
+    expect(label().textContent).toBe("Search");
   });
 
   it("steps through only what is listed: a search narrows the ids", async () => {

@@ -33,11 +33,24 @@
         <tr key={l.key} class={l.cls}>
           <template lwc:if={l.isHead}>
             <td colspan="7">
-              <span class="sn">{l.g.name}</span>
-              <template for:each={l.g.plates} for:item="p">
-                <span key={p.key} class={p.cls}>{p.text}</span>
-              </template>
-              <span class="cnt">{l.g.count}</span>
+              <div class="sgcell">
+                <button
+                  type="button"
+                  class="rb rem"
+                  data-member={l.g.memberId}
+                  disabled={saving}
+                  title="Remove this surgeon from the campaign"
+                  aria-label="Remove this surgeon from the campaign"
+                  onclick={handleAskMember}
+                >
+                  <span class="mark"></span>
+                </button>
+                <span class="sn">{l.g.name}</span>
+                <template for:each={l.g.plates} for:item="p">
+                  <span key={p.key} class={p.cls}>{p.text}</span>
+                </template>
+                <span class="cnt">{l.g.count}</span>
+              </div>
             </td>
           </template>
           <template lwc:else>
@@ -71,6 +84,24 @@
       </template>
     </tbody>
   </table>
+  <div class={askCls} lwc:if={askOpen}>
+    <div
+      class="ask"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Remove this surgeon"
+    >
+      <p>Are you sure you want to remove this surgeon from the campaign?</p>
+      <div class="row">
+        <button type="button" class="btn sec" onclick={handleAskNo}>
+          Cancel
+        </button>
+        <button type="button" class="btn danger" onclick={handleAskYes}>
+          Proceed
+        </button>
+      </div>
+    </div>
+  </div>
   <div class="toast" lwc:if={toast}>{toast}</div>
   <div class="wait" lwc:if={busy}>
     <div class="spin"></div>

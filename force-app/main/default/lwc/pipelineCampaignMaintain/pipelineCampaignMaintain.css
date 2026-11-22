@@ -40,9 +40,14 @@
   border-bottom: 1px solid var(--line);
 }
 .mtbl td {
-  padding: 8px 14px;
+  padding: 0 14px;
   border-bottom: 1px solid var(--line);
   white-space: nowrap;
+}
+/* a surgeon's line and a deal's line are the same height, 54 px (Robert, 2026-11-20: the surgeon's line grew with the minus); the surgeon's 3 px line is inside it */
+tr.dl td,
+tr.sg td {
+  height: 54px;
 }
 /* every column except the Deal name is centred, heading and figures alike (Robert, 2026-11-17) */
 .mtbl th:not(:first-child),
@@ -57,15 +62,21 @@
    in the colour of the person's heading colour; a deal in the campaign is shown by its green pill and its minus button, not a tint */
 tr.sg td {
   border-top: 3px solid var(--head);
-  padding: 10px 14px;
+}
+/* the surgeon's line: the minus, the name, the rating, and the count at the far right, all on one centre line */
+.sgcell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 100%;
 }
 .sn {
-  margin-right: 12px; /* a small gap before the rating (the hospitals are not shown here; Robert, 2026-11-17) */
+  margin-right: 0; /* the gap before the rating comes from the line's 12 px gap */
   font-size: 18px;
   font-weight: 800;
 }
 .cnt {
-  float: right;
+  margin-left: auto;
   color: var(--muted);
   font-size: 14px;
 }
@@ -161,6 +172,66 @@ tr.dl.lock td {
   color: var(--muted);
   font-size: 12px;
 }
+/* the "Are you sure?" box: fades in over the screen, like the other panels (Robert, 2026-11-20) */
+.scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(8, 12, 20, 0.55);
+  backdrop-filter: blur(3px);
+  opacity: 0;
+  transition: opacity 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.scrim.on {
+  opacity: 1;
+}
+.ask {
+  width: min(460px, 92vw);
+  padding: 22px 24px 18px;
+  background: var(--ppanel, var(--panel));
+  border: 1px solid var(--edge);
+  border-top: 3px solid var(--indigo, #6366f1);
+  border-radius: 14px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55);
+  color: var(--text);
+}
+.ask p {
+  margin: 0 0 18px;
+  font-size: 17px;
+  line-height: 1.4;
+}
+.ask .row {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+.btn {
+  min-height: 36px;
+  padding: 9px 18px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--indigo, #6366f1);
+  color: #fff;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.btn.sec {
+  background: var(--fill2, #475569);
+}
+.btn.danger {
+  background: #dc2626;
+}
+.btn:focus-visible {
+  outline: 2px solid var(--indigo2, #a5b4fc);
+  outline-offset: 2px;
+}
 /* the rating plates are the shared small plates (c/pipelineRatingStyles); beside a surgeon's name they keep a gap */
 .rplate {
   margin-right: 6px;
@@ -212,5 +283,8 @@ tr.dl.lock td {
 @media (prefers-reduced-motion: reduce) {
   .spin {
     animation: none;
+  }
+  .scrim {
+    transition: none;
   }
 }

@@ -56,6 +56,7 @@
             <span key={c.key} class={c.cls}>{c.label}</span>
           </template>
         </div>
+        <div class={tile.lastCls} style="grid-row: 1">{tile.lastText}</div>
         <div class="pe" style={tile.sideStyle}>
           <template lwc:if={tile.showActions}>
             <button

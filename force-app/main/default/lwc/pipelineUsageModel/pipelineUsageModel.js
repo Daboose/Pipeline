@@ -369,7 +369,9 @@ export function buildTile(portfolio, draft, edit, picks, scope) {
   g.rows.forEach((r, ri) => {
     if (!edit && !r.cells.some((f) => f && draft[f])) return;
     const off = edit && rowOff(r, draft);
-    const hasStar = r.cells.some((f) => f && isRequired(portfolio, f));
+    // the red star marks a line with mandatory boxes, so it is only drawn while a usage is being edited or added; a saved usage already
+    // has them filled in, so viewing shows no stars (Robert, 2026-11-20)
+    const hasStar = edit && r.cells.some((f) => f && isRequired(portfolio, f));
     cells.push(
       text(
         scope + "-p" + ri,
@@ -442,4 +444,24 @@ export function buildTile(portfolio, draft, edit, picks, scope) {
     showEditChips: edit && hasChips,
     chipGap: proc.length > 0 && tech.length > 0
   };
+}
+
+/**
+ * The "Last updated" date of a usage as DD/MM/YY (two digits each, in the person's own time zone), or "" when there is none. Robert,
+ * 2026-11-20: the card shows when each usage was last updated instead of one general sentence under the plates.
+ */
+export function shortDate(iso) {
+  const d = iso ? new Date(iso) : null;
+  if (!d || Number.isNaN(d.getTime())) return "";
+  const two = (n) => String(n).padStart(2, "0");
+  return `${two(d.getDate())}/${two(d.getMonth() + 1)}/${two(d.getFullYear() % 100)}`;
+}
+
+/** True when the date is more than a year before `now`: such a date is drawn in amber. No date is never old. */
+export function isOverAYear(iso, now = new Date()) {
+  const d = iso ? new Date(iso) : null;
+  if (!d || Number.isNaN(d.getTime())) return false;
+  const cut = new Date(now.getTime());
+  cut.setFullYear(cut.getFullYear() - 1);
+  return d.getTime() < cut.getTime();
 }

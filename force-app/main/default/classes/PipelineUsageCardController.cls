@@ -83,6 +83,9 @@ public with sharing class PipelineUsageCardController {
     public Id recordTypeId;
     @AuraEnabled
     public Map<String, String> values = new Map<String, String>();
+    /** When this usage was last updated (the record's last-modified date): shown as the Last updated column. */
+    @AuraEnabled
+    public Datetime lastModified;
   }
 
   /** The surgeon's MyCase bookings of one type of surgery. */
@@ -353,6 +356,7 @@ public with sharing class PipelineUsageCardController {
     }
     r.recordType = u.RecordType?.Name;
     r.recordTypeId = u.RecordTypeId;
+    r.lastModified = u.LastModifiedDate;
     for (String f : TILE_FIELDS) {
       Object v = u.get(f);
       if (v == null) {

@@ -99,14 +99,14 @@
         onchange={handleFilter}
       ></c-pipeline-segmented>
       <div class="fwrap">
-        <span class="fslbl">Search</span>
+        <span class={fslblCls}>{searchLabel}</span>
         <span class="ffield">
           <input
             class="fin"
             type="text"
             placeholder="Surgeon"
-            aria-label="Search surgeons"
-            value={q}
+            aria-label={searchAria}
+            value={searchValue}
             oninput={handleQ}
           />
           <button
@@ -117,6 +117,42 @@
             onclick={handleQClear}
           ></button>
         </span>
+        <div class="addpop" lwc:if={showAddPop}>
+          <div class="addlist">
+            <template for:each={addHits} for:item="h">
+              <div class="hit" key={h.key}>
+                <div class="hn">
+                  <b>{h.nameText}</b>
+                  <small>{h.sub}</small>
+                </div>
+                <span class="already" lwc:if={h.already}>
+                  already in the campaign
+                </span>
+                <button
+                  type="button"
+                  class="rb add s30"
+                  lwc:else
+                  data-id={h.id}
+                  disabled={addBusy}
+                  title={h.title}
+                  aria-label={h.title}
+                  onclick={handleAddPress}
+                >
+                  <span class="mark"></span>
+                </button>
+              </div>
+            </template>
+            <div class="afoot" lwc:if={addNone}>No surgeon matches.</div>
+          </div>
+          <div class="afoot" lwc:if={addOutsideText}>{addOutsideText}</div>
+          <div class="afoot bad" lwc:if={addError}>{addError}</div>
+          <div class="afoot scope" lwc:if={addResult}>
+            <span>{addScopeText}</span>
+            <button type="button" class="btn small" onclick={handleWiden}>
+              {addWidenText}
+            </button>
+          </div>
+        </div>
       </div>
       <slot name="tools"></slot>
       <span class="sp"></span>
@@ -152,6 +188,7 @@
     <div class="tscroll stick">
       <c-pipeline-campaign-maintain
         lwc:if={isMaintain}
+        onmemberchange={handleMemberChange}
         campaign={campaign}
         members={maintainMembers}
         types={types}
@@ -293,5 +330,10 @@
         Done
       </button>
     </div>
+  </div>
+  <div class="atoast" lwc:if={addToast}>{addToast}</div>
+  <div class="await" lwc:if={addBusy}>
+    <div class="aspin"></div>
+    <span>Please wait…</span>
   </div>
 </template>

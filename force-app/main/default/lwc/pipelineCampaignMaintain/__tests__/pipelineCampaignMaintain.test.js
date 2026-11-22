@@ -2,9 +2,15 @@ import { createElement } from "lwc";
 import PipelineCampaignMaintain from "c/pipelineCampaignMaintain";
 import maintainDeals from "@salesforce/apex/PipelineCampaignController.maintainDeals";
 import setLink from "@salesforce/apex/PipelineDealCampaignController.setLink";
+import removeMemberAndDeals from "@salesforce/apex/PipelineCampaignController.removeMemberAndDeals";
 
 jest.mock(
   "@salesforce/apex/PipelineCampaignController.maintainDeals",
+  () => ({ default: jest.fn() }),
+  { virtual: true }
+);
+jest.mock(
+  "@salesforce/apex/PipelineCampaignController.removeMemberAndDeals",
   () => ({ default: jest.fn() }),
   { virtual: true }
 );
@@ -69,6 +75,8 @@ describe("c-pipeline-campaign-maintain", () => {
     maintainDeals.mockReset();
     setLink.mockReset();
     setLink.mockResolvedValue();
+    removeMemberAndDeals.mockReset();
+    removeMemberAndDeals.mockResolvedValue(1);
     maintainDeals.mockResolvedValue([
       deal("d1", "a1"),
       deal("d2", "a1", { inCampaign: true, ownerName: "Kim Nguyen" }),
@@ -217,5 +225,81 @@ describe("c-pipeline-campaign-maintain", () => {
     el.usd = false;
     await flush();
     expect(first()).toBe("A$120k");
+  });
+
+  it("puts a round minus before each surgeon's name; it asks 'Are you sure?', Cancel changes nothing, Proceed takes the surgeon out and tells the screen", async () => {
+    const el = make();
+    await flush();
+    const minuses = qa(el, "tr.sg button.rb.rem");
+    expect(minuses).toHaveLength(2);
+    // the minus comes before the name on the surgeon's line
+    const cell = q(el, "tr.sg .sgcell");
+    expect(cell.firstElementChild.classList.contains("rb")).toBe(true);
+    const seen = jest.fn();
+    el.addEventListener("memberchange", seen);
+
+    minuses[0].click();
+    await flush(60);
+    expect(q(el, ".ask p").textContent).toBe(
+      "Are you sure you want to remove this surgeon from the campaign?"
+    );
+    expect(qa(el, ".ask .btn").map((b) => b.textContent.trim())).toEqual([
+      "Cancel",
+      "Proceed"
+    ]);
+    expect(q(el, ".scrim").classList.contains("on")).toBe(true);
+    qa(el, ".ask .btn")[0].click();
+    await flush(500);
+    expect(q(el, ".ask")).toBeNull();
+    expect(removeMemberAndDeals).not.toHaveBeenCalled();
+
+    minuses[1].click();
+    await flush(60);
+    qa(el, ".ask .btn")[1].click();
+    await flush(500);
+    expect(removeMemberAndDeals).toHaveBeenCalledWith({ memberId: "m2" });
+    expect(seen).toHaveBeenCalledTimes(1);
+    expect(seen.mock.calls[0][0].detail.memberId).toBe("m2");
+    expect(q(el, ".toast").textContent).toContain("Carla Mendes");
+  });
+
+  it("shows the reason when a surgeon cannot be taken out", async () => {
+    removeMemberAndDeals.mockRejectedValue({ body: { message: "No access" } });
+    const el = make();
+    await flush();
+    qa(el, "tr.sg button.rb.rem")[0].click();
+    await flush(60);
+    qa(el, ".ask .btn")[1].click();
+    await flush(500);
+    expect(q(el, ".err").textContent).toBe("No access");
+  });
+
+  it("gives the surgeon's line and a deal's line the same height", () => {
+    const css = require("fs").readFileSync(
+      require("path").join(__dirname, "../pipelineCampaignMaintain.css"),
+      "utf8"
+    );
+    expect(css).toMatch(/tr\.dl td,\s*tr\.sg td\s*\{\s*height: 54px;/);
+  });
+
+  it("reads the deals again when a surgeon is added to or taken out of the list, so a surgeon added just now shows their deals at once", async () => {
+    const el = make();
+    await flush();
+    expect(maintainDeals).toHaveBeenCalledTimes(1);
+    // the same surgeons (a re-read of the campaign): no new read
+    el.members = MEMBERS.map((m) => ({ ...m }));
+    await flush();
+    expect(maintainDeals).toHaveBeenCalledTimes(1);
+    // a surgeon added
+    el.members = [
+      ...MEMBERS,
+      { memberId: "m3", accountId: "a3", name: "Astrid A", ratings: [] }
+    ];
+    await flush();
+    expect(maintainDeals).toHaveBeenCalledTimes(2);
+    // a surgeon taken out
+    el.members = MEMBERS;
+    await flush();
+    expect(maintainDeals).toHaveBeenCalledTimes(3);
   });
 });

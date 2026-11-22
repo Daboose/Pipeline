@@ -1,4 +1,6 @@
 import {
+  isOverAYear,
+  shortDate,
   choicesFor,
   draftOf,
   fieldsOf,
@@ -165,7 +167,7 @@ describe("pipelineUsageModel", () => {
       "Cemented",
       "20"
     ]);
-    expect(view.cells[1].star).toBe(true); // the stem line has the mandatory fields
+    expect(view.cells.some((c) => c.star)).toBe(false); // viewing a usage shows no mandatory stars
     expect(view.showSide).toBe(true);
     expect(view.sideStyle).toBe("grid-row: 1 / span 1");
     expect(view.hasChips).toBe(false);
@@ -218,6 +220,38 @@ describe("pipelineUsageModel", () => {
     expect(cases.placeholder).toBe("Cases per year");
   });
 
+  it("shows no mandatory star on any portfolio while viewing, and the stars while editing or adding", () => {
+    const values = {
+      CompanyTotalKnee__c: "ZB",
+      ProductTotalKnee__c: "Persona",
+      CasesPATotalKnee__c: "40"
+    };
+    const viewing = buildTile("Knee", draftOf("Knee", values), false, {}, "t");
+    expect(viewing.cells.some((c) => c.star)).toBe(false);
+    const editing = buildTile("Knee", draftOf("Knee", values), true, {}, "t");
+    expect(editing.cells.some((c) => c.star)).toBe(true);
+    const hipValues = {
+      CompanyHipStems__c: "ZB",
+      ProductHipStems__c: "Taperloc",
+      Hip_Stem_Type__c: "Cemented",
+      CasesPAHipStem__c: "20"
+    };
+    expect(
+      buildTile("Hip", draftOf("Hip", hipValues), false, {}, "t").cells.some(
+        (c) => c.star
+      )
+    ).toBe(false);
+    expect(
+      buildTile(
+        "CMF",
+        draftOf("CMF", { SegmentCMFT__c: "Thoracic" }),
+        false,
+        {},
+        "t"
+      ).cells.some((c) => c.star)
+    ).toBe(false);
+  });
+
   it("marks a single-line portfolio's mandatory fields on the portfolio name, and shoulders have no star", () => {
     const knee = buildTile("Knee", draftOf("Knee", {}), true, {}, "t");
     expect(knee.cells[0]).toMatchObject({ text: "Knee", star: true });
@@ -259,5 +293,31 @@ describe("pipelineUsageModel", () => {
     ]);
     expect(edit.chipGap).toBe(true);
     expect(edit.showSide).toBe(false);
+  });
+});
+
+describe("the Last updated date", () => {
+  it("is DD/MM/YY with two digits each, and empty when there is none", () => {
+    expect(shortDate(new Date(2026, 10, 5, 12).toISOString())).toBe("05/11/26");
+    expect(shortDate(new Date(2024, 11, 31, 12).toISOString())).toBe(
+      "31/12/24"
+    );
+    expect(shortDate("")).toBe("");
+    expect(shortDate(null)).toBe("");
+    expect(shortDate("not a date")).toBe("");
+  });
+  it("is old only when more than a year before today (never old with no date)", () => {
+    const now = new Date(2026, 10, 20, 12);
+    expect(isOverAYear(new Date(2025, 10, 21, 12).toISOString(), now)).toBe(
+      false
+    );
+    expect(isOverAYear(new Date(2025, 10, 19, 12).toISOString(), now)).toBe(
+      true
+    );
+    expect(isOverAYear(new Date(2024, 11, 31, 12).toISOString(), now)).toBe(
+      true
+    );
+    expect(isOverAYear("", now)).toBe(false);
+    expect(isOverAYear(null, now)).toBe(false);
   });
 });

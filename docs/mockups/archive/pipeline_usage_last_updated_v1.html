@@ -1,0 +1,938 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>
+      Pipeline mockup: a Last updated column on the usages, version 1
+    </title>
+    <style>
+      :root,
+      [data-theme="light"] {
+        --page: #e9edf4;
+        --bg: #f4f6fa;
+        --panel: #ffffff;
+        --panel2: #eef2fa;
+        --line: #d5dcea;
+        --edge: #b3bfd6;
+        --text: #1b2640;
+        --muted: #5d6b85;
+        --pipe: #b7791f;
+        --head: #db2777;
+        --indigo: #4f46e5;
+        --bad: #dc2626;
+        --amber: #b45309;
+        --hosp: #e6ebf5;
+        --chipp: #6d28d9;
+        --chippbg: #ede9fe;
+        --chipt: #15803d;
+        --chiptbg: #dcfce7;
+        --card: #ffffff;
+        --x-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      [data-theme="dark"] {
+        --page: #0e1623;
+        --bg: #141e2e;
+        --panel: #1a2740;
+        --panel2: #20304f;
+        --line: #2f4163;
+        --edge: #5b6f93;
+        --text: #e8edf5;
+        --muted: #8b9bb0;
+        --pipe: #fdb827;
+        --head: #f472b6;
+        --indigo: #6366f1;
+        --bad: #f87171;
+        --amber: #fbbf24;
+        --hosp: #20304f;
+        --chipp: #c4b5fd;
+        --chippbg: rgba(167, 139, 250, 0.2);
+        --chipt: #4ade80;
+        --chiptbg: rgba(74, 222, 128, 0.16);
+        --card: #1a2740;
+        --x-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        height: 100%;
+      }
+      body {
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        background: var(--page);
+        color: var(--text);
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-size: 15px;
+      }
+      button {
+        font-family: inherit;
+        cursor: pointer;
+      }
+      .sp {
+        flex: 1;
+      }
+      .sfnav {
+        flex: none;
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        height: 44px;
+        padding: 0 16px;
+        background: #0b1220;
+        border-bottom: 1px solid #2f4163;
+        color: #cdd6e6;
+        font-size: 14px;
+      }
+      .sfnav .app {
+        font-weight: 800;
+        letter-spacing: 0.14em;
+      }
+      .sfnav .app b {
+        color: #fdb827;
+      }
+      .sfnav .tab {
+        color: #9fb0cc;
+      }
+      .sfnav .tab.on {
+        color: #fff;
+        border-bottom: 2px solid #6366f1;
+        padding-bottom: 2px;
+      }
+      .pill {
+        border: 0;
+        background: var(--indigo);
+        color: #fff;
+        border-radius: 999px;
+        padding: 8px 18px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      .pill.slate {
+        background: var(--panel2);
+        color: var(--text);
+        border: 1px solid var(--edge);
+      }
+      .about {
+        flex: none;
+        margin: 8px 16px 0;
+        padding: 8px 18px;
+        background: var(--panel);
+        border: 1px solid var(--edge);
+        border-radius: 12px;
+        line-height: 1.45;
+      }
+      .about summary {
+        cursor: pointer;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        color: var(--pipe);
+      }
+      .about ul {
+        margin: 4px 0 6px;
+        padding-left: 22px;
+      }
+      .about p {
+        margin: 6px 0;
+      }
+      .tools {
+        flex: none;
+        display: flex;
+        gap: 8px;
+        padding: 8px 16px 0;
+      }
+      .stage {
+        flex: 1;
+        min-height: 0;
+        margin: 8px 16px 16px;
+        position: relative;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        overflow: hidden;
+        background: color-mix(in srgb, var(--page) 70%, #000 30%);
+        display: flex;
+        justify-content: flex-end;
+      }
+      .fly {
+        width: 96%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        background: var(--bg);
+        border-left: 3px solid var(--indigo);
+        box-shadow: -12px 0 30px rgba(0, 0, 0, 0.25);
+      }
+      .fhead {
+        flex: none;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 20px;
+        background: var(--panel);
+        border-bottom: 1px solid var(--line);
+      }
+      .fhead .name {
+        font-size: 22px;
+        font-weight: 800;
+        white-space: nowrap;
+      }
+      .nav {
+        border: 1px solid var(--edge);
+        background: var(--panel2);
+        color: var(--text);
+        border-radius: 999px;
+        padding: 8px 12px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        white-space: nowrap;
+      }
+      .nav.on {
+        background: var(--indigo);
+        border-color: var(--indigo);
+        color: #fff;
+      }
+      .badge {
+        margin-left: 8px;
+        padding: 1px 9px;
+        border-radius: 999px;
+        background: var(--line);
+      }
+      .rbtn {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        border: 1px solid var(--edge);
+        background: var(--panel2);
+        color: var(--text);
+        padding: 0;
+      }
+      .pos {
+        color: var(--muted);
+        font-size: 14px;
+      }
+      .scroll {
+        flex: 1;
+        min-height: 0;
+        overflow: auto;
+        padding: 14px 20px 24px;
+      }
+      .card {
+        background: var(--card);
+        border: 1px solid var(--edge);
+        border-radius: 12px;
+      }
+      .sec {
+        padding: 12px 16px 14px;
+      }
+      .sec h3 {
+        margin: 0 0 10px;
+        font-size: 12px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--muted);
+        display: flex;
+        align-items: center;
+      }
+      .sec h3 .tag {
+        font-weight: 400;
+        letter-spacing: 0;
+        text-transform: none;
+      }
+      /* ---- the real plates, as built (120 px, no rivets) ---- */
+      /* ================= the rating plates (metal sampled from the Adobe Stock brushed-metal sheet; Robert chose these, 2026-11-05) ================= */
+      /* the plates sit four across when there is room for the category, the rating and a big coin on each (about 295 px a plate), else two across */
+      .ratbox {
+        container-type: inline-size;
+      }
+      .ratings {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+      }
+      @container (max-width: 1210px) {
+        .ratings {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+      .m-PLATINUM {
+        --sheet: conic-gradient(
+          from 0deg at 50% 52%,
+          #bdb49c,
+          #e2d9be 20deg,
+          #b3a88f 40deg,
+          #9f947b 60deg,
+          #aba089 80deg,
+          #a59a82 100deg,
+          #897d64 120deg,
+          #988c75 140deg,
+          #beb49f 160deg,
+          #ada28d 180deg,
+          #968b74 200deg,
+          #afa68d 220deg,
+          #c7bea3 240deg,
+          #796e58 260deg,
+          #766853 280deg,
+          #b5aa93 300deg,
+          #a89d84 320deg,
+          #978b75 340deg,
+          #bdb49c 360deg
+        );
+        --hi: #f4efe0;
+        --mid: #b3a88f;
+        --lo: #6d6250;
+        --ink: #3a3326;
+        --glow: rgba(244, 239, 224, 0.9);
+      }
+      .m-GOLD {
+        --sheet: conic-gradient(
+          from 0deg at 50% 52%,
+          #dfc16e,
+          #fce68b 20deg,
+          #dcb856 40deg,
+          #cea441 60deg,
+          #e0b75e 80deg,
+          #d6ae56 100deg,
+          #a37821 120deg,
+          #b78b31 140deg,
+          #edc35c 160deg,
+          #d5ab4b 180deg,
+          #ba9137 200deg,
+          #d3af4d 220deg,
+          #e5cc73 240deg,
+          #ab8327 260deg,
+          #af8629 280deg,
+          #e6be57 300deg,
+          #ddb457 320deg,
+          #c19848 340deg,
+          #dfc16e 360deg
+        );
+        --hi: #fff1b0;
+        --mid: #d6ae56;
+        --lo: #8a6513;
+        --ink: #4a3406;
+        --glow: rgba(255, 241, 176, 0.95);
+      }
+      .m-SILVER {
+        --sheet: conic-gradient(
+          from 0deg at 50% 52%,
+          #a3a7b1,
+          #c8cdd7 20deg,
+          #9599a2 40deg,
+          #808591 60deg,
+          #868a93 80deg,
+          #818691 100deg,
+          #676c77 120deg,
+          #777e89 140deg,
+          #a1a7b2 160deg,
+          #9096a0 180deg,
+          #7f858f 200deg,
+          #9aa0aa 220deg,
+          #a8aeb7 240deg,
+          #686c74 260deg,
+          #6c707a 280deg,
+          #9a9da7 300deg,
+          #969ba5 320deg,
+          #7e838d 340deg,
+          #a3a7b1 360deg
+        );
+        --hi: #e6eaf2;
+        --mid: #9599a2;
+        --lo: #565b66;
+        --ink: #23272f;
+        --glow: rgba(230, 234, 242, 0.95);
+      }
+      .m-BRONZE {
+        --sheet: conic-gradient(
+          from 0deg at 50% 52%,
+          #bc7951,
+          #e39361 20deg,
+          #ae6946 40deg,
+          #a46a47 60deg,
+          #ab6d4a 80deg,
+          #a66b48 100deg,
+          #8b5839 120deg,
+          #996240 140deg,
+          #be7f56 160deg,
+          #ad714c 180deg,
+          #9a6142 200deg,
+          #b67851 220deg,
+          #c4794f 240deg,
+          #7f4e32 260deg,
+          #855335 280deg,
+          #b87952 300deg,
+          #b2754f 320deg,
+          #9b6242 340deg,
+          #bc7951 360deg
+        );
+        --hi: #f3b58c;
+        --mid: #ad714c;
+        --lo: #6e4128;
+        --ink: #3d1f0e;
+        --glow: rgba(243, 181, 140, 0.95);
+      }
+      .m-NONE {
+        --sheet: linear-gradient(#eceae8, #e2dfdc);
+        --hi: #f6f5f4;
+        --mid: #cfccc9;
+        --lo: #9a9794;
+        --ink: #6d6a67;
+        --glow: rgba(255, 255, 255, 0);
+      }
+      .plate {
+        position: relative;
+        border-radius: 14px;
+        padding: 0 18px 0 24px;
+        height: 120px; /* 120 px tall (Robert, 2026-11-20; mockup docs/mockups/pipeline_usage_plates_v3.html): long rather than tall */
+        color: var(--ink);
+        overflow: hidden;
+        background:
+          repeating-radial-gradient(
+            circle at 50% 52%,
+            rgba(255, 255, 255, 0.07) 0 1px,
+            rgba(0, 0, 0, 0.06) 1px 2px
+          ),
+          var(--sheet);
+        box-shadow:
+          inset 0 2px 1px rgba(255, 255, 255, 0.75),
+          inset 0 -3px 3px rgba(0, 0, 0, 0.3),
+          inset 0 0 0 1px rgba(0, 0, 0, 0.25),
+          0 6px 14px rgba(40, 30, 10, 0.28);
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        text-align: left;
+      }
+      /* the text reads down the left (Robert, 2026-11-20; mockup docs/mockups/pipeline_usage_plates_v2.html, option D): the category, the rating word
+   and the stars, left-aligned. The rating word sits on the plate's exact vertical centre line, and the gap from the category to the rating
+   equals the gap from the rating to its stars: the words are trimmed to the top of the capitals and the baseline, and the stars are drawn
+   as shapes, so a gap is measured from the edge of the letters, not from their boxes. */
+      .plate .txt {
+        align-self: stretch;
+        display: grid;
+        grid-template-rows: 1fr auto 1fr;
+        justify-items: start;
+        min-width: 0;
+        --gap: 11px;
+      }
+      .plate .area,
+      .plate .rank {
+        margin: 0;
+        line-height: 1;
+        text-box: trim-both cap alphabetic;
+        white-space: nowrap;
+        text-transform: uppercase;
+      }
+      .plate .area {
+        grid-row: 1;
+        align-self: end;
+        margin-bottom: var(--gap);
+        font-size: 25px;
+        font-weight: 900;
+        letter-spacing: 0.1em;
+        color: #14100a; /* the category in a near black, so it stands out from the rating word */
+        text-shadow: 0 1px 0 rgba(255, 255, 255, 0.55);
+      }
+      .plate .rank {
+        grid-row: 2;
+        font-size: 19px;
+        font-weight: 900;
+        letter-spacing: 0.08em;
+        text-shadow:
+          0 1px 0 rgba(255, 255, 255, 0.65),
+          0 -1px 0 rgba(0, 0, 0, 0.25);
+      }
+      /* the star coin, centred on the plate's vertical centre line on the right */
+      .plate .coin {
+        width: 70px;
+        height: 70px;
+        flex: none;
+        margin: 0;
+        border-radius: 50%;
+        background: var(--sheet);
+        box-shadow:
+          inset 0 3px 3px rgba(255, 255, 255, 0.7),
+          inset 0 -4px 5px rgba(0, 0, 0, 0.35),
+          0 0 0 3px rgba(0, 0, 0, 0.28),
+          0 0 0 5px var(--hi),
+          0 4px 8px rgba(0, 0, 0, 0.35);
+        display: grid;
+        place-items: center;
+      }
+      .plate .coin svg {
+        width: 42px;
+        height: 42px;
+        filter: drop-shadow(0 1px 0 rgba(255, 255, 255, 0.6))
+          drop-shadow(0 -1px 0 rgba(0, 0, 0, 0.35));
+      }
+      .plate .coin svg path {
+        fill: var(--hi);
+        stroke: var(--mid);
+        stroke-width: 1;
+        stroke-linejoin: round;
+      }
+      .plate.m-NONE .coin svg path {
+        fill: #bdbab7;
+        stroke: #a9a6a3;
+      }
+      .plate .stars {
+        grid-row: 3;
+        align-self: start;
+        margin: var(--gap) 0 0;
+        display: flex;
+        gap: 4px;
+        transform: translateY(
+          -2px
+        ); /* the row of stars sits 2 px up (Robert, 2026-11-20) */
+      }
+      .plate .stars svg {
+        width: 16px;
+        height: 15px;
+        display: block;
+        fill: currentColor;
+        filter: drop-shadow(0 1px 0 rgba(255, 255, 255, 0.6));
+      }
+      /* a sheen sweeps across on hover (computers only; off for people who ask for less motion) */
+      .plate::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        pointer-events: none;
+        background: linear-gradient(
+          105deg,
+          transparent 38%,
+          var(--glow) 50%,
+          transparent 62%
+        );
+        transform: translateX(-120%);
+        opacity: 0.55;
+      }
+      @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+        .plate:hover::after {
+          transform: translateX(120%);
+          transition: transform 0.9s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+      }
+      .plate.m-NONE::after {
+        display: none;
+      }
+      .plate.m-NONE {
+        background: #eceae8;
+        box-shadow: inset 0 0 0 1px #d4d1ce;
+      }
+      .plate.m-NONE .coin {
+        background: #f6f5f4;
+        box-shadow: inset 0 0 0 2px #cfccc9;
+      }
+
+      .ratbox {
+        container-type: inline-size;
+      }
+      /* ---- the usages table: the compact layout, now with a thin Last updated column ---- */
+      .uhead {
+        display: flex;
+        align-items: center;
+        padding: 12px 16px;
+        border-top: 1px solid var(--line);
+      }
+      .uhead h3 {
+        margin: 0;
+      }
+      .btn {
+        border: 0;
+        border-radius: 999px;
+        padding: 0 18px;
+        height: 34px;
+        background: var(--indigo);
+        color: #fff;
+        font-weight: 800;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      .grid9 {
+        --cols: 100px 100px minmax(80px, 0.8fr) minmax(110px, 1.2fr)
+          minmax(120px, 1.1fr) 96px minmax(230px, 2fr) 92px 88px;
+      }
+      .cgh,
+      .cg {
+        display: grid;
+        grid-template-columns: var(--cols);
+        column-gap: 12px;
+        align-items: center;
+        padding-left: 16px;
+        padding-right: 16px;
+      }
+      .cgh {
+        padding-top: 8px;
+        padding-bottom: 8px;
+        border-top: 1px solid var(--line);
+        border-bottom: 1px solid var(--edge);
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .hosp {
+        padding: 9px 16px;
+        background: var(--hosp);
+        font-weight: 800;
+        border-bottom: 1px solid var(--line);
+      }
+      .us {
+        border-bottom: 1px solid var(--line);
+      }
+      .cg {
+        padding-top: 9px;
+        padding-bottom: 9px;
+        row-gap: 6px;
+      }
+      .cg .pc,
+      .cg .lc {
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .cg .cc {
+        font-size: 15px;
+        font-weight: 600;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .cg .lu {
+        grid-column: 8;
+        grid-row: 1;
+        font-size: 15px;
+        font-weight: 600;
+        font-variant-numeric: tabular-nums;
+      }
+      .cg .lu.old {
+        color: var(--amber);
+      }
+      .cg .xc {
+        grid-column: 7;
+        grid-row: 1 / span 2;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        align-items: center;
+      }
+      .cg .xc.one {
+        grid-row: 1;
+      }
+      .cg .pe {
+        grid-column: 9;
+        grid-row: 1;
+        justify-self: end;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .cg .pe .e {
+        color: var(--indigo);
+      }
+      .cg .pe .d {
+        color: var(--bad);
+        font-weight: 600;
+        font-size: 14px;
+      }
+      .chip {
+        border-radius: 999px;
+        padding: 3px 12px;
+        font-size: 13px;
+        font-weight: 700;
+        background: var(--chippbg);
+        color: var(--chipp);
+      }
+      .chip.t {
+        background: var(--chiptbg);
+        color: var(--chipt);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="sfnav">
+      <span class="app"><b>PIPE</b>LINE</span>
+      <span class="tab on">Pipeline</span>
+      <span class="tab">Sales Campaigns</span>
+      <span class="sp"></span>
+      <button class="pill" type="button" id="full">Full screen</button>
+    </div>
+
+    <details class="about" open>
+      <summary>ABOUT THIS MOCKUP</summary>
+      <p>
+        <b>What it shows:</b> the Surgeon Usages screen (and the Usage Card on
+        an Account page) with two changes. <b>1.</b> The line under the plates
+        that said when the usages were last changed ("Usages last changed 1 Jan
+        2025 (23 months ago). Worth checking they are still right.") is gone,
+        because with many usages it does not say which one. <b>2.</b> A thin new
+        column, <b>Last updated</b>, sits after Procedures and technologies,
+        next to Edit and Delete on the right, and gives the date that usage was
+        last updated, as day, month and year in two digits each (DD/MM/YY). A
+        date within the last year is in the normal text colour, the same as the
+        company, product and cases; a date more than a year old is in amber. A
+        hip usage (the stem and the cup are one usage) shows its date once, on
+        its first line, beside the stem. The mock date today is 20/11/26.
+        Invented data.
+      </p>
+      <b>Try it:</b>
+      <ul>
+        <li>
+          Look down the Last updated column, now the last one before Edit and
+          Delete: the amber dates are the usages not changed for over a year.
+        </li>
+        <li>
+          Press <b>Light</b> or <b>Dark</b>; press <b>Full screen</b> (top
+          right).
+        </li>
+      </ul>
+      <b>Not shown yet:</b> editing or adding a usage (the date is for viewing,
+      so nothing is drawn in that column then), the "changed just now" note that
+      appears after a change, and the Account page.
+    </details>
+
+    <div class="tools">
+      <button class="pill slate" type="button" data-look="light">Light</button>
+      <button class="pill slate" type="button" data-look="dark">Dark</button>
+    </div>
+
+    <div class="stage">
+      <div class="fly">
+        <div class="fhead">
+          <span class="name">Praveen Vijaysegaran</span>
+          <span class="sp"></span>
+          <button type="button" class="nav">Extremities Opportunity</button>
+          <button type="button" class="nav on">Surgeon Usages</button>
+          <button type="button" class="nav">
+            MyCase Bookings <span class="badge">0</span>
+          </button>
+          <button type="button" class="nav">
+            Campaigns <span class="badge">1</span>
+          </button>
+          <button type="button" class="rbtn" aria-label="Previous">
+            &#8249;
+          </button>
+          <span class="pos">4 of 24</span>
+          <button type="button" class="rbtn" aria-label="Next">&#8250;</button>
+          <button type="button" class="rbtn" aria-label="Close">
+            &#10005;
+          </button>
+        </div>
+        <div class="scroll">
+          <div class="card">
+            <div class="sec">
+              <h3>
+                Rating by portfolio <span class="sp"></span
+                ><span class="tag">stored on the account</span>
+              </h3>
+              <div class="ratbox"><div class="ratings" id="plates"></div></div>
+            </div>
+            <div class="uhead">
+              <h3 style="margin: 0">What this surgeon uses</h3>
+              <span class="sp"></span
+              ><button type="button" class="btn">Add usage</button>
+            </div>
+            <div class="grid9" id="table"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      var TODAY = new Date(2026, 10, 20);
+      var STAR =
+        '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3 6.8 7.4.7-5.6 4.9 1.7 7.3L12 17.9 5.5 21.7l1.7-7.3L1.6 9.5l7.4-.7z"></path></svg>';
+      var SMALL =
+        '<svg viewBox="1.5 1.6 21 20" aria-hidden="true"><path d="M12 2l3 6.8 7.4.7-5.6 4.9 1.7 7.3L12 17.9 5.5 21.7l1.7-7.3L1.6 9.5l7.4-.7z"></path></svg>';
+      var PLATES = [
+        ["Hip", "GOLD", 3],
+        ["Knee", "SILVER", 2],
+        ["Shoulder", "BRONZE", 1],
+        ["CMFT", "NONE", 0]
+      ];
+      function word(k) {
+        return k === "NONE"
+          ? "No rating"
+          : k.charAt(0) + k.slice(1).toLowerCase();
+      }
+      document.getElementById("plates").innerHTML = PLATES.map(function (p) {
+        return (
+          '<div class="plate m-' +
+          p[1] +
+          '" role="img" aria-label="' +
+          p[0] +
+          ": " +
+          word(p[1]) +
+          '"><div class="txt"><div class="area">' +
+          p[0] +
+          '</div><div class="rank">' +
+          word(p[1]) +
+          '</div><div class="stars">' +
+          SMALL.repeat(p[2]) +
+          '</div></div><div class="coin">' +
+          STAR +
+          "</div></div>"
+        );
+      }).join("");
+      /* each usage: portfolio, its lines [line, company, product, type, cases], its chips, and when it was last updated */
+      var DATA = [
+        [
+          "Ipswich Hospital (QLD)",
+          [
+            [
+              "Shoulders",
+              [
+                ["Anatomical", "Lima", "SMR", "", "5"],
+                ["Reverse", "Lima", "SMR", "", "10"]
+              ],
+              [["p", "Revision"]],
+              new Date(2026, 10, 12)
+            ],
+            [
+              "Knee",
+              [["", "ZB", "Persona", "", "40"]],
+              [
+                ["p", "Total"],
+                ["t", "Navigation"]
+              ],
+              new Date(2026, 2, 3)
+            ],
+            [
+              "Hip",
+              [
+                ["Stem", "Depuy", "Summit", "Cementless", "30"],
+                ["Cup", "Depuy Synthes", "Pinnacle", "Ceramic on Poly", ""]
+              ],
+              [["p", "Total"]],
+              new Date(2024, 11, 31)
+            ]
+          ]
+        ],
+        [
+          "Royal Perth Hospital (WA)",
+          [
+            [
+              "Knee",
+              [["", "Medacta", "Sphere", "", "50"]],
+              [
+                ["p", "Total"],
+                ["t", "ROSA"]
+              ],
+              new Date(2025, 5, 15)
+            ],
+            [
+              "Hip",
+              [
+                ["Stem", "ZB", "Taperloc", "Cementless", "30"],
+                ["Cup", "ZB", "G7", "", ""]
+              ],
+              [
+                ["p", "Total"],
+                ["p", "Revision"],
+                ["t", "myMobility"]
+              ],
+              new Date(2026, 8, 8)
+            ]
+          ]
+        ]
+      ];
+      function dd(n) {
+        return (n < 10 ? "0" : "") + n;
+      }
+      function fmt(d) {
+        return (
+          dd(d.getDate()) +
+          "/" +
+          dd(d.getMonth() + 1) +
+          "/" +
+          dd(d.getFullYear() % 100)
+        );
+      }
+      function overAYear(d) {
+        var cut = new Date(TODAY);
+        cut.setFullYear(cut.getFullYear() - 1);
+        return d < cut;
+      }
+      var h =
+        '<div class="cgh"><div></div><div></div><div>Company</div><div>Product</div><div>Type</div><div>Cases / year</div><div>Procedures and technologies</div><div>Last updated</div><div></div></div>';
+      DATA.forEach(function (hosp) {
+        h += '<div class="hosp">' + hosp[0] + "</div>";
+        hosp[1].forEach(function (u) {
+          var lines = u[1];
+          h += '<div class="us"><div class="cg">';
+          lines.forEach(function (l, i) {
+            h +=
+              '<div class="pc">' +
+              (i === 0 ? u[0] : "") +
+              '</div><div class="lc">' +
+              l[0] +
+              '</div><div class="cc">' +
+              l[1] +
+              '</div><div class="cc">' +
+              l[2] +
+              '</div><div class="cc">' +
+              l[3] +
+              '</div><div class="cc">' +
+              l[4] +
+              "</div>";
+            if (i < lines.length - 1)
+              h += '<div class="rowbreak" style="display:none"></div>';
+          });
+          h +=
+            '<div class="lu' +
+            (overAYear(u[3]) ? " old" : "") +
+            '" title="Last updated">' +
+            fmt(u[3]) +
+            "</div>";
+          h +=
+            '<div class="xc' +
+            (lines.length === 1 ? " one" : "") +
+            '">' +
+            u[2]
+              .map(function (c) {
+                return (
+                  '<span class="chip' +
+                  (c[0] === "t" ? " t" : "") +
+                  '">' +
+                  c[1] +
+                  "</span>"
+                );
+              })
+              .join("") +
+            "</div>";
+          h +=
+            '<div class="pe"><span class="e">&#9998;</span><span class="d">Delete</span></div>';
+          h += "</div></div>";
+        });
+      });
+      document.getElementById("table").innerHTML = h;
+      document.querySelectorAll("[data-look]").forEach(function (b) {
+        b.addEventListener("click", function () {
+          document.documentElement.setAttribute(
+            "data-theme",
+            b.getAttribute("data-look")
+          );
+        });
+      });
+      document.getElementById("full").addEventListener("click", function () {
+        if (document.fullscreenElement) document.exitFullscreen();
+        else document.documentElement.requestFullscreen();
+      });
+      document.documentElement.setAttribute("data-theme", "dark");
+    </script>
+  </body>
+</html>

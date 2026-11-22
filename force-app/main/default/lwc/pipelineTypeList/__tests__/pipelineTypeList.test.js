@@ -1,5 +1,5 @@
 import { createElement } from "lwc";
-import PipelineTypeList from "c/pipelineTypeList";
+import PipelineTypeList, { fitWidths } from "c/pipelineTypeList";
 
 const NOW = Date.now();
 const daysAgo = (n) => new Date(NOW - n * 86400000).toISOString();
@@ -327,12 +327,12 @@ describe("c-pipeline-type-list", () => {
       (th) => th.dataset.id
     );
     expect(cols.length).toBe(heads.length);
-    // a saved 90 px is raised to 150 px, and the others share the rest of the table
+    // a saved 90 px is raised to 150 px; the other columns keep their saved widths (or share the box when they add up to more: see fitWidths)
     expect(cols[heads.indexOf("status")].getAttribute("style")).toContain(
       "width:150px"
     );
     expect(cols[heads.indexOf("hcp")].getAttribute("style")).toContain(
-      "calc((100% - 150px)"
+      "width:200px"
     );
     expect(
       el.shadowRoot.querySelector("table").getAttribute("style")
@@ -518,5 +518,48 @@ describe("c-pipeline-type-list", () => {
     el.widths = { hcp: 160, facility: 300, status: 160 };
     await Promise.resolve();
     expect(el.shadowRoot.querySelector("td .clip")).toBeNull();
+  });
+
+  describe("fitWidths (columns fit the box; the dragged column keeps its width)", () => {
+    const ids = ["a", "b", "c", "status"];
+    it("keeps the widths as they are when they add up to no more than the box", () => {
+      const px = { a: 100, b: 120, c: 90, status: 150 };
+      expect(fitWidths(ids, px, 1000, "")).toEqual(px);
+    });
+    it("shrinks the other columns in proportion when they add up to more, keeping Status and the dragged column as they are, and fills the box exactly", () => {
+      const px = { a: 400, b: 300, c: 300, status: 150 };
+      const out = fitWidths(ids, px, 900, "a");
+      expect(out.a).toBe(400);
+      expect(out.status).toBe(150);
+      expect(out.b + out.c).toBe(350);
+      expect(out.b).toBe(175);
+      expect(out.a + out.b + out.c + out.status).toBe(900);
+    });
+    it("does not make a column narrower than 50 px", () => {
+      const px = { a: 1000, b: 10, c: 10, status: 150 };
+      const out = fitWidths(ids, px, 400, "a");
+      expect(out.b).toBeGreaterThanOrEqual(50);
+      expect(out.c).toBeGreaterThanOrEqual(50);
+    });
+    it("gives every column its own width, never the same width for all (columns are sized in pixels)", () => {
+      const px = { a: 200, b: 100, c: 50, status: 150 };
+      const out = fitWidths(ids, px, 400, "");
+      expect(new Set([out.a, out.b, out.c]).size).toBe(3);
+    });
+  });
+
+  it("sizes each column in pixels, so a table never shows every column at the same width", async () => {
+    const el = make({
+      kind: "opp",
+      deals: [deal("1", "Ann")],
+      widths: { hcp: 220, stage: 90 }
+    });
+    await Promise.resolve();
+    const styles = [...el.shadowRoot.querySelectorAll("colgroup col")].map(
+      (c) => c.getAttribute("style")
+    );
+    expect(styles.length).toBeGreaterThan(2);
+    styles.forEach((st) => expect(st).toMatch(/^width:\d+px$/));
+    expect(styles.join()).not.toContain("calc(");
   });
 });

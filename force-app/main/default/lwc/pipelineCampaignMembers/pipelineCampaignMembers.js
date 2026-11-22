@@ -17,6 +17,8 @@ import {
   RATING_KEYS
 } from "c/pipelineCampaignModel";
 import currencyRates from "@salesforce/apex/PipelineCampaignController.currencyRates";
+import searchSurgeons from "@salesforce/apex/PipelineCampaignController.searchSurgeons";
+import addMember from "@salesforce/apex/PipelineCampaignController.addMember";
 import { localWidth, zoomOf } from "c/pipelineZoom";
 
 const WIDTHS_KEY = "pipelineCampaignMembersWidths";
@@ -95,6 +97,21 @@ export default class PipelineCampaignMembers extends LightningElement {
     if (this._hiddenColumns) this.hidden = [...this._hiddenColumns];
   }
   _hiddenColumns = null;
+  /**
+   * The column widths the person dragged them to, kept by the screen that hosts the list (Pipeline keeps them in the person's own settings,
+   * so they follow them to any computer; Robert, 2026-11-20). An object { columnId: pixels } sets them, and an empty object means the
+   * standard widths. null (the default) means the host keeps nothing and the list remembers the widths on this computer only, as
+   * Campaign Management does. Every change, and a reset to the standard widths (widths null), is reported as `widthschange`.
+   */
+  @api
+  get columnWidths() {
+    return this.widths;
+  }
+  set columnWidths(value) {
+    if (value && typeof value === "object") {
+      this.widths = Object.keys(value).length ? { ...value } : null;
+    }
+  }
 
   usd = false; // the value chips in US dollars; local currencies until the person flicks the switch
   rates = null; // the exchange rates held in Salesforce, read the first time USD is chosen
@@ -104,6 +121,13 @@ export default class PipelineCampaignMembers extends LightningElement {
   types = { opp: true, risk: false }; // the kinds of deal Maintain lists: opportunities, not risks, until the person ticks them
   filter = "all";
   q = "";
+  addQ = ""; // Maintain: what is typed in the Add box (the Search box is the Add box there; Robert, 2026-11-20)
+  addResult = null; // the surgeons found for it (PipelineCampaignController.searchSurgeons)
+  addSeq = 0;
+  addWide = false; // false: the campaign's own countries first; true: every country (the "Widen search" button; Robert, 2026-11-20)
+  addBusy = false;
+  addError = "";
+  addToast = "";
   sort = { id: "name", dir: 1 };
   widths = null; // null: the table finds its own widths; otherwise { columnId: pixels }
   hidden = []; // the columns the person has turned off (all on by default; remembered on this computer)
@@ -126,6 +150,8 @@ export default class PipelineCampaignMembers extends LightningElement {
     }
   }
   disconnectedCallback() {
+    clearTimeout(this.addTimer);
+    clearTimeout(this.addToastTimer);
     cancelAnimationFrame(this.fitFrame);
     window.removeEventListener("resize", this.onResize);
   }
@@ -295,6 +321,11 @@ export default class PipelineCampaignMembers extends LightningElement {
     this.saveWidths();
   }
   saveWidths() {
+    this.dispatchEvent(
+      new CustomEvent("widthschange", {
+        detail: { widths: this.widths ? { ...this.widths } : null }
+      })
+    );
     try {
       window.localStorage.setItem(WIDTHS_KEY, JSON.stringify(this.widths));
     } catch {
@@ -436,6 +467,10 @@ export default class PipelineCampaignMembers extends LightningElement {
   }
   handleMode(event) {
     this.mode = event.detail.value;
+    this.addQ = "";
+    this.addResult = null;
+    this.addError = "";
+    this.addWide = false;
   }
   get oppOn() {
     return this.types.opp;
@@ -471,19 +506,12 @@ export default class PipelineCampaignMembers extends LightningElement {
     const kind = event.currentTarget.dataset.kind;
     this.types = { ...this.types, [kind]: !this.types[kind] };
   }
-  /** The surgeons Maintain lists: the search applies, the Show filter does not (a surgeon must not vanish from under the person's finger
-   *  when a deal is put in), and they are in name order. */
+  /** The surgeons Maintain lists: all of the campaign's members, in name order (the box there is Add, not Search; the Show filter does not
+   *  apply either, so a surgeon never vanishes from under the person's finger when a deal is put in). */
   get maintainMembers() {
-    const q = this.q.trim().toLowerCase();
-    return (this.members || [])
-      .filter(
-        (m) =>
-          !q ||
-          ((m.name || "") + " " + (m.preferredName || ""))
-            .toLowerCase()
-            .includes(q)
-      )
-      .sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+    return [...(this.members || [])].sort((a, b) =>
+      (a.name || "").localeCompare(b.name || "")
+    );
   }
   /** A deal was put in or taken out: tell the screen, so the tiles and the deals are read again. */
   handleDealChange(event) {
@@ -500,13 +528,155 @@ export default class PipelineCampaignMembers extends LightningElement {
     this.filter = event.detail.value;
   }
   get hasQ() {
-    return this.q.length > 0;
+    return (this.isMaintain ? this.addQ : this.q).length > 0;
+  }
+  get searchValue() {
+    return this.isMaintain ? this.addQ : this.q;
+  }
+  get searchLabel() {
+    return this.isMaintain ? "Add" : "Search";
+  }
+  get searchAria() {
+    return this.isMaintain
+      ? "Add a surgeon to the campaign"
+      : "Search surgeons";
+  }
+  /** The box is the same box in both modes; in Maintain its label is amber so the person sees it now adds surgeons. */
+  get fslblCls() {
+    return this.isMaintain ? "fslbl adding" : "fslbl";
   }
   handleQ(event) {
-    this.q = event.target.value;
+    if (this.isMaintain) {
+      this.addQ = event.target.value;
+      this.runAddSearch();
+    } else {
+      this.q = event.target.value;
+    }
   }
   handleQClear() {
-    this.q = "";
+    if (this.isMaintain) {
+      this.addQ = "";
+      this.addResult = null;
+      this.addError = "";
+      this.addWide = false;
+    } else {
+      this.q = "";
+    }
+  }
+
+  // ---------- Maintain: adding a surgeon to the campaign ----------
+  runAddSearch() {
+    clearTimeout(this.addTimer);
+    const mine = ++this.addSeq;
+    this.addError = "";
+    if (this.addQ.trim().length < 2) {
+      this.addResult = null;
+      return;
+    }
+    // eslint-disable-next-line @lwc/lwc/no-async-operation
+    this.addTimer = setTimeout(async () => {
+      try {
+        const r = await searchSurgeons({
+          campaignId: this.campaign.id,
+          term: this.addQ,
+          wide: this.addWide
+        });
+        if (mine === this.addSeq) this.addResult = r;
+      } catch (e) {
+        this.addError = this.errorOf(e, "The surgeons could not be searched.");
+      }
+    }, 250);
+  }
+  errorOf(e, fallback) {
+    return e && e.body && e.body.message ? e.body.message : fallback;
+  }
+  get showAddPop() {
+    return this.isMaintain && this.addQ.trim().length >= 2;
+  }
+  get addHits() {
+    return ((this.addResult && this.addResult.hits) || []).map((h) => {
+      const same =
+        !h.preferredName ||
+        h.preferredName.trim().toLowerCase() ===
+          (h.name || "").trim().toLowerCase();
+      return {
+        key: h.id,
+        id: h.id,
+        nameText: same
+          ? h.name
+          : h.name + " (English: " + h.preferredName + ")",
+        sub: [
+          h.hospitals ? "Hospitals: " + h.hospitals : "",
+          [h.country, h.city].filter(Boolean).join(" · "),
+          h.type
+        ]
+          .filter(Boolean)
+          .join(" · "),
+        already: h.alreadyMember,
+        title: "Add " + h.name + " to the campaign"
+      };
+    });
+  }
+  /** "Searching AU, NZ." or "Searching every country." with the button that switches between the two. */
+  get addScopeText() {
+    const r = this.addResult;
+    if (!r) return "";
+    return r.scope === "ALL"
+      ? "Searching every country."
+      : "Searching " + r.scope + ".";
+  }
+  get addWidenText() {
+    return this.addWide ? "Back to the campaign's countries" : "Widen search";
+  }
+  get addOutsideText() {
+    const r = this.addResult;
+    if (this.addWide || !r || !r.outside) return "";
+    return (
+      (r.outside >= 50 ? "50 or more" : r.outside) +
+      " more match outside these countries."
+    );
+  }
+  handleWiden() {
+    this.addWide = !this.addWide;
+    this.runAddSearch();
+  }
+  get addNone() {
+    return !!this.addResult && this.addResult.hits.length === 0;
+  }
+  async handleAddPress(event) {
+    const id = event.currentTarget.dataset.id;
+    const hit = this.addHits.find((h) => h.id === id);
+    if (!hit || this.addBusy) return;
+    this.addBusy = true;
+    this.addError = "";
+    try {
+      await addMember({ campaignId: this.campaign.id, surgeonId: id });
+      this.addQ = "";
+      this.addResult = null;
+      this.addWide = false;
+      this.sayAdd(hit.nameText + " added to the campaign");
+      this.dispatchEvent(
+        new CustomEvent("campaignmemberchange", { detail: { surgeonId: id } })
+      );
+    } catch (e) {
+      this.addError = this.errorOf(e, "That surgeon could not be added.");
+    } finally {
+      this.addBusy = false;
+    }
+  }
+  sayAdd(text) {
+    this.addToast = text;
+    clearTimeout(this.addToastTimer);
+    // eslint-disable-next-line @lwc/lwc/no-async-operation
+    this.addToastTimer = setTimeout(() => {
+      this.addToast = "";
+    }, 2500);
+  }
+  /** A surgeon was taken out of the campaign in the Maintain list: tell the screen, so the members and tiles are read again. */
+  handleMemberChange(event) {
+    this.dispatchEvent(
+      new CustomEvent("campaignmemberchange", { detail: event.detail })
+    );
   }
 
   // ---------- the rows ----------

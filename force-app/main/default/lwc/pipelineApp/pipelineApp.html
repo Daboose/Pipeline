@@ -159,10 +159,13 @@
         deals-openable
         hidden-columns={settings.campHidden}
         oncolumnschange={handleCampaignColumns}
+        column-widths={settings.campWidths}
+        onwidthschange={handleCampaignWidths}
         value-row
         currency={settings.currency}
         oncurrencychange={handleCurrencyChange}
         oncampaigndealchange={handleCampaignDealChange}
+        oncampaignmemberchange={handleCampaignDealChange}
         ondealopen={handleCampaignDealOpen}
         onsurgeonopen={handleSurgeonOpen}
       >

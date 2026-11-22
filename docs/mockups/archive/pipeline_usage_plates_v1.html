@@ -1,0 +1,771 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>
+      Pipeline mockup: the large rating plates with a readable category, version
+      1
+    </title>
+    <style>
+      :root,
+      [data-theme="light"] {
+        --page: #e9edf4;
+        --panel: #ffffff;
+        --panel2: #eef2fa;
+        --line: #d5dcea;
+        --edge: #b3bfd6;
+        --text: #1b2640;
+        --muted: #5d6b85;
+        --pipe: #b7791f;
+        --head: #db2777;
+        --indigo: #4f46e5;
+        --card: #ffffff;
+      }
+      [data-theme="dark"] {
+        --page: #0e1623;
+        --panel: #1a2740;
+        --panel2: #20304f;
+        --line: #2f4163;
+        --edge: #5b6f93;
+        --text: #e8edf5;
+        --muted: #8b9bb0;
+        --pipe: #fdb827;
+        --head: #f472b6;
+        --indigo: #6366f1;
+        --card: #1a2740;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        height: 100%;
+      }
+      body {
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        background: var(--page);
+        color: var(--text);
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-size: 15px;
+      }
+      button {
+        font-family: inherit;
+        cursor: pointer;
+      }
+      .sp {
+        flex: 1;
+      }
+      .sfnav {
+        flex: none;
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        height: 44px;
+        padding: 0 16px;
+        background: #0b1220;
+        border-bottom: 1px solid #2f4163;
+        color: #cdd6e6;
+        font-size: 14px;
+      }
+      .sfnav .app {
+        font-weight: 800;
+        letter-spacing: 0.14em;
+      }
+      .sfnav .app b {
+        color: #fdb827;
+      }
+      .sfnav .tab {
+        color: #9fb0cc;
+      }
+      .sfnav .tab.on {
+        color: #fff;
+        border-bottom: 2px solid #6366f1;
+        padding-bottom: 2px;
+      }
+      .pill {
+        border: 0;
+        background: var(--indigo);
+        color: #fff;
+        border-radius: 999px;
+        padding: 8px 18px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      .pill.slate {
+        background: var(--panel2);
+        color: var(--text);
+        border: 1px solid var(--edge);
+      }
+      .about {
+        flex: none;
+        margin: 8px 16px 0;
+        padding: 8px 18px;
+        background: var(--panel);
+        border: 1px solid var(--edge);
+        border-radius: 12px;
+        line-height: 1.45;
+      }
+      .about summary {
+        cursor: pointer;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        color: var(--pipe);
+      }
+      .about ul {
+        margin: 4px 0 6px;
+        padding-left: 22px;
+      }
+      .about p {
+        margin: 6px 0;
+      }
+      .tools {
+        flex: none;
+        display: flex;
+        gap: 8px;
+        padding: 8px 16px 0;
+      }
+      .scroll {
+        flex: 1;
+        min-height: 0;
+        overflow: auto;
+        padding: 10px 16px 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+      .opt {
+        background: var(--card);
+        border: 1px solid var(--edge);
+        border-radius: 12px;
+        padding: 10px 18px 16px;
+      }
+      .opt h3 {
+        margin: 0 0 2px;
+        font-size: 13px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--head);
+      }
+      .opt p {
+        margin: 0 0 10px;
+        color: var(--muted);
+        font-size: 14px;
+      }
+      .opt .ratings {
+        margin: 0;
+        gap: 10px;
+      }
+      /* ---- the real plates, copied from the Usage Card ---- */
+      /* ================= the rating plates (metal sampled from the Adobe Stock brushed-metal sheet; Robert chose these, 2026-11-05) ================= */
+      .ratings {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+      }
+      .m-PLATINUM {
+        --sheet: conic-gradient(
+          from 0deg at 50% 52%,
+          #bdb49c,
+          #e2d9be 20deg,
+          #b3a88f 40deg,
+          #9f947b 60deg,
+          #aba089 80deg,
+          #a59a82 100deg,
+          #897d64 120deg,
+          #988c75 140deg,
+          #beb49f 160deg,
+          #ada28d 180deg,
+          #968b74 200deg,
+          #afa68d 220deg,
+          #c7bea3 240deg,
+          #796e58 260deg,
+          #766853 280deg,
+          #b5aa93 300deg,
+          #a89d84 320deg,
+          #978b75 340deg,
+          #bdb49c 360deg
+        );
+        --hi: #f4efe0;
+        --mid: #b3a88f;
+        --lo: #6d6250;
+        --ink: #3a3326;
+        --glow: rgba(244, 239, 224, 0.9);
+      }
+      .m-GOLD {
+        --sheet: conic-gradient(
+          from 0deg at 50% 52%,
+          #dfc16e,
+          #fce68b 20deg,
+          #dcb856 40deg,
+          #cea441 60deg,
+          #e0b75e 80deg,
+          #d6ae56 100deg,
+          #a37821 120deg,
+          #b78b31 140deg,
+          #edc35c 160deg,
+          #d5ab4b 180deg,
+          #ba9137 200deg,
+          #d3af4d 220deg,
+          #e5cc73 240deg,
+          #ab8327 260deg,
+          #af8629 280deg,
+          #e6be57 300deg,
+          #ddb457 320deg,
+          #c19848 340deg,
+          #dfc16e 360deg
+        );
+        --hi: #fff1b0;
+        --mid: #d6ae56;
+        --lo: #8a6513;
+        --ink: #4a3406;
+        --glow: rgba(255, 241, 176, 0.95);
+      }
+      .m-SILVER {
+        --sheet: conic-gradient(
+          from 0deg at 50% 52%,
+          #a3a7b1,
+          #c8cdd7 20deg,
+          #9599a2 40deg,
+          #808591 60deg,
+          #868a93 80deg,
+          #818691 100deg,
+          #676c77 120deg,
+          #777e89 140deg,
+          #a1a7b2 160deg,
+          #9096a0 180deg,
+          #7f858f 200deg,
+          #9aa0aa 220deg,
+          #a8aeb7 240deg,
+          #686c74 260deg,
+          #6c707a 280deg,
+          #9a9da7 300deg,
+          #969ba5 320deg,
+          #7e838d 340deg,
+          #a3a7b1 360deg
+        );
+        --hi: #e6eaf2;
+        --mid: #9599a2;
+        --lo: #565b66;
+        --ink: #23272f;
+        --glow: rgba(230, 234, 242, 0.95);
+      }
+      .m-BRONZE {
+        --sheet: conic-gradient(
+          from 0deg at 50% 52%,
+          #bc7951,
+          #e39361 20deg,
+          #ae6946 40deg,
+          #a46a47 60deg,
+          #ab6d4a 80deg,
+          #a66b48 100deg,
+          #8b5839 120deg,
+          #996240 140deg,
+          #be7f56 160deg,
+          #ad714c 180deg,
+          #9a6142 200deg,
+          #b67851 220deg,
+          #c4794f 240deg,
+          #7f4e32 260deg,
+          #855335 280deg,
+          #b87952 300deg,
+          #b2754f 320deg,
+          #9b6242 340deg,
+          #bc7951 360deg
+        );
+        --hi: #f3b58c;
+        --mid: #ad714c;
+        --lo: #6e4128;
+        --ink: #3d1f0e;
+        --glow: rgba(243, 181, 140, 0.95);
+      }
+      .m-NONE {
+        --sheet: linear-gradient(#eceae8, #e2dfdc);
+        --hi: #f6f5f4;
+        --mid: #cfccc9;
+        --lo: #9a9794;
+        --ink: #6d6a67;
+        --glow: rgba(255, 255, 255, 0);
+      }
+      .plate {
+        position: relative;
+        border-radius: 14px;
+        padding: 16px 14px 14px;
+        min-height: 176px;
+        color: var(--ink);
+        overflow: hidden;
+        background:
+          repeating-radial-gradient(
+            circle at 50% 52%,
+            rgba(255, 255, 255, 0.07) 0 1px,
+            rgba(0, 0, 0, 0.06) 1px 2px
+          ),
+          var(--sheet);
+        box-shadow:
+          inset 0 2px 1px rgba(255, 255, 255, 0.75),
+          inset 0 -3px 3px rgba(0, 0, 0, 0.3),
+          inset 0 0 0 1px rgba(0, 0, 0, 0.25),
+          0 6px 14px rgba(40, 30, 10, 0.28);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+      .plate .screw {
+        position: absolute;
+        top: 9px;
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 35% 30%, var(--hi), var(--lo));
+        box-shadow: 0 1px 1px rgba(0, 0, 0, 0.4);
+      }
+      .plate .screw.l {
+        left: 10px;
+      }
+      .plate .screw.r {
+        right: 10px;
+      }
+      .plate .area {
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        margin-top: 2px;
+        text-shadow: 0 1px 0 rgba(255, 255, 255, 0.55);
+      }
+      .plate .coin {
+        width: 64px;
+        height: 64px;
+        margin: 10px 0 8px;
+        border-radius: 50%;
+        background: var(--sheet);
+        box-shadow:
+          inset 0 3px 3px rgba(255, 255, 255, 0.7),
+          inset 0 -4px 5px rgba(0, 0, 0, 0.35),
+          0 0 0 3px rgba(0, 0, 0, 0.28),
+          0 0 0 5px var(--hi),
+          0 4px 8px rgba(0, 0, 0, 0.35);
+        display: grid;
+        place-items: center;
+      }
+      .plate .coin svg {
+        width: 38px;
+        height: 38px;
+        filter: drop-shadow(0 1px 0 rgba(255, 255, 255, 0.6))
+          drop-shadow(0 -1px 0 rgba(0, 0, 0, 0.35));
+      }
+      .plate .coin svg path {
+        fill: var(--hi);
+        stroke: var(--mid);
+        stroke-width: 1;
+        stroke-linejoin: round;
+      }
+      .plate.m-NONE .coin svg path {
+        fill: #bdbab7;
+        stroke: #a9a6a3;
+      }
+      .plate .rank {
+        font-size: 22px;
+        font-weight: 900;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        text-shadow:
+          0 1px 0 rgba(255, 255, 255, 0.65),
+          0 -1px 0 rgba(0, 0, 0, 0.25);
+      }
+      .plate .stars {
+        margin-top: 4px;
+        letter-spacing: 3px;
+        font-size: 14px;
+        min-height: 18px;
+        text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);
+      }
+      /* a sheen sweeps across on hover (computers only; off for people who ask for less motion) */
+      .plate::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        pointer-events: none;
+        background: linear-gradient(
+          105deg,
+          transparent 38%,
+          var(--glow) 50%,
+          transparent 62%
+        );
+        transform: translateX(-120%);
+        opacity: 0.55;
+      }
+      @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+        .plate:hover::after {
+          transform: translateX(120%);
+          transition: transform 0.9s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+      }
+      .plate.m-NONE::after {
+        display: none;
+      }
+      .plate.m-NONE {
+        background: #eceae8;
+        box-shadow: inset 0 0 0 1px #d4d1ce;
+      }
+      .plate.m-NONE .coin {
+        background: #f6f5f4;
+        box-shadow: inset 0 0 0 2px #cfccc9;
+      }
+      .plate.m-NONE .screw {
+        display: none;
+      }
+
+      /* ---- the variations ---- */
+      .va .plate {
+        min-height: 176px;
+        padding: 12px;
+        justify-content: center;
+      }
+      .va .plate .area {
+        font-size: 24px;
+        font-weight: 900;
+        letter-spacing: 0.12em;
+        margin: 0;
+        line-height: 1.1;
+      }
+      .va .plate .coin {
+        width: 60px;
+        height: 60px;
+        margin: 8px 0 6px;
+      }
+      .va .plate .coin svg {
+        width: 36px;
+        height: 36px;
+      }
+      .va .plate .rank {
+        font-size: 20px;
+        line-height: 1;
+      }
+      .va .plate .stars {
+        margin-top: 3px;
+        min-height: 16px;
+      }
+
+      .vb .plate {
+        min-height: 176px;
+        padding: 10px 12px 12px;
+        justify-content: center;
+      }
+      .vb .plate .area {
+        align-self: stretch;
+        margin: 0 14px;
+        padding: 5px 0;
+        font-size: 24px;
+        font-weight: 900;
+        letter-spacing: 0.12em;
+        line-height: 1.1;
+        border-radius: 8px;
+        background: linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.06));
+        box-shadow:
+          inset 0 1px 3px rgba(0, 0, 0, 0.4),
+          0 1px 0 rgba(255, 255, 255, 0.45);
+      }
+      .vb .plate .coin {
+        width: 54px;
+        height: 54px;
+        margin: 9px 0 6px;
+      }
+      .vb .plate .coin svg {
+        width: 32px;
+        height: 32px;
+      }
+      .vb .plate .rank {
+        font-size: 19px;
+        line-height: 1;
+      }
+      .vb .plate .stars {
+        margin-top: 3px;
+        min-height: 16px;
+      }
+
+      .vc .plate {
+        min-height: 176px;
+        padding: 12px;
+        justify-content: center;
+      }
+      .vc .plate .area {
+        font-size: 34px;
+        font-weight: 900;
+        letter-spacing: 0.08em;
+        margin: 0;
+        line-height: 1.05;
+      }
+      .vc .plate .coin {
+        width: 50px;
+        height: 50px;
+        margin: 9px 0 8px;
+      }
+      .vc .plate .coin svg {
+        width: 30px;
+        height: 30px;
+      }
+      .vc .plate .rs {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .vc .plate .rank {
+        font-size: 19px;
+        line-height: 1;
+      }
+      .vc .plate .stars {
+        margin: 0;
+        min-height: 0;
+        letter-spacing: 2px;
+      }
+
+      .vd .plate {
+        min-height: 176px;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        text-align: left;
+        padding: 16px 18px 16px 22px;
+      }
+      .vd .plate .txt {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        min-width: 0;
+      }
+      .vd .plate .area {
+        font-size: 24px;
+        font-weight: 900;
+        letter-spacing: 0.1em;
+        margin: 0 0 8px;
+        line-height: 1.05;
+      }
+      .vd .plate .coin {
+        width: 64px;
+        height: 64px;
+        margin: 0;
+        flex: none;
+      }
+      .vd .plate .coin svg {
+        width: 38px;
+        height: 38px;
+      }
+      .vd .plate .rank {
+        font-size: 17px;
+        line-height: 1;
+        letter-spacing: 0.08em;
+      }
+      .vd .plate .stars {
+        margin-top: 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="sfnav">
+      <span class="app"><b>PIPE</b>LINE</span>
+      <span class="tab on">Pipeline</span>
+      <span class="tab">Accounts</span>
+      <span class="sp"></span>
+      <button class="pill" type="button" id="full">Full screen</button>
+    </div>
+
+    <details class="about" open>
+      <summary>ABOUT THIS MOCKUP</summary>
+      <p>
+        <b>What it shows:</b> the large rating plates of the Usage Card (Hip,
+        Knee, Shoulder, CMFT), the same width and metal as today, shown with
+        every rating (Platinum, Gold, Silver, Bronze and No rating) in two rows
+        of four, drawn five ways one under another so the category can be
+        compared: <b>Today</b> (the category in small letters), then four ideas
+        that make the category big and easy to read and bring the rating and its
+        stars closer together, so there is room for it. <b>A</b> a larger
+        category on top, with the star coin, the rating and the stars gathered
+        under it. <b>B</b> the category on its own engraved strip across the
+        top. <b>C</b> a very large category, with the stars beside the rating.
+        <b>D</b>
+        the category, rating and stars in a block on the left, with a big star
+        coin centred on the right. The plates keep their height. Invented
+        ratings.
+      </p>
+      <b>Try it:</b>
+      <ul>
+        <li>
+          Compare the category on each plate at reading size, then press
+          <b>Light</b> or <b>Dark</b> (the plates look the same in both).
+        </li>
+        <li>Move the mouse over a plate: the sheen still sweeps across.</li>
+        <li>Press <b>Full screen</b> (top right) for the whole screen.</li>
+      </ul>
+      <b>Not shown yet:</b> the rest of the card, the phone, and the words under
+      the plates.
+    </details>
+
+    <div class="tools">
+      <button class="pill slate" type="button" data-look="light">Light</button>
+      <button class="pill slate" type="button" data-look="dark">Dark</button>
+    </div>
+
+    <div class="scroll" id="boxes"></div>
+
+    <script>
+      var STAR =
+        '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3 6.8 7.4.7-5.6 4.9 1.7 7.3L12 17.9 5.5 21.7l1.7-7.3L1.6 9.5l7.4-.7z"></path></svg>';
+      /* two rows of four, so every rating shows with more than one category, including the longest word on the longest rating */
+      var PLATES = [
+        ["Hip", "PLATINUM", 4],
+        ["Knee", "GOLD", 3],
+        ["Shoulder", "SILVER", 2],
+        ["CMFT", "BRONZE", 1],
+        ["Hip", "BRONZE", 1],
+        ["Knee", "NONE", 0],
+        ["Shoulder", "PLATINUM", 4],
+        ["CMFT", "GOLD", 3]
+      ];
+      function word(k) {
+        return k === "NONE"
+          ? "No rating"
+          : k.charAt(0) + k.slice(1).toLowerCase();
+      }
+      function stars(n) {
+        return "\u2605".repeat(n);
+      }
+      var OPTS = [
+        [
+          "",
+          "Today",
+          "The category is small, at the top; the coin sits high, the rating and stars are spread below it.",
+          function (p) {
+            return (
+              '<span class="screw l"></span><span class="screw r"></span><div class="area">' +
+              p[0] +
+              '</div><div class="coin">' +
+              STAR +
+              '</div><div class="rank">' +
+              word(p[1]) +
+              '</div><div class="stars">' +
+              stars(p[2]) +
+              "</div>"
+            );
+          }
+        ],
+        [
+          "va",
+          "A: a larger category, everything gathered under it",
+          "The category is nearly twice the size; the coin, rating and stars are closer together and the coin sits in the middle of what is left.",
+          function (p) {
+            return (
+              '<span class="screw l"></span><span class="screw r"></span><div class="area">' +
+              p[0] +
+              '</div><div class="coin">' +
+              STAR +
+              '</div><div class="rank">' +
+              word(p[1]) +
+              '</div><div class="stars">' +
+              stars(p[2]) +
+              "</div>"
+            );
+          }
+        ],
+        [
+          "vb",
+          "B: the category on an engraved strip",
+          "The category is large and sits on its own recessed strip across the top, like a nameplate.",
+          function (p) {
+            return (
+              '<span class="screw l"></span><span class="screw r"></span><div class="area">' +
+              p[0] +
+              '</div><div class="coin">' +
+              STAR +
+              '</div><div class="rank">' +
+              word(p[1]) +
+              '</div><div class="stars">' +
+              stars(p[2]) +
+              "</div>"
+            );
+          }
+        ],
+        [
+          "vc",
+          "C: a very large category, the stars beside the rating",
+          "The category is the biggest thing on the plate; the rating and its stars share one line under a smaller coin.",
+          function (p) {
+            return (
+              '<span class="screw l"></span><span class="screw r"></span><div class="area">' +
+              p[0] +
+              '</div><div class="coin">' +
+              STAR +
+              '</div><div class="rs"><div class="rank">' +
+              word(p[1]) +
+              '</div><div class="stars">' +
+              stars(p[2]) +
+              "</div></div>"
+            );
+          }
+        ],
+        [
+          "vd",
+          "D: the text on the left, a big coin on the right",
+          "The category, rating and stars read down the left; the star coin is large and centred on the right.",
+          function (p) {
+            return (
+              '<span class="screw l"></span><span class="screw r"></span><div class="txt"><div class="area">' +
+              p[0] +
+              '</div><div class="rank">' +
+              word(p[1]) +
+              '</div><div class="stars">' +
+              stars(p[2]) +
+              '</div></div><div class="coin">' +
+              STAR +
+              "</div>"
+            );
+          }
+        ]
+      ];
+      document.getElementById("boxes").innerHTML = OPTS.map(function (o) {
+        return (
+          '<section class="opt ' +
+          o[0] +
+          '"><h3>' +
+          (o[0] ? o[1] : "Today") +
+          "</h3><p>" +
+          o[2] +
+          '</p><div class="ratings">' +
+          PLATES.map(function (p) {
+            return (
+              '<div class="plate m-' +
+              p[1] +
+              '" role="img" aria-label="' +
+              p[0] +
+              ": " +
+              word(p[1]) +
+              '">' +
+              o[3](p) +
+              "</div>"
+            );
+          }).join("") +
+          "</div></section>"
+        );
+      }).join("");
+      document.querySelectorAll("[data-look]").forEach(function (b) {
+        b.addEventListener("click", function () {
+          document.documentElement.setAttribute(
+            "data-theme",
+            b.getAttribute("data-look")
+          );
+        });
+      });
+      document.getElementById("full").addEventListener("click", function () {
+        if (document.fullscreenElement) document.exitFullscreen();
+        else document.documentElement.requestFullscreen();
+      });
+    </script>
+  </body>
+</html>

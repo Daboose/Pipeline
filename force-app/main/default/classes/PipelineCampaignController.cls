@@ -17,6 +17,10 @@
  * accounts, demo accounts and clinic contacts are never offered. The surgeon search needs at least two characters, looks in the
  * name and in Preferred_Name__c (the English name), and starts inside the campaign's own countries (the surgeon's mailing
  * country); the person can widen it to every country. A surgeon's country never stops them being added.
+ *
+ * removeMemberAndDeals (Robert, 2026-11-20, Maintain mode of Pipeline's campaign view): takes one surgeon out of the campaign AND takes
+ * that surgeon's deals out of the same campaign (their Sales_Campaign_Deal__c links; the deals themselves are never changed), because
+ * a deal can only be in a campaign while its surgeon is a member. removeMembers (members only, used by Campaign Management) is unchanged.
  */
 public with sharing class PipelineCampaignController {
   /** The record types that may be members (developer names). */
@@ -937,6 +941,42 @@ public with sharing class PipelineCampaignController {
       throw new AuraHandledException(e.getDmlMessage(0));
     }
     return memberIds.size();
+  }
+
+  /**
+   * Takes one surgeon out of the campaign together with the links of that surgeon's deals to the same campaign (Robert, 2026-11-20): the
+   * Maintain screen then offers those deals again, with a plus, if the surgeon is added back. Only the links and the member record are
+   * deleted; a deal is never changed. Returns how many deal links went. Runs in the person's own access.
+   */
+  @AuraEnabled
+  public static Integer removeMemberAndDeals(Id memberId) {
+    if (memberId == null) {
+      return 0;
+    }
+    try {
+      List<Sales_Campaign_Member__c> ms = [
+        SELECT Id, Campaign__c, Surgeon__c
+        FROM Sales_Campaign_Member__c
+        WHERE Id = :memberId
+        WITH USER_MODE
+      ];
+      if (ms.isEmpty()) {
+        return 0;
+      }
+      List<Sales_Campaign_Deal__c> links = [
+        SELECT Id
+        FROM Sales_Campaign_Deal__c
+        WHERE
+          Campaign__c = :ms[0].Campaign__c
+          AND Deal__r.Account__c = :ms[0].Surgeon__c
+        WITH USER_MODE
+      ];
+      delete as user links;
+      delete as user ms;
+      return links.size();
+    } catch (DmlException e) {
+      throw new AuraHandledException(e.getDmlMessage(0));
+    }
   }
 
   /** Deletes a campaign set up in error. Its members and deal links go with it (they belong to it); surgeons and deals are untouched. */

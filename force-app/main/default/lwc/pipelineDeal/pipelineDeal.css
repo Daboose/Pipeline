@@ -420,6 +420,9 @@ input.in {
   --pcu-flash: color-mix(in srgb, var(--warn) 16%, transparent);
   --pcu-btn2: var(--panel2);
   --pcu-btn2text: var(--text);
+  --pcu-old: var(
+    --pipe
+  ); /* a Last updated date more than a year old: Pipeline's amber */
   --pcu-ok: var(--ok);
   --pcu-okbg: color-mix(in srgb, var(--ok) 16%, transparent);
   --pcu-warn: var(--warn);

@@ -14,13 +14,12 @@ import {
   isComplete,
   payloadOf,
   portfolioTitle,
+  isOverAYear,
+  shortDate,
   setField,
   toggleChip
 } from "c/pipelineUsageModel";
 
-/** Usages not changed for longer than this (days) get the "worth checking" warning. */
-const OLD_DAYS = 365;
-const DAY_MS = 86400000;
 const TYPES = ["Hip", "Knee", "Shoulder", "CMFT"];
 const STARS = { PLATINUM: 4, GOLD: 3, SILVER: 2, BRONZE: 1 };
 const portName = (p) => (p === "CMF" ? "CMFT" : p);
@@ -170,7 +169,10 @@ export default class PipelineUsageCard extends NavigationMixin(
         area: portName(r.area),
         cls: "plate m-" + (known ? v : "NONE"),
         rank: known ? v.charAt(0) + v.slice(1).toLowerCase() : "No rating",
-        stars: known ? "★".repeat(STARS[v]) : "",
+        // one drawn star per step of the rating (Platinum 4, Gold 3, Silver 2, Bronze 1), so the row of stars has an exact height
+        starList: known
+          ? Array.from({ length: STARS[v] }, (_, i) => ({ key: "s" + i }))
+          : [],
         hasRank: known,
         label: `${portName(r.area)}: ${known ? v.toLowerCase() : "no rating"}`
       };
@@ -183,6 +185,7 @@ export default class PipelineUsageCard extends NavigationMixin(
         text: "Usages changed just now. Ratings are recalculated by Salesforce in the background, so they may take a little while to change."
       };
     }
+    // nothing is said here about when the usages were last changed: each usage shows its own Last updated date in the list
     const d = this.data && this.data.newest;
     if (!d) {
       return {
@@ -190,21 +193,7 @@ export default class PipelineUsageCard extends NavigationMixin(
         text: "No usages have been recorded for this surgeon."
       };
     }
-    const days = Math.floor((Date.now() - Date.parse(d)) / DAY_MS);
-    const ago =
-      days <= 0
-        ? "today"
-        : days < 60
-          ? `${days} days ago`
-          : `${Math.round(days / 30.4)} months ago`;
-    const when = `${formatDate(d)} (${ago})`;
-    return days > OLD_DAYS
-      ? {
-          cls: "note warn",
-          lead: `Usages last changed ${when}.`,
-          text: " Worth checking they are still right."
-        }
-      : { cls: "note ok", text: `Usages last changed ${when}.` };
+    return null;
   }
 
   /* ----- the surgeon's usages, as tiles under their hospital ----- */
@@ -252,6 +241,9 @@ export default class PipelineUsageCard extends NavigationMixin(
         "us" +
         (editing ? " editing" : "") +
         (this.flashId === u.usageId ? " flash" : ""),
+      // when this usage was last updated: its own date beside it, amber when more than a year old (Robert, 2026-11-20)
+      lastText: shortDate(u.lastModified),
+      lastCls: "lu" + (isOverAYear(u.lastModified) ? " old" : ""),
       showActions: !editing && !deleting && (this.canEdit || this.canDelete),
       canEdit: this.canEdit,
       canDelete: this.canDelete,

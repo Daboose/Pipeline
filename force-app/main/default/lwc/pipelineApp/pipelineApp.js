@@ -49,7 +49,7 @@ function stableJson(value) {
  * Usages, Surgeries and Chatter, saved filters); 0.10 follows the final mockup: a filter bar with chips and a Change
  * selection panel with Apply, in place of the always-visible Choose Your Data panel.
  */
-const PIPELINE_VERSION = "0.159";
+const PIPELINE_VERSION = "0.170";
 
 /** The colours a person can choose for the headings (Robert, 2026-11-02); the look of each is in pipelineApp.css. */
 const HEAD_COLOURS = [
@@ -58,6 +58,16 @@ const HEAD_COLOURS = [
   { key: "lime", label: "Lime green" },
   { key: "cyan", label: "Cyan" }
 ];
+/** Saved column widths: an object of column id to a sensible number of pixels, else null (nothing saved). */
+function cleanWidths(value) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  const out = {};
+  Object.keys(value).forEach((k) => {
+    const n = Number(value[k]);
+    if (Number.isFinite(n) && n >= 30 && n <= 1200) out[k] = Math.round(n);
+  });
+  return out;
+}
 const SLIDE_IN_DELAY_MS = 30; // lets the closed position be drawn first, so the slide runs
 const SLIDE_OUT_MS = 450; // a little longer than the slide itself (0.4 s in the style sheets)
 
@@ -129,6 +139,7 @@ export default class PipelineApp extends LightningElement {
     cols: {},
     widths: {},
     campHidden: null, // the campaign list's columns the person turned off (null until they choose; Robert, 2026-11-19)
+    campWidths: null, // the campaign list's column widths the person dragged to ({} for the standard ones; null until they choose; Robert, 2026-11-20)
     ui: {},
     last: null
   };
@@ -377,6 +388,7 @@ export default class PipelineApp extends LightningElement {
         campHidden: Array.isArray(s.campHidden)
           ? s.campHidden.filter((x) => typeof x === "string")
           : null,
+        campWidths: cleanWidths(s.campWidths),
         ui: s.ui && typeof s.ui === "object" ? s.ui : {},
         last: s.last && typeof s.last === "object" ? s.last : null
       };
@@ -1142,6 +1154,14 @@ export default class PipelineApp extends LightningElement {
   /** The campaign list's Columns picker was used: the columns turned off are kept in the person's settings. */
   handleCampaignColumns(event) {
     this.settings = { ...this.settings, campHidden: event.detail.hidden };
+    this.persist();
+  }
+  /** The campaign list's column widths were dragged or reset: kept in the person's settings ({} means the standard widths). */
+  handleCampaignWidths(event) {
+    this.settings = {
+      ...this.settings,
+      campWidths: event.detail.widths ? { ...event.detail.widths } : {}
+    };
     this.persist();
   }
   handleWidthsChange(event) {
