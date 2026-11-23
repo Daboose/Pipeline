@@ -29,7 +29,7 @@ import {
 import { localWidth, zoomStyle, cleanZoom, DEFAULT_ZOOM } from "c/pipelineZoom";
 
 /** Shown on the screen; raise it with each change that goes out. */
-export const CAMPAIGN_VERSION = "0.49";
+export const CAMPAIGN_VERSION = "0.50";
 const THEME_KEY = "pipelineCampaignTheme";
 const WIDTHS_KEY = "pipelineCampaignWidths";
 
@@ -768,7 +768,7 @@ export default class PipelineCampaigns extends LightningElement {
   get removeAskText() {
     const n = this.tickedIds.length;
     const name = this.campaign ? this.campaign.name : "this campaign";
-    return `Remove ${n} member${n === 1 ? "" : "s"} from ${name}? The surgeon${n === 1 ? " stays" : "s stay"} in Salesforce; only the link to this campaign is removed.`;
+    return `Remove ${n} member${n === 1 ? "" : "s"} from ${name}? The surgeon${n === 1 ? " stays" : "s stay"} in Salesforce; only the link to this campaign is removed, and the deals in this campaign for ${n === 1 ? "that surgeon" : "those surgeons"} come out too.`;
   }
   get removeYesText() {
     const n = this.tickedIds.length;

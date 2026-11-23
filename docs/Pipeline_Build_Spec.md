@@ -1745,3 +1745,11 @@ Robert: dragging one column edge in the Opportunities list made all the columns 
 - The Team table uses plain percentages (no calc) and was not affected. Jest 524 of 524. LWC only, UAT only, not in DEV, not committed.
 
 Pipeline 0.170 brought to DEV (2026-11-23, after Robert tested it in UAT: "much better and works well"): `pipelineTypeList` and `pipelineApp`, LWC only. UAT and DEV level at Pipeline 0.170. PROD was at 0.169 (read-only check); the Gearset release is those two components, no tests.
+
+## Campaign Management 0.50: Remove also takes the surgeon's deals out of the campaign (UAT only)
+
+Robert, 2026-11-23: the Remove button on the Sales Campaigns screen (`removeMembers`) now does what Maintain mode does (0.168): it deletes the selected members AND the links of those surgeons' deals to the same campaign (matched on campaign plus the deal's surgeon, so other campaigns keep theirs; deals never change). Runs in the person's own access. The "Are you sure" text says so. UAT deploy `0AfOg000007agb0KAA`, `PipelineCampaignControllerTest` 15/15 (new test `removingSeveralMembersAlsoTakesTheirDealsOutOfThatCampaign`). Pipeline's own number stays 0.170. Also fixed an existing test that PROD's Account rule ACC_05 (no English name for AU, NZ, IN, MY, SG and others) now fails: the English-name test uses Thailand. Not in DEV, not committed. PROD needs `PipelineCampaignController`, its test and `pipelineCampaigns`.
+
+**Brought to DEV 2026-11-23** (Robert tested it in UAT): dry run then deploy `0Af8s00000fVkmwCAC`, `PipelineCampaignControllerTest` 15/15. UAT and DEV level at Campaign Management 0.50; PROD is at 0.49.
+
+**PROD checked read-only 2026-11-23:** Robert released Pipeline 0.170 and Campaign Management 0.50 with Gearset; `PipelineCampaignController` and its test, `pipelineCampaigns`, `pipelineTypeList` and `pipelineApp` (all files) match the repo (compared ignoring whitespace). UAT, DEV and PROD are level.

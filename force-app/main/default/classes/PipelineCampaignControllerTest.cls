@@ -49,7 +49,9 @@ private class PipelineCampaignControllerTest {
     Account a = new Account(
       FirstName = first,
       LastName = last,
-      PersonMailingCountry = country == 'SG' ? 'Singapore' : 'Australia',
+      PersonMailingCountry = country == 'SG'
+        ? 'Singapore'
+        : (country == 'TH' ? 'Thailand' : 'Australia'),
       PersonMailingCountryCode = country,
       RecordTypeId = rt(Account.SObjectType, type)
     );
@@ -220,9 +222,10 @@ private class PipelineCampaignControllerTest {
   static void aSurgeonFoundByTheirEnglishNameAndAddedShowsAsAMember() {
     System.runAs(manager()) {
       Id id = PipelineCampaignController.saveCampaign(
-        payload('English', new List<String>{ 'SG' })
+        payload('English', new List<String>{ 'TH' })
       );
-      Account a = surgeon('Local', 'Name', 'SG', 'Physician');
+      // Thailand: an Account rule (ACC_05) refuses an English name for countries that already enter names in English, SG among them
+      Account a = surgeon('Local', 'Name', 'TH', 'Physician');
       a.Preferred_Name__c = 'Zebra English';
       update a;
       System.assertEquals(
@@ -358,6 +361,75 @@ private class PipelineCampaignControllerTest {
         0,
         PipelineCampaignController.removeMemberAndDeals(null)
       );
+    }
+  }
+
+  @IsTest
+  static void removingSeveralMembersAlsoTakesTheirDealsOutOfThatCampaign() {
+    System.runAs(manager()) {
+      Id id = PipelineCampaignController.saveCampaign(
+        payload('Several go', new List<String>{ 'SG' })
+      );
+      Id other = PipelineCampaignController.saveCampaign(
+        payload('Several stay', new List<String>{ 'SG' })
+      );
+      Account a = surgeon('Several', 'One', 'SG', 'Physician');
+      Account b = surgeon('Several', 'Two', 'SG', 'Physician');
+      PipelineCampaignController.addMember(id, a.Id);
+      PipelineCampaignController.addMember(id, b.Id);
+      PipelineCampaignController.addMember(other, a.Id);
+      List<SalesRisks__c> deals = new List<SalesRisks__c>{
+        new SalesRisks__c(
+          RecordTypeId = rt(SalesRisks__c.SObjectType, 'AUHIP'),
+          Account__c = a.Id,
+          Stage__c = 'Plan',
+          Expected_Closure_Quarter__c = 'Q4'
+        ),
+        new SalesRisks__c(
+          RecordTypeId = rt(SalesRisks__c.SObjectType, 'AUHIP'),
+          Account__c = b.Id,
+          Stage__c = 'Plan',
+          Expected_Closure_Quarter__c = 'Q4'
+        )
+      };
+      insert deals;
+      insert new List<Sales_Campaign_Deal__c>{
+        new Sales_Campaign_Deal__c(Campaign__c = id, Deal__c = deals[0].Id),
+        new Sales_Campaign_Deal__c(Campaign__c = id, Deal__c = deals[1].Id),
+        new Sales_Campaign_Deal__c(Campaign__c = other, Deal__c = deals[0].Id)
+      };
+      List<Id> ids = new List<Id>();
+      for (
+        PipelineCampaignController.MemberRow m : PipelineCampaignController.getCampaign(
+            id
+          )
+          .members
+      ) {
+        ids.add(m.memberId);
+      }
+      System.assertEquals(2, PipelineCampaignController.removeMembers(ids));
+      System.assertEquals(
+        0,
+        [SELECT COUNT() FROM Sales_Campaign_Deal__c WHERE Campaign__c = :id]
+      );
+      System.assertEquals(
+        0,
+        [SELECT COUNT() FROM Sales_Campaign_Member__c WHERE Campaign__c = :id]
+      );
+      // the other campaign keeps its member and its link; the deals are untouched
+      System.assertEquals(
+        1,
+        [SELECT COUNT() FROM Sales_Campaign_Deal__c WHERE Campaign__c = :other]
+      );
+      System.assertEquals(
+        1,
+        [
+          SELECT COUNT()
+          FROM Sales_Campaign_Member__c
+          WHERE Campaign__c = :other
+        ]
+      );
+      System.assertEquals(2, [SELECT COUNT() FROM SalesRisks__c]);
     }
   }
 

@@ -20,7 +20,7 @@
  *
  * removeMemberAndDeals (Robert, 2026-11-20, Maintain mode of Pipeline's campaign view): takes one surgeon out of the campaign AND takes
  * that surgeon's deals out of the same campaign (their Sales_Campaign_Deal__c links; the deals themselves are never changed), because
- * a deal can only be in a campaign while its surgeon is a member. removeMembers (members only, used by Campaign Management) is unchanged.
+ * a deal can only be in a campaign while its surgeon is a member. removeMembers (Campaign Management's Remove, several at once) does the same since 2026-11-23.
  */
 public with sharing class PipelineCampaignController {
   /** The record types that may be members (developer names). */
@@ -925,18 +925,53 @@ public with sharing class PipelineCampaignController {
     }
   }
 
+  /**
+   * Takes surgeons out of a campaign (Campaign Management's Remove) together with the links of those surgeons' deals to the same
+   * campaign (Robert, 2026-11-23: the same as Maintain mode, because a deal can only be in a campaign while its surgeon is a member).
+   * Only the links and the member records are deleted; a deal is never changed. Returns how many members were asked for. Runs in the
+   * person's own access.
+   */
   @AuraEnabled
   public static Integer removeMembers(List<Id> memberIds) {
     if (memberIds == null || memberIds.isEmpty()) {
       return 0;
     }
     try {
-      delete as user [
-        SELECT Id
+      List<Sales_Campaign_Member__c> ms = [
+        SELECT Id, Campaign__c, Surgeon__c
         FROM Sales_Campaign_Member__c
         WHERE Id IN :memberIds
         WITH USER_MODE
       ];
+      Set<Id> campaignIds = new Set<Id>();
+      Set<Id> surgeonIds = new Set<Id>();
+      Set<String> pairs = new Set<String>();
+      for (Sales_Campaign_Member__c m : ms) {
+        campaignIds.add(m.Campaign__c);
+        surgeonIds.add(m.Surgeon__c);
+        pairs.add(
+          String.valueOf(m.Campaign__c) + '-' + String.valueOf(m.Surgeon__c)
+        );
+      }
+      List<Sales_Campaign_Deal__c> links = new List<Sales_Campaign_Deal__c>();
+      for (Sales_Campaign_Deal__c l : [
+        SELECT Id, Campaign__c, Deal__r.Account__c
+        FROM Sales_Campaign_Deal__c
+        WHERE Campaign__c IN :campaignIds AND Deal__r.Account__c IN :surgeonIds
+        WITH USER_MODE
+      ]) {
+        if (
+          pairs.contains(
+            String.valueOf(l.Campaign__c) +
+              '-' +
+              String.valueOf(l.Deal__r.Account__c)
+          )
+        ) {
+          links.add(l);
+        }
+      }
+      delete as user links;
+      delete as user ms;
     } catch (DmlException e) {
       throw new AuraHandledException(e.getDmlMessage(0));
     }
