@@ -11,6 +11,10 @@
  * A campaign is OFFERED to a deal only when (Robert, 2026-11-06): it is active, it covers the country of the deal's owner, it
  * covers the deal's portfolio, and the deal's Primary HCP (the surgeon) is a member of it. A deal can be in one or many
  * campaigns. A campaign the deal is already in is always shown, so it can be taken out even if it no longer fits.
+ *
+ * ROSA deals (Robert, 2026-11-25): a ROSA deal is found through its HEALTHCARE FACILITY, never through its Primary HCP (one physician of
+ * many, so no use as a link). For a ROSA deal "the member" below is therefore its Healthcare Facility; for every other deal it is the
+ * Primary HCP, as before. memberAccountId says which.
  */
 public with sharing class PipelineDealCampaignController {
   /** One campaign as the control shows it. */
@@ -112,12 +116,41 @@ public with sharing class PipelineDealCampaignController {
     return out;
   }
 
+  /** True when the record type is a ROSA record type (the deal is found through its Healthcare Facility, not its Primary HCP). */
+  public static Boolean isRosa(String recordTypeDeveloperName) {
+    return recordTypeDeveloperName != null &&
+      recordTypeDeveloperName.toUpperCase().contains('ROSA');
+  }
+
+  /** The Account whose membership of a campaign lets the deal in: the Healthcare Facility of a ROSA deal, the Primary HCP of any other. */
+  public static Id memberAccountId(SalesRisks__c deal) {
+    return isRosa(
+        deal.RecordType == null ? null : deal.RecordType.DeveloperName
+      )
+      ? deal.Healthcare_Facility__c
+      : deal.Account__c;
+  }
+
+  /** The name of that Account. */
+  public static String memberAccountName(SalesRisks__c deal) {
+    if (
+      isRosa(deal.RecordType == null ? null : deal.RecordType.DeveloperName)
+    ) {
+      return deal.Healthcare_Facility__r == null
+        ? null
+        : deal.Healthcare_Facility__r.Name;
+    }
+    return deal.Account__r == null ? null : deal.Account__r.Name;
+  }
+
   private static SalesRisks__c readDeal(Id dealId) {
     List<SalesRisks__c> rows = [
       SELECT
         Name,
         Account__c,
         Account__r.Name,
+        Healthcare_Facility__c,
+        Healthcare_Facility__r.Name,
         RecordType.DeveloperName,
         Portfolio__c,
         Owner_Country__c
@@ -137,8 +170,9 @@ public with sharing class PipelineDealCampaignController {
     SalesRisks__c deal = readDeal(dealId);
     DealCampaigns out = new DealCampaigns();
     out.dealName = deal.Name;
-    out.hasHcp = deal.Account__c != null;
-    out.hcpName = deal.Account__r == null ? null : deal.Account__r.Name;
+    Id memberAccount = memberAccountId(deal);
+    out.hasHcp = memberAccount != null; // for a ROSA deal this is its Healthcare Facility
+    out.hcpName = memberAccountName(deal);
     out.ownerCountry = deal.Owner_Country__c;
     Set<String> ports = dealPortfolios(
       deal.RecordType.DeveloperName,
@@ -155,7 +189,7 @@ public with sharing class PipelineDealCampaignController {
     for (Sales_Campaign_Member__c m : [
       SELECT Campaign__c
       FROM Sales_Campaign_Member__c
-      WHERE Surgeon__c = :deal.Account__c
+      WHERE Surgeon__c = :memberAccount
       WITH USER_MODE
       LIMIT 2000
     ]) {
@@ -239,9 +273,12 @@ public with sharing class PipelineDealCampaignController {
       }
       if (linked == true) {
         SalesRisks__c deal = readDeal(dealId);
-        if (deal.Account__c == null) {
+        Id memberAccount = memberAccountId(deal);
+        if (memberAccount == null) {
           throw new AuraHandledException(
-            'This deal has no Primary HCP yet, so it cannot be put in a campaign.'
+            isRosa(deal.RecordType.DeveloperName)
+              ? 'This deal has no Healthcare Facility yet, so it cannot be put in a campaign.'
+              : 'This deal has no Primary HCP yet, so it cannot be put in a campaign.'
           );
         }
         Sales_Campaign__c c = [
@@ -255,7 +292,7 @@ public with sharing class PipelineDealCampaignController {
           [
             SELECT COUNT()
             FROM Sales_Campaign_Member__c
-            WHERE Campaign__c = :campaignId AND Surgeon__c = :deal.Account__c
+            WHERE Campaign__c = :campaignId AND Surgeon__c = :memberAccount
             WITH USER_MODE
           ] > 0;
         List<String> why = reasons(
@@ -263,7 +300,7 @@ public with sharing class PipelineDealCampaignController {
           deal.Owner_Country__c,
           dealPortfolios(deal.RecordType.DeveloperName, deal.Portfolio__c),
           member,
-          deal.Account__r == null ? null : deal.Account__r.Name
+          memberAccountName(deal)
         );
         if (!why.isEmpty()) {
           throw new AuraHandledException(

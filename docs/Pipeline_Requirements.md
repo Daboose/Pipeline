@@ -742,8 +742,48 @@ Dragged column widths in the campaign Report list are saved in the person's Pipe
 
 ### Maintain: remove and add a surgeon (Robert, 2026-11-20, mockup stage)
 
-A minus beside the surgeon's name asks "Are you sure you want to remove this surgeon from the campaign?" (Proceed or Cancel; no extra text). In Maintain the Search box is titled "Add": find a surgeon and press a plus to add them to the campaign. The surgeon's line must be the same height as a deal's line. Mockup `docs/mockups/pipeline_maintain_surgeon_v1.html`; wait for "build".
+A minus beside the surgeon's name asks "Are you sure you want to remove this surgeon from the campaign?" (Proceed or Cancel; no extra text). In Maintain the Search box is titled "Add": find a surgeon and press a plus to add them to the campaign. The surgeon's line must be the same height as a deal's line. Mockup `docs/mockups/archive/pipeline_maintain_surgeon_v1.html`; wait for "build".
 
 Decision (Robert, 2026-11-20): option A, the minus before the surgeon's name; the Add box has the same styling as Search, its label amber in Maintain. Built in UAT as Pipeline 0.167.
 
 Decisions (Robert, 2026-11-20): (1) Removing a surgeon from a campaign in Maintain also removes that surgeon's deals from the same campaign; adding the surgeon back lets the deals be put in again with a plus. (2) The Add box searches the campaign's countries first with a Widen search option at the bottom; the list scrolls when long; the country shows in each result. Campaign Management's own Remove is unchanged (asked, 2026-11-20).
+
+## ROSA campaigns: a campaign member can be a healthcare facility (Robert, 2026-11-25; DISCUSSION ONLY, nothing built, no mockup yet)
+
+Request: a ROSA campaign. Campaigns today are driven by surgeons: a member is a surgeon (`Sales_Campaign_Member__c.Surgeon__c`, an Account) and Maintain finds that surgeon's opportunities and risks through the deal's Primary HCP; ROSA is left out.
+
+Decisions (Robert, 2026-11-25):
+
+1. **One member list for both kinds.** A surgeon member finds implant opportunities (hip, knee, shoulder, CMFT) and risks through Primary HCP; a **healthcare facility member finds ROSA deals only**, through the deal's Healthcare Facility. A campaign can hold both, for an all-in-one view.
+2. **A ROSA deal is never linked through its physician.** A ROSA deal's Primary HCP is only one of many physicians involved and the others are not stored, so it says nothing about what the deal covers. The physician may be shown as a column in the results; it is never used to link or find the deal. Same principle as implants and risks, where the Healthcare Facility is optional and never used to find them: only the primary link counts.
+3. A ROSA deal therefore appears only under its facility, never under a surgeon, so the two lists never overlap. ROSA stays apart from implants (values never added together).
+
+Facts (PROD, read-only, 2026-11-25): a deal's Healthcare Facility is an Account (record type Healthcare Facility), so a facility fits the existing member list with no new object; of 249 open ROSA deals 247 have a facility.
+
+Open: how the Add box offers surgeons and facilities; how the Report list, value chips and counts show ROSA separately; how a facility's country is read for the campaign's country rule. Mockup drawn 2026-11-25: `docs/mockups/pipeline_rosa_campaign_members_v2.html` (two ways to offer surgeons and facilities in the Add box: one box with two result groups, or a Surgeon / Facility switch; the Maintain table with a FACILITY tag and ROSA deals under the facility). Awaiting his reaction and "build".
+
+Decision (Robert, 2026-11-25): **Option A, one Add box** with results in two groups (Surgeons, Healthcare facilities), each with a round plus. Mockup is now `docs/mockups/pipeline_rosa_campaign_members_v2.html` (option B and the "second unit" deal name removed; v1 archived). Nothing is built; awaiting "build". Rule restated by Robert: nothing goes into a mockup that he has not asked for.
+
+Built in UAT 2026-11-25 as Pipeline 0.171 / Campaign Management 0.51 (step 1: facilities as members and their ROSA deals; step 2, ROSA value box and stages, after a mockup). Build Spec "Pipeline 0.171".
+
+## Campaign view: a ROSA tick and a Type column (Robert, 2026-11-25; MOCKUP ONLY, awaiting his reaction and "build")
+
+Requests (after testing Pipeline 0.171 in UAT, where he added Bathurst Base Hospital with its ROSA deal): (1) in Maintain, a **ROSA tick** between Risks and Include Closed, to narrow the list to ROSA deals; (2) a **Type column**, on by default in the Report list and switchable in the Columns picker, saying **Opportunity** (implant: hip, knee, shoulder, CMFT), **Risk** or **ROSA**; also shown in Maintain, where it replaces the small RISK tag. Mockup `docs/mockups/pipeline_campaign_type_column_v1.html` (v2 of the facility mockup archived). **Decision (Robert, 2026-11-25): the Type is PLAIN TEXT, not a coloured chip** (the members screen was getting busy with chips; the small FACILITY chip stays). Drawn defaults, not yet confirmed: ROSA ticked to start with (Opportunities ticked, Risks not); the column's place (after the deal, before Brand in Maintain). With only ROSA ticked the facilities and their ROSA deals list; with none of the three ticked nothing is listed.
+
+## Campaign Management's import with healthcare facilities (Robert, 2026-11-25; MOCKUP ONLY, awaiting his reaction and "build")
+
+Robert noticed the importer (and Campaign Management's own Add box) matches surgeons only, so a campaign that can hold facilities needs them there too. Proposal (recommended, not yet decided): one pasted list matched against surgeons AND healthcare facilities together; a facility match shows the small FACILITY chip and no hospitals; nothing is chosen for the person; a line that matches both kinds offers both in its list; the look-up and the Add box get the same two groups (Surgeons, Healthcare facilities); "Create this surgeon" stays surgeons-only. The alternative (a Surgeons / Facilities switch above the paste box, one list each) is not drawn. Mockup `docs/mockups/archive/pipeline_campaign_import_facilities_v1.html` (the previous mockup `pipeline_campaign_type_column_v1.html` is archived).
+
+Built in UAT 2026-11-25 as Campaign Management 0.53 (Robert: yes to one list matched against both kinds). Build Spec "Campaign Management 0.53".
+
+## The ROSA value box on the campaign screen (Robert, 2026-11-25; MOCKUP ONLY, awaiting his reaction and "build")
+
+Step 2 of ROSA campaigns. Robert: keep the existing values (they are by rating, which only surgeons have) and add a separate box with the total value of the ROSA deals, rolled up at the top. Drawn: a "ROSA value" box at the end of the value chips after Not rated, set apart by a thin line; the sum of the ROSA value (`ROSAGrowthDollar__c`) of the ROSA deals in the campaign, per currency (local) or in US dollars, following the Currency switch; **shown only when the campaign has ROSA deals (Robert, 2026-11-25: with none, no box at all)**; the Value / year chip, the rating chips and the four count tiles stay surgeons-only. Not drawn: ROSA's own stages (not asked for yet), counts of facilities and ROSA deals. Mockup `docs/mockups/archive/pipeline_rosa_value_box_v1.html` (the import mockup is archived).
+
+## ROSA campaign: the single ROSA value box is enough; a new ROSA deal for a facility (Robert, 2026-11-25; MOCKUP ONLY, awaiting his reaction and "build")
+
+Decision: ROSA's own stages are NOT shown in the campaign screen; the single ROSA value box is enough. Next (Robert): the "No deal yet" of a healthcare facility in the campaign list should open the New Deal screen for a ROSA deal. A ROSA deal has no portfolio to choose, only the country (it decides the record type; taken at once when the person has one country), then the form of an existing ROSA deal (his screenshot of Bathurst Base Hospital): the stage slider (starting at Sales Pipeline), Healthcare Facility* (filled in, changeable), Primary HCP (optional), ROSA Deal Type, ROSA Sales Type (Hip, Knee, Shoulder), ROSA Growth $_, Currency, Owner_, Expected Closing Quarter and Year*, Install Date, Close Date, three ROSA platform lists, Rep priority and State priority, Background information. Same flyout and rules as the surgeon's New Deal (the deal is created as the signed-in person, then added to the campaign being looked at). Mockup `docs/mockups/pipeline_new_rosa_deal_v1.html` (the ROSA value box mockup is archived). Open: the real lists and which record type each country has (AU, NZ, TH, SG, HK, China and a regional one exist), whether a facility's flyout also needs a Usages screen (not drawn).
+
+### New ROSA deal from a facility's "No deal yet" (Robert, 2026-11-25: "build it in UAT")
+
+Built as drawn in `docs/mockups/pipeline_new_rosa_deal_v1.html`: no portfolio, the country decides the record type, then a form like an existing ROSA deal; the new deal joins the campaign through its facility. China and Regional ROSA record types are not offered (the same rule as the phone's New Deal). Build Spec "Pipeline 0.174".

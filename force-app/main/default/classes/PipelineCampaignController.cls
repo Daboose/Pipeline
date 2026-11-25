@@ -7,7 +7,7 @@
  * What it touches: Sales_Campaign__c, Sales_Campaign_Member__c and Sales_Campaign_Deal__c (read counts only) in the signed-in
  * person's own access (user mode). It reads Account (surgeons) and User (managers) in user mode too. It reads the surgeon's
  * hospitals from Healthcare_Surgeon_Relationship__c and the person's own Campaign Management settings in system mode, because those are
- * only used to help choose and to show the person's own theme and Zoom. maintainDeals reads the deals of a campaign's members (opportunities and risks, never ROSA) in system mode, sharing still applying,
+ * only used to help choose and to show the person's own theme and Zoom. maintainDeals reads the deals of a campaign's members (a surgeon's opportunities and risks; a facility's ROSA deals) in system mode, sharing still applying,
  * for the Maintain mode of Pipeline's campaign view; putting a deal in or out is done by PipelineDealCampaignController.setLink. currencyRates reads the exchange rates held in Salesforce (CurrencyType) for the campaign
  * view's US dollar totals; Pipeline holds no rates of its own. saveGlobalSettings writes the person's light or dark choice
  * and their Zoom into Campaign_JSON__c on their own UserSettings__c record, through PipelineUserSettings (only that field, only
@@ -21,6 +21,11 @@
  * removeMemberAndDeals (Robert, 2026-11-20, Maintain mode of Pipeline's campaign view): takes one surgeon out of the campaign AND takes
  * that surgeon's deals out of the same campaign (their Sales_Campaign_Deal__c links; the deals themselves are never changed), because
  * a deal can only be in a campaign while its surgeon is a member. removeMembers (Campaign Management's Remove, several at once) does the same since 2026-11-23.
+ *
+ * Healthcare facilities as members (Robert, 2026-11-25, ROSA campaigns): a member is an Account that is either a surgeon (as above) or a
+ * Healthcare Facility (record type Healthcare_Facility). A surgeon finds opportunities and risks through the deal's Primary HCP; a facility
+ * finds ROSA deals only, through the deal's Healthcare Facility. A ROSA deal is never found through its physician (one of many), only shown
+ * as information. searchSurgeons also returns matching facilities (in its facilities list); a ROSA deal's value is ROSAGrowthDollar__c.
  */
 public with sharing class PipelineCampaignController {
   /** The record types that may be members (developer names). */
@@ -29,6 +34,8 @@ public with sharing class PipelineCampaignController {
     'Emerging_Consultant'
   };
   private static final Integer MAX_MEMBERS = 2000;
+  /** The record type (developer name) of a healthcare facility, the only kind of facility that may be a member. */
+  private static final String FACILITY_TYPE = 'Healthcare_Facility';
 
   public class Option {
     @AuraEnabled
@@ -113,7 +120,9 @@ public with sharing class PipelineCampaignController {
     @AuraEnabled
     public String y6Rep; // the surgeon's Y6 Extremities Rep: a user
     @AuraEnabled
-    public List<RatingCell> ratings = new List<RatingCell>(); // one per portfolio the campaign covers
+    public Boolean isFacility = false; // a healthcare facility (finds ROSA deals), not a surgeon
+    @AuraEnabled
+    public List<RatingCell> ratings = new List<RatingCell>(); // one per portfolio the campaign covers (none for a facility)
     @AuraEnabled
     public List<MemberDeal> deals = new List<MemberDeal>(); // the surgeon's deals linked to this campaign
   }
@@ -127,11 +136,13 @@ public with sharing class PipelineCampaignController {
     @AuraEnabled
     public String name;
     @AuraEnabled
-    public String kind; // opp or risk
+    public String kind; // opp, risk or rosa
     @AuraEnabled
     public String portfolio;
     @AuraEnabled
-    public String brand;
+    public String physician; // a ROSA deal's Primary HCP, shown for information only (never used to find the deal)
+    @AuraEnabled
+    public String brand; // a ROSA deal shows its ROSA deal type here
     @AuraEnabled
     public String stage;
     @AuraEnabled
@@ -173,9 +184,11 @@ public with sharing class PipelineCampaignController {
     @AuraEnabled
     public String name;
     @AuraEnabled
-    public String kind; // opp or risk
+    public String kind; // opp, risk or rosa
     @AuraEnabled
     public String portfolio;
+    @AuraEnabled
+    public String physician; // a ROSA deal's Primary HCP, for information only
     @AuraEnabled
     public String stage;
     @AuraEnabled
@@ -224,11 +237,15 @@ public with sharing class PipelineCampaignController {
     public String hospitals;
     @AuraEnabled
     public Boolean alreadyMember;
+    @AuraEnabled
+    public Boolean isFacility = false; // a healthcare facility, not a surgeon
   }
 
   public class SurgeonSearch {
     @AuraEnabled
     public List<SurgeonHit> hits;
+    @AuraEnabled
+    public List<SurgeonHit> facilities; // matching healthcare facilities (the same scope), for the Add box's second group
     @AuraEnabled
     public Integer outside; // matches outside the campaign's countries, not shown (when not widened)
     @AuraEnabled
@@ -474,7 +491,10 @@ public with sharing class PipelineCampaignController {
         Surgeon__r.Preferred_Name__c,
         Surgeon__r.PersonMailingCountryCode,
         Surgeon__r.PersonMailingCity,
-        Surgeon__r.RecordType.Name
+        Surgeon__r.BillingCountryCode,
+        Surgeon__r.BillingCity,
+        Surgeon__r.RecordType.Name,
+        Surgeon__r.RecordType.DeveloperName
       FROM Sales_Campaign_Member__c
       WHERE Campaign__c = :campaignId AND Surgeon__c != NULL
       WITH USER_MODE
@@ -513,8 +533,11 @@ public with sharing class PipelineCampaignController {
         Deal__c,
         Deal__r.Name,
         Deal__r.Account__c,
+        Deal__r.Account__r.Name,
+        Deal__r.Healthcare_Facility__c,
         Deal__r.Stage__c,
         Deal__r.AmountPerYear__c,
+        Deal__r.ROSAGrowthDollar__c,
         Deal__r.CurrencyIsoCode,
         Deal__r.Expected_Closure_Quarter__c,
         Deal__r.Expected_Closing_Year__c,
@@ -532,7 +555,10 @@ public with sharing class PipelineCampaignController {
       LIMIT 5000
     ];
     for (Sales_Campaign_Deal__c l : links) {
-      Id a = l.Deal__r == null ? null : l.Deal__r.Account__c;
+      // the member the deal belongs under: its Healthcare Facility for a ROSA deal, its Primary HCP for any other
+      Id a = l.Deal__r == null
+        ? null
+        : PipelineDealCampaignController.memberAccountId(l.Deal__r);
       if (a == null) {
         continue;
       }
@@ -555,8 +581,13 @@ public with sharing class PipelineCampaignController {
       r.accountId = m.Surgeon__c;
       r.name = m.Surgeon__r.Name;
       r.preferredName = m.Surgeon__r.Preferred_Name__c;
-      r.country = m.Surgeon__r.PersonMailingCountryCode;
-      r.city = m.Surgeon__r.PersonMailingCity;
+      r.isFacility = m.Surgeon__r.RecordType.DeveloperName == FACILITY_TYPE;
+      r.country = r.isFacility
+        ? m.Surgeon__r.BillingCountryCode
+        : m.Surgeon__r.PersonMailingCountryCode;
+      r.city = r.isFacility
+        ? m.Surgeon__r.BillingCity
+        : m.Surgeon__r.PersonMailingCity;
       r.type = m.Surgeon__r.RecordType.Name;
       r.hospitals = hospitalText(hospitals.get(m.Surgeon__c));
       r.dealCount = dealCount.containsKey(m.Surgeon__c)
@@ -573,7 +604,7 @@ public with sharing class PipelineCampaignController {
         r.y1Rep = ra.Y1User__r == null ? null : ra.Y1User__r.Name;
         r.y6Rep = ra.Y6User__r == null ? null : ra.Y6User__r.Name;
       }
-      for (String p : campaignPortfolios) {
+      for (String p : r.isFacility ? new List<String>() : campaignPortfolios) {
         RatingCell c = new RatingCell();
         c.portfolio = p.trim();
         c.area = areaOf(c.portfolio);
@@ -616,7 +647,9 @@ public with sharing class PipelineCampaignController {
       r.RecordType.DeveloperName == null
       ? ''
       : r.RecordType.DeveloperName.toUpperCase();
-    d.kind = rt.endsWith('RISK') ? 'risk' : 'opp';
+    d.kind = rt.endsWith('RISK')
+      ? 'risk'
+      : (rt.contains('ROSA') ? 'rosa' : 'opp');
     List<String> ports = new List<String>(
       PipelineDealCampaignController.dealPortfolios(
         r.RecordType == null ? null : r.RecordType.DeveloperName,
@@ -626,7 +659,11 @@ public with sharing class PipelineCampaignController {
     ports.sort();
     d.portfolio = ports.isEmpty() ? null : ports[0];
     d.stage = r.Stage__c;
-    d.value = r.AmountPerYear__c;
+    d.value = d.kind == 'rosa' ? r.ROSAGrowthDollar__c : r.AmountPerYear__c;
+    d.physician = d.kind == 'rosa' &&
+      r.Account__r != null
+      ? r.Account__r.Name
+      : null;
     d.currencyCode = r.CurrencyIsoCode;
     d.quarter = String.isBlank(r.Expected_Closure_Quarter__c)
       ? null
@@ -795,6 +832,7 @@ public with sharing class PipelineCampaignController {
   ) {
     SurgeonSearch s = new SurgeonSearch();
     s.hits = new List<SurgeonHit>();
+    s.facilities = new List<SurgeonHit>();
     s.outside = 0;
     s.heldBack = 0;
     String t = term == null ? '' : term.trim();
@@ -903,7 +941,74 @@ public with sharing class PipelineCampaignController {
       h.alreadyMember = already.contains(a.Id);
       s.hits.add(h);
     }
+    addFacilities(s, campaignId, pattern, countries, everywhere);
     return s;
+  }
+
+  /**
+   * The healthcare facilities that match the typed text, in the same country scope as the surgeons (a facility's country is its billing
+   * country), for the second group of the Add box (Robert, 2026-11-25). Facilities outside the scope are added to the outside count.
+   */
+  private static void addFacilities(
+    SurgeonSearch s,
+    Id campaignId,
+    String pattern,
+    List<String> countries,
+    Boolean everywhere
+  ) {
+    List<Account> found;
+    if (everywhere) {
+      found = [
+        SELECT Name, BillingCountryCode, BillingCity, RecordType.Name
+        FROM Account
+        WHERE RecordType.DeveloperName = :FACILITY_TYPE AND Name LIKE :pattern
+        WITH USER_MODE
+        ORDER BY Name
+        LIMIT 8
+      ];
+    } else {
+      found = [
+        SELECT Name, BillingCountryCode, BillingCity, RecordType.Name
+        FROM Account
+        WHERE
+          RecordType.DeveloperName = :FACILITY_TYPE
+          AND BillingCountryCode IN :countries
+          AND Name LIKE :pattern
+        WITH USER_MODE
+        ORDER BY Name
+        LIMIT 8
+      ];
+      s.outside += [
+        SELECT COUNT()
+        FROM Account
+        WHERE
+          RecordType.DeveloperName = :FACILITY_TYPE
+          AND BillingCountryCode NOT IN :countries
+          AND Name LIKE :pattern
+        WITH USER_MODE
+        LIMIT 50
+      ];
+    }
+    Set<Id> already = new Set<Id>();
+    for (Sales_Campaign_Member__c m : [
+      SELECT Surgeon__c
+      FROM Sales_Campaign_Member__c
+      WHERE Campaign__c = :campaignId AND Surgeon__c IN :found
+      WITH USER_MODE
+    ]) {
+      already.add(m.Surgeon__c);
+    }
+    for (Account a : found) {
+      SurgeonHit h = new SurgeonHit();
+      h.id = a.Id;
+      h.name = a.Name;
+      h.country = a.BillingCountryCode;
+      h.city = a.BillingCity;
+      h.type = a.RecordType.Name;
+      h.isFacility = true;
+      h.alreadyMember = already.contains(a.Id);
+      s.facilities.add(h);
+    }
   }
 
   // ---------- members ----------
@@ -943,34 +1048,7 @@ public with sharing class PipelineCampaignController {
         WHERE Id IN :memberIds
         WITH USER_MODE
       ];
-      Set<Id> campaignIds = new Set<Id>();
-      Set<Id> surgeonIds = new Set<Id>();
-      Set<String> pairs = new Set<String>();
-      for (Sales_Campaign_Member__c m : ms) {
-        campaignIds.add(m.Campaign__c);
-        surgeonIds.add(m.Surgeon__c);
-        pairs.add(
-          String.valueOf(m.Campaign__c) + '-' + String.valueOf(m.Surgeon__c)
-        );
-      }
-      List<Sales_Campaign_Deal__c> links = new List<Sales_Campaign_Deal__c>();
-      for (Sales_Campaign_Deal__c l : [
-        SELECT Id, Campaign__c, Deal__r.Account__c
-        FROM Sales_Campaign_Deal__c
-        WHERE Campaign__c IN :campaignIds AND Deal__r.Account__c IN :surgeonIds
-        WITH USER_MODE
-      ]) {
-        if (
-          pairs.contains(
-            String.valueOf(l.Campaign__c) +
-              '-' +
-              String.valueOf(l.Deal__r.Account__c)
-          )
-        ) {
-          links.add(l);
-        }
-      }
-      delete as user links;
+      delete as user linksOf(ms);
       delete as user ms;
     } catch (DmlException e) {
       throw new AuraHandledException(e.getDmlMessage(0));
@@ -979,9 +1057,58 @@ public with sharing class PipelineCampaignController {
   }
 
   /**
-   * Takes one surgeon out of the campaign together with the links of that surgeon's deals to the same campaign (Robert, 2026-11-20): the
-   * Maintain screen then offers those deals again, with a plus, if the surgeon is added back. Only the links and the member record are
-   * deleted; a deal is never changed. Returns how many deal links went. Runs in the person's own access.
+   * The links of the members' deals to the members' own campaigns: a surgeon's opportunities and risks (found through the Primary HCP) or
+   * a facility's ROSA deals (found through the Healthcare Facility); never a ROSA deal through its physician. Matched on the campaign
+   * together with the member's account, so other campaigns keep their links. Runs in the person's own access.
+   */
+  private static List<Sales_Campaign_Deal__c> linksOf(
+    List<Sales_Campaign_Member__c> ms
+  ) {
+    Set<Id> campaignIds = new Set<Id>();
+    Set<Id> accountIds = new Set<Id>();
+    Set<String> pairs = new Set<String>();
+    for (Sales_Campaign_Member__c m : ms) {
+      campaignIds.add(m.Campaign__c);
+      accountIds.add(m.Surgeon__c);
+      pairs.add(
+        String.valueOf(m.Campaign__c) + '-' + String.valueOf(m.Surgeon__c)
+      );
+    }
+    List<Sales_Campaign_Deal__c> links = new List<Sales_Campaign_Deal__c>();
+    if (ms.isEmpty()) {
+      return links;
+    }
+    for (Sales_Campaign_Deal__c l : [
+      SELECT
+        Id,
+        Campaign__c,
+        Deal__r.Account__c,
+        Deal__r.Healthcare_Facility__c,
+        Deal__r.RecordType.DeveloperName
+      FROM Sales_Campaign_Deal__c
+      WHERE
+        Campaign__c IN :campaignIds
+        AND (Deal__r.Account__c IN :accountIds
+        OR Deal__r.Healthcare_Facility__c IN :accountIds)
+      WITH USER_MODE
+    ]) {
+      Id under = PipelineDealCampaignController.memberAccountId(l.Deal__r);
+      if (
+        under != null &&
+        pairs.contains(
+          String.valueOf(l.Campaign__c) + '-' + String.valueOf(under)
+        )
+      ) {
+        links.add(l);
+      }
+    }
+    return links;
+  }
+
+  /**
+   * Takes one member (a surgeon or a facility) out of the campaign together with the links of that member's deals to the same campaign
+   * (Robert, 2026-11-20): the Maintain screen then offers those deals again, with a plus, if the member is added back. Only the links and
+   * the member record are deleted; a deal is never changed. Returns how many deal links went. Runs in the person's own access.
    */
   @AuraEnabled
   public static Integer removeMemberAndDeals(Id memberId) {
@@ -998,14 +1125,7 @@ public with sharing class PipelineCampaignController {
       if (ms.isEmpty()) {
         return 0;
       }
-      List<Sales_Campaign_Deal__c> links = [
-        SELECT Id
-        FROM Sales_Campaign_Deal__c
-        WHERE
-          Campaign__c = :ms[0].Campaign__c
-          AND Deal__r.Account__c = :ms[0].Surgeon__c
-        WITH USER_MODE
-      ];
+      List<Sales_Campaign_Deal__c> links = linksOf(ms);
       delete as user links;
       delete as user ms;
       return links.size();
@@ -1055,7 +1175,7 @@ public with sharing class PipelineCampaignController {
     public List<String> problems;
   }
 
-  /** Matches each line of a pasted list or file to surgeons. Nothing is saved: the person confirms every row first. */
+  /** Matches each line of a pasted list or file to surgeons and healthcare facilities. Nothing is saved: the person confirms every row first. */
   @AuraEnabled
   public static List<ImportRow> matchNames(Id campaignId, List<String> lines) {
     return PipelineCampaignImport.match(campaignId, lines);
@@ -1105,7 +1225,8 @@ public with sharing class PipelineCampaignController {
 
   /**
    * The deals a manager can put in or take out of a campaign (Robert, 2026-11-16, the Maintain mode of Pipeline's campaign view): for
-   * every surgeon who is a member, their opportunities and risks (never ROSA) that are open and fit the campaign (it is active, it
+   * every surgeon who is a member, their opportunities and risks (never ROSA, never found through a ROSA deal's physician), and for every
+   * healthcare facility who is a member (Robert, 2026-11-25), its ROSA deals found through the Healthcare Facility, that are open and fit the campaign (it is active, it
    * covers the owner's country and the deal's portfolio), plus any deal already in the campaign (so it can be taken out even when it no
    * longer fits or has closed). includeClosed (Robert, 2026-11-19, the "Include Closed" chip) also lists the closed deals that fit, won or
    * lost, so they can be put in too. The deals are read without field-level checks, sharing still applies; canEdit says whether the person
@@ -1128,16 +1249,21 @@ public with sharing class PipelineCampaignController {
       LIMIT 1
     ];
     Set<Id> surgeons = new Set<Id>();
+    Set<Id> facilities = new Set<Id>();
     for (Sales_Campaign_Member__c m : [
-      SELECT Surgeon__c
+      SELECT Surgeon__c, Surgeon__r.RecordType.DeveloperName
       FROM Sales_Campaign_Member__c
       WHERE Campaign__c = :campaignId
       WITH USER_MODE
       LIMIT 2000
     ]) {
-      surgeons.add(m.Surgeon__c);
+      if (m.Surgeon__r.RecordType.DeveloperName == FACILITY_TYPE) {
+        facilities.add(m.Surgeon__c);
+      } else {
+        surgeons.add(m.Surgeon__c);
+      }
     }
-    if (surgeons.isEmpty()) {
+    if (surgeons.isEmpty() && facilities.isEmpty()) {
       return out;
     }
     // open deals only, or open and closed (IsClosed__c is never null)
@@ -1154,29 +1280,70 @@ public with sharing class PipelineCampaignController {
     ]) {
       linked.add(l.Deal__c);
     }
-    for (SalesRisks__c r : [
-      SELECT
-        Name,
-        Account__c,
-        Stage__c,
-        AmountPerYear__c,
-        CurrencyIsoCode,
-        Brand__c,
-        Owner.Name,
-        Owner_Country__c,
-        RecordType.DeveloperName,
-        Portfolio__c
-      FROM SalesRisks__c
-      WHERE
-        Account__c IN :surgeons
-        AND (NOT RecordType.DeveloperName LIKE '%ROSA%')
-        AND RecordType.DeveloperName NOT IN ('Master', 'SALE')
-        AND (IsClosed__c IN :closedFlags
-        OR Id IN :linked)
-      WITH SYSTEM_MODE
-      ORDER BY CreatedDate DESC
-      LIMIT 5000
-    ]) {
+    // a surgeon's opportunities and risks (through the Primary HCP), then a facility's ROSA deals (through the Healthcare Facility)
+    List<SalesRisks__c> found = new List<SalesRisks__c>();
+    if (!surgeons.isEmpty()) {
+      found.addAll(
+        [
+          SELECT
+            Name,
+            Account__c,
+            Account__r.Name,
+            Healthcare_Facility__c,
+            Stage__c,
+            AmountPerYear__c,
+            ROSAGrowthDollar__c,
+            ROSA_Deal_Type__c,
+            CurrencyIsoCode,
+            Brand__c,
+            Owner.Name,
+            Owner_Country__c,
+            RecordType.DeveloperName,
+            Portfolio__c
+          FROM SalesRisks__c
+          WHERE
+            Account__c IN :surgeons
+            AND (NOT RecordType.DeveloperName LIKE '%ROSA%')
+            AND RecordType.DeveloperName NOT IN ('Master', 'SALE')
+            AND (IsClosed__c IN :closedFlags
+            OR Id IN :linked)
+          WITH SYSTEM_MODE
+          ORDER BY CreatedDate DESC
+          LIMIT 5000
+        ]
+      );
+    }
+    if (!facilities.isEmpty()) {
+      found.addAll(
+        [
+          SELECT
+            Name,
+            Account__c,
+            Account__r.Name,
+            Healthcare_Facility__c,
+            Stage__c,
+            AmountPerYear__c,
+            ROSAGrowthDollar__c,
+            ROSA_Deal_Type__c,
+            CurrencyIsoCode,
+            Brand__c,
+            Owner.Name,
+            Owner_Country__c,
+            RecordType.DeveloperName,
+            Portfolio__c
+          FROM SalesRisks__c
+          WHERE
+            Healthcare_Facility__c IN :facilities
+            AND RecordType.DeveloperName LIKE '%ROSA%'
+            AND (IsClosed__c IN :closedFlags
+            OR Id IN :linked)
+          WITH SYSTEM_MODE
+          ORDER BY CreatedDate DESC
+          LIMIT 5000
+        ]
+      );
+    }
+    for (SalesRisks__c r : found) {
       Boolean isLinked = linked.contains(r.Id);
       Set<String> ports = PipelineDealCampaignController.dealPortfolios(
         r.RecordType.DeveloperName,
@@ -1196,18 +1363,26 @@ public with sharing class PipelineCampaignController {
         continue;
       }
       MaintainDeal d = new MaintainDeal();
+      Boolean rosa = PipelineDealCampaignController.isRosa(
+        r.RecordType.DeveloperName
+      );
       d.id = r.Id;
-      d.accountId = r.Account__c;
+      d.accountId = PipelineDealCampaignController.memberAccountId(r); // the member it sits under: the facility of a ROSA deal
       d.name = r.Name;
-      d.kind = r.RecordType.DeveloperName.toUpperCase().endsWith('RISK')
-        ? 'risk'
-        : 'opp';
+      d.kind = rosa
+        ? 'rosa'
+        : (r.RecordType.DeveloperName.toUpperCase().endsWith('RISK')
+            ? 'risk'
+            : 'opp');
       List<String> sorted = new List<String>(ports);
       sorted.sort();
       d.portfolio = String.join(sorted, ', ');
-      d.brand = r.Brand__c == null ? null : r.Brand__c.replace(';', ', ');
+      d.physician = rosa && r.Account__r != null ? r.Account__r.Name : null;
+      d.brand = rosa
+        ? r.ROSA_Deal_Type__c
+        : (r.Brand__c == null ? null : r.Brand__c.replace(';', ', '));
       d.stage = r.Stage__c;
-      d.value = r.AmountPerYear__c;
+      d.value = rosa ? r.ROSAGrowthDollar__c : r.AmountPerYear__c;
       d.currencyCode = r.CurrencyIsoCode;
       d.ownerName = r.Owner == null ? null : r.Owner.Name;
       d.inCampaign = isLinked;

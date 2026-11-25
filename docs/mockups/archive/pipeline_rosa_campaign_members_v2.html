@@ -1,0 +1,1082 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>
+      Mockup: surgeons and healthcare facilities in one campaign (version 2)
+    </title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        height: 100%;
+      }
+      body {
+        margin: 0;
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-size: 15px;
+        background: #141e2e;
+        color: #e8edf5;
+        overflow: auto;
+      }
+      :root {
+        --bg: #141e2e;
+        --panel: #1a2740;
+        --line: #2f4163;
+        --edge: #5b6f93;
+        --text: #e8edf5;
+        --muted: #8b9bb0;
+        --indigo: #6366f1;
+        --indigo2: #a5b4fc;
+        --head: #f472b6;
+        --fill2: #475569;
+        --bad: #dc2626;
+        --pfield: #11151c;
+        --ppanel: #171b24;
+        --pline: #2c3444;
+        --pipe: #fdb827;
+      }
+      button {
+        font-family: inherit;
+      }
+      .sfnav {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        height: 44px;
+        padding: 0 16px;
+        background: #0b1220;
+        color: #cdd6e6;
+        font-size: 14px;
+        position: sticky;
+        top: 0;
+        z-index: 50;
+      }
+      .sfnav .app {
+        font-weight: 800;
+        letter-spacing: 0.14em;
+      }
+      .sfnav .app b {
+        color: #fdb827;
+      }
+      .sfnav .tab {
+        color: #9fb0cc;
+      }
+      .sfnav .tab.on {
+        color: #fff;
+        border-bottom: 2px solid #6366f1;
+        padding-bottom: 2px;
+      }
+      .sfnav .sp {
+        flex: 1;
+      }
+      .btn {
+        border: 0;
+        border-radius: 999px;
+        background: var(--indigo);
+        color: #fff;
+        font-weight: 800;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        padding: 9px 18px;
+        cursor: pointer;
+      }
+      .btn.sec {
+        background: var(--fill2);
+      }
+      .btn.danger {
+        background: var(--bad);
+      }
+      .main {
+        padding: 14px 20px 60px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        max-width: 1500px;
+        margin: 0 auto;
+      }
+      .about {
+        padding: 12px 18px;
+        background: var(--panel);
+        border: 1px solid var(--edge);
+        border-radius: 12px;
+        line-height: 1.5;
+        max-width: 1100px;
+      }
+      .about summary {
+        cursor: pointer;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        color: var(--pipe);
+      }
+      .about ul {
+        margin: 4px 0 8px;
+        padding-left: 22px;
+      }
+      h2 {
+        margin: 6px 0 0;
+        font-size: 18px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+      h2 b {
+        color: var(--pipe);
+      }
+      .sub {
+        color: var(--muted);
+        margin: 0;
+      }
+      .card {
+        background: var(--panel);
+        border: 1px solid var(--edge);
+        border-radius: 14px;
+        overflow: hidden;
+        position: relative;
+      }
+      .lbl {
+        display: flex;
+        gap: 10px;
+        align-items: baseline;
+        padding: 10px 16px;
+        background: color-mix(in srgb, var(--head) 16%, transparent);
+        border-bottom: 1px solid
+          color-mix(in srgb, var(--head) 38%, transparent);
+      }
+      .lbl b {
+        color: var(--head);
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        font-size: 16px;
+      }
+      .lbl span {
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .meas {
+        margin-left: auto;
+        font-size: 12px;
+        font-variant-numeric: tabular-nums;
+      }
+      /* toolbar (as the Members card's bar) */
+      .bar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 16px;
+        border-bottom: 1px solid var(--line);
+        flex-wrap: wrap;
+      }
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border: 1px solid var(--pline);
+        background: var(--pfield);
+        color: var(--text);
+        border-radius: 999px;
+        padding: 6px 13px;
+        font-size: 14px;
+      }
+      .chip.on {
+        background: var(--indigo);
+        border-color: var(--indigo);
+        color: #fff;
+      }
+      .tick {
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.25);
+        display: inline-block;
+      }
+      .chip.on .tick {
+        background: #fff;
+      }
+      .seg {
+        display: inline-flex;
+        border: 1px solid var(--pline);
+        border-radius: 999px;
+        overflow: hidden;
+      }
+      .seg span {
+        padding: 6px 14px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+        cursor: pointer;
+      }
+      .seg span.on {
+        background: var(--indigo);
+        color: #fff;
+      }
+      .fwrap {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        position: relative;
+      }
+      .fslbl {
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .fslbl.add {
+        color: var(--head);
+      }
+      .ffield {
+        position: relative;
+        display: block;
+      }
+      .fin {
+        height: 36px;
+        width: 260px;
+        background: var(--pfield);
+        border: 1px solid var(--pline);
+        border-radius: 999px;
+        color: var(--text);
+        font-size: 15px;
+        padding: 0 38px 0 14px;
+      }
+      .fin:focus {
+        outline: 2px solid var(--indigo2);
+        outline-offset: 1px;
+      }
+      .xcirc {
+        position: absolute;
+        right: 7px;
+        top: 50%;
+        margin-top: -11px;
+        width: 22px;
+        height: 22px;
+        border: 0;
+        border-radius: 50%;
+        background: var(--indigo);
+        cursor: pointer;
+        padding: 0;
+      }
+      .xcirc::before,
+      .xcirc::after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 10px;
+        height: 2px;
+        border-radius: 1px;
+        background: #fff;
+      }
+      .xcirc::before {
+        transform: translate(-50%, -50%) rotate(45deg);
+      }
+      .xcirc::after {
+        transform: translate(-50%, -50%) rotate(-45deg);
+      }
+      /* search results */
+      .pop {
+        position: absolute;
+        left: 62px;
+        top: 42px;
+        z-index: 30;
+        width: 430px;
+        background: var(--ppanel);
+        border: 1px solid var(--edge);
+        border-radius: 12px;
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+        padding: 6px;
+      }
+      .hit {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 6px 8px 6px 12px;
+        border-radius: 8px;
+        min-height: 46px;
+      }
+      .hit:hover {
+        background: rgba(99, 102, 241, 0.12);
+      }
+      .hit .nm {
+        flex: 1;
+        min-width: 0;
+      }
+      .hit .nm b {
+        display: block;
+      }
+      .hit small {
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .hit .already {
+        color: var(--muted);
+        font-size: 13px;
+        padding-right: 8px;
+      }
+      .foot {
+        color: var(--muted);
+        font-size: 13px;
+        padding: 6px 12px;
+      }
+      /* the drawn round buttons (same as the deal rows) */
+      .rb {
+        position: relative;
+        flex: none;
+        width: 36px;
+        height: 36px;
+        padding: 0;
+        border: 0;
+        border-radius: 50%;
+        cursor: pointer;
+        color: #fff;
+      }
+      .rb.s30 {
+        width: 30px;
+        height: 30px;
+      }
+      .rb .mark {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 16px;
+        height: 4px;
+        margin: -2px 0 0 -8px;
+        border-radius: 2px;
+        background: #fff;
+      }
+      .rb.s30 .mark {
+        width: 14px;
+        height: 3px;
+        margin: -1.5px 0 0 -7px;
+      }
+      .rb.add {
+        background: var(--indigo);
+      }
+      .rb.rem {
+        background: var(--fill2);
+      }
+      .rb.add .mark::after {
+        content: "";
+        position: absolute;
+        left: 6px;
+        top: -6px;
+        width: 4px;
+        height: 16px;
+        border-radius: 2px;
+        background: #fff;
+      }
+      .rb.s30.add .mark::after {
+        left: 5.5px;
+        top: -5.5px;
+        width: 3px;
+        height: 14px;
+      }
+      .rb:focus-visible {
+        outline: 2px solid var(--indigo2);
+        outline-offset: 2px;
+      }
+      /* the table */
+      .mtbl {
+        width: 100%;
+        table-layout: fixed;
+        border-collapse: collapse;
+        font-size: 15px;
+      }
+      .mtbl th {
+        text-align: left;
+        font-size: 12px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--head);
+        padding: 9px 14px;
+        border-bottom: 1px solid var(--line);
+        white-space: nowrap;
+      }
+      .mtbl th:not(:first-child),
+      .mtbl td:not(:first-child) {
+        text-align: center;
+      }
+      .mtbl td {
+        padding: 0 14px;
+        border-bottom: 1px solid var(--line);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      /* ONE row height for a surgeon's line and a deal's line (Robert's requirement): every row is 54 px, the surgeon's 3 px line included */
+      .mtbl tr.dl td {
+        height: 54px;
+      }
+      .mtbl tr.sg td {
+        height: 54px;
+        border-top: 3px solid var(--head);
+      }
+      .mtbl tr.dl td:first-child {
+        padding-left: 34px;
+      }
+      .sgcell {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        height: 100%;
+      }
+      .sn {
+        font-size: 18px;
+        font-weight: 800;
+      }
+      .rplate {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        height: 30px;
+        min-width: 116px;
+        padding: 0 12px;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: #1b1405;
+      }
+      .Platinum {
+        background: linear-gradient(#f3f6fb, #b7c2d3);
+      }
+      .Gold {
+        background: linear-gradient(#ffe08a, #d9a21b);
+      }
+      .Silver {
+        background: linear-gradient(#eef1f5, #a9b2bf);
+      }
+      .none {
+        background: transparent;
+        box-shadow: inset 0 0 0 1px #5b6f93;
+        color: #b9c4d6;
+      }
+      .cnt {
+        margin-left: auto;
+        color: var(--muted);
+        font-size: 14px;
+      }
+      .kind {
+        margin-left: 8px;
+        padding: 1px 8px;
+        border-radius: 6px;
+        background: #22304c;
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+      }
+      .inpill {
+        padding: 3px 12px;
+        border-radius: 999px;
+        background: #16a34a;
+        color: #fff;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      .outpill {
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .mid {
+        text-align: center;
+      }
+      /* confirmation */
+      .scrim {
+        position: fixed;
+        inset: 0;
+        z-index: 80;
+        background: rgba(8, 12, 20, 0.55);
+        backdrop-filter: blur(3px);
+        display: none;
+        align-items: center;
+        justify-content: center;
+      }
+      .scrim.on {
+        display: flex;
+      }
+      .ask {
+        background: var(--ppanel);
+        border: 1px solid var(--edge);
+        border-top: 3px solid var(--indigo);
+        border-radius: 14px;
+        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55);
+        padding: 22px 24px 18px;
+        width: min(460px, 92vw);
+      }
+      .ask p {
+        margin: 0 0 18px;
+        font-size: 17px;
+        line-height: 1.4;
+      }
+      .ask .row {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+      }
+      .toast {
+        position: fixed;
+        left: 50%;
+        bottom: 22px;
+        transform: translateX(-50%);
+        z-index: 90;
+        padding: 10px 20px;
+        border: 1px solid var(--edge);
+        border-radius: 999px;
+        background: #0b1220;
+        color: #fff;
+        font-weight: 700;
+        display: none;
+      }
+      .toast.on {
+        display: block;
+      }
+      .tag {
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        color: var(--muted);
+      }
+      .grid3 {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+      .note {
+        color: var(--muted);
+        font-size: 13px;
+        padding: 8px 16px 12px;
+      }
+
+      .pop {
+        left: 0;
+        top: 44px;
+        width: 460px;
+      }
+      .grp {
+        padding: 8px 12px 2px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--head);
+      }
+      .grp + .hit {
+        margin-top: 2px;
+      }
+      .opt {
+        overflow: visible;
+      }
+      .opt .lbl {
+        border-radius: 13px 13px 0 0;
+      }
+      .opt .bar {
+        border-bottom: 0;
+      }
+      .two {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        align-items: start;
+      }
+      .fac {
+        margin-left: 4px;
+        padding: 3px 10px;
+        border-radius: 6px;
+        background: #0e7490;
+        color: #fff;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+      .phys {
+        display: block;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 400;
+        margin-top: 1px;
+      }
+      .mtbl tr.dl td:first-child b {
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="sfnav">
+      <span class="app"><b>PIPE</b>LINE</span
+      ><span class="tab on">Pipeline</span><span class="tab">Campaigns</span
+      ><span class="sp"></span>
+      <button
+        type="button"
+        class="btn"
+        onclick="document.documentElement.requestFullscreen &amp;&amp; document.documentElement.requestFullscreen()"
+      >
+        Full screen
+      </button>
+    </div>
+    <div class="main">
+      <details class="about" open>
+        <summary>ABOUT THIS MOCKUP</summary>
+        <p>
+          A campaign whose members can be <b>surgeons</b> (they find implant
+          opportunities and risks) and <b>healthcare facilities</b> (they find
+          ROSA deals only), in one list, with <b>one Add box</b> (Robert chose
+          this on 2026-11-25). Invented data.
+        </p>
+        <ul>
+          <li>
+            Part 1: type <b>ka</b> in the Add box. The results come in two
+            groups, Surgeons and Healthcare facilities, each with a round plus.
+            Press a plus and the surgeon or facility joins the table in Part 2;
+            a facility arrives with its ROSA deals, found
+            <b>only through the facility</b>. A name already in the campaign has
+            no plus (try <b>ro</b>).
+          </li>
+          <li>
+            Part 2 is the Maintain table. A facility's line has a small FACILITY
+            chip and no rating plate; a surgeon's line has just the rating
+            plate. A facility's ROSA deals sit under it. Press a round minus
+            beside a name for the "Are you sure?" box, or a deal's round button
+            to put it in or out.
+          </li>
+          <li>
+            Not shown yet: the Report list, the value chips and counts for ROSA,
+            the Opportunities / Risks / Include Closed chips, "Widen search",
+            the country rule for a facility, light mode.
+          </li>
+        </ul>
+      </details>
+
+      <h2><b>Part 1</b> The Add box</h2>
+      <p class="sub">Adds to the table in Part 2.</p>
+      <div class="card opt">
+        <div class="lbl">
+          <b>The Add box</b><span>One box, results in two groups</span>
+        </div>
+        <div class="bar" id="barA"></div>
+      </div>
+
+      <h2><b>Part 2</b> The Maintain table with both kinds of member</h2>
+      <div class="card" id="screen">
+        <div class="lbl">
+          <b>Members</b><span>Campaign: Knee and ROSA Launch</span>
+        </div>
+        <div id="tbl"></div>
+      </div>
+    </div>
+
+    <div class="scrim" id="scrim">
+      <div
+        class="ask"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Remove from the campaign"
+      >
+        <p id="askText">
+          Are you sure you want to remove this surgeon from the campaign?
+        </p>
+        <div class="row">
+          <button type="button" class="btn sec" id="no">Cancel</button
+          ><button type="button" class="btn danger" id="yes">Proceed</button>
+        </div>
+      </div>
+    </div>
+    <div class="toast" id="toast"></div>
+
+    <script>
+      var members = [
+        {
+          id: "s1",
+          kind: "S",
+          name: "Dr Hannah Whitlock",
+          rating: ["Gold", "Knee Gold"],
+          deals: [
+            [
+              "Persona knee, Spring",
+              "Persona",
+              "$310,000",
+              "J. Marsh",
+              "Commit",
+              1,
+              ""
+            ],
+            [
+              "Persona revision",
+              "Persona",
+              "$140,000",
+              "T. Nguyen",
+              "Plan",
+              0,
+              ""
+            ]
+          ]
+        },
+        {
+          id: "s2",
+          kind: "S",
+          name: "Dr Carlos Mendez",
+          rating: ["Silver", "Knee Silver"],
+          deals: [
+            ["NexGen Flex", "NexGen", "$220,000", "A. Patel", "Action", 1, ""]
+          ]
+        },
+        {
+          id: "f1",
+          kind: "F",
+          name: "Royal Southern Hospital",
+          deals: [
+            [
+              "Royal Southern ROSA",
+              "ROSA Knee",
+              "$690,000",
+              "J. Marsh",
+              "Commit",
+              1,
+              "Dr Elena Voss"
+            ],
+            [
+              "Royal Southern ROSA",
+              "ROSA Knee",
+              "$690,000",
+              "J. Marsh",
+              "Plan",
+              0,
+              "Dr Hannah Whitlock"
+            ]
+          ]
+        }
+      ];
+      var pool = [
+        {
+          kind: "S",
+          name: "Dr Karen Aldous",
+          sub: "Sydney, AU · Orthopaedic surgeon",
+          rating: ["Gold", "Knee Gold"],
+          deals: []
+        },
+        {
+          kind: "S",
+          name: "Dr Kasim Haddad",
+          sub: "Auckland, NZ · Orthopaedic surgeon",
+          rating: ["Silver", "Knee Silver"],
+          deals: []
+        },
+        {
+          kind: "S",
+          name: "Dr Kate Lindgren",
+          sub: "Perth, AU · Emerging consultant",
+          rating: ["none", "Not rated"],
+          deals: []
+        },
+        {
+          kind: "S",
+          name: "Dr Carlos Mendez",
+          sub: "Melbourne, AU · Orthopaedic surgeon",
+          rating: ["Silver", "Knee Silver"],
+          deals: []
+        },
+        {
+          kind: "S",
+          name: "Dr Rohan Singh",
+          sub: "Brisbane, AU · Orthopaedic surgeon",
+          rating: ["Gold", "Knee Gold"],
+          deals: []
+        },
+        {
+          kind: "F",
+          name: "Kareela Private Hospital",
+          sub: "Sydney, AU · Healthcare facility",
+          deals: [
+            [
+              "Kareela ROSA",
+              "ROSA Knee",
+              "$720,000",
+              "A. Patel",
+              "Action",
+              0,
+              "Dr Karen Aldous"
+            ]
+          ]
+        },
+        {
+          kind: "F",
+          name: "Kingsway Orthopaedic Centre",
+          sub: "Perth, AU · Healthcare facility",
+          deals: []
+        },
+        {
+          kind: "F",
+          name: "Royal Southern Hospital",
+          sub: "Melbourne, AU · Healthcare facility",
+          deals: []
+        }
+      ];
+      var st = { A: "" };
+      var pending = null;
+      function esc(t) {
+        return String(t).replace(/[&<>"]/g, function (c) {
+          return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
+        });
+      }
+      function btn(cls, label, fn, s30) {
+        return (
+          '<button type="button" class="rb ' +
+          cls +
+          (s30 ? " s30" : "") +
+          '" aria-label="' +
+          esc(label) +
+          '" title="' +
+          esc(label) +
+          '" onclick="' +
+          fn +
+          '"><span class="mark"></span></button>'
+        );
+      }
+      function isIn(name) {
+        return members.some(function (m) {
+          return m.name === name;
+        });
+      }
+      function hitRow(p, i) {
+        return (
+          '<div class="hit"><div class="nm"><b>' +
+          esc(p.name) +
+          "</b><small>" +
+          esc(p.sub) +
+          "</small></div>" +
+          (isIn(p.name)
+            ? '<span class="already">already in the campaign</span>'
+            : btn(
+                "add",
+                "Add " + p.name + " to the campaign",
+                "addP(" + i + ")",
+                true
+              )) +
+          "</div>"
+        );
+      }
+      function results(q, kinds) {
+        if (q.length < 2) return "";
+        var out = "",
+          any = false;
+        [
+          ["S", "Surgeons"],
+          ["F", "Healthcare facilities"]
+        ].forEach(function (g) {
+          if (kinds.indexOf(g[0]) < 0) return;
+          var rows = "";
+          pool.forEach(function (p, i) {
+            if (
+              p.kind === g[0] &&
+              p.name.toLowerCase().indexOf(q.toLowerCase()) > -1
+            )
+              rows += hitRow(p, i);
+          });
+          if (rows) {
+            any = true;
+            out +=
+              (kinds.length > 1 ? '<div class="grp">' + g[1] + "</div>" : "") +
+              rows;
+          }
+        });
+        return (
+          '<div class="pop">' +
+          (any ? out : '<div class="foot">Nothing matches.</div>') +
+          "</div>"
+        );
+      }
+      function field(key, label, ph, kinds) {
+        var q = st[key];
+        return (
+          '<span class="fwrap"><span class="fslbl add">' +
+          label +
+          '</span><span class="ffield"><input class="fin" id="q' +
+          key +
+          '" type="text" placeholder="' +
+          ph +
+          '" aria-label="' +
+          ph +
+          '" value="' +
+          esc(q) +
+          '">' +
+          (q
+            ? '<button type="button" class="xcirc" aria-label="Clear" onclick="clr(\'' +
+              key +
+              "')\"></button>"
+            : "") +
+          "</span>" +
+          results(q, kinds) +
+          "</span>"
+        );
+      }
+      function bars() {
+        document.getElementById("barA").innerHTML = field(
+          "A",
+          "Add",
+          "Surgeon or facility",
+          ["S", "F"]
+        );
+        ["A"].forEach(function (k) {
+          var i = document.getElementById("q" + k);
+          i.oninput = function () {
+            st[k] = i.value;
+            var p0 = i.selectionStart;
+            bars();
+            var n = document.getElementById("q" + k);
+            n.focus();
+            n.setSelectionRange(p0, p0);
+          };
+        });
+      }
+      function clr(k) {
+        st[k] = "";
+        bars();
+        document.getElementById("q" + k).focus();
+      }
+      function table() {
+        var h =
+          '<table class="mtbl"><colgroup><col style="width:24%"><col style="width:13%"><col style="width:11%"><col style="width:14%"><col style="width:13%"><col style="width:12%"><col style="width:13%"></colgroup><thead><tr><th>Deal</th><th>Brand</th><th>Value / year</th><th>Sales rep</th><th>Stage</th><th>In campaign</th><th>Add / remove</th></tr></thead>';
+        members
+          .slice()
+          .sort(function (a, b) {
+            return a.name < b.name ? -1 : 1;
+          })
+          .forEach(function (m) {
+            var n = m.deals.length;
+            var cnt =
+              '<span class="cnt">' +
+              n +
+              " deal" +
+              (n === 1 ? "" : "s") +
+              "</span>";
+            var lead =
+              m.kind === "F"
+                ? '<span class="fac">Facility</span>'
+                : '<span class="rplate ' +
+                  m.rating[0] +
+                  '">' +
+                  m.rating[1] +
+                  "</span>";
+            h +=
+              '<tr class="sg"><td colspan="7"><div class="sgcell">' +
+              btn("rem", "Remove from the campaign", "ask('" + m.id + "')") +
+              '<span class="sn">' +
+              esc(m.name) +
+              "</span>" +
+              lead +
+              cnt +
+              "</div></td></tr>";
+            m.deals.forEach(function (d, i) {
+              h +=
+                '<tr class="dl"><td><b>' +
+                esc(d[0]) +
+                (d[6]
+                  ? '<span class="phys">Physician: ' + esc(d[6]) + "</span>"
+                  : "") +
+                "</b></td><td>" +
+                esc(d[1]) +
+                "</td><td>" +
+                d[2] +
+                "</td><td>" +
+                d[3] +
+                "</td><td>" +
+                d[4] +
+                "</td><td>" +
+                (d[5]
+                  ? '<span class="inpill">In campaign</span>'
+                  : '<span class="outpill">Not in</span>') +
+                '</td><td class="mid">' +
+                btn(
+                  d[5] ? "rem" : "add",
+                  d[5] ? "Take out" : "Put in",
+                  "toggle('" + m.id + "'," + i + ")"
+                ) +
+                "</td></tr>";
+            });
+            if (!n)
+              h +=
+                '<tr class="dl"><td colspan="7" style="color:var(--muted)">' +
+                "No open deals" +
+                "</td></tr>";
+          });
+        document.getElementById("tbl").innerHTML = h + "</table>";
+      }
+      function say(t) {
+        var e = document.getElementById("toast");
+        e.textContent = t;
+        e.classList.add("on");
+        setTimeout(function () {
+          e.classList.remove("on");
+        }, 2200);
+      }
+      function ask(id) {
+        pending = id;
+        var m = members.filter(function (x) {
+          return x.id === id;
+        })[0];
+        document.getElementById("askText").textContent =
+          "Are you sure you want to remove this " +
+          (m.kind === "F" ? "facility" : "surgeon") +
+          " from the campaign?";
+        document.getElementById("scrim").classList.add("on");
+        document.getElementById("no").focus();
+      }
+      document.getElementById("no").onclick = function () {
+        pending = null;
+        document.getElementById("scrim").classList.remove("on");
+      };
+      document.getElementById("yes").onclick = function () {
+        var m = members.filter(function (x) {
+          return x.id === pending;
+        })[0];
+        document.getElementById("scrim").classList.remove("on");
+        members = members.filter(function (x) {
+          return x.id !== pending;
+        });
+        pending = null;
+        table();
+        bars();
+        say(m.name + " taken out of the campaign");
+      };
+      function toggle(id, i) {
+        var m = members.filter(function (x) {
+          return x.id === id;
+        })[0];
+        m.deals[i][5] = m.deals[i][5] ? 0 : 1;
+        table();
+      }
+      function addP(i) {
+        var p = pool[i];
+        members.push({
+          id: "n" + i,
+          kind: p.kind,
+          name: p.name,
+          rating: p.rating,
+          deals: p.deals.map(function (d) {
+            return d.slice();
+          })
+        });
+        st.A = "";
+        table();
+        bars();
+        say(p.name + " added to the campaign");
+      }
+      table();
+      bars();
+    </script>
+  </body>
+</html>

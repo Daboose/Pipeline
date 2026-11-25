@@ -12,6 +12,7 @@ import {
   ratingRank,
   memberTiles,
   valueByRating,
+  rosaValue,
   toUsd,
   usdAmount,
   rowDone,
@@ -282,5 +283,58 @@ describe("valueByRating and toUsd", () => {
     expect(usdAmount(100, "USD", rates)).toBe(100);
     expect(usdAmount(100, "JPY", rates)).toBeNull();
     expect(usdAmount(100, "AUD", null)).toBeNull();
+  });
+
+  it("leaves healthcare facilities and ROSA deals out of the tiles and the value by rating (their own value box comes later)", () => {
+    const mixed = [
+      {
+        accountId: "a1",
+        ratings: [{ portfolio: "Knee", rating: "GOLD" }],
+        deals: [
+          { kind: "opp", portfolio: "Knee", value: 1000, currencyCode: "AUD" },
+          // a ROSA deal can never sit under a surgeon, but if one did it is still not counted
+          { kind: "rosa", portfolio: "Knee", value: 9000, currencyCode: "AUD" }
+        ]
+      },
+      {
+        accountId: "f1",
+        isFacility: true,
+        ratings: [],
+        deals: [
+          { kind: "rosa", portfolio: "Knee", value: 5000, currencyCode: "AUD" }
+        ]
+      }
+    ];
+    const t = memberTiles(mixed);
+    expect(t.surgeons).toBe(1);
+    expect(t.withDeal).toBe(1);
+    expect(t.noDeal).toBe(0);
+    expect(t.deals).toBe(1);
+    expect(t.value).toEqual([{ currencyCode: "AUD", total: 1000 }]);
+    const v = valueByRating(mixed);
+    expect(v.total).toEqual({ AUD: 1000 });
+    expect(v.GOLD).toEqual({ AUD: 1000 });
+    expect(v.NONE).toEqual({});
+  });
+
+  it("adds up the ROSA deals of a campaign per currency, and says whether there are any", () => {
+    expect(rosaValue(null)).toEqual({ hasRosa: false, total: {} });
+    expect(
+      rosaValue([{ deals: [{ kind: "opp", value: 5, currencyCode: "AUD" }] }])
+        .hasRosa
+    ).toBe(false);
+    const r = rosaValue([
+      {
+        isFacility: true,
+        deals: [
+          { kind: "rosa", value: 690000, currencyCode: "AUD" },
+          { kind: "rosa", value: 10000, currencyCode: "AUD" },
+          { kind: "rosa", value: 500, currencyCode: "NZD" },
+          { kind: "rosa", value: null, currencyCode: "AUD" }
+        ]
+      }
+    ]);
+    expect(r.hasRosa).toBe(true);
+    expect(r.total).toEqual({ AUD: 700000, NZD: 500 });
   });
 });

@@ -2,9 +2,9 @@
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
   <fullName>Surgeon__c</fullName>
   <description
-  >Pipeline: the surgeon (an Account of record type Physician or Emerging Consultant). A deal's Primary HCP must be this surgeon for the deal to join the campaign.</description>
+  >Pipeline: the surgeon (Physician or Emerging Consultant) or the Healthcare Facility. A deal joins the campaign through its Primary HCP, or through its Healthcare Facility for a ROSA deal.</description>
   <inlineHelpText
-  >The surgeon. Only Physician and Emerging Consultant accounts.</inlineHelpText>
+  >The surgeon or Healthcare Facility. Only Physician, Emerging Consultant and Healthcare Facility accounts.</inlineHelpText>
   <deleteConstraint>SetNull</deleteConstraint>
   <label>Surgeon</label>
   <referenceTo>Account</referenceTo>

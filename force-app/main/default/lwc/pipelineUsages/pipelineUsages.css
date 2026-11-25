@@ -23,7 +23,7 @@
 h3 {
   margin: 0;
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--pipe);
@@ -52,7 +52,7 @@ h3 {
 .rate small {
   display: block;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--muted);
@@ -99,7 +99,7 @@ h3 {
   border-radius: 999px;
   padding: 3px 12px;
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   cursor: pointer;
@@ -115,7 +115,7 @@ h3 {
 .ustbl th {
   text-align: left;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--muted);
@@ -131,7 +131,7 @@ h3 {
   text-align: right;
 }
 .uh td {
-  font-weight: 800;
+  font-weight: 700;
   padding-top: 14px;
   border-top: 2px solid var(--edge);
   border-bottom: 1px solid var(--line);
@@ -247,7 +247,7 @@ tr.mine td {
 }
 .al {
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--muted);

@@ -1,10 +1,16 @@
 /**
- * Pipeline: matches a pasted list (or file) of surgeon names to Salesforce surgeons for Campaign Management's importer.
+ * Pipeline: matches a pasted list (or file) of surgeon and hospital names to Salesforce surgeons and healthcare facilities for
+ * Campaign Management's importer (facilities added 2026-11-25, Robert: a campaign member can be a surgeon or a healthcare facility).
  *
  * Who calls it: PipelineCampaignController.matchNames, and PipelineCampaignImportTest.
  * What it touches: reads Account (person accounts of record type Physician or Emerging Consultant, in the person's own
  * access), the campaign's members, and the surgeons' current hospitals (Healthcare_Surgeon_Relationship__c, system mode, only
- * to help match and to show). It saves nothing: the person confirms every row on the check screen first.
+ * to help match and to show). It saves nothing: the person confirms every row on the check screen first. It also reads healthcare
+ * facilities (Account of record type Healthcare_Facility, in the person's own access) and matches each line against surgeons and
+ * facilities together: a facility matches exactly when it has the same words as the line (in any order, a bracket such as "(VIC)"
+ * counting as words), and possibly when every word of the line, except words such as Hospital, is one of its words. Exact matches
+ * of either kind are offered before any possible match; a line that matches a surgeon and a facility offers both, and the person
+ * chooses. A facility has no hospitals of its own.
  *
  * How a line is read: the first part is the name; anything after a tab, a " - ", a comma or in brackets is a clue (usually a
  * hospital). Titles (Dr, Prof ...) are ignored. A name matches exactly when it has the same words in any order as the
@@ -15,6 +21,7 @@
 public with sharing class PipelineCampaignImport {
   private static final Integer MAX_LINES = 300;
   private static final Integer MAX_CANDIDATES = 5;
+  private static final String FACILITY_TYPE = 'Healthcare_Facility';
   private static final List<String> MEMBER_TYPES = new List<String>{
     'Physician',
     'Emerging_Consultant'
@@ -215,6 +222,24 @@ public with sharing class PipelineCampaignImport {
     return false;
   }
 
+  /** The name keys a line can match a facility exactly by: its name, and the whole line with a hospital or bracket read as part of the name. */
+  private static List<String> exactKeys(Parsed p) {
+    List<String> out = new List<String>(p.variants);
+    out.add(key(p.raw));
+    return out;
+  }
+
+  /** The words of a line that say which place it is: Hospital, Private, Clinic and the like are left out. */
+  private static List<String> coreWords(List<String> tokens) {
+    List<String> out = new List<String>();
+    for (String t : tokens) {
+      if (!GENERIC.contains(t)) {
+        out.add(t);
+      }
+    }
+    return out;
+  }
+
   public static List<PipelineCampaignController.ImportRow> match(
     Id campaignId,
     List<String> lines
@@ -294,6 +319,34 @@ public with sharing class PipelineCampaignImport {
         byWord.get(w).add(a);
       }
     }
+    // the healthcare facilities (a facility name is one or more words; none of them has a first or last name)
+    Map<String, List<Account>> facByKey = new Map<String, List<Account>>();
+    Map<Id, Set<String>> facWords = new Map<Id, Set<String>>();
+    Map<String, List<Account>> facByWord = new Map<String, List<Account>>(); // each word of a facility's name, to find a line's facilities without reading them all
+    List<Account> facPool = [
+      SELECT Name, BillingCountryCode, BillingCity, RecordType.Name
+      FROM Account
+      WHERE RecordType.DeveloperName = :FACILITY_TYPE
+      WITH USER_MODE
+      LIMIT 20000
+    ];
+    for (Account f : facPool) {
+      String fk = key(f.Name);
+      if (fk.length() > 0) {
+        if (!facByKey.containsKey(fk)) {
+          facByKey.put(fk, new List<Account>());
+        }
+        facByKey.get(fk).add(f);
+      }
+      Set<String> fw = new Set<String>(words(f.Name));
+      facWords.put(f.Id, fw);
+      for (String w : fw) {
+        if (!facByWord.containsKey(w)) {
+          facByWord.put(w, new List<Account>());
+        }
+        facByWord.get(w).add(f);
+      }
+    }
     Set<Id> memberIds = new Set<Id>();
     for (Sales_Campaign_Member__c m : [
       SELECT Surgeon__c
@@ -308,6 +361,8 @@ public with sharing class PipelineCampaignImport {
     // find the candidates of each line, then read the hospitals of every candidate in one query
     Map<Integer, List<Account>> exact = new Map<Integer, List<Account>>();
     Map<Integer, List<Account>> possible = new Map<Integer, List<Account>>();
+    Map<Integer, List<Account>> facExact = new Map<Integer, List<Account>>();
+    Map<Integer, List<Account>> facPossible = new Map<Integer, List<Account>>();
     Set<Id> candidateIds = new Set<Id>();
     for (Integer i = 0; i < parsed.size(); i++) {
       Parsed p = parsed[i];
@@ -341,6 +396,38 @@ public with sharing class PipelineCampaignImport {
         }
         possible.put(i, fz.values());
       }
+      // the facilities that fit the line: the same words, or every word of the line but the common ones (Hospital, Private ...)
+      Map<Id, Account> fex = new Map<Id, Account>();
+      for (String v : exactKeys(p)) {
+        if (facByKey.containsKey(v)) {
+          for (Account f : facByKey.get(v)) {
+            fex.put(f.Id, f);
+          }
+        }
+      }
+      facExact.put(i, fex.values());
+      Map<Id, Account> fpo = new Map<Id, Account>();
+      if (fex.isEmpty()) {
+        List<String> core = coreWords(p.tokens);
+        // start from the line's word that fewest facilities have, then keep those that have every word
+        List<Account> start = null;
+        for (String w : core) {
+          List<Account> have = facByWord.containsKey(w)
+            ? facByWord.get(w)
+            : new List<Account>();
+          if (start == null || have.size() < start.size()) {
+            start = have;
+          }
+        }
+        if (start != null) {
+          for (Account f : start) {
+            if (facWords.get(f.Id).containsAll(core)) {
+              fpo.put(f.Id, f);
+            }
+          }
+        }
+      }
+      facPossible.put(i, fpo.values());
       for (Account a : exact.get(i)) {
         candidateIds.add(a.Id);
       }
@@ -359,10 +446,16 @@ public with sharing class PipelineCampaignImport {
       PipelineCampaignController.ImportRow r = new PipelineCampaignController.ImportRow();
       r.text = p.raw;
       r.cands = new List<PipelineCampaignController.SurgeonHit>();
+      // surgeons: an exact match, else the possible ones; facilities likewise. A facility that only possibly fits is still offered beside
+      // a surgeon who fits exactly (and the other way round), so the person chooses; nothing is chosen for them
       List<Account> chosenList = exact.get(i);
-      Boolean isExact = !chosenList.isEmpty();
-      if (!isExact) {
+      List<Account> facList = facExact.get(i);
+      Boolean isExact = !chosenList.isEmpty() || !facList.isEmpty();
+      if (chosenList.isEmpty()) {
         chosenList = possible.get(i);
+      }
+      if (facList.isEmpty()) {
+        facList = facPossible.get(i);
       }
       // rank: those the clue points at first
       List<Account> hinted = new List<Account>();
@@ -380,18 +473,27 @@ public with sharing class PipelineCampaignImport {
       }
       List<Account> ranked = new List<Account>(hinted);
       ranked.addAll(rest);
+      Integer surgeonCount = ranked.size();
+      ranked.addAll(facList); // the facilities follow the surgeons
       for (Integer k = 0; k < ranked.size() && k < MAX_CANDIDATES; k++) {
         Account a = ranked[k];
+        Boolean facility = k >= surgeonCount;
         PipelineCampaignController.SurgeonHit h = new PipelineCampaignController.SurgeonHit();
         h.id = a.Id;
         h.name = a.Name;
-        h.preferredName = a.Preferred_Name__c;
-        h.country = a.PersonMailingCountryCode;
-        h.city = a.PersonMailingCity;
+        h.isFacility = facility;
+        if (facility) {
+          h.country = a.BillingCountryCode;
+          h.city = a.BillingCity;
+        } else {
+          h.preferredName = a.Preferred_Name__c;
+          h.country = a.PersonMailingCountryCode;
+          h.city = a.PersonMailingCity;
+          h.hospitals = PipelineCampaignController.hospitalText(
+            hospitals.get(a.Id)
+          );
+        }
         h.type = a.RecordType.Name;
-        h.hospitals = PipelineCampaignController.hospitalText(
-          hospitals.get(a.Id)
-        );
         h.alreadyMember = memberIds.contains(a.Id);
         r.cands.add(h);
       }

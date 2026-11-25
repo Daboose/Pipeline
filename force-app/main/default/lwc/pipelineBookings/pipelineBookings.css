@@ -60,14 +60,14 @@
 h3 {
   margin: 0;
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--pipe);
 }
 .big {
   font-size: 26px;
-  font-weight: 800;
+  font-weight: 700;
 }
 .sm {
   color: var(--muted);
@@ -132,7 +132,7 @@ svg .gl {
   font-size: 12px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  font-weight: 800;
+  font-weight: 700;
   color: var(--muted);
 }
 .hrow {

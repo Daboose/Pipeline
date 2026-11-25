@@ -12,6 +12,7 @@ import {
   memberTiles,
   ratingRank,
   valueByRating,
+  rosaValue,
   toUsd,
   usdAmount,
   RATING_KEYS
@@ -27,6 +28,7 @@ const HIDDEN_KEY = "pipelineCampaignMembersHidden";
 /** The columns about the surgeon that sit at the very end of the table (the two reps). */
 const TAIL_IDS = ["y1", "y6"];
 const DEAL_IDS = [
+  "dealtype",
   "portfolio",
   "stage",
   "value",
@@ -35,6 +37,8 @@ const DEAL_IDS = [
   "moved",
   "rep"
 ];
+/** The Type column's words (Robert, 2026-11-25): an implant deal is an Opportunity, then Risk, then ROSA. Plain text, not a chip. */
+const KIND_WORD = { opp: "Opportunity", risk: "Risk", rosa: "ROSA" };
 const TICK_WIDTH = 56;
 const AREA = {
   Hip: "Hip",
@@ -118,7 +122,7 @@ export default class PipelineCampaignMembers extends LightningElement {
   ratesError = "";
   mode = "report"; // report (the list as it always was) or maintain
   includeClosed = false; // Include Closed (Robert, 2026-11-19): Maintain also lists the closed deals that fit
-  types = { opp: true, risk: false }; // the kinds of deal Maintain lists: opportunities, not risks, until the person ticks them
+  types = { opp: true, risk: false, rosa: true }; // the kinds of deal Maintain lists: opportunities and ROSA, not risks, until the person ticks them (Robert, 2026-11-25)
   filter = "all";
   q = "";
   addQ = ""; // Maintain: what is typed in the Add box (the Search box is the Add box there; Robert, 2026-11-20)
@@ -223,6 +227,7 @@ export default class PipelineCampaignMembers extends LightningElement {
         140
       ])
     );
+    defs.push(["dealtype", "Deal Type", false, 130]);
     if (this.multi) defs.push(["portfolio", "Portfolio", false, 130]);
     defs.push(
       ["stage", "Stage", false, 150],
@@ -421,12 +426,12 @@ export default class PipelineCampaignMembers extends LightningElement {
         text,
         cls: `vchip${cls ? " " + cls : ""}${text === "–" ? " zero" : ""}`,
         plateCls:
-          key === "total"
+          key === "total" || key === "rosa"
             ? ""
             : `rplate ${key === "NONE" ? "none" : key.charAt(0) + key.slice(1).toLowerCase()}`
       };
     };
-    return [chip("total", "Value / year", v.total, "tot")].concat(
+    const chips = [chip("total", "Value / year", v.total, "tot")].concat(
       RATING_KEYS.map((k) =>
         chip(
           k,
@@ -436,6 +441,13 @@ export default class PipelineCampaignMembers extends LightningElement {
         )
       )
     );
+    // the ROSA value, apart from the surgeons' values by a thin line, shown only when the campaign has ROSA deals (Robert, 2026-11-25)
+    const rosa = rosaValue(this.members);
+    if (rosa.hasRosa) {
+      chips.push({ key: "sep", isSep: true });
+      chips.push(chip("rosa", "ROSA value", rosa.total, "rosa"));
+    }
+    return chips;
   }
   /** USD is on and the rates have been read. */
   get showUsd() {
@@ -477,6 +489,15 @@ export default class PipelineCampaignMembers extends LightningElement {
   }
   get riskOn() {
     return this.types.risk;
+  }
+  get rosaOn() {
+    return this.types.rosa;
+  }
+  get rosaCls() {
+    return this.types.rosa ? "kchip on" : "kchip";
+  }
+  get rosaTickCls() {
+    return this.types.rosa ? "ktick" : "kring";
   }
   get oppCls() {
     return this.types.opp ? "kchip on" : "kchip";
@@ -536,9 +557,12 @@ export default class PipelineCampaignMembers extends LightningElement {
   get searchLabel() {
     return this.isMaintain ? "Add" : "Search";
   }
+  get searchPlaceholder() {
+    return this.isMaintain ? "Surgeon or facility" : "Surgeon";
+  }
   get searchAria() {
     return this.isMaintain
-      ? "Add a surgeon to the campaign"
+      ? "Add a surgeon or a facility to the campaign"
       : "Search surgeons";
   }
   /** The box is the same box in both modes; in Maintain its label is amber so the person sees it now adds surgeons. */
@@ -583,7 +607,10 @@ export default class PipelineCampaignMembers extends LightningElement {
         });
         if (mine === this.addSeq) this.addResult = r;
       } catch (e) {
-        this.addError = this.errorOf(e, "The surgeons could not be searched.");
+        this.addError = this.errorOf(
+          e,
+          "The surgeons and facilities could not be searched."
+        );
       }
     }, 250);
   }
@@ -593,29 +620,48 @@ export default class PipelineCampaignMembers extends LightningElement {
   get showAddPop() {
     return this.isMaintain && this.addQ.trim().length >= 2;
   }
+  /** One result as the Add box lists it. */
+  addHit(h, facility) {
+    const same =
+      !h.preferredName ||
+      h.preferredName.trim().toLowerCase() ===
+        (h.name || "").trim().toLowerCase();
+    return {
+      key: h.id,
+      id: h.id,
+      isHead: false,
+      nameText: same ? h.name : h.name + " (English: " + h.preferredName + ")",
+      sub: [
+        h.hospitals ? "Hospitals: " + h.hospitals : "",
+        [h.country, h.city].filter(Boolean).join(" · "),
+        h.type
+      ]
+        .filter(Boolean)
+        .join(" · "),
+      already: h.alreadyMember,
+      title:
+        "Add " +
+        h.name +
+        (facility ? " (a healthcare facility)" : "") +
+        " to the campaign"
+    };
+  }
+  /** The Add box's results in two groups (Robert, 2026-11-25): Surgeons, then Healthcare facilities, each group shown only when it has a match. */
   get addHits() {
-    return ((this.addResult && this.addResult.hits) || []).map((h) => {
-      const same =
-        !h.preferredName ||
-        h.preferredName.trim().toLowerCase() ===
-          (h.name || "").trim().toLowerCase();
-      return {
-        key: h.id,
-        id: h.id,
-        nameText: same
-          ? h.name
-          : h.name + " (English: " + h.preferredName + ")",
-        sub: [
-          h.hospitals ? "Hospitals: " + h.hospitals : "",
-          [h.country, h.city].filter(Boolean).join(" · "),
-          h.type
-        ]
-          .filter(Boolean)
-          .join(" · "),
-        already: h.alreadyMember,
-        title: "Add " + h.name + " to the campaign"
-      };
-    });
+    const r = this.addResult;
+    const surgeons = ((r && r.hits) || []).map((h) => this.addHit(h, false));
+    const facilities = ((r && r.facilities) || []).map((h) =>
+      this.addHit(h, true)
+    );
+    const out = [];
+    if (surgeons.length)
+      out.push({ key: "head-s", isHead: true, text: "Surgeons" }, ...surgeons);
+    if (facilities.length)
+      out.push(
+        { key: "head-f", isHead: true, text: "Healthcare facilities" },
+        ...facilities
+      );
+    return out;
   }
   /** "Searching AU, NZ." or "Searching every country." with the button that switches between the two. */
   get addScopeText() {
@@ -641,7 +687,7 @@ export default class PipelineCampaignMembers extends LightningElement {
     this.runAddSearch();
   }
   get addNone() {
-    return !!this.addResult && this.addResult.hits.length === 0;
+    return !!this.addResult && this.addHits.length === 0;
   }
   async handleAddPress(event) {
     const id = event.currentTarget.dataset.id;
@@ -659,7 +705,7 @@ export default class PipelineCampaignMembers extends LightningElement {
         new CustomEvent("campaignmemberchange", { detail: { surgeonId: id } })
       );
     } catch (e) {
-      this.addError = this.errorOf(e, "That surgeon could not be added.");
+      this.addError = this.errorOf(e, "That could not be added.");
     } finally {
       this.addBusy = false;
     }
@@ -711,6 +757,10 @@ export default class PipelineCampaignMembers extends LightningElement {
       hospitals: (m) => m.hospitals,
       place: (m) => [m.country, m.city].filter(Boolean).join(" · "),
       type: (m) => m.type,
+      dealtype: (m) => {
+        const d = deal(m);
+        return d ? KIND_WORD[d.kind] || KIND_WORD.opp : "";
+      },
       portfolio: (m) => (deal(m) ? AREA[deal(m).portfolio] || "" : ""),
       y1: (m) => m.y1Rep,
       y6: (m) => m.y6Rep,
@@ -758,11 +808,16 @@ export default class PipelineCampaignMembers extends LightningElement {
       return { isTag: true, text: `${n} d`, tagCls: `tag ${band(n)}` };
     };
     return {
+      dealtype: { isText: true, text: KIND_WORD[d.kind] || KIND_WORD.opp },
       portfolio: {
         isText: true,
         text: AREA[d.portfolio] || d.portfolio || "–"
       },
-      stage: { isText: true, text: d.stage || "–" },
+      stage: {
+        isText: true,
+        text: d.stage || "–",
+        sub: d.kind === "rosa" && d.physician ? "Physician: " + d.physician : ""
+      },
       value: {
         isText: true,
         cls: "num",
@@ -787,13 +842,18 @@ export default class PipelineCampaignMembers extends LightningElement {
     this.visibleMembers.forEach((m) => {
       const deals = [...(m.deals || [])].sort(byNewest);
       const lead = {
-        // the surgeon's name opens their Account record in a NEW tab (Robert, 2026-11-19), so the person keeps their place here
+        // the surgeon's name opens their Account record in a NEW tab (Robert, 2026-11-19), so the person keeps their place here; a healthcare
+        // facility (Robert, 2026-11-25) has a small FACILITY chip beside its name
         name: m.accountId
           ? {
               isLink: true,
               cls: "who",
               href: "/lightning/r/Account/" + m.accountId + "/view",
-              text: withEnglish(m.name, m.preferredName)
+              text: withEnglish(m.name, m.preferredName),
+              chip: m.isFacility ? "Facility" : "",
+              linkTitle: m.isFacility
+                ? "Open this facility's record in a new tab"
+                : "Open this surgeon's record in a new tab"
             }
           : {
               isText: true,
@@ -809,6 +869,10 @@ export default class PipelineCampaignMembers extends LightningElement {
       };
       this.ports.forEach((p) => {
         const r = this.ratingOf(m, p);
+        if (m.isFacility) {
+          lead["rate:" + p] = { isText: true, text: "" }; // a facility has no usage rating
+          return;
+        }
         lead["rate:" + p] = {
           isRate: true,
           cls: "ratecell",
@@ -839,7 +903,11 @@ export default class PipelineCampaignMembers extends LightningElement {
         cells.push({
           key: "nd",
           isNoDeal: true,
-          noDealOpen: this.dealsOpenable && !!m.accountId, // in Pipeline "No deal yet" is pressed to make the surgeon's first deal
+          noDealOpen: this.dealsOpenable && !!m.accountId, // in Pipeline "No deal yet" is pressed to make the first deal: a surgeon's implant opportunity, or a facility's ROSA deal
+          isFac: !!m.isFacility,
+          dealTitle: m.isFacility
+            ? "Make this facility's first ROSA deal"
+            : "Make this surgeon's first deal",
           accountId: m.accountId,
           who: withEnglish(m.name, m.preferredName),
           colspan: this.dealDefs.length
@@ -927,13 +995,18 @@ export default class PipelineCampaignMembers extends LightningElement {
       );
     }
   }
-  /** "No deal yet" was pressed (Pipeline only): the surgeon's flyout opens on its New Deal screen. */
+  /** "No deal yet" was pressed (Pipeline only): the surgeon's flyout opens on its New Deal screen; for a healthcare facility it is the ROSA deal screen. */
   handleNoDeal(event) {
     event.stopPropagation();
-    const { account, who } = event.currentTarget.dataset;
+    const { account, who, facility } = event.currentTarget.dataset;
     this.dispatchEvent(
       new CustomEvent("surgeonopen", {
-        detail: { accountId: account, name: who, screen: "new" }
+        detail: {
+          accountId: account,
+          name: who,
+          screen: "new",
+          isFacility: facility === "true"
+        }
       })
     );
   }

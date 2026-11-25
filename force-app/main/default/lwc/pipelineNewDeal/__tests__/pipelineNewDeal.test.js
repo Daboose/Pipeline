@@ -197,15 +197,18 @@ describe("c-pipeline-new-deal", () => {
     );
   });
 
-  it("puts the portfolio first, then the stage, then the surgeon and the rest, and the background information on the right", async () => {
+  it("puts the portfolio and the stage slider in a top card, then two level panels: the surgeon and the rest (with the brand and switches) and the background information", async () => {
     const el = await make();
     await portfolio(el, "Knee");
     const labels = [...root(el).querySelectorAll(".card .fl, .card h3")].map(
       (n) => n.textContent.replace(/\s+/g, " ").replace(" *", "").trim()
     );
     const at = (t) => labels.indexOf(t);
-    expect(at("Portfolio")).toBeLessThan(at("Stage"));
-    expect(at("Stage")).toBeLessThan(at("Primary HCP"));
+    expect(
+      root(el).querySelector(".head .band c-pipeline-stage-slider")
+    ).not.toBeNull();
+    expect(root(el).querySelectorAll(".cols .card .band").length).toBe(0);
+    expect(at("Portfolio")).toBeLessThan(at("Primary HCP"));
     expect(at("Primary HCP")).toBeLessThan(at("Healthcare facility"));
     expect(at("Healthcare facility")).toBeLessThan(
       at("Expected closing quarter and year")
@@ -219,6 +222,7 @@ describe("c-pipeline-new-deal", () => {
     expect(at("Expected annual units / cases")).toBeLessThan(at("Owner"));
     expect(at("Owner")).toBeLessThan(at("Brand"));
     const cols = root(el).querySelectorAll(".cols > .col");
+    expect(cols[0].querySelectorAll(".card").length).toBe(1);
     expect(cols[0].textContent).toContain("Brand");
     expect(cols[1].querySelector("textarea")).not.toBeNull();
   });
@@ -395,7 +399,7 @@ describe("c-pipeline-new-deal", () => {
     ).toBeUndefined();
   });
 
-  it("will not save without a brand, and shows the stage and the brand as mandatory", async () => {
+  it("will not save without a brand, and shows the brand as mandatory", async () => {
     const el = await make();
     await portfolio(el, "Knee");
     await choose(el, 'select[data-api="Expected_Closure_Quarter__c"]', "Q1");
@@ -418,7 +422,7 @@ describe("c-pipeline-new-deal", () => {
     const stars = [...root(el).querySelectorAll(".fl")]
       .filter((n) => n.querySelector(".req"))
       .map((n) => n.textContent.replace(/\s+/g, " ").replace(" *", "").trim());
-    expect(stars).toEqual(expect.arrayContaining(["Stage", "Brand"]));
+    expect(stars).toEqual(expect.arrayContaining(["Brand"]));
     root(el).querySelector(".chips .chip").click();
     await wait();
     expect(saveButton(el).disabled).toBe(false);

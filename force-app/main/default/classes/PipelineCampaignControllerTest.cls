@@ -682,4 +682,223 @@ private class PipelineCampaignControllerTest {
       System.assert(r.changed != null);
     }
   }
+
+  /** A healthcare facility, an Account of record type Healthcare_Facility. */
+  static Account facility(String name, String country) {
+    Account a = new Account(
+      Name = name,
+      BillingCountryCode = country,
+      BillingCity = 'Testville',
+      RecordTypeId = rt(Account.SObjectType, 'Healthcare_Facility')
+    );
+    Database.DMLOptions opts = new Database.DMLOptions();
+    opts.duplicateRuleHeader.allowSave = true;
+    Database.insert(a, opts);
+    return a;
+  }
+
+  @IsTest
+  static void aFacilityMemberFindsItsRosaDealsAndNeverThroughThePhysician() {
+    User u = manager();
+    u.CountryCode = 'SG'; // the deals' owner country comes from the owner's country
+    update u;
+    System.runAs(u) {
+      Id id = PipelineCampaignController.saveCampaign(
+        payload('Rosa', new List<String>{ 'SG' })
+      );
+      Account f = facility('Kareela Test Hospital', 'SG');
+      Account physician = surgeon('Rosa', 'Physician', 'SG', 'Physician'); // on the ROSA deal, but not a member
+      Account member = surgeon('Rosa', 'Member', 'SG', 'Physician');
+      PipelineCampaignController.addMember(id, f.Id);
+      PipelineCampaignController.addMember(id, member.Id);
+      SalesRisks__c rosa = new SalesRisks__c(
+        RecordTypeId = rt(SalesRisks__c.SObjectType, 'AUROSA'),
+        Account__c = physician.Id,
+        Healthcare_Facility__c = f.Id,
+        Stage__c = 'Sales Pipeline',
+        Portfolio__c = 'Extremities',
+        ROSAGrowthDollar__c = 2000
+      );
+      // a ROSA deal whose physician IS a member but whose facility is not: never offered to the surgeon
+      SalesRisks__c rosaViaSurgeon = new SalesRisks__c(
+        RecordTypeId = rt(SalesRisks__c.SObjectType, 'AUROSA'),
+        Account__c = member.Id,
+        Stage__c = 'Sales Pipeline',
+        Portfolio__c = 'Extremities',
+        ROSAGrowthDollar__c = 3000
+      );
+      SalesRisks__c opp = new SalesRisks__c(
+        RecordTypeId = rt(SalesRisks__c.SObjectType, 'AUEXTREMITIES'),
+        Account__c = member.Id,
+        Stage__c = 'Plan',
+        Expected_Closure_Quarter__c = 'Q4',
+        AmountPerYear__c = 1000
+      );
+      insert new List<SalesRisks__c>{ rosa, rosaViaSurgeon, opp };
+
+      // Maintain: the facility's ROSA deal sits under the facility; the surgeon's own deal under the surgeon
+      Map<Id, PipelineCampaignController.MaintainDeal> byId = new Map<Id, PipelineCampaignController.MaintainDeal>();
+      for (
+        PipelineCampaignController.MaintainDeal d : PipelineCampaignController.maintainDeals(
+          id,
+          false
+        )
+      ) {
+        byId.put(d.id, d);
+      }
+      System.assertEquals('rosa', byId.get(rosa.Id).kind);
+      System.assertEquals(f.Id, byId.get(rosa.Id).accountId);
+      System.assertEquals(2000, byId.get(rosa.Id).value);
+      System.assertEquals(
+        'Rosa Physician',
+        byId.get(rosa.Id).physician.replace('  ', ' ')
+      );
+      System.assertEquals(member.Id, byId.get(opp.Id).accountId);
+      System.assertEquals(
+        false,
+        byId.containsKey(rosaViaSurgeon.Id),
+        'a ROSA deal is never found through its physician'
+      );
+
+      // the deal's own Campaigns control offers the campaign (its facility is a member)
+      PipelineDealCampaignController.DealCampaigns dc = PipelineDealCampaignController.getDealCampaigns(
+        rosa.Id
+      );
+      System.assertEquals(1, dc.offered.size());
+      System.assertEquals(id, dc.offered[0].id);
+      PipelineDealCampaignController.setLink(rosa.Id, id, true);
+      System.assertEquals(
+        0,
+        PipelineDealCampaignController.getDealCampaigns(rosaViaSurgeon.Id)
+          .offered.size(),
+        'the physician being a member offers nothing for a ROSA deal'
+      );
+
+      // the members list: the deal is under the facility, with no ratings and a ROSA kind; the surgeon has none
+      PipelineCampaignController.CampaignDetail d = PipelineCampaignController.getCampaign(
+        id
+      );
+      PipelineCampaignController.MemberRow fRow;
+      PipelineCampaignController.MemberRow sRow;
+      for (PipelineCampaignController.MemberRow m : d.members) {
+        if (m.accountId == f.Id) {
+          fRow = m;
+        } else {
+          sRow = m;
+        }
+      }
+      System.assertEquals(true, fRow.isFacility);
+      System.assertEquals(0, fRow.ratings.size());
+      System.assertEquals('SG', fRow.country);
+      System.assertEquals(1, fRow.dealCount);
+      System.assertEquals('rosa', fRow.deals[0].kind);
+      System.assertEquals(2000, fRow.deals[0].value);
+      System.assertEquals(false, sRow.isFacility);
+      System.assertEquals(0, sRow.dealCount);
+
+      // taking the facility out also takes its ROSA deal out of the campaign; the deal itself is untouched
+      System.assertEquals(
+        1,
+        PipelineCampaignController.removeMemberAndDeals(fRow.memberId)
+      );
+      System.assertEquals(
+        0,
+        [SELECT COUNT() FROM Sales_Campaign_Deal__c WHERE Campaign__c = :id]
+      );
+      System.assertEquals(
+        1,
+        [SELECT COUNT() FROM SalesRisks__c WHERE Id = :rosa.Id]
+      );
+    }
+  }
+
+  @IsTest
+  static void removingASurgeonLeavesAFacilitysRosaDealsWhereTheyAre() {
+    User u = manager();
+    u.CountryCode = 'SG';
+    update u;
+    System.runAs(u) {
+      Id id = PipelineCampaignController.saveCampaign(
+        payload('Rosa stays', new List<String>{ 'SG' })
+      );
+      Account f = facility('Kareela Stays Hospital', 'SG');
+      Account physician = surgeon('Stays', 'Physician', 'SG', 'Physician');
+      PipelineCampaignController.addMember(id, f.Id);
+      PipelineCampaignController.addMember(id, physician.Id);
+      SalesRisks__c rosa = new SalesRisks__c(
+        RecordTypeId = rt(SalesRisks__c.SObjectType, 'AUROSA'),
+        Account__c = physician.Id,
+        Healthcare_Facility__c = f.Id,
+        Stage__c = 'Sales Pipeline',
+        Portfolio__c = 'Extremities',
+        ROSAGrowthDollar__c = 2000
+      );
+      insert rosa;
+      PipelineDealCampaignController.setLink(rosa.Id, id, true);
+      List<Id> ids = new List<Id>();
+      for (
+        PipelineCampaignController.MemberRow m : PipelineCampaignController.getCampaign(
+            id
+          )
+          .members
+      ) {
+        if (m.accountId == physician.Id) {
+          ids.add(m.memberId);
+        }
+      }
+      // removing the physician (a surgeon member) never takes the facility's ROSA deal out, even though they are its Primary HCP
+      PipelineCampaignController.removeMembers(ids);
+      System.assertEquals(
+        1,
+        [SELECT COUNT() FROM Sales_Campaign_Deal__c WHERE Campaign__c = :id]
+      );
+    }
+  }
+
+  @IsTest
+  static void theSearchOffersMatchingFacilitiesInTheirOwnGroup() {
+    System.runAs(manager()) {
+      Id id = PipelineCampaignController.saveCampaign(
+        payload('Find', new List<String>{ 'SG' })
+      );
+      Account here = facility('Zanzibar Orthopaedic Centre', 'SG');
+      facility('Zanzibar Faraway Clinic', 'AU');
+      surgeon('Zanzibar', 'Doctor', 'SG', 'Physician');
+      PipelineCampaignController.SurgeonSearch r = PipelineCampaignController.searchSurgeons(
+        id,
+        'zanzibar',
+        false
+      );
+      System.assertEquals(1, r.hits.size(), 'the surgeon is still found');
+      System.assertEquals(
+        1,
+        r.facilities.size(),
+        'inside the campaign countries'
+      );
+      System.assertEquals(here.Id, r.facilities[0].id);
+      System.assertEquals(false, r.facilities[0].alreadyMember);
+      System.assertEquals(
+        1,
+        r.outside,
+        'the AU facility is counted as outside'
+      );
+      System.assertEquals(
+        2,
+        PipelineCampaignController.searchSurgeons(id, 'zanzibar', true)
+          .facilities.size()
+      );
+      PipelineCampaignController.addMember(id, here.Id);
+      System.assertEquals(
+        true,
+        PipelineCampaignController.searchSurgeons(id, 'zanzibar', false)
+          .facilities[0]
+          .alreadyMember
+      );
+      System.assertEquals(
+        0,
+        PipelineCampaignController.searchSurgeons(id, 'z', false)
+          .facilities.size()
+      );
+    }
+  }
 }

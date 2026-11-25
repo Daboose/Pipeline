@@ -39,7 +39,7 @@
   border-radius: 999px;
   padding: 0 4px 0 10px;
   margin: 0 1px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1.5;
   user-select: none;
 }
@@ -123,5 +123,5 @@
   color: var(--text);
 }
 .b {
-  font-weight: 800;
+  font-weight: 700;
 }

@@ -1,6 +1,6 @@
 <template>
   <div class={scrimCls} onclick={handleClose}></div>
-  <aside class={flyCls} role="dialog" aria-label="Surgeon usages">
+  <aside class={flyCls} role="dialog" aria-label={ariaLabel}>
     <div class="fhead">
       <div class="h1">
         <div class="name">{name}</div>
@@ -16,6 +16,7 @@
           </button>
           <button
             type="button"
+            lwc:if={showUsages}
             class={usagesBtnCls}
             data-screen="usages"
             onclick={handleScreen}
@@ -35,8 +36,17 @@
       </div>
     </div>
     <div class="under">
+      <c-pipeline-new-rosa-deal
+        lwc:if={onRosa}
+        class="newdeal"
+        account-id={accountId}
+        account-name={name}
+        campaign-id={campaignId}
+        oncreated={handleCreated}
+        oncancel={handleClose}
+      ></c-pipeline-new-rosa-deal>
       <c-pipeline-new-deal
-        lwc:if={onNew}
+        lwc:elseif={onNew}
         class="newdeal"
         account-id={accountId}
         account-name={name}

@@ -7,6 +7,7 @@
 
 /* All colours live here, once: dark first, light overrides below (same palette as the Pipeline screen). */
 .root {
+  --scheme: dark;
   --page: #0e1623;
   --bg: #141e2e;
   --panel: #1a2740;
@@ -39,6 +40,7 @@
   font-size: 15px;
 }
 .root[data-theme="light"] {
+  --scheme: light;
   --page: #e9edf4;
   --bg: #f4f6fa;
   --panel: #ffffff;
@@ -97,7 +99,7 @@
   border-bottom: 1px solid var(--line);
 }
 .word {
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.14em;
   font-size: 17px;
   white-space: nowrap;
@@ -144,7 +146,7 @@
   text-underline-offset: 3px;
 }
 .crumbhere {
-  font-weight: 800;
+  font-weight: 700;
 }
 .crumbsep {
   color: var(--muted);
@@ -161,7 +163,7 @@
 }
 .seg .pill {
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   padding: 6px 14px;
@@ -197,7 +199,7 @@
 .head1 {
   margin: 0 0 12px;
   font-size: 18px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
@@ -377,7 +379,7 @@
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--muted);
-  font-weight: 800;
+  font-weight: 700;
   margin: 16px 0 6px;
 }
 .lab.first {
@@ -444,7 +446,7 @@
   border-radius: 10px;
   padding: 8px 14px;
   font-size: 20px;
-  font-weight: 800;
+  font-weight: 700;
 }
 .nameprev .lock {
   font-size: 11px;
@@ -491,7 +493,7 @@
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--muted);
-  font-weight: 800;
+  font-weight: 700;
 }
 .kpi.gap b {
   color: var(--warn);
@@ -937,7 +939,7 @@ th.act {
 }
 .inlinepop .opt.hit {
   display: grid;
-  grid-template-columns: minmax(180px, 1.1fr) minmax(200px, 2fr) 120px 140px;
+  grid-template-columns: minmax(180px, 1.1fr) minmax(200px, 2fr) 180px 150px;
   gap: 14px;
   align-items: baseline;
 }
@@ -948,6 +950,13 @@ th.act {
 }
 .inlinepop .opt.hit .hn {
   font-weight: 700;
+}
+/* a facility has no hospitals, so its name takes the room of the name and the hospitals together (Robert, 2026-11-25: the full name, not an abbreviation) */
+.inlinepop .opt.hit.facrow {
+  grid-template-columns: 1fr 180px 150px;
+}
+.inlinepop .opt.hit.facrow .hh {
+  display: none;
 }
 .inlinepop .opt.hit .hh,
 .inlinepop .opt.hit .hp,
@@ -1166,4 +1175,27 @@ textarea.in::placeholder {
 .top .zoomseg {
   flex: none;
   width: max-content; /* the label and the slider's own minimum track, so it is never squeezed */
+}
+
+/* healthcare facilities as members (Robert, 2026-11-25): the Add box's and the look-up's two groups, and the small FACILITY chip beside a name */
+.grp {
+  padding: 8px 12px 2px;
+  color: var(--head, #f472b6);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.fchip {
+  display: inline-block;
+  margin-left: 10px;
+  padding: 3px 10px;
+  border-radius: 6px;
+  background: #0e7490;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  vertical-align: middle;
 }

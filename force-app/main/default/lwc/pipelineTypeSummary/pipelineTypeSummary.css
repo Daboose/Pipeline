@@ -19,7 +19,7 @@
 }
 .tshead {
   font-size: 18px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--head);
@@ -43,14 +43,14 @@
 }
 .l {
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--muted);
 }
 .v {
   font-size: 26px;
-  font-weight: 800;
+  font-weight: 700;
   margin-top: 2px;
 }
 .v.warn {
@@ -71,7 +71,7 @@
 h3 {
   margin: 16px 0 8px;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--muted);

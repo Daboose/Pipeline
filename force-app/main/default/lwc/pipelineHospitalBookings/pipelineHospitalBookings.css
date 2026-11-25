@@ -36,7 +36,7 @@ h2 {
 }
 .big {
   font-size: 34px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1;
   color: var(--text);
 }
@@ -92,7 +92,7 @@ svg text {
 svg text.tot {
   fill: var(--text);
   font-size: 17px;
-  font-weight: 800;
+  font-weight: 700;
 }
 svg .gl {
   stroke: var(--grid-line, rgba(93, 107, 133, 0.3));

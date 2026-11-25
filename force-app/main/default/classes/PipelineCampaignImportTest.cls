@@ -39,11 +39,21 @@ private class PipelineCampaignImportTest {
   }
 
   static Account surgeon(String first, String last, String type) {
+    return surgeonIn(first, last, type, 'Singapore', 'SG');
+  }
+
+  static Account surgeonIn(
+    String first,
+    String last,
+    String type,
+    String country,
+    String code
+  ) {
     Account a = new Account(
       FirstName = first,
       LastName = last,
-      PersonMailingCountry = 'Singapore',
-      PersonMailingCountryCode = 'SG',
+      PersonMailingCountry = country,
+      PersonMailingCountryCode = code,
       RecordTypeId = rt(Account.SObjectType, type)
     );
     // test surgeons share names on purpose; an org's duplicate rule must not stop them being created
@@ -91,7 +101,8 @@ private class PipelineCampaignImportTest {
   static void anEnglishNameIsMatchedToo() {
     System.runAs(manager()) {
       Id c = campaign();
-      Account a = surgeon('Local', 'Spelling', 'Physician');
+      // Thailand: an Account rule (ACC_05) refuses an English name for countries that already enter names in English, SG among them
+      Account a = surgeonIn('Local', 'Spelling', 'Physician', 'Thailand', 'TH');
       a.Preferred_Name__c = 'Zebra English';
       update a;
       PipelineCampaignController.ImportRow r = one(c, 'Zebra English');
@@ -266,6 +277,90 @@ private class PipelineCampaignImportTest {
       r = one(c, 'Anthony Maher (NZ)');
       System.assertEquals('exact', r.status);
       System.assertEquals(b.Id, r.pickId);
+    }
+  }
+
+  static Account facility(String name) {
+    Account a = new Account(
+      Name = name,
+      BillingCountry = 'Singapore',
+      BillingCountryCode = 'SG',
+      BillingCity = 'Testville',
+      RecordTypeId = rt(Account.SObjectType, 'Healthcare_Facility')
+    );
+    Database.DMLOptions opts = new Database.DMLOptions();
+    opts.duplicateRuleHeader.allowSave = true;
+    Database.insert(a, opts);
+    return a;
+  }
+
+  @IsTest
+  static void aHospitalNameMatchesAFacilityExactlyOrPossibly() {
+    System.runAs(manager()) {
+      Id c = campaign();
+      Account f = facility('ZANZIBAR ORTHO HOSPITAL (VIC)');
+      // the whole line read as the name, a bracket counting as words: exact
+      PipelineCampaignController.ImportRow r = one(
+        c,
+        'Zanzibar Ortho Hospital, VIC'
+      );
+      System.assertEquals('exact', r.status);
+      System.assertEquals(f.Id, r.pickId);
+      System.assertEquals(true, r.cands[0].isFacility);
+      System.assertEquals('SG', r.cands[0].country);
+      System.assertEquals(null, r.cands[0].hospitals);
+      // every word of the line but the common ones: only a possible match, never chosen for the person without a click
+      r = one(c, 'Zanzibar Ortho');
+      System.assertEquals('suggest', r.status);
+      System.assertEquals(f.Id, r.pickId);
+      // not a facility, not a surgeon
+      System.assertEquals('none', one(c, 'Qwertyuiop Nowhere').status);
+    }
+  }
+
+  @IsTest
+  static void aLineThatFitsASurgeonAndAFacilityOffersBoth() {
+    System.runAs(manager()) {
+      Id c = campaign();
+      Account s = surgeon('Quirina', 'Mountford', 'Physician');
+      Account f1 = facility('QUIRINA MOUNTFORD HOSPITAL');
+      Account f2 = facility('QUIRINA MOUNTFORD PRIVATE');
+      PipelineCampaignController.ImportRow r = one(c, 'Quirina Mountford');
+      System.assertEquals('many', r.status, 'several fit: the person chooses');
+      Set<Id> ids = new Set<Id>();
+      Integer facilities = 0;
+      for (PipelineCampaignController.SurgeonHit h : r.cands) {
+        ids.add(h.id);
+        if (h.isFacility) {
+          facilities++;
+        }
+      }
+      System.assert(ids.contains(s.Id) && ids.contains(f1.Id));
+      System.assertEquals(
+        2,
+        facilities,
+        'both facilities, no surgeon marked as one'
+      );
+      System.assertEquals(null, r.pickId);
+    }
+  }
+
+  @IsTest
+  static void aFacilityAlreadyInTheCampaignIsMarkedAndAFacilityCanBeAdded() {
+    System.runAs(manager()) {
+      Id c = campaign();
+      Account f = facility('YONDER GENERAL HOSPITAL');
+      PipelineCampaignController.ImportRow r = one(
+        c,
+        'Yonder General Hospital'
+      );
+      System.assertEquals('exact', r.status);
+      PipelineCampaignController.ImportResult added = PipelineCampaignController.addMembers(
+        c,
+        new List<Id>{ f.Id }
+      );
+      System.assertEquals(1, added.added);
+      System.assertEquals('dup', one(c, 'Yonder General Hospital').status);
     }
   }
 }

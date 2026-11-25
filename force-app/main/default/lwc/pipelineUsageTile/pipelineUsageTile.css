@@ -108,7 +108,7 @@ select {
   height: 32px;
   background: var(--pc-blue);
   color: #fff;
-  font-weight: 800;
+  font-weight: 700;
   font-size: 13px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -155,14 +155,14 @@ select {
 .pc {
   grid-column: 1;
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--pc-muted);
 }
 .lc {
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--pc-muted);
@@ -257,7 +257,7 @@ select {
 }
 .rq {
   color: var(--pc-bad);
-  font-weight: 800;
+  font-weight: 700;
   margin-left: 2px;
 }
 

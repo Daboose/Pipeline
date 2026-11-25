@@ -1,0 +1,954 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>
+      Pipeline mockup: a new ROSA deal for a healthcare facility, version 1
+    </title>
+    <style>
+      :root,
+      [data-theme="light"] {
+        --page: #e9edf4;
+        --bg: #f4f6fa;
+        --panel: #ffffff;
+        --panel2: #eef2fa;
+        --line: #d5dcea;
+        --edge: #b3bfd6;
+        --text: #1b2640;
+        --muted: #5d6b85;
+        --pipe: #b7791f;
+        --head: #db2777;
+        --indigo: #4f46e5;
+        --bad: #dc2626;
+        --ok: #0f9d74;
+        --warn: #c2570c;
+        --field: #ffffff;
+        --seg-track: #e3e8f4;
+      }
+      [data-theme="dark"] {
+        --page: #0e1623;
+        --bg: #141e2e;
+        --panel: #1a2740;
+        --panel2: #20304f;
+        --line: #2f4163;
+        --edge: #5b6f93;
+        --text: #e8edf5;
+        --muted: #8b9bb0;
+        --pipe: #fdb827;
+        --head: #f472b6;
+        --indigo: #6366f1;
+        --bad: #f87171;
+        --ok: #4ee0b0;
+        --warn: #fb923c;
+        --field: #11151c;
+        --seg-track: #11151c;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        height: 100%;
+      }
+      body {
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        background: var(--page);
+        color: var(--text);
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-size: 15px;
+      }
+      button,
+      input,
+      select,
+      textarea {
+        font-family: inherit;
+        font-size: inherit;
+        color: inherit;
+      }
+      button {
+        cursor: pointer;
+      }
+      .sp {
+        flex: 1;
+      }
+      .sfnav {
+        flex: none;
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        height: 44px;
+        padding: 0 16px;
+        background: #0b1220;
+        border-bottom: 1px solid #2f4163;
+        color: #cdd6e6;
+        font-size: 14px;
+      }
+      .sfnav .app {
+        font-weight: 800;
+        letter-spacing: 0.14em;
+      }
+      .sfnav .app b {
+        color: #fdb827;
+      }
+      .sfnav .tab {
+        color: #9fb0cc;
+      }
+      .sfnav .tab.on {
+        color: #fff;
+        border-bottom: 2px solid #6366f1;
+        padding-bottom: 2px;
+      }
+      .pill {
+        border: 0;
+        background: var(--indigo);
+        color: #fff;
+        border-radius: 999px;
+        padding: 8px 18px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      .pill.slate {
+        background: var(--panel2);
+        color: var(--text);
+        border: 1px solid var(--edge);
+      }
+      .pill.slate.on {
+        background: var(--indigo);
+        border-color: var(--indigo);
+        color: #fff;
+      }
+      .pill:disabled {
+        opacity: 0.45;
+        cursor: default;
+      }
+      .about {
+        flex: none;
+        margin: 8px 16px 0;
+        padding: 8px 18px;
+        background: var(--panel);
+        border: 1px solid var(--edge);
+        border-radius: 12px;
+        line-height: 1.45;
+      }
+      .about summary {
+        cursor: pointer;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        color: var(--pipe);
+      }
+      .about ul {
+        margin: 4px 0 6px;
+        padding-left: 22px;
+      }
+      .about p {
+        margin: 6px 0;
+      }
+      .tools {
+        flex: none;
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px;
+        padding: 8px 16px 0;
+      }
+      .tools .lab {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        margin: 0 4px 0 10px;
+      }
+      .tools .lab:first-child {
+        margin-left: 0;
+      }
+      .stage {
+        flex: 1;
+        min-height: 0;
+        margin: 8px 16px 16px;
+        position: relative;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        overflow: hidden;
+        background: color-mix(in srgb, var(--page) 70%, #000 30%);
+        display: flex;
+        justify-content: flex-end;
+      }
+      .fly {
+        width: 92%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        background: var(--bg);
+        border-left: 3px solid var(--indigo);
+        box-shadow: -12px 0 30px rgba(0, 0, 0, 0.25);
+      }
+      .fhead {
+        flex: none;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 20px;
+        background: var(--panel);
+        border-bottom: 1px solid var(--line);
+      }
+      .fhead .name {
+        font-size: 22px;
+        font-weight: 800;
+        white-space: nowrap;
+      }
+      .nav {
+        border: 1px solid var(--edge);
+        background: var(--panel2);
+        color: var(--text);
+        border-radius: 999px;
+        padding: 8px 14px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        white-space: nowrap;
+      }
+      .nav.on {
+        background: var(--indigo);
+        border-color: var(--indigo);
+        color: #fff;
+      }
+      .pillrow {
+        display: flex;
+        gap: 8px;
+      }
+      .rbtn {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        border: 1px solid var(--edge);
+        background: var(--panel2);
+        color: var(--text);
+        padding: 0;
+        line-height: 1;
+      }
+      .scroll {
+        flex: 1;
+        min-height: 0;
+        overflow: auto;
+        padding: 14px 20px 18px;
+      }
+      .cols {
+        display: grid;
+        grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+        gap: 16px;
+        align-items: start;
+      }
+      .card {
+        background: var(--panel);
+        border: 1px solid var(--edge);
+        border-radius: 14px;
+        padding: 12px 18px 16px;
+      }
+      .card h3 {
+        margin: 0 0 8px;
+        font-size: 13px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--head);
+      }
+      .grid2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px 14px;
+      }
+      .wide {
+        grid-column: 1 / -1;
+      }
+      .fl {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: 3px;
+      }
+      .req {
+        color: var(--bad);
+      }
+      .in,
+      select.in,
+      textarea.in {
+        width: 100%;
+        height: 38px;
+        background: var(--field);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 0 10px;
+      }
+      select.in {
+        appearance: none;
+        padding-right: 30px;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%238b9bb0' stroke-width='2'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 10px center;
+      }
+      textarea.in {
+        height: 96px;
+        padding: 8px 10px;
+        resize: vertical;
+      }
+      .in.bad {
+        border-color: var(--bad);
+      }
+      .pair {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+      .money {
+        display: grid;
+        grid-template-columns: 1fr 96px;
+        gap: 8px;
+      }
+      .chosen {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        height: 38px;
+        padding: 0 8px 0 14px;
+        border: 1px solid var(--edge);
+        border-radius: 999px;
+        background: var(--panel2);
+        font-weight: 700;
+        max-width: 100%;
+      }
+      .xcirc {
+        position: relative;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        border: 0;
+        background: var(--muted);
+        padding: 0;
+        flex: none;
+      }
+      .xcirc::before,
+      .xcirc::after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 10px;
+        height: 2px;
+        background: var(--panel);
+        border-radius: 1px;
+      }
+      .xcirc::before {
+        transform: translate(-50%, -50%) rotate(45deg);
+      }
+      .xcirc::after {
+        transform: translate(-50%, -50%) rotate(-45deg);
+      }
+      .search {
+        position: relative;
+      }
+      .search input {
+        width: 100%;
+        height: 38px;
+        background: var(--field);
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 0 14px;
+      }
+      .pick {
+        display: none;
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 42px;
+        z-index: 5;
+        background: var(--panel);
+        border: 1px solid var(--edge);
+        border-radius: 10px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+        overflow: hidden;
+      }
+      .search:focus-within .pick {
+        display: block;
+      }
+      .pick div {
+        padding: 8px 14px;
+        cursor: pointer;
+      }
+      .pick div:hover {
+        background: var(--panel2);
+      }
+      .pick small {
+        color: var(--muted);
+        margin-left: 8px;
+      }
+      .seg {
+        display: inline-flex;
+        gap: 2px;
+        padding: 3px;
+        border-radius: 999px;
+        background: var(--seg-track);
+        border: 1px solid var(--line);
+      }
+      .seg button {
+        border: 0;
+        background: transparent;
+        color: var(--muted);
+        border-radius: 999px;
+        padding: 7px 16px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      .seg button.on {
+        background: var(--indigo);
+        color: #fff;
+      }
+      .seg.yn button.on.yes {
+        background: #1e9e57;
+      }
+      .seg.yn button.on.warn {
+        background: #d97706;
+      }
+      .rtype {
+        color: var(--muted);
+        font-size: 13px;
+        margin-left: 12px;
+      }
+      .flags {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px 14px;
+      }
+      .flag .fl {
+        margin-bottom: 4px;
+      }
+      .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .chip {
+        border: 1px solid var(--edge);
+        background: var(--panel2);
+        color: var(--text);
+        border-radius: 999px;
+        padding: 6px 14px;
+        font-weight: 700;
+      }
+      .chip.on {
+        background: var(--indigo);
+        border-color: var(--indigo);
+        color: #fff;
+      }
+      .note {
+        color: var(--muted);
+        font-size: 13px;
+        margin-top: 4px;
+      }
+      .err {
+        color: var(--bad);
+        font-size: 13px;
+        margin-top: 4px;
+      }
+      .foot {
+        flex: none;
+        display: flex;
+        gap: 10px;
+        padding: 10px 20px;
+        background: var(--panel);
+        border-top: 1px solid var(--line);
+        min-height: 54px;
+        align-items: center;
+      }
+      .ok {
+        padding: 14px 18px;
+        border-radius: 12px;
+        border: 1px solid var(--ok);
+        color: var(--ok);
+        background: color-mix(in srgb, var(--ok) 12%, transparent);
+        font-weight: 700;
+      }
+      .view {
+        display: none;
+        flex: 1;
+        min-height: 0;
+        flex-direction: column;
+      }
+      .view.on {
+        display: flex;
+      }
+      .usagesbox {
+        padding: 40px;
+        color: var(--muted);
+        text-align: center;
+      }
+
+      .chipset {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      .chipset button {
+        border: 1px solid var(--edge);
+        background: var(--panel2);
+        color: var(--text);
+        border-radius: 999px;
+        padding: 8px 16px;
+        font-weight: 600;
+      }
+      .chipset button.on {
+        background: var(--indigo);
+        border-color: var(--indigo);
+        color: #fff;
+      }
+      .stagebar {
+        display: flex;
+        justify-content: center;
+        padding: 10px 20px;
+        background: var(--panel2);
+        border-bottom: 1px solid var(--line);
+      }
+      .stagebar .seg {
+        background: var(--indigo);
+        border-color: var(--indigo);
+      }
+      .stagebar .seg button {
+        color: #dfe3ff;
+      }
+      .stagebar .seg button.on {
+        background: #fff;
+        color: var(--indigo);
+      }
+      .stagebar .seg span {
+        align-self: center;
+        padding: 0 12px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #fff;
+      }
+      .countrybox {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 18px;
+      }
+      .toast {
+        position: absolute;
+        left: 50%;
+        bottom: 18px;
+        transform: translateX(-50%);
+        background: #0b1220;
+        color: #fff;
+        padding: 10px 20px;
+        border-radius: 999px;
+        border: 1px solid var(--edge);
+        font-weight: 700;
+        display: none;
+      }
+      .toast.on {
+        display: block;
+      }
+      .hint {
+        color: var(--muted);
+        font-size: 13px;
+        margin: 4px 0 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="sfnav">
+      <span class="app"><b>PIPE</b>LINE</span
+      ><span class="tab on">Pipeline</span
+      ><span class="tab">Sales Campaigns</span><span class="sp"></span>
+      <button class="pill" type="button" id="full">Full screen</button>
+    </div>
+    <details class="about" open>
+      <summary>ABOUT THIS MOCKUP</summary>
+      <p>
+        <b>What it shows:</b> the screen for a <b>new ROSA deal</b>, opened from
+        the campaign list when a <b>healthcare facility</b> shows "No deal yet".
+        It is the same flyout as the surgeon's New Deal, named for the facility.
+        A ROSA deal has <b>no portfolio to choose</b>: the only choice that
+        starts the form is the <b>country</b> (it decides the record type),
+        taken at once when the person works in one country. Then the form looks
+        like an existing ROSA deal, as Robert's screenshot: the stage slider
+        (starting at Sales Pipeline), the Healthcare Facility (filled in,
+        changeable), an optional Primary HCP, ROSA deal type, ROSA sales type,
+        ROSA Growth $ and currency, owner, expected closing quarter and year,
+        install and close dates, the three platform lists, the two priority
+        switches and the background information. Mandatory fields have a red *:
+        the Healthcare Facility, ROSA Growth $, the owner, and the closing
+        quarter and year (not in the past). Invented data; the lists are typed
+        in here (the real ones are read live from Salesforce).
+      </p>
+      <b>Try it:</b>
+      <ul>
+        <li>
+          Under <b>Several countries</b> press Yes: the form waits for a
+          Country. Pick one and the form appears. With No the country is taken
+          at once.
+        </li>
+        <li>
+          Press the stage names to move the stage; press Hip, Knee or Shoulder
+          (more than one can be on).
+        </li>
+        <li>
+          Press the round x on the Healthcare Facility, Primary HCP or Owner to
+          change it.
+        </li>
+        <li>
+          Leave ROSA Growth $ empty (Save stays grey), fill it in and press
+          <b>Save deal</b>.
+        </li>
+      </ul>
+      <b>Decided:</b> a new deal made here is added to the campaign being looked
+      at (as the surgeon's is). <b>Not shown yet:</b> what the flyout does after
+      Save, the slide-in motion, the real lists.
+    </details>
+    <div class="tools">
+      <span class="lab">Several countries</span>
+      <button class="pill slate on" type="button" data-multi="no">No</button>
+      <button class="pill slate" type="button" data-multi="yes">Yes</button>
+      <button class="pill slate" type="button" id="again">Start again</button>
+    </div>
+    <div class="stage">
+      <div class="fly">
+        <div class="fhead">
+          <span class="name">ROYAL SOUTHERN HOSPITAL</span>
+          <span class="sp"></span>
+          <div class="pillrow">
+            <button type="button" class="nav on">New Deal</button>
+          </div>
+          <button type="button" class="rbtn" aria-label="Close">
+            &#10005;
+          </button>
+        </div>
+        <div class="stagebar" id="stagebar" style="display: none"></div>
+        <div class="scroll"><div id="host"></div></div>
+        <div class="foot" id="foot" style="display: none">
+          <span class="note" id="note"></span><span class="sp"></span>
+          <button type="button" class="pill slate" id="cancel">Cancel</button>
+          <button type="button" class="pill" id="save">Save deal</button>
+        </div>
+        <div class="toast" id="toast"></div>
+      </div>
+    </div>
+    <script>
+      document.documentElement.setAttribute("data-theme", "dark");
+      document.getElementById("full").onclick = function () {
+        document.documentElement.requestFullscreen &&
+          document.documentElement.requestFullscreen();
+      };
+      var STAGES = [
+        "Sales Pipeline",
+        "Surgeon Engagement",
+        "Executive Presentation",
+        "Negotiation",
+        "Closed Won",
+        "Deal Lost"
+      ];
+      var OWNERS = ["Rob Sales", "Shayne Engelbrecht", "Ross Brown"];
+      var HCPS = ["Dr Elena Voss", "Dr Hannah Whitlock", "Dr Carlos Mendez"];
+      var FACS = [
+        "ROYAL SOUTHERN HOSPITAL",
+        "ROYAL MELBOURNE HOSPITAL (VIC)",
+        "BATHURST BASE HOSPITAL (NSW)"
+      ];
+      var YEARS = [2026, 2027, 2028];
+      var multi = false;
+      var s;
+      function fresh() {
+        s = {
+          country: multi ? "" : "AU",
+          stage: 0,
+          fac: "ROYAL SOUTHERN HOSPITAL",
+          hcp: "",
+          type: "Placement",
+          sales: [],
+          growth: "",
+          cur: "AUD",
+          owner: "Rob Sales",
+          q: "",
+          y: "",
+          inst: "",
+          close: "",
+          pShoulder: "",
+          pHip: "",
+          pKnee: "",
+          rep: false,
+          state: false,
+          bg: "",
+          editing: ""
+        };
+      }
+      function esc(t) {
+        return String(t).replace(/[&<>"]/g, function (c) {
+          return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
+        });
+      }
+      function sel(id, opts, val, ph) {
+        return (
+          '<select class="in" id="' +
+          id +
+          '" onchange="set(\'' +
+          id +
+          '\',this.value)"><option value="">' +
+          (ph || "–") +
+          "</option>" +
+          opts
+            .map(function (o) {
+              return (
+                "<option" +
+                (String(o) === String(val) ? " selected" : "") +
+                ">" +
+                o +
+                "</option>"
+              );
+            })
+            .join("") +
+          "</select>"
+        );
+      }
+      function picker(key, list, ph) {
+        if (s[key] && s.editing !== key)
+          return (
+            '<span class="chosen">' +
+            esc(s[key]) +
+            ' <button type="button" class="xcirc" onclick="edit(\'' +
+            key +
+            '\')" aria-label="Change"></button></span>'
+          );
+        return (
+          '<div class="search"><input placeholder="' +
+          ph +
+          '" oninput="this.nextElementSibling.style.display=\'block\'" onfocus="this.nextElementSibling.style.display=\'block\'"><div class="pick" style="display:none">' +
+          list
+            .map(function (n) {
+              return (
+                "<div onclick=\"choose('" +
+                key +
+                "','" +
+                n.replace(/'/g, "") +
+                "')\">" +
+                esc(n) +
+                "</div>"
+              );
+            })
+            .join("") +
+          "</div></div>"
+        );
+      }
+      function edit(k) {
+        s[k] = "";
+        s.editing = k;
+        draw();
+      }
+      function choose(k, v) {
+        s[k] = v;
+        s.editing = "";
+        draw();
+      }
+      function set(id, v) {
+        s[id] = v;
+        if (id === "country") {
+          draw();
+          return;
+        }
+        check();
+      }
+      function sw(key, label, warn) {
+        return (
+          '<div class="seg yn"><span style="align-self:center;padding:0 12px;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)">' +
+          label +
+          '</span><button class="' +
+          (!s[key] ? "on" : "") +
+          '" onclick="flag(\'' +
+          key +
+          '\',false)">No</button><button class="' +
+          (s[key] ? "on yes" : "") +
+          '" onclick="flag(\'' +
+          key +
+          "',true)\">Yes</button></div>"
+        );
+      }
+      function flag(k, v) {
+        s[k] = v;
+        draw();
+      }
+      function togSales(v) {
+        var i = s.sales.indexOf(v);
+        if (i < 0) s.sales.push(v);
+        else s.sales.splice(i, 1);
+        draw();
+      }
+      function setStage(i) {
+        s.stage = i;
+        draw();
+      }
+      function quarters() {
+        return s.y === "2026" ? ["Q4"] : ["Q1", "Q2", "Q3", "Q4"];
+      }
+      function draw() {
+        var host = document.getElementById("host"),
+          bar = document.getElementById("stagebar"),
+          foot = document.getElementById("foot");
+        if (!s.country) {
+          bar.style.display = "none";
+          foot.style.display = "none";
+          host.innerHTML =
+            '<div class="card"><h3>Start the deal</h3><div class="countrybox"><div><div class="fl">Country <span class="req">*</span></div>' +
+            sel(
+              "country",
+              ["AU", "NZ", "SG", "TH", "HK"],
+              "",
+              "Choose the country…"
+            ) +
+            '</div></div><p class="hint">A ROSA deal has no portfolio to pick. The country decides the record type, and the form appears once it is chosen.</p></div>';
+          return;
+        }
+        bar.style.display = "flex";
+        foot.style.display = "flex";
+        bar.innerHTML =
+          '<span class="seg"><span>Stage</span>' +
+          STAGES.map(function (t, i) {
+            return (
+              '<button class="' +
+              (i === s.stage ? "on" : "") +
+              '" onclick="setStage(' +
+              i +
+              ')">' +
+              t +
+              "</button>"
+            );
+          }).join("") +
+          "</span>";
+        var left =
+          '<div class="card"><h3>The deal</h3><div class="grid2">' +
+          '<div><div class="fl">Healthcare Facility <span class="req">*</span></div>' +
+          picker("fac", FACS, "Search by name…") +
+          "</div>" +
+          '<div><div class="fl">Primary HCP</div>' +
+          picker("hcp", HCPS, "Search by name…") +
+          "</div>" +
+          '<div class="wide"><div class="fl">ROSA Deal Type</div>' +
+          sel("type", ["Placement", "Capital sale", "Lease"], s.type) +
+          "</div>" +
+          '<div class="wide"><div class="fl">ROSA Sales Type</div><div class="chipset">' +
+          ["Hip", "Knee", "Shoulder"]
+            .map(function (v) {
+              return (
+                '<button class="' +
+                (s.sales.indexOf(v) > -1 ? "on" : "") +
+                '" onclick="togSales(\'' +
+                v +
+                "')\">" +
+                v +
+                "</button>"
+              );
+            })
+            .join("") +
+          "</div></div>" +
+          '<div><div class="fl">ROSA Growth $ <span class="req">*</span></div><input class="in' +
+          (s.growth === "" ? " bad" : "") +
+          '" id="growth" value="' +
+          esc(s.growth) +
+          '" oninput="s.growth=this.value;check()" inputmode="numeric"></div>' +
+          '<div><div class="fl">Currency</div>' +
+          sel(
+            "cur",
+            [
+              "AUD - Australian Dollar",
+              "NZD - New Zealand Dollar",
+              "SGD - Singapore Dollar"
+            ],
+            s.cur === "AUD" ? "AUD - Australian Dollar" : s.cur
+          ) +
+          "</div>" +
+          '<div><div class="fl">Owner <span class="req">*</span></div>' +
+          picker("owner", OWNERS, "Search by name…") +
+          "</div>" +
+          '<div><div class="fl">Expected Closing Quarter and Year <span class="req">*</span></div><div class="pair">' +
+          sel("q", quarters(), s.q, "Quarter") +
+          sel("y", YEARS, s.y, "Year") +
+          "</div></div>" +
+          '<div><div class="fl">Install Date</div><input class="in" type="date" value="' +
+          s.inst +
+          '" onchange="s.inst=this.value"></div>' +
+          '<div><div class="fl">Close Date</div><input class="in" type="date" value="' +
+          s.close +
+          '" onchange="s.close=this.value"></div>' +
+          '<div><div class="fl">ROSA Platform: Shoulder</div>' +
+          sel("pShoulder", ["Option 1", "Option 2"], s.pShoulder) +
+          "</div>" +
+          '<div><div class="fl">ROSA Platform: Hip</div>' +
+          sel("pHip", ["Option 1", "Option 2"], s.pHip) +
+          "</div>" +
+          '<div><div class="fl">ROSA Platform: Partial Knee</div>' +
+          sel("pKnee", ["Option 1", "Option 2"], s.pKnee) +
+          "</div>" +
+          '<div class="wide" style="display:flex;gap:12px;flex-wrap:wrap">' +
+          sw("rep", "Rep priority") +
+          sw("state", "State priority") +
+          "</div>" +
+          "</div></div>";
+        var right =
+          '<div class="card"><h3>Background information</h3><textarea class="in" style="height:160px" oninput="s.bg=this.value">' +
+          esc(s.bg) +
+          "</textarea></div>";
+        host.innerHTML = '<div class="cols">' + left + right + "</div>";
+        check();
+      }
+      function check() {
+        var miss = [];
+        if (!s.fac) miss.push("Healthcare Facility");
+        if (String(s.growth).trim() === "") miss.push("ROSA Growth $");
+        if (!s.owner) miss.push("Owner");
+        if (!s.q || !s.y) miss.push("Closing quarter and year");
+        document.getElementById("save").disabled = miss.length > 0;
+        document.getElementById("note").textContent = miss.length
+          ? "Still needed: " + miss.join(", ")
+          : "Ready to save. The deal will be added to the campaign.";
+      }
+      document.getElementById("save").onclick = function () {
+        var t = document.getElementById("toast");
+        t.textContent = "Deal created and added to the campaign";
+        t.classList.add("on");
+        setTimeout(function () {
+          t.classList.remove("on");
+        }, 2200);
+      };
+      document.getElementById("cancel").onclick = function () {
+        fresh();
+        draw();
+      };
+      document.getElementById("again").onclick = function () {
+        fresh();
+        draw();
+      };
+      document.querySelectorAll("[data-multi]").forEach(function (b) {
+        b.onclick = function () {
+          multi = b.dataset.multi === "yes";
+          document.querySelectorAll("[data-multi]").forEach(function (x) {
+            x.classList.toggle("on", x === b);
+          });
+          fresh();
+          draw();
+        };
+      });
+      fresh();
+      draw();
+    </script>
+  </body>
+</html>

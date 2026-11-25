@@ -446,7 +446,7 @@
                 <input
                   class="in search"
                   type="text"
-                  placeholder="Type a surgeon's name to add them"
+                  placeholder="Type a surgeon's or facility's name to add them"
                   value={memberQ}
                   oninput={handleMemberQ}
                 />
@@ -464,6 +464,7 @@
                   work.
                 </div>
                 <template for:each={hits} for:item="h">
+                  <div class="grp" key={h.key} lwc:if={h.isHead}>{h.text}</div>
                   <button
                     key={h.key}
                     type="button"
@@ -471,6 +472,7 @@
                     data-id={h.id}
                     disabled={h.disabled}
                     onclick={handleAdd}
+                    lwc:else
                   >
                     {h.nameText}<span lwc:if={h.already}>
                       (already a member)</span
@@ -479,7 +481,7 @@
                   </button>
                 </template>
                 <div class="foot" lwc:if={noHits}>
-                  No physician or emerging consultant matches.
+                  No surgeon or facility matches.
                 </div>
                 <div class="foot" lwc:if={outsideText}>{outsideText}</div>
                 <div class="foot" lwc:if={heldBackText}>{heldBackText}</div>
@@ -554,18 +556,20 @@
         </h1>
         <div class="card full formcard">
           <span class="lab first"
-            >Paste a list of surgeons, one per line, straight from Excel</span
+            >Paste a list of surgeons and hospitals, one per line, straight from
+            Excel</span
           >
           <textarea
             class="in area big"
-            placeholder="Wei Ming Lim, SGH&#10;Priya Nair - Mount Elizabeth&#10;Dr Siti Abdullah"
+            placeholder="Wei Ming Lim, SGH&#10;Priya Nair - Mount Elizabeth&#10;Royal Melbourne Hospital&#10;Dr Siti Abdullah"
             oninput={handlePaste}
           ></textarea>
           <p class="note">
-            Add the hospital after the name (a comma, a dash or a tab) to help
-            with common names. Titles such as Dr are ignored, and so is the
-            order of the words. The English name is searched too. Nothing is
-            saved on this step: the next screen shows what each name matched,
+            Add the hospital after a surgeon's name (a comma, a dash or a tab)
+            to help with common names. Titles such as Dr are ignored, and so is
+            the order of the words. The English name is searched too. Each line
+            is checked against surgeons and healthcare facilities. Nothing is
+            saved on this step: the next screen shows what each line matched,
             and you confirm every row.
           </p>
           <span class="lab">...or choose a file (CSV or text)</span>
@@ -621,8 +625,8 @@
             </h1>
             <p class="note nomargin">
               Exact matches are ready to go. For every other row, choose the
-              person and press Confirm. Only rows with a tick in the Add column
-              are added.
+              person or facility and press Confirm. Only rows with a tick in the
+              Add column are added.
               <span class="cleannote" lwc:if={hasCleanNote}>{cleanNote}</span>
             </p>
           </div>
@@ -761,7 +765,10 @@
                         </button>
                       </template>
                       <template lwc:if={r.showName}>
-                        <span class="strong">{r.nameText}</span>
+                        <span class="strong">{r.nameText}</span
+                        ><span class="fchip" lwc:if={r.isFacility}
+                          >Facility</span
+                        >
                         <button
                           type="button"
                           class="xcirc inline"
@@ -785,7 +792,7 @@
                           <input
                             class="in search"
                             type="text"
-                            placeholder="Look the surgeon up"
+                            placeholder="Look the surgeon or facility up"
                             data-i={r.i}
                             value={r.q}
                             oninput={handleRowQ}
@@ -805,13 +812,17 @@
                             name both work.
                           </div>
                           <template for:each={r.popHits} for:item="h">
+                            <div class="grp" key={h.key} lwc:if={h.isHead}>
+                              {h.text}
+                            </div>
                             <button
                               key={h.key}
                               type="button"
-                              class="opt hit"
+                              class={h.optCls}
                               data-i={r.i}
                               data-id={h.id}
                               onclick={handleRowPickFound}
+                              lwc:else
                             >
                               <span class="hn">{h.nameText}</span>
                               <span class="hh">{h.hospitalsText}</span>

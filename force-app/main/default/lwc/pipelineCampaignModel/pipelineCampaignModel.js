@@ -189,13 +189,18 @@ export function ratingRank(rating) {
   return i < 0 ? null : i;
 }
 
-/** The tiles above the members list: surgeons, with a deal, no deal yet, deals, and the value per currency (never added across currencies). */
-export function memberTiles(members) {
+/**
+ * The tiles above the members list: surgeons, with a deal, no deal yet, deals, and the value per currency (never added across currencies).
+ * Healthcare facilities and ROSA deals are left out (Robert, 2026-11-25): they have their own stages and are never added to the
+ * surgeons' figures; their own value box is a later step.
+ */
+export function memberTiles(allMembers) {
+  const members = (allMembers || []).filter((m) => !m.isFacility);
   const value = {};
   let deals = 0;
   let withDeal = 0;
-  (members || []).forEach((m) => {
-    const ds = m.deals || [];
+  members.forEach((m) => {
+    const ds = (m.deals || []).filter((d) => d.kind !== "rosa");
     if (ds.length) withDeal += 1;
     ds.forEach((d) => {
       deals += 1;
@@ -204,9 +209,9 @@ export function memberTiles(members) {
     });
   });
   return {
-    surgeons: (members || []).length,
+    surgeons: members.length,
     withDeal,
-    noDeal: (members || []).length - withDeal,
+    noDeal: members.length - withDeal,
     deals,
     value: Object.keys(value)
       .sort()
@@ -229,7 +234,9 @@ export function valueByRating(members) {
     out[k] = {};
   });
   (members || []).forEach((m) => {
+    if (m.isFacility) return; // a facility's ROSA deals are never counted under a rating (Robert, 2026-11-25)
     (m.deals || []).forEach((d) => {
+      if (d.kind === "rosa") return;
       const cell = (m.ratings || []).find((r) => r.portfolio === d.portfolio);
       const rated = String((cell && cell.rating) || "").toUpperCase();
       const key =
@@ -241,6 +248,25 @@ export function valueByRating(members) {
     });
   });
   return out;
+}
+
+/**
+ * The value of the ROSA deals in a campaign (Robert, 2026-11-25): the ROSA value of every ROSA deal linked to the campaign, which sit under
+ * the campaign's healthcare facilities, per currency and never added across currencies or to the surgeons' values. hasRosa says whether the
+ * campaign has any ROSA deal at all (the ROSA value box is shown only then). Returns { hasRosa: true, total: { AUD: 1000 } }.
+ */
+export function rosaValue(members) {
+  const total = {};
+  let hasRosa = false;
+  (members || []).forEach((m) => {
+    (m.deals || []).forEach((d) => {
+      if (d.kind !== "rosa") return;
+      hasRosa = true;
+      const c = d.currencyCode || "";
+      total[c] = (total[c] || 0) + (Number(d.value) || 0);
+    });
+  });
+  return { hasRosa, total };
 }
 
 // the US dollar conversion lives in one place, pipelineCurrency; re-exported here for the campaign screen and its tests

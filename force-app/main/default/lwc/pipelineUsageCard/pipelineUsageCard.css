@@ -54,7 +54,7 @@ select {
 .head h2 {
   margin: 0;
   font-size: 17px;
-  font-weight: 800;
+  font-weight: 700;
 }
 .sp {
   flex: 1;
@@ -72,7 +72,7 @@ select {
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--pc-muted);
-  font-weight: 800;
+  font-weight: 700;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -94,7 +94,7 @@ select {
   background: color-mix(in srgb, var(--pc-card) 72%, transparent);
   display: grid;
   place-items: center;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   font-size: 13px;
@@ -107,7 +107,7 @@ select {
 .btn {
   border-radius: 999px;
   padding: 8px 18px;
-  font-weight: 800;
+  font-weight: 700;
   font-size: 12px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -175,7 +175,7 @@ select {
   background: var(--pc-card);
   border-bottom: 1px solid var(--pc-line2);
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--pc-muted);
@@ -196,7 +196,7 @@ select {
   padding: 8px 16px;
   background: var(--pcu-hosp, #f3f3f3);
   border-bottom: 1px solid var(--pc-line);
-  font-weight: 800;
+  font-weight: 700;
 }
 
 /* the hospital switch: the shared sliding one-pill choice; it reads its colours from these (the card is light) */
@@ -298,7 +298,7 @@ th.act {
 }
 tr.hosp td {
   background: var(--pcu-hosp, #eef1f6);
-  font-weight: 800;
+  font-weight: 700;
   border-bottom: 1px solid var(--pc-line2);
   padding: 7px 10px;
 }
@@ -315,7 +315,7 @@ tr.emptyline td {
   color: var(--pc-muted);
 }
 tr.total td {
-  font-weight: 800;
+  font-weight: 700;
   border-top: 2px solid var(--pc-line2);
   border-bottom: 0;
 }
@@ -326,10 +326,10 @@ td.zbc {
   background: var(--pcu-bluebg, #f4f8ff);
 }
 td.strong {
-  font-weight: 800;
+  font-weight: 700;
 }
 .co-zb {
-  font-weight: 800;
+  font-weight: 700;
   color: var(--pc-blue2);
 }
 a.lnk {
@@ -499,7 +499,7 @@ a.lnk:hover {
 .fld label {
   display: block;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.07em;
   text-transform: uppercase;
   color: var(--pc-muted);

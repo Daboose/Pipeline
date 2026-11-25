@@ -73,7 +73,7 @@ tr.sg td {
 .sn {
   margin-right: 0; /* the gap before the rating comes from the line's 12 px gap */
   font-size: 18px;
-  font-weight: 800;
+  font-weight: 700;
 }
 .cnt {
   margin-left: auto;
@@ -99,7 +99,7 @@ tr.dl.lock td {
   background: var(--panel2, var(--panel));
   color: var(--muted);
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.1em;
 }
 .inpill {
@@ -109,7 +109,7 @@ tr.dl.lock td {
   background: #16a34a;
   color: #fff;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -127,7 +127,7 @@ tr.dl.lock td {
   color: #fff;
   font-family: inherit;
   font-size: 22px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1;
   cursor: pointer;
   position: relative;
@@ -217,7 +217,7 @@ tr.dl.lock td {
   color: #fff;
   font-family: inherit;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   cursor: pointer;
@@ -287,4 +287,26 @@ tr.dl.lock td {
   .scrim {
     transition: none;
   }
+}
+
+/* healthcare facilities as members (Robert, 2026-11-25): the small FACILITY chip beside the name, and a ROSA deal's physician as a small
+   grey line under the deal's name (for information only: never used to find the deal) */
+.fac {
+  display: inline-block;
+  margin-left: 4px;
+  padding: 3px 10px;
+  border-radius: 6px;
+  background: #0e7490;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.phys {
+  display: block;
+  margin-top: 1px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 400;
 }

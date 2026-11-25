@@ -8,57 +8,53 @@
         <div key={e.key}>{e.text}</div>
       </template>
     </div>
+    <section class="card head">
+      <h3>Start the deal</h3>
+      <div class="headrow">
+        <div class="top">
+          <div>
+            <div class="fl">Portfolio <span class="req">*</span></div>
+            <c-pipeline-segmented
+              label="Portfolio of the new deal"
+              options={portfolioOptions}
+              value={port}
+              onchange={handlePortfolio}
+            ></c-pipeline-segmented>
+          </div>
+          <div>
+            <div class="fl">Country <span class="req">*</span></div>
+            <select
+              class="in country"
+              aria-label="Country"
+              onchange={handleCountry}
+            >
+              <option value="" selected={noCountry}>Country…</option>
+              <template for:each={countryOptions} for:item="o">
+                <option key={o.value} value={o.value} selected={o.selected}>
+                  {o.label}
+                </option>
+              </template>
+            </select>
+          </div>
+          <span class="rtype">{typeName}</span>
+        </div>
+        <div class="band" lwc:if={showStage}>
+          <c-pipeline-stage-slider
+            steps={stages}
+            won={stageWon}
+            lost={stageLost}
+            value={stageNow}
+            onchange={handleStage}
+          ></c-pipeline-stage-slider>
+        </div>
+      </div>
+    </section>
     <div class="cols">
       <div class="col">
-        <section class="card">
+        <section class="card" lwc:if={ready}>
           <h3>The new deal</h3>
           <div class="grid">
-            <div class="wide">
-              <div class="top">
-                <div>
-                  <div class="fl">Portfolio <span class="req">*</span></div>
-                  <c-pipeline-segmented
-                    label="Portfolio of the new deal"
-                    options={portfolioOptions}
-                    value={port}
-                    onchange={handlePortfolio}
-                  ></c-pipeline-segmented>
-                </div>
-                <div>
-                  <div class="fl">Country <span class="req">*</span></div>
-                  <select
-                    class="in country"
-                    aria-label="Country"
-                    onchange={handleCountry}
-                  >
-                    <option value="" selected={noCountry}>Country…</option>
-                    <template for:each={countryOptions} for:item="o">
-                      <option
-                        key={o.value}
-                        value={o.value}
-                        selected={o.selected}
-                      >
-                        {o.label}
-                      </option>
-                    </template>
-                  </select>
-                </div>
-                <span class="rtype">{typeName}</span>
-              </div>
-            </div>
             <template lwc:if={ready}>
-              <div class="wide stagerow" lwc:if={hasStages}>
-                <div class="fl">Stage <span class="req">*</span></div>
-                <div class="band">
-                  <c-pipeline-stage-slider
-                    steps={stages}
-                    won={stageWon}
-                    lost={stageLost}
-                    value={stageNow}
-                    onchange={handleStage}
-                  ></c-pipeline-stage-slider>
-                </div>
-              </div>
               <div>
                 <div class="fl">Primary HCP <span class="req">*</span></div>
                 <c-pipeline-lookup
@@ -208,10 +204,7 @@
               </div>
             </template>
           </div>
-        </section>
-
-        <section class="card" lwc:if={ready}>
-          <h3>Brand and switches</h3>
+          <div class="spacer"></div>
           <div class="fl">Brand <span class="req">*</span></div>
           <div class="chips" lwc:if={hasBrands}>
             <template for:each={brandChoices} for:item="b">

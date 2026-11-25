@@ -7,6 +7,7 @@
 
 /* All colours live here, once. Dark first; light overrides below. Children inherit them. */
 .root {
+  --scheme: dark; /* tells the browser's own date picker icon to be light on the dark theme */
   --page: #0e1623;
   --bg: #141e2e;
   --panel: #1a2740;
@@ -43,6 +44,7 @@
   font-size: 15px;
 }
 .root[data-theme="light"] {
+  --scheme: light;
   --gold: #e0a100;
   --state: #7c3aed;
   --page: #e9edf4;
@@ -275,12 +277,12 @@
 .fhead h2 {
   margin: 0;
   font-size: 15px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.14em;
 }
 .flbl {
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--muted);
@@ -333,7 +335,7 @@
   border: 1px solid var(--edge);
   border-radius: 12px;
   padding: 16px 30px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.08em;
   box-shadow: var(--shadow);
 }
@@ -484,7 +486,7 @@
 .fpval .tag {
   flex: none;
   font-size: 10px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.08em;
   color: var(--warn);
 }
@@ -532,7 +534,7 @@
 }
 .cname {
   font-size: 18px;
-  font-weight: 800;
+  font-weight: 700;
 }
 .cfacts {
   color: var(--muted);

@@ -217,6 +217,9 @@ export default class PipelineNewDeal extends LightningElement {
   get hasStages() {
     return this.stages.length > 0;
   }
+  get showStage() {
+    return this.ready && this.hasStages;
+  }
   get stageWon() {
     return STAGE_ENDS.opp.won;
   }

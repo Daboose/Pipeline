@@ -5,21 +5,23 @@
     it can still be taken out.
   </p>
   <div class="empty" lwc:if={noKinds}>
-    Tick Opportunities or Risks above to list deals.
+    Tick Opportunities, Risks or ROSA above to list deals.
   </div>
   <table class="mtbl" lwc:else>
     <colgroup>
-      <col style="width: 18%" />
-      <col style="width: 16%" />
+      <col style="width: 19%" />
+      <col style="width: 11%" />
       <col style="width: 12%" />
-      <col style="width: 17%" />
-      <col style="width: 17%" />
-      <col style="width: 10%" />
+      <col style="width: 11%" />
+      <col style="width: 13%" />
+      <col style="width: 11%" />
+      <col style="width: 13%" />
       <col style="width: 10%" />
     </colgroup>
     <thead>
       <tr>
         <th>Deal</th>
+        <th>Type</th>
         <th>Brand</th>
         <th class="num">Value / year</th>
         <th>Sales rep</th>
@@ -32,20 +34,21 @@
       <template for:each={lines} for:item="l">
         <tr key={l.key} class={l.cls}>
           <template lwc:if={l.isHead}>
-            <td colspan="7">
+            <td colspan="8">
               <div class="sgcell">
                 <button
                   type="button"
                   class="rb rem"
                   data-member={l.g.memberId}
                   disabled={saving}
-                  title="Remove this surgeon from the campaign"
-                  aria-label="Remove this surgeon from the campaign"
+                  title="Remove from the campaign"
+                  aria-label="Remove from the campaign"
                   onclick={handleAskMember}
                 >
                   <span class="mark"></span>
                 </button>
                 <span class="sn">{l.g.name}</span>
+                <span class="fac" lwc:if={l.g.isFacility}>Facility</span>
                 <template for:each={l.g.plates} for:item="p">
                   <span key={p.key} class={p.cls}>{p.text}</span>
                 </template>
@@ -55,8 +58,12 @@
           </template>
           <template lwc:else>
             <td>
-              <b>{l.r.name}</b><span class="kind" lwc:if={l.r.risk}>RISK</span>
+              <b>{l.r.name}</b>
+              <span class="phys" lwc:if={l.r.physician}
+                >Physician: {l.r.physician}</span
+              >
             </td>
+            <td>{l.r.typeWord}</td>
             <td>{l.r.brand}</td>
             <td class="num">{l.r.value}</td>
             <td>{l.r.owner}</td>
@@ -89,9 +96,9 @@
       class="ask"
       role="dialog"
       aria-modal="true"
-      aria-label="Remove this surgeon"
+      aria-label="Remove from the campaign"
     >
-      <p>Are you sure you want to remove this surgeon from the campaign?</p>
+      <p>{askText}</p>
       <div class="row">
         <button type="button" class="btn sec" onclick={handleAskNo}>
           Cancel

@@ -32,6 +32,23 @@ jest.mock(
   { virtual: true }
 );
 
+jest.mock(
+  "c/pipelineNewRosaDeal",
+  () => {
+    const { LightningElement, registerDecorators } = require("lwc");
+    class Stub extends LightningElement {}
+    registerDecorators(Stub, {
+      publicProps: {
+        accountId: { config: 0 },
+        accountName: { config: 0 },
+        campaignId: { config: 0 }
+      }
+    });
+    return { __esModule: true, default: Stub };
+  },
+  { virtual: true }
+);
+
 // Guards the flyout for a surgeon with no deal: the surgeon's name, the Usage Card for their account, slide in and out, and close.
 describe("c-pipeline-surgeon-flyout", () => {
   afterEach(() => {
@@ -73,6 +90,29 @@ describe("c-pipeline-surgeon-flyout", () => {
     expect(nd.accountName).toBe("Dr Test");
     expect(nd.campaignId).toBe("c1");
     expect(fresh.shadowRoot.querySelector("c-pipeline-usage-card")).toBeNull();
+  });
+
+  it("for a healthcare facility has only New Deal, which is the ROSA deal screen, and passes on a deal that was made", async () => {
+    const el = make({
+      isFacility: true,
+      startScreen: "new",
+      campaignId: "c1",
+      name: "Bathurst Base Hospital"
+    });
+    const created = jest.fn();
+    el.addEventListener("dealcreated", created);
+    await Promise.resolve();
+    expect(pills(el)).toEqual([{ text: "New Deal", on: true }]);
+    expect(el.shadowRoot.querySelector("c-pipeline-new-deal")).toBeNull();
+    expect(el.shadowRoot.querySelector("c-pipeline-usage-card")).toBeNull();
+    const rosa = el.shadowRoot.querySelector("c-pipeline-new-rosa-deal");
+    expect(rosa.accountId).toBe("001000000000001");
+    expect(rosa.accountName).toBe("Bathurst Base Hospital");
+    expect(rosa.campaignId).toBe("c1");
+    rosa.dispatchEvent(
+      new CustomEvent("created", { detail: { id: "a02", linkError: "" } })
+    );
+    expect(created.mock.calls[0][0].detail.id).toBe("a02");
   });
 
   it("swaps between the two screens with the pills, and passes on a deal that was made", async () => {

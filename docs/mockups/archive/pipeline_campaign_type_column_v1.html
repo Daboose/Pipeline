@@ -1,0 +1,1008 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>
+      Mockup: a ROSA chip and a Type column in the campaign view (version 1)
+    </title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        height: 100%;
+      }
+      body {
+        margin: 0;
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-size: 15px;
+        background: #141e2e;
+        color: #e8edf5;
+        overflow: auto;
+      }
+      :root {
+        --bg: #141e2e;
+        --panel: #1a2740;
+        --line: #2f4163;
+        --edge: #5b6f93;
+        --text: #e8edf5;
+        --muted: #8b9bb0;
+        --indigo: #6366f1;
+        --indigo2: #a5b4fc;
+        --head: #f472b6;
+        --fill2: #475569;
+        --bad: #dc2626;
+        --pfield: #11151c;
+        --ppanel: #171b24;
+        --pline: #2c3444;
+        --pipe: #fdb827;
+      }
+      button {
+        font-family: inherit;
+      }
+      .sfnav {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        height: 44px;
+        padding: 0 16px;
+        background: #0b1220;
+        color: #cdd6e6;
+        font-size: 14px;
+        position: sticky;
+        top: 0;
+        z-index: 50;
+      }
+      .sfnav .app {
+        font-weight: 800;
+        letter-spacing: 0.14em;
+      }
+      .sfnav .app b {
+        color: #fdb827;
+      }
+      .sfnav .tab {
+        color: #9fb0cc;
+      }
+      .sfnav .tab.on {
+        color: #fff;
+        border-bottom: 2px solid #6366f1;
+        padding-bottom: 2px;
+      }
+      .sfnav .sp {
+        flex: 1;
+      }
+      .btn {
+        border: 0;
+        border-radius: 999px;
+        background: var(--indigo);
+        color: #fff;
+        font-weight: 800;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        padding: 9px 18px;
+        cursor: pointer;
+      }
+      .btn.sec {
+        background: var(--fill2);
+      }
+      .btn.danger {
+        background: var(--bad);
+      }
+      .main {
+        padding: 14px 20px 60px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        max-width: 1500px;
+        margin: 0 auto;
+      }
+      .about {
+        padding: 12px 18px;
+        background: var(--panel);
+        border: 1px solid var(--edge);
+        border-radius: 12px;
+        line-height: 1.5;
+        max-width: 1100px;
+      }
+      .about summary {
+        cursor: pointer;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        color: var(--pipe);
+      }
+      .about ul {
+        margin: 4px 0 8px;
+        padding-left: 22px;
+      }
+      h2 {
+        margin: 6px 0 0;
+        font-size: 18px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+      h2 b {
+        color: var(--pipe);
+      }
+      .sub {
+        color: var(--muted);
+        margin: 0;
+      }
+      .card {
+        background: var(--panel);
+        border: 1px solid var(--edge);
+        border-radius: 14px;
+        overflow: hidden;
+        position: relative;
+      }
+      .lbl {
+        display: flex;
+        gap: 10px;
+        align-items: baseline;
+        padding: 10px 16px;
+        background: color-mix(in srgb, var(--head) 16%, transparent);
+        border-bottom: 1px solid
+          color-mix(in srgb, var(--head) 38%, transparent);
+      }
+      .lbl b {
+        color: var(--head);
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        font-size: 16px;
+      }
+      .lbl span {
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .meas {
+        margin-left: auto;
+        font-size: 12px;
+        font-variant-numeric: tabular-nums;
+      }
+      /* toolbar (as the Members card's bar) */
+      .bar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 16px;
+        border-bottom: 1px solid var(--line);
+        flex-wrap: wrap;
+      }
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border: 1px solid var(--pline);
+        background: var(--pfield);
+        color: var(--text);
+        border-radius: 999px;
+        padding: 6px 13px;
+        font-size: 14px;
+      }
+      .chip.on {
+        background: var(--indigo);
+        border-color: var(--indigo);
+        color: #fff;
+      }
+      .tick {
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.25);
+        display: inline-block;
+      }
+      .chip.on .tick {
+        background: #fff;
+      }
+      .seg {
+        display: inline-flex;
+        border: 1px solid var(--pline);
+        border-radius: 999px;
+        overflow: hidden;
+      }
+      .seg span {
+        padding: 6px 14px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+        cursor: pointer;
+      }
+      .seg span.on {
+        background: var(--indigo);
+        color: #fff;
+      }
+      .fwrap {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        position: relative;
+      }
+      .fslbl {
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .fslbl.add {
+        color: var(--head);
+      }
+      .ffield {
+        position: relative;
+        display: block;
+      }
+      .fin {
+        height: 36px;
+        width: 260px;
+        background: var(--pfield);
+        border: 1px solid var(--pline);
+        border-radius: 999px;
+        color: var(--text);
+        font-size: 15px;
+        padding: 0 38px 0 14px;
+      }
+      .fin:focus {
+        outline: 2px solid var(--indigo2);
+        outline-offset: 1px;
+      }
+      .xcirc {
+        position: absolute;
+        right: 7px;
+        top: 50%;
+        margin-top: -11px;
+        width: 22px;
+        height: 22px;
+        border: 0;
+        border-radius: 50%;
+        background: var(--indigo);
+        cursor: pointer;
+        padding: 0;
+      }
+      .xcirc::before,
+      .xcirc::after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 10px;
+        height: 2px;
+        border-radius: 1px;
+        background: #fff;
+      }
+      .xcirc::before {
+        transform: translate(-50%, -50%) rotate(45deg);
+      }
+      .xcirc::after {
+        transform: translate(-50%, -50%) rotate(-45deg);
+      }
+      /* search results */
+      .pop {
+        position: absolute;
+        left: 62px;
+        top: 42px;
+        z-index: 30;
+        width: 430px;
+        background: var(--ppanel);
+        border: 1px solid var(--edge);
+        border-radius: 12px;
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+        padding: 6px;
+      }
+      .hit {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 6px 8px 6px 12px;
+        border-radius: 8px;
+        min-height: 46px;
+      }
+      .hit:hover {
+        background: rgba(99, 102, 241, 0.12);
+      }
+      .hit .nm {
+        flex: 1;
+        min-width: 0;
+      }
+      .hit .nm b {
+        display: block;
+      }
+      .hit small {
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .hit .already {
+        color: var(--muted);
+        font-size: 13px;
+        padding-right: 8px;
+      }
+      .foot {
+        color: var(--muted);
+        font-size: 13px;
+        padding: 6px 12px;
+      }
+      /* the drawn round buttons (same as the deal rows) */
+      .rb {
+        position: relative;
+        flex: none;
+        width: 36px;
+        height: 36px;
+        padding: 0;
+        border: 0;
+        border-radius: 50%;
+        cursor: pointer;
+        color: #fff;
+      }
+      .rb.s30 {
+        width: 30px;
+        height: 30px;
+      }
+      .rb .mark {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 16px;
+        height: 4px;
+        margin: -2px 0 0 -8px;
+        border-radius: 2px;
+        background: #fff;
+      }
+      .rb.s30 .mark {
+        width: 14px;
+        height: 3px;
+        margin: -1.5px 0 0 -7px;
+      }
+      .rb.add {
+        background: var(--indigo);
+      }
+      .rb.rem {
+        background: var(--fill2);
+      }
+      .rb.add .mark::after {
+        content: "";
+        position: absolute;
+        left: 6px;
+        top: -6px;
+        width: 4px;
+        height: 16px;
+        border-radius: 2px;
+        background: #fff;
+      }
+      .rb.s30.add .mark::after {
+        left: 5.5px;
+        top: -5.5px;
+        width: 3px;
+        height: 14px;
+      }
+      .rb:focus-visible {
+        outline: 2px solid var(--indigo2);
+        outline-offset: 2px;
+      }
+      /* the table */
+      .mtbl {
+        width: 100%;
+        table-layout: fixed;
+        border-collapse: collapse;
+        font-size: 15px;
+      }
+      .mtbl th {
+        text-align: left;
+        font-size: 12px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--head);
+        padding: 9px 14px;
+        border-bottom: 1px solid var(--line);
+        white-space: nowrap;
+      }
+      .mtbl th:not(:first-child),
+      .mtbl td:not(:first-child) {
+        text-align: center;
+      }
+      .mtbl td {
+        padding: 0 14px;
+        border-bottom: 1px solid var(--line);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      /* ONE row height for a surgeon's line and a deal's line (Robert's requirement): every row is 54 px, the surgeon's 3 px line included */
+      .mtbl tr.dl td {
+        height: 54px;
+      }
+      .mtbl tr.sg td {
+        height: 54px;
+        border-top: 3px solid var(--head);
+      }
+      .mtbl tr.dl td:first-child {
+        padding-left: 34px;
+      }
+      .sgcell {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        height: 100%;
+      }
+      .sn {
+        font-size: 18px;
+        font-weight: 800;
+      }
+      .rplate {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        height: 30px;
+        min-width: 116px;
+        padding: 0 12px;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: #1b1405;
+      }
+      .Platinum {
+        background: linear-gradient(#f3f6fb, #b7c2d3);
+      }
+      .Gold {
+        background: linear-gradient(#ffe08a, #d9a21b);
+      }
+      .Silver {
+        background: linear-gradient(#eef1f5, #a9b2bf);
+      }
+      .none {
+        background: transparent;
+        box-shadow: inset 0 0 0 1px #5b6f93;
+        color: #b9c4d6;
+      }
+      .cnt {
+        margin-left: auto;
+        color: var(--muted);
+        font-size: 14px;
+      }
+      .kind {
+        margin-left: 8px;
+        padding: 1px 8px;
+        border-radius: 6px;
+        background: #22304c;
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+      }
+      .inpill {
+        padding: 3px 12px;
+        border-radius: 999px;
+        background: #16a34a;
+        color: #fff;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      .outpill {
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .mid {
+        text-align: center;
+      }
+      /* confirmation */
+      .scrim {
+        position: fixed;
+        inset: 0;
+        z-index: 80;
+        background: rgba(8, 12, 20, 0.55);
+        backdrop-filter: blur(3px);
+        display: none;
+        align-items: center;
+        justify-content: center;
+      }
+      .scrim.on {
+        display: flex;
+      }
+      .ask {
+        background: var(--ppanel);
+        border: 1px solid var(--edge);
+        border-top: 3px solid var(--indigo);
+        border-radius: 14px;
+        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55);
+        padding: 22px 24px 18px;
+        width: min(460px, 92vw);
+      }
+      .ask p {
+        margin: 0 0 18px;
+        font-size: 17px;
+        line-height: 1.4;
+      }
+      .ask .row {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+      }
+      .toast {
+        position: fixed;
+        left: 50%;
+        bottom: 22px;
+        transform: translateX(-50%);
+        z-index: 90;
+        padding: 10px 20px;
+        border: 1px solid var(--edge);
+        border-radius: 999px;
+        background: #0b1220;
+        color: #fff;
+        font-weight: 700;
+        display: none;
+      }
+      .toast.on {
+        display: block;
+      }
+      .tag {
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        color: var(--muted);
+      }
+      .grid3 {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+      .note {
+        color: var(--muted);
+        font-size: 13px;
+        padding: 8px 16px 12px;
+      }
+
+      .pop {
+        left: 0;
+        top: 44px;
+        width: 460px;
+      }
+      .grp {
+        padding: 8px 12px 2px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--head);
+      }
+      .grp + .hit {
+        margin-top: 2px;
+      }
+      .opt {
+        overflow: visible;
+      }
+      .opt .lbl {
+        border-radius: 13px 13px 0 0;
+      }
+      .opt .bar {
+        border-bottom: 0;
+      }
+      .two {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        align-items: start;
+      }
+      .fac {
+        margin-left: 4px;
+        padding: 3px 10px;
+        border-radius: 6px;
+        background: #0e7490;
+        color: #fff;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+      .phys {
+        display: block;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 400;
+        margin-top: 1px;
+      }
+      .mtbl tr.dl td:first-child b {
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .tchip {
+        font-size: 15px;
+      }
+      .rtbl {
+        width: 100%;
+        table-layout: fixed;
+        border-collapse: collapse;
+        font-size: 15px;
+      }
+      .rtbl th {
+        text-align: left;
+        font-size: 12px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--head);
+        padding: 9px 14px;
+        border-bottom: 1px solid var(--line);
+        white-space: nowrap;
+      }
+      .rtbl td {
+        padding: 0 14px;
+        height: 54px;
+        border-bottom: 1px solid var(--line);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .rtbl tr.sgr td {
+        border-top: 3px solid var(--head);
+      }
+      .colwrap {
+        position: relative;
+        margin-left: auto;
+      }
+      .picker {
+        position: absolute;
+        right: 0;
+        top: 44px;
+        z-index: 40;
+        min-width: 200px;
+        background: var(--ppanel);
+        border: 1px solid var(--edge);
+        border-radius: 12px;
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+        padding: 10px 14px;
+      }
+      .picker label {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        padding: 5px 0;
+        cursor: pointer;
+      }
+      .chip {
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="sfnav">
+      <span class="app"><b>PIPE</b>LINE</span
+      ><span class="tab on">Pipeline</span><span class="tab">Campaigns</span
+      ><span class="sp"></span>
+      <button
+        type="button"
+        class="btn"
+        onclick="document.documentElement.requestFullscreen &amp;&amp; document.documentElement.requestFullscreen()"
+      >
+        Full screen
+      </button>
+    </div>
+    <div class="main">
+      <details class="about" open>
+        <summary>ABOUT THIS MOCKUP</summary>
+        <p>
+          Two changes to the campaign view in Pipeline, as Robert described them
+          on 2026-11-25: a
+          <b>ROSA tick</b> between Risks and Include Closed in Maintain, and a
+          <b>Type column</b> in plain text saying Opportunity, Risk or ROSA.
+          Invented data.
+        </p>
+        <ul>
+          <li>
+            Part 1 is <b>Maintain</b>. Press the ticks Opportunities, Risks and
+            ROSA (and Include Closed): the deals listed change. Only ROSA ticked
+            narrows the list to the facilities and their ROSA deals; with none
+            of the three ticked nothing is listed. Every deal line has its Type
+            in plain words.
+          </li>
+          <li>
+            Part 2 is <b>Report</b>. The Type column is on to start with. Press
+            Columns and untick Type to take it off, tick it to bring it back.
+          </li>
+          <li>
+            The Type is plain text, not a coloured chip (Robert, 2026-11-25).
+            Not shown: the value chips and tiles above the list, Widen search,
+            light mode.
+          </li>
+        </ul>
+      </details>
+
+      <h2><b>Part 1</b> Maintain</h2>
+      <div class="card">
+        <div class="lbl">
+          <b>Members</b><span>Campaign: Knee and ROSA Launch</span>
+        </div>
+        <div class="bar" id="bar"></div>
+        <div id="m"></div>
+      </div>
+
+      <h2><b>Part 2</b> Report</h2>
+      <div class="card">
+        <div class="lbl">
+          <b>Members</b><span>Campaign: Knee and ROSA Launch</span>
+        </div>
+        <div class="bar">
+          <span class="seg"
+            ><span class="on">Report</span><span>Maintain</span></span
+          >
+          <span class="colwrap"
+            ><button type="button" class="btn sec" onclick="togglePicker()">
+              Columns
+            </button>
+            <div class="picker" id="picker" style="display: none"></div
+          ></span>
+        </div>
+        <div id="r"></div>
+      </div>
+    </div>
+    <script>
+      var on = { opp: true, risk: false, rosa: true, closed: false };
+      var showType = true;
+      var data = [
+        {
+          id: 1,
+          kind: "S",
+          name: "Dr Carlos Mendez",
+          plate: ["Silver", "Knee Silver"],
+          deals: [
+            [
+              "NexGen Flex",
+              "opp",
+              "NexGen",
+              "$220,000",
+              "A. Patel",
+              "Action",
+              1,
+              0,
+              ""
+            ],
+            [
+              "NexGen revision (lost)",
+              "opp",
+              "NexGen",
+              "$90,000",
+              "A. Patel",
+              "Deal Lost",
+              0,
+              1,
+              ""
+            ]
+          ]
+        },
+        {
+          id: 2,
+          kind: "S",
+          name: "Dr Hannah Whitlock",
+          plate: ["Gold", "Knee Gold"],
+          deals: [
+            [
+              "Persona knee, Spring",
+              "opp",
+              "Persona",
+              "$310,000",
+              "J. Marsh",
+              "Commit",
+              1,
+              0,
+              ""
+            ],
+            [
+              "Persona supply risk",
+              "risk",
+              "Persona",
+              "$140,000",
+              "T. Nguyen",
+              "Unhappy",
+              0,
+              0,
+              ""
+            ]
+          ]
+        },
+        {
+          id: 3,
+          kind: "F",
+          name: "Royal Southern Hospital",
+          deals: [
+            [
+              "Royal Southern ROSA",
+              "rosa",
+              "ROSA Knee",
+              "$690,000",
+              "J. Marsh",
+              "Commit",
+              1,
+              0,
+              "Dr Elena Voss"
+            ],
+            [
+              "Royal Southern ROSA",
+              "rosa",
+              "ROSA Knee",
+              "$690,000",
+              "J. Marsh",
+              "Plan",
+              0,
+              0,
+              "Dr Hannah Whitlock"
+            ]
+          ]
+        }
+      ];
+      var WORD = { opp: "Opportunity", risk: "Risk", rosa: "ROSA" };
+      function chip(k) {
+        return '<span class="tchip">' + WORD[k] + "</span>";
+      }
+      function btn(cls, fn, s30) {
+        return (
+          '<button type="button" class="rb ' +
+          cls +
+          (s30 ? " s30" : "") +
+          '" onclick="' +
+          fn +
+          '"><span class="mark"></span></button>'
+        );
+      }
+      function chipBtn(key, label) {
+        return (
+          '<span class="chip' +
+          (on[key] ? " on" : "") +
+          '" onclick="flip(\'' +
+          key +
+          "')\">" +
+          label +
+          ' <span class="tick"></span></span>'
+        );
+      }
+      function bar() {
+        document.getElementById("bar").innerHTML =
+          '<span class="seg"><span>Report</span><span class="on">Maintain</span></span>' +
+          chipBtn("opp", "Opportunities") +
+          chipBtn("risk", "Risks") +
+          chipBtn("rosa", "ROSA") +
+          chipBtn("closed", "Include Closed");
+      }
+      function flip(k) {
+        on[k] = !on[k];
+        bar();
+        maintain();
+      }
+      function shown(d) {
+        return on[d[1]] && (on.closed || !d[7]);
+      }
+      function maintain() {
+        var h =
+          '<table class="mtbl"><colgroup><col style="width:19%" /><col style="width:11%" /><col style="width:12%" /><col style="width:11%" /><col style="width:13%" /><col style="width:11%" /><col style="width:13%" /><col style="width:10%" /></colgroup><thead><tr><th>Deal</th><th>Type</th><th>Brand</th><th>Value / year</th><th>Sales rep</th><th>Stage</th><th>In campaign</th><th>Add / remove</th></tr></thead>';
+        var any = false;
+        data.forEach(function (m) {
+          var f = m.kind === "F";
+          if (f ? !on.rosa : !(on.opp || on.risk)) return;
+          var ds = m.deals.filter(shown);
+          any = true;
+          h +=
+            '<tr class="sg"><td colspan="8"><div class="sgcell">' +
+            btn("rem", "", false) +
+            '<span class="sn">' +
+            m.name +
+            "</span>" +
+            (f
+              ? '<span class="fac">Facility</span>'
+              : '<span class="rplate ' +
+                m.plate[0] +
+                '">' +
+                m.plate[1] +
+                "</span>") +
+            '<span class="cnt">' +
+            (ds.length
+              ? ds.length + " open deal" + (ds.length === 1 ? "" : "s")
+              : "no open deals") +
+            "</span></div></td></tr>";
+          ds.forEach(function (d) {
+            h +=
+              '<tr class="dl"><td><b>' +
+              d[0] +
+              "</b>" +
+              (d[8]
+                ? '<span class="phys" style="display:block;color:var(--muted);font-size:12px;font-weight:400">Physician: ' +
+                  d[8] +
+                  "</span>"
+                : "") +
+              "</td><td>" +
+              chip(d[1]) +
+              "</td><td>" +
+              d[2] +
+              "</td><td>" +
+              d[3] +
+              "</td><td>" +
+              d[4] +
+              "</td><td>" +
+              d[5] +
+              "</td><td>" +
+              (d[6]
+                ? '<span class="inpill">In campaign</span>'
+                : '<span class="outpill">Not in</span>') +
+              '</td><td class="mid">' +
+              btn(d[6] ? "rem" : "add", "", false) +
+              "</td></tr>";
+          });
+        });
+        if (!any)
+          h +=
+            '<tr class="dl"><td colspan="8" style="color:var(--muted)">Tick Opportunities, Risks or ROSA above to list deals.</td></tr>';
+        document.getElementById("m").innerHTML = h + "</table>";
+      }
+      function report() {
+        var cols = ["Surgeon / facility"]
+          .concat(showType ? ["Type"] : [])
+          .concat(["Portfolio", "Stage", "Revenue / year", "Sales rep"]);
+        var h =
+          '<table class="rtbl"><colgroup>' +
+          (showType ? [30, 14, 12, 14, 16, 14] : [34, 14, 16, 18, 18])
+            .map(function (x) {
+              return '<col style="width:' + x + '%" />';
+            })
+            .join("") +
+          "</colgroup><thead><tr>" +
+          cols
+            .map(function (c) {
+              return "<th>" + c + "</th>";
+            })
+            .join("") +
+          "</tr></thead>";
+        data.forEach(function (m) {
+          m.deals
+            .filter(function (d) {
+              return d[6];
+            })
+            .forEach(function (d, i) {
+              h +=
+                '<tr class="' +
+                (i === 0 ? "sgr" : "") +
+                '"><td>' +
+                (i === 0
+                  ? "<b>" +
+                    m.name +
+                    "</b>" +
+                    (m.kind === "F" ? ' <span class="fac">Facility</span>' : "")
+                  : "") +
+                "</td>" +
+                (showType ? "<td>" + chip(d[1]) + "</td>" : "") +
+                "<td>Knee</td><td>" +
+                d[5] +
+                "</td><td>" +
+                d[3] +
+                "</td><td>" +
+                d[4] +
+                "</td></tr>";
+            });
+        });
+        document.getElementById("r").innerHTML = h + "</table>";
+      }
+      function togglePicker() {
+        var p = document.getElementById("picker");
+        if (p.style.display === "none") {
+          p.innerHTML =
+            '<label><input type="checkbox" ' +
+            (showType ? "checked" : "") +
+            ' onchange="setType(this.checked)"> Type</label><label><input type="checkbox" checked disabled> Portfolio</label><label><input type="checkbox" checked disabled> Stage</label>';
+          p.style.display = "block";
+        } else p.style.display = "none";
+      }
+      function setType(v) {
+        showType = v;
+        report();
+      }
+      bar();
+      maintain();
+      report();
+    </script>
+  </body>
+</html>

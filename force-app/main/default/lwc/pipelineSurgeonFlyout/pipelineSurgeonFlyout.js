@@ -6,6 +6,8 @@ import { LightningElement, api } from "lwc";
  * added or put right. It is the deal flyout's Surgeon Usages screen without a deal behind it; a screen for adding a deal for the surgeon
  * is planned next.
  *
+ * For a healthcare facility (isFacility) the flyout has only New Deal, which is the ROSA deal screen (pipelineNewRosaDeal; Robert, 2026-11-25).
+ *
  * It has two pills: New Deal (the New Deal screen, pipelineNewDeal, which makes an implant opportunity for the surgeon and puts it into the
  * campaign) and Surgeon Usages. Pressing the rating plate opens it on Surgeon Usages; pressing "No deal yet" opens it on New Deal.
  *
@@ -24,9 +26,22 @@ export default class PipelineSurgeonFlyout extends LightningElement {
   /** The screen to open on: "usages" (the default; a rating plate was pressed) or "new" ("No deal yet" was pressed). */
   @api startScreen = "usages";
 
+  /** True for a healthcare facility (Robert, 2026-11-25): it has only the New Deal screen, which makes a ROSA deal; a facility has no surgeon usages. */
+  @api isFacility = false;
+
   screen = "";
   get current() {
+    if (this.isFacility) return "new";
     return this.screen || this.startScreen || "usages";
+  }
+  get onRosa() {
+    return !!this.isFacility;
+  }
+  get showUsages() {
+    return !this.isFacility;
+  }
+  get ariaLabel() {
+    return this.isFacility ? "New ROSA deal" : "Surgeon usages";
   }
   get onNew() {
     return this.current === "new";

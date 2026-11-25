@@ -15,6 +15,8 @@ function withEnglish(name, english) {
     english.trim().toLowerCase() === (name || "").trim().toLowerCase();
   return same ? name : name + " (English: " + english + ")";
 }
+/** The Type column's words (Robert, 2026-11-25), plain text. */
+const KIND_WORD = { opp: "Opportunity", risk: "Risk", rosa: "ROSA" };
 /** "GOLD" as "Gold". */
 function proper(rating) {
   const t = String(rating || "").toLowerCase();
@@ -54,8 +56,8 @@ export default class PipelineCampaignMaintain extends LightningElement {
   /** US dollars: the value column shows each deal in US dollars with these Salesforce rates (usd true and rates read), else its own currency. */
   @api usd = false;
   @api rates = null;
-  /** Which kinds of deal to list: { opp: true, risk: false }. */
-  @api types = { opp: true, risk: false };
+  /** Which kinds of deal to list: { opp: true, risk: false, rosa: true }. */
+  @api types = { opp: true, risk: false, rosa: true };
   /** Include Closed (Robert, 2026-11-19): true also lists the closed deals that fit; false lists open deals only. A change reads the deals again. */
   @api
   get includeClosed() {
@@ -145,8 +147,15 @@ export default class PipelineCampaignMaintain extends LightningElement {
   get inactive() {
     return !!this._campaign && !this._campaign.active;
   }
+  /** None of Opportunities, Risks and ROSA is ticked: nothing is listed. */
   get noKinds() {
-    return !(this.types && (this.types.opp || this.types.risk));
+    const t = this.types || {};
+    return !(t.opp || t.risk || t.rosa);
+  }
+  /** A surgeon is listed while Opportunities or Risks is ticked; a facility (it finds ROSA deals only) while ROSA is ticked. */
+  isListed(m) {
+    const t = this.types || {};
+    return m.isFacility ? !!t.rosa : !!(t.opp || t.risk);
   }
   /** "Knee" for a one-portfolio campaign, so the counts read "3 open Knee deals"; nothing for several portfolios. */
   get portfolioWord() {
@@ -165,32 +174,37 @@ export default class PipelineCampaignMaintain extends LightningElement {
       if (!byAccount.has(d.accountId)) byAccount.set(d.accountId, []);
       byAccount.get(d.accountId).push(d);
     });
-    return (this.members || []).map((m) => {
-      const list = byAccount.get(m.accountId) || [];
-      const inCount = list.filter((d) => d.inCampaign).length;
-      const word = `${this.portfolioWord}${this.kindWord}`;
-      const openWord = this._includeClosed ? "" : "open ";
-      const plural = list.length === 1 ? "" : "s";
-      return {
-        key: m.memberId,
-        memberId: m.memberId,
-        shortName: m.name,
-        name: withEnglish(m.name, m.preferredName),
-        plates: (m.ratings || [])
-          .filter((r) => r.rating)
-          .map((r) => ({
-            key: r.portfolio,
-            text:
-              (m.ratings.length > 1 ? (r.area || r.portfolio) + " " : "") +
-              proper(r.rating),
-            cls: "rplate " + proper(r.rating)
-          })),
-        count: list.length
-          ? `${list.length} ${openWord}${word}${plural} · ${inCount} in the campaign`
-          : `no ${openWord}${word}s`,
-        rows: list.map((d) => this.row(d))
-      };
-    });
+    return (this.members || [])
+      .filter((m) => this.isListed(m))
+      .map((m) => {
+        const list = byAccount.get(m.accountId) || [];
+        const inCount = list.filter((d) => d.inCampaign).length;
+        const word = m.isFacility
+          ? "ROSA deal"
+          : `${this.portfolioWord}${this.kindWord}`;
+        const openWord = this._includeClosed ? "" : "open ";
+        const plural = list.length === 1 ? "" : "s";
+        return {
+          key: m.memberId,
+          memberId: m.memberId,
+          shortName: m.name,
+          isFacility: !!m.isFacility,
+          name: withEnglish(m.name, m.preferredName),
+          plates: (m.ratings || [])
+            .filter((r) => r.rating)
+            .map((r) => ({
+              key: r.portfolio,
+              text:
+                (m.ratings.length > 1 ? (r.area || r.portfolio) + " " : "") +
+                proper(r.rating),
+              cls: "rplate " + proper(r.rating)
+            })),
+          count: list.length
+            ? `${list.length} ${openWord}${word}${plural} · ${inCount} in the campaign`
+            : `no ${openWord}${word}s`,
+          rows: list.map((d) => this.row(d))
+        };
+      });
   }
   /**
    * The table as one flat list of lines, each with its own stable key: a surgeon's heading, then that surgeon's deals. A surgeon with no
@@ -233,7 +247,8 @@ export default class PipelineCampaignMaintain extends LightningElement {
       key: d.id,
       id: d.id,
       name: d.name,
-      risk: d.kind === "risk",
+      typeWord: KIND_WORD[d.kind] || KIND_WORD.opp,
+      physician: d.kind === "rosa" && d.physician ? d.physician : "",
       brand: d.brand || "–",
       value: this.valueText(d),
       owner: d.ownerName || "–",
@@ -261,6 +276,11 @@ export default class PipelineCampaignMaintain extends LightningElement {
   }
 
   // ---------- a surgeon's minus: ask, then take the surgeon out of the campaign (Robert, 2026-11-20) ----------
+  /** "Are you sure you want to remove this surgeon from the campaign?" (this facility, for a facility). */
+  get askText() {
+    const f = this.askMember && this.askMember.facility;
+    return `Are you sure you want to remove this ${f ? "facility" : "surgeon"} from the campaign?`;
+  }
   get askCls() {
     return this.askOn ? "scrim on" : "scrim";
   }
@@ -269,7 +289,11 @@ export default class PipelineCampaignMaintain extends LightningElement {
     const id = event.currentTarget.dataset.member;
     const g = this.groups.find((x) => x.memberId === id);
     if (!g) return;
-    this.askMember = { memberId: id, name: g.shortName };
+    this.askMember = {
+      memberId: id,
+      name: g.shortName,
+      facility: g.isFacility
+    };
     this.askOpen = true;
     // eslint-disable-next-line @lwc/lwc/no-async-operation
     this.askTimer = setTimeout(() => {
@@ -303,7 +327,7 @@ export default class PipelineCampaignMaintain extends LightningElement {
         })
       );
     } catch (e) {
-      this.error = this.message(e, "That surgeon could not be taken out.");
+      this.error = this.message(e, "That could not be taken out.");
     } finally {
       this.saving = false;
     }

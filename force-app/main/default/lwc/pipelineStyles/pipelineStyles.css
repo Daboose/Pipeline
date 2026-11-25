@@ -15,7 +15,7 @@ button {
   border-radius: 999px;
   background: var(--indigo);
   color: #fff;
-  font-weight: 800;
+  font-weight: 700;
   font-size: 12px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -91,6 +91,10 @@ input.in {
   color: var(--text);
   font-size: 15px;
   padding: 0 12px;
+}
+/* the date picker icon follows the theme (--scheme is set on the screen's root); where it is not set the browser's own look stays */
+input.in[type="date"] {
+  color-scheme: var(--scheme, normal);
 }
 select.in {
   appearance: none;

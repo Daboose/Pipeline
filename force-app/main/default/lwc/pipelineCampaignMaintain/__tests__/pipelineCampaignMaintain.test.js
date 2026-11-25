@@ -61,7 +61,11 @@ function make(props) {
   });
   Object.assign(
     el,
-    { campaign: CAMPAIGN, members: MEMBERS, types: { opp: true, risk: false } },
+    {
+      campaign: CAMPAIGN,
+      members: MEMBERS,
+      types: { opp: true, risk: false, rosa: true }
+    },
     props
   );
   document.body.appendChild(el);
@@ -106,19 +110,24 @@ describe("c-pipeline-campaign-maintain", () => {
     expect(q(el, "tr.dl:not(.in) .rb.add")).not.toBeNull();
   });
 
-  it("lists risks when they are ticked, tagged RISK, and only risks when opportunities are not", async () => {
-    const el = make({ types: { opp: true, risk: true } });
+  it("lists risks when they are ticked, each deal's Type in plain words, and only risks when opportunities are not", async () => {
+    const el = make({ types: { opp: true, risk: true, rosa: true } });
     await flush();
     expect(qa(el, "tr.dl").length).toBe(3);
-    expect(q(el, ".kind").textContent).toBe("RISK");
-    el.types = { opp: false, risk: true };
+    expect(q(el, ".kind")).toBeNull(); // the small RISK tag is gone: the Type column says it
+    const types = () =>
+      qa(el, "tr.dl").map(
+        (r) => r.querySelector("td:nth-child(2)").textContent
+      );
+    expect(types()).toEqual(["Opportunity", "Opportunity", "Risk"]);
+    el.types = { opp: false, risk: true, rosa: true };
     await flush();
     expect(qa(el, "tr.dl").length).toBe(1);
     expect(qa(el, "tr.sg")[0].textContent).toContain("1 open Knee risk ");
-    el.types = { opp: false, risk: false };
+    el.types = { opp: false, risk: false, rosa: false };
     await flush();
     expect(q(el, ".empty").textContent).toContain(
-      "Tick Opportunities or Risks"
+      "Tick Opportunities, Risks or ROSA"
     );
   });
 
@@ -214,9 +223,9 @@ describe("c-pipeline-campaign-maintain", () => {
   });
 
   it("shows each deal's value in US dollars when USD is on and the rates are given, and in its own currency otherwise", async () => {
-    const el = make({ types: { opp: true, risk: false } });
+    const el = make({ types: { opp: true, risk: false, rosa: true } });
     await flush();
-    const first = () => q(el, "tr.dl td:nth-child(3)").textContent.trim();
+    const first = () => q(el, "tr.dl td:nth-child(4)").textContent.trim();
     expect(first()).toBe("A$120k");
     el.rates = { rates: { USD: 1, AUD: 1.5 } };
     el.usd = true;
@@ -301,5 +310,74 @@ describe("c-pipeline-campaign-maintain", () => {
     el.members = MEMBERS;
     await flush();
     expect(maintainDeals).toHaveBeenCalledTimes(3);
+  });
+
+  it("lists a healthcare facility with a FACILITY chip and its ROSA deals (brand is the ROSA deal type, the physician a small line), always, and asks about a facility in its own words", async () => {
+    maintainDeals.mockResolvedValue([
+      deal("d1", "a1"),
+      deal("r1", "f1", {
+        kind: "rosa",
+        name: "Royal Southern ROSA",
+        brand: "ROSA Knee",
+        physician: "Dr Elena Voss",
+        value: 690000
+      })
+    ]);
+    const members = [
+      ...MEMBERS,
+      {
+        memberId: "m3",
+        accountId: "f1",
+        name: "Royal Southern Hospital",
+        isFacility: true,
+        ratings: []
+      }
+    ];
+    const el = make({ members });
+    await flush();
+    const heads = qa(el, "tr.sg");
+    expect(heads).toHaveLength(3);
+    expect(heads[2].textContent).toContain("Royal Southern Hospital");
+    expect(heads[2].textContent).toContain("Facility");
+    expect(heads[2].textContent).toContain(
+      "1 open ROSA deal · 0 in the campaign"
+    );
+    expect(heads[0].querySelector(".fac")).toBeNull(); // a surgeon has no chip
+    const rows = qa(el, "tr.dl");
+    const rosa = rows[rows.length - 1];
+    expect(rosa.textContent).toContain("Royal Southern ROSA");
+    expect(rosa.textContent).toContain("ROSA Knee");
+    expect(rosa.textContent).toContain("Physician: Dr Elena Voss");
+    // the facility's minus asks about a facility
+    heads[2].querySelector("button.rb.rem").click();
+    await flush(40);
+    expect(q(el, ".ask p").textContent).toContain("remove this facility");
+  });
+
+  it("with only ROSA ticked lists just the facilities and their ROSA deals; with ROSA unticked a facility is not listed", async () => {
+    maintainDeals.mockResolvedValue([deal("r1", "f1", { kind: "rosa" })]);
+    const members = [
+      { memberId: "m1", accountId: "a1", name: "Dr A", ratings: [] },
+      {
+        memberId: "m3",
+        accountId: "f1",
+        name: "Royal Southern Hospital",
+        isFacility: true,
+        ratings: []
+      }
+    ];
+    const el = make({
+      members,
+      types: { opp: false, risk: false, rosa: true }
+    });
+    await flush();
+    expect(qa(el, "tr.sg")).toHaveLength(1);
+    expect(qa(el, "tr.sg")[0].textContent).toContain("Royal Southern Hospital");
+    expect(qa(el, "tr.dl")).toHaveLength(1);
+    expect(qa(el, "tr.dl")[0].textContent).toContain("ROSA");
+    el.types = { opp: true, risk: false, rosa: false };
+    await flush();
+    expect(qa(el, "tr.sg")).toHaveLength(1);
+    expect(qa(el, "tr.sg")[0].textContent).toContain("Dr A");
   });
 });

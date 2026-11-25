@@ -27,7 +27,7 @@
 .lhead h3 {
   margin: 0;
   font-size: 18px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--head);
@@ -55,7 +55,7 @@
   text-overflow: ellipsis;
   text-align: left;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--muted);

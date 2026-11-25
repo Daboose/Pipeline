@@ -22,7 +22,8 @@
   <template lwc:if={showValueRow}>
     <div class="vrow">
       <template for:each={valueChips} for:item="c">
-        <div key={c.key} class={c.cls}>
+        <div key={c.key} class="vsep" lwc:if={c.isSep}></div>
+        <div key={c.key} class={c.cls} lwc:else>
           <span class="vl"
             ><span lwc:if={c.plateCls} class={c.plateCls}>{c.label}</span
             ><template lwc:else>{c.label}</template></span
@@ -82,6 +83,16 @@
         <button
           type="button"
           role="checkbox"
+          aria-checked={rosaOn}
+          class={rosaCls}
+          data-kind="rosa"
+          onclick={handleKind}
+        >
+          ROSA <span class={rosaTickCls}></span>
+        </button>
+        <button
+          type="button"
+          role="checkbox"
           aria-checked={closedOn}
           class={closedCls}
           onclick={handleClosed}
@@ -104,7 +115,7 @@
           <input
             class="fin"
             type="text"
-            placeholder="Surgeon"
+            placeholder={searchPlaceholder}
             aria-label={searchAria}
             value={searchValue}
             oninput={handleQ}
@@ -120,7 +131,8 @@
         <div class="addpop" lwc:if={showAddPop}>
           <div class="addlist">
             <template for:each={addHits} for:item="h">
-              <div class="hit" key={h.key}>
+              <div class="agrp" key={h.key} lwc:if={h.isHead}>{h.text}</div>
+              <div class="hit" key={h.key} lwc:else>
                 <div class="hn">
                   <b>{h.nameText}</b>
                   <small>{h.sub}</small>
@@ -142,7 +154,9 @@
                 </button>
               </div>
             </template>
-            <div class="afoot" lwc:if={addNone}>No surgeon matches.</div>
+            <div class="afoot" lwc:if={addNone}>
+              No surgeon or facility matches.
+            </div>
           </div>
           <div class="afoot" lwc:if={addOutsideText}>{addOutsideText}</div>
           <div class="afoot bad" lwc:if={addError}>{addError}</div>
@@ -275,7 +289,8 @@
                       class="nodeal nodealbtn"
                       data-account={c.accountId}
                       data-who={c.who}
-                      title="Make this surgeon's first deal"
+                      data-facility={c.isFac}
+                      title={c.dealTitle}
                       onclick={handleNoDeal}
                     >
                       No deal yet
@@ -288,10 +303,11 @@
                     href={c.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    title="Open this surgeon's record in a new tab"
+                    title={c.linkTitle}
                     >{c.text}</a
-                  >
+                  ><span lwc:if={c.chip} class="fchip">{c.chip}</span>
                   <template lwc:if={c.isText}>{c.text}</template>
+                  <span lwc:if={c.sub} class="subline">{c.sub}</span>
                 </td>
               </template>
             </tr>

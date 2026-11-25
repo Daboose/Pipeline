@@ -115,6 +115,7 @@ describe("c-pipeline-campaign-members", () => {
       "Type",
       "Hip Rating",
       "Knee Rating",
+      "Deal Type",
       "Portfolio",
       "Stage",
       "Revenue / Year",
@@ -224,6 +225,7 @@ describe("c-pipeline-campaign-members", () => {
       "Surgeon",
       "Country · City",
       "Hip Rating",
+      "Deal Type",
       "Portfolio",
       "Stage",
       "Revenue / Year",
@@ -276,16 +278,18 @@ describe("c-pipeline-campaign-members", () => {
     expect([...kids].map((k) => k.textContent.trim())).toEqual([
       "Opportunities",
       "Risks",
+      "ROSA",
       "Include Closed"
     ]);
-    expect(kids[2].classList.contains("on")).toBe(false);
+    expect(kids[3].classList.contains("on")).toBe(false);
     expect(kids[0].classList.contains("on")).toBe(true);
     expect(kids[1].classList.contains("on")).toBe(false);
+    expect(kids[2].classList.contains("on")).toBe(true); // ROSA starts ticked (Robert, 2026-11-25)
     const maintain = el.shadowRoot.querySelector(
       "c-pipeline-campaign-maintain"
     );
     expect(maintain).not.toBeNull();
-    expect(maintain.types).toEqual({ opp: true, risk: false });
+    expect(maintain.types).toEqual({ opp: true, risk: false, rosa: true });
     expect(maintain.members.map((m) => m.name)).toEqual([
       "Dr Mei Tan",
       "Dr Priya Nair"
@@ -301,19 +305,21 @@ describe("c-pipeline-campaign-members", () => {
       el.shadowRoot.querySelector("c-pipeline-campaign-maintain").types
     ).toEqual({
       opp: true,
-      risk: true
+      risk: true,
+      rosa: true
     });
     // ticking Include Closed passes that on too
     expect(
       el.shadowRoot.querySelector("c-pipeline-campaign-maintain").includeClosed
     ).toBe(false);
-    kids[2].click();
+    kids[3].click();
     await flush();
     expect(
       el.shadowRoot.querySelector("c-pipeline-campaign-maintain").includeClosed
     ).toBe(true);
-    // the three chips follow every press, however many times they are pressed
+    // the four chips follow every press, however many times they are pressed
     for (let i = 0; i < 4; i++) {
+      kids[3].click();
       kids[2].click();
       kids[0].click();
       kids[1].click();
@@ -381,6 +387,41 @@ describe("c-pipeline-campaign-members", () => {
       "rplate Bronze",
       "rplate none"
     ]);
+  });
+
+  it("shows a ROSA value box after the rating chips, set apart by a line, only when the campaign has ROSA deals, kept out of every other figure", async () => {
+    const withRosa = [
+      ...MEMBERS,
+      {
+        memberId: "mf",
+        accountId: "f1",
+        name: "Royal Southern Hospital",
+        isFacility: true,
+        ratings: [],
+        deals: [
+          deal({ id: "r1", kind: "rosa", value: 690000, currencyCode: "SGD" }),
+          deal({ id: "r2", kind: "rosa", value: 10000, currencyCode: "SGD" })
+        ]
+      }
+    ];
+    const none = make({ valueRow: true });
+    await flush();
+    expect(none.shadowRoot.querySelector(".vchip.rosa")).toBeNull();
+    expect(none.shadowRoot.querySelector(".vsep")).toBeNull();
+    const el = make({ valueRow: true, members: withRosa });
+    await flush();
+    const box = el.shadowRoot.querySelector(".vchip.rosa");
+    expect(box.textContent.replace(/\s+/g, " ")).toContain("ROSA value");
+    expect(box.textContent).toContain("S$700k");
+    expect(el.shadowRoot.querySelector(".vsep")).not.toBeNull();
+    // the box is the last of the value chips, and the surgeons' total and tiles do not change
+    const chips = [...el.shadowRoot.querySelectorAll(".vrow > .vchip")];
+    expect(chips[chips.length - 1]).toBe(box);
+    expect(chips[0].textContent).toContain("S$190k");
+    const surgeons = [...el.shadowRoot.querySelectorAll(".tile")].find((t) =>
+      t.textContent.includes("Surgeons")
+    );
+    expect(surgeons.textContent).toContain("2");
   });
 
   it("starts in local currencies, reads the Salesforce rates the first time USD is chosen, and shows one dollar amount", async () => {
@@ -590,12 +631,49 @@ describe("c-pipeline-campaign-members", () => {
     expect(handler.mock.calls[0][0].detail).toEqual({
       accountId: "a2",
       name: "Dr Priya Nair",
-      screen: "new"
+      screen: "new",
+      isFacility: false
     });
     const plain = make();
     await flush();
     expect(plain.shadowRoot.querySelector("button.nodeal")).toBeNull();
     expect(plain.shadowRoot.querySelector("span.nodeal")).not.toBeNull();
+  });
+
+  it("opens the ROSA deal screen when a healthcare facility's No deal yet is pressed (Pipeline only)", async () => {
+    const members = [
+      {
+        memberId: "mf",
+        accountId: "f1",
+        name: "Bathurst Base Hospital",
+        isFacility: true,
+        ratings: [],
+        deals: []
+      },
+      {
+        memberId: "ms",
+        accountId: "s1",
+        name: "Dr Mei Tan",
+        ratings: [],
+        deals: [deal({ id: "d9" })]
+      }
+    ];
+    const el = make({ dealsOpenable: true, members });
+    await flush();
+    const handler = jest.fn();
+    el.addEventListener("surgeonopen", handler);
+    const press = el.shadowRoot.querySelector("button.nodeal");
+    expect(press.title).toContain("ROSA");
+    press.click();
+    expect(handler.mock.calls[0][0].detail).toEqual({
+      accountId: "f1",
+      name: "Bathurst Base Hospital",
+      screen: "new",
+      isFacility: true
+    });
+    const plain = make({ members });
+    await flush();
+    expect(plain.shadowRoot.querySelector("button.nodeal")).toBeNull();
   });
 
   it("draws the plates as plain plates, not buttons, when the list is not openable (Campaign Management)", async () => {
@@ -788,5 +866,125 @@ describe("c-pipeline-campaign-members", () => {
     el.addEventListener("dealopen", handler);
     el.shadowRoot.querySelectorAll("tbody tr")[0].click();
     expect(handler).not.toHaveBeenCalled();
+  });
+
+  it("offers surgeons and healthcare facilities in two groups in the Add box, and shows a facility with a FACILITY chip, no rating and no New Deal link", async () => {
+    searchSurgeons.mockReset();
+    addMember.mockReset();
+    searchSurgeons.mockResolvedValue({
+      hits: [{ id: "s1", name: "Dr Karen Aldous", alreadyMember: false }],
+      facilities: [
+        {
+          id: "f1",
+          name: "Kareela Private Hospital",
+          city: "Sydney",
+          type: "Healthcare Facility",
+          alreadyMember: false
+        }
+      ]
+    });
+    addMember.mockResolvedValue();
+    const el = make({ maintainable: true });
+    await flush();
+    el.shadowRoot
+      .querySelector("c-pipeline-segmented.modeseg")
+      .dispatchEvent(
+        new CustomEvent("change", { detail: { value: "maintain" } })
+      );
+    await flush();
+    const input = el.shadowRoot.querySelector("input.fin");
+    expect(input.placeholder).toBe("Surgeon or facility");
+    input.value = "ka";
+    input.dispatchEvent(new CustomEvent("input"));
+    await flush(300);
+    const groupNames = [...el.shadowRoot.querySelectorAll(".addpop .agrp")].map(
+      (h) => h.textContent
+    );
+    expect(groupNames).toEqual(["Surgeons", "Healthcare facilities"]);
+    const hits = el.shadowRoot.querySelectorAll(".addpop .hit");
+    expect(hits).toHaveLength(2);
+    expect(hits[1].textContent).toContain("Kareela Private Hospital");
+    hits[1].querySelector("button.rb.add").click();
+    await flush(20);
+    expect(addMember).toHaveBeenCalledWith({
+      campaignId: "c1",
+      surgeonId: "f1"
+    });
+  });
+
+  it("lists a facility member with its ROSA deal, a FACILITY chip beside the name, blank rating cells and the physician under the stage", async () => {
+    const el = make({
+      dealsOpenable: true,
+      members: [
+        {
+          memberId: "m9",
+          accountId: "f9",
+          name: "Royal Southern Hospital",
+          isFacility: true,
+          country: "AU",
+          city: "Melbourne",
+          type: "Healthcare Facility",
+          ratings: [],
+          deals: [
+            deal({
+              id: "r1",
+              kind: "rosa",
+              physician: "Dr Elena Voss",
+              stage: "Sales Pipeline"
+            })
+          ]
+        }
+      ]
+    });
+    await flush();
+    const row = el.shadowRoot.querySelector("tbody tr");
+    expect(row.querySelector(".fchip").textContent).toBe("Facility");
+    expect(row.querySelector("a.slink").title).toContain("facility");
+    expect(row.querySelector("button.rplate")).toBeNull(); // no rating plate to press
+    expect(row.textContent).toContain("Sales Pipeline");
+    expect(row.querySelector(".subline").textContent).toBe(
+      "Physician: Dr Elena Voss"
+    );
+  });
+
+  it("has a Deal Type column on to start with, in plain words (Opportunity, Risk, ROSA), that the Columns picker can turn off", async () => {
+    window.localStorage.removeItem("pipelineCampaignMembersHidden");
+    const el = make({
+      members: [
+        {
+          memberId: "m1",
+          accountId: "a1",
+          name: "Dr Mei Tan",
+          ratings: [],
+          deals: [
+            deal({ id: "o1", kind: "opp" }),
+            deal({ id: "k1", kind: "risk" }),
+            deal({ id: "r1", kind: "rosa" })
+          ]
+        }
+      ]
+    });
+    await flush();
+    expect(heads(el)).toContain("Deal Type");
+    const col = heads(el).indexOf("Deal Type");
+    const words = [...el.shadowRoot.querySelectorAll("tbody tr")].map((r) =>
+      [...r.querySelectorAll("td")].map((c) => c.textContent.trim())
+    );
+    const joined = words.map((w) => w.join("|")).join("\n");
+    expect(joined).toContain("Opportunity");
+    expect(joined).toContain("Risk");
+    expect(joined).toContain("ROSA");
+    expect(col).toBeGreaterThan(0);
+    expect(el.shadowRoot.querySelector(".tchip")).toBeNull(); // plain text, not a chip
+    el.shadowRoot.querySelector("button.cog").click();
+    await flush();
+    const box = [...el.shadowRoot.querySelectorAll(".picker input")].find(
+      (i) => i.dataset.id === "dealtype"
+    );
+    box.checked = false;
+    box.dispatchEvent(new CustomEvent("change"));
+    await flush();
+    expect(heads(el)).not.toContain("Deal Type");
+    window.localStorage.removeItem("pipelineCampaignMembersHidden");
   });
 });

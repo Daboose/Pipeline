@@ -29,7 +29,7 @@ import {
 import { localWidth, zoomStyle, cleanZoom, DEFAULT_ZOOM } from "c/pipelineZoom";
 
 /** Shown on the screen; raise it with each change that goes out. */
-export const CAMPAIGN_VERSION = "0.50";
+export const CAMPAIGN_VERSION = "0.54";
 const THEME_KEY = "pipelineCampaignTheme";
 const WIDTHS_KEY = "pipelineCampaignWidths";
 
@@ -806,10 +806,12 @@ export default class PipelineCampaigns extends LightningElement {
   get searchShort() {
     return this.memberQ.trim().length < 2;
   }
+  /** The Add box's results in two groups (Robert, 2026-11-25): Surgeons, then Healthcare facilities, each shown only when it has a match. */
   get hits() {
-    return ((this.search && this.search.hits) || []).map((h) => ({
+    const one = (h) => ({
       ...h,
       key: h.id,
+      isHead: false,
       nameText: withEnglish(h.name, h.preferredName),
       sub: [
         h.hospitals ? "Hospitals: " + h.hospitals : "",
@@ -820,10 +822,24 @@ export default class PipelineCampaigns extends LightningElement {
         .join(" · "),
       disabled: h.alreadyMember,
       already: h.alreadyMember
-    }));
+    });
+    const s = (this.search && this.search.hits) || [];
+    const f = (this.search && this.search.facilities) || [];
+    const out = [];
+    if (s.length)
+      out.push(
+        { key: "head-s", isHead: true, text: "Surgeons" },
+        ...s.map(one)
+      );
+    if (f.length)
+      out.push(
+        { key: "head-f", isHead: true, text: "Healthcare facilities" },
+        ...f.map(one)
+      );
+    return out;
   }
   get noHits() {
-    return !this.searchShort && this.search && this.search.hits.length === 0;
+    return !this.searchShort && this.search && this.hits.length === 0;
   }
   get scopeText() {
     if (!this.search) return "";
@@ -1021,13 +1037,27 @@ export default class PipelineCampaigns extends LightningElement {
       const showLookupBox = !r.del && lookMode && !r.pick;
       const showSelect = !r.del && !lookMode && r.status === "many";
       const showName = !r.del && !!r.pick && !showSelect;
-      const hits = ((r.search && r.search.hits) || []).map((h) => ({
+      const shape = (h) => ({
         ...h,
         key: h.id,
+        isHead: false,
+        optCls: h.isFacility ? "opt hit facrow" : "opt hit",
         nameText: withEnglish(h.name, h.preferredName),
-        hospitalsText: h.hospitals || "no hospital on record",
+        hospitalsText: h.isFacility
+          ? ""
+          : h.hospitals || "no hospital on record",
         placeText: [h.country, h.city].filter(Boolean).join(" · ")
-      }));
+      });
+      const foundS = ((r.search && r.search.hits) || []).map(shape);
+      const foundF = ((r.search && r.search.facilities) || []).map(shape);
+      const hits = [];
+      if (foundS.length)
+        hits.push({ key: "hs", isHead: true, text: "Surgeons" }, ...foundS);
+      if (foundF.length)
+        hits.push(
+          { key: "hf", isHead: true, text: "Healthcare facilities" },
+          ...foundF
+        );
       const typed = r.q.trim().length;
       return {
         key: "r" + r.i,
@@ -1049,15 +1079,17 @@ export default class PipelineCampaigns extends LightningElement {
           ...r.cands.map((c) => ({
             value: c.id,
             selected: r.pick === c.id,
-            label:
-              withEnglish(c.name, c.preferredName) +
-              " · " +
-              (c.hospitals || "no hospital on record") +
-              " · " +
-              place(c)
+            label: c.isFacility
+              ? c.name + " (facility) · " + place(c)
+              : withEnglish(c.name, c.preferredName) +
+                " · " +
+                (c.hospitals || "no hospital on record") +
+                " · " +
+                place(c)
           }))
         ],
         showName,
+        isFacility: !!(r.chosen && r.chosen.isFacility),
         nameText: r.chosen
           ? withEnglish(r.chosen.name, r.chosen.preferredName)
           : "",
@@ -1168,7 +1200,10 @@ export default class PipelineCampaigns extends LightningElement {
   handleRowPickFound(event) {
     const i = this.rowIndex(event);
     const id = event.currentTarget.dataset.id;
-    const hit = this.rows[i].search.hits.find((h) => h.id === id);
+    const found = this.rows[i].search;
+    const hit = [...(found.hits || []), ...(found.facilities || [])].find(
+      (h) => h.id === id
+    );
     this.patchRow(i, {
       pick: id,
       chosen: hit,

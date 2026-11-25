@@ -63,7 +63,7 @@
 }
 .tile span {
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--muted);
@@ -96,7 +96,7 @@
 .cardhead h2 {
   margin: 0 6px 0 0;
   font-size: 18px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--head);
@@ -392,7 +392,7 @@ input[type="checkbox"] {
   color: var(--text);
   font-family: inherit;
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   cursor: pointer;
@@ -461,7 +461,7 @@ input[type="checkbox"] {
   align-items: center;
   gap: 8px;
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--muted);
@@ -687,4 +687,49 @@ a.slink:focus-visible {
   align-items: center;
   gap: 10px;
   justify-content: space-between;
+}
+
+/* healthcare facilities as members (Robert, 2026-11-25): the Add box's two groups, the small FACILITY chip beside a facility's name,
+   and a ROSA deal's physician as a small grey line under its stage */
+.agrp {
+  padding: 8px 12px 2px;
+  color: var(--head, #f472b6);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.fchip {
+  display: inline-block;
+  margin-left: 10px;
+  padding: 3px 10px;
+  border-radius: 6px;
+  background: #0e7490;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  vertical-align: middle;
+}
+.subline {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.2;
+}
+
+/* the ROSA value box (Robert, 2026-11-25): at the end of the value chips, set apart from the surgeons' values by a thin line; only when the
+   campaign has ROSA deals; mockup pipeline_rosa_value_box_v1.html */
+.vsep {
+  align-self: stretch;
+  width: 2px;
+  margin: 4px 6px;
+  border-radius: 1px;
+  background: var(--edge);
+}
+.vchip.rosa {
+  border-color: var(--edge);
+  background: color-mix(in srgb, var(--head, #f472b6) 10%, var(--panel));
 }

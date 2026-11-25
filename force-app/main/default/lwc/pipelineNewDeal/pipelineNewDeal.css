@@ -54,7 +54,7 @@
 }
 .fl {
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--muted);
@@ -215,7 +215,7 @@ input.in {
 h3 {
   margin: 0 0 12px;
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--pipe);
@@ -237,4 +237,39 @@ h3 {
   .cols {
     grid-template-columns: minmax(0, 1fr);
   }
+}
+/* the layout of the ROSA New Deal (Robert, 2026-11-25): a top card with the choices and the stage slider bare on its right, then two level panels */
+.head {
+  margin-bottom: 16px;
+}
+.headrow {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.headrow .top {
+  flex: none;
+}
+.headrow .band {
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  background: none;
+  border: 0;
+  border-radius: 0;
+  overflow-y: hidden; /* never the up and down arrows */
+  padding-right: 8px; /* room for the pill's springy slide, which swings a little past the last stage */
+  scrollbar-width: none; /* no scroll bar to flash up while the pill swings past the edge; a narrow window still scrolls sideways with the wheel or trackpad */
+}
+.headrow .band::-webkit-scrollbar {
+  display: none;
+}
+.headrow .band > c-pipeline-stage-slider {
+  margin: 0 0 0 auto;
+}
+.spacer {
+  height: 14px;
+}
+.flags {
+  margin-top: 20px;
 }

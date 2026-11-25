@@ -361,6 +361,49 @@ describe("c-pipeline-campaigns", () => {
     });
   });
 
+  it("offers healthcare facilities in the Add box, in their own group after the surgeons, and adds one the same way", async () => {
+    searchSurgeons.mockResolvedValue({
+      hits: [
+        { id: "001Z", name: "Dr Ann Mount", type: "Physician", country: "SG" }
+      ],
+      facilities: [
+        {
+          id: "001F",
+          name: "MOUNT ELIZABETH HOSPITAL",
+          type: "Healthcare Facility",
+          country: "SG",
+          city: "Singapore",
+          isFacility: true
+        }
+      ],
+      outside: 0,
+      heldBack: 0,
+      scope: "SG"
+    });
+    addMember.mockResolvedValue();
+    const el = make();
+    await flush();
+    q(el, "tr.click").click();
+    await flush();
+    const box = [...el.shadowRoot.querySelectorAll("input.search")].find((i) =>
+      i.placeholder.startsWith("Type a surgeon")
+    );
+    expect(box.placeholder).toContain("facility");
+    typeInto(box, "mount");
+    await flush(350);
+    expect(
+      [...el.shadowRoot.querySelectorAll(".pop .grp")].map((g) => g.textContent)
+    ).toEqual(["Surgeons", "Healthcare facilities"]);
+    const opts = [...el.shadowRoot.querySelectorAll(".pop .opt")];
+    expect(opts).toHaveLength(2);
+    opts[1].click();
+    await flush();
+    expect(addMember).toHaveBeenCalledWith({
+      campaignId: "a01",
+      surgeonId: "001F"
+    });
+  });
+
   it("does not offer create or add to a person without the permission", async () => {
     getContext.mockResolvedValue({ ...CTX, canManage: false });
     const el = make();
@@ -656,7 +699,7 @@ describe("c-pipeline-campaigns", () => {
     click(el, "None of these? Look up");
     await flush();
     const box = [...el.shadowRoot.querySelectorAll("input.search")].find(
-      (i) => i.placeholder === "Look the surgeon up"
+      (i) => i.placeholder === "Look the surgeon or facility up"
     );
     box.value = "else";
     box.dispatchEvent(new CustomEvent("input"));
@@ -674,6 +717,91 @@ describe("c-pipeline-campaigns", () => {
     click(el, "Confirm");
     await flush();
     expect(add().disabled).toBe(false);
+  });
+
+  it("shows a facility on the check screen with a FACILITY chip and no hospitals, offers it beside a surgeon, and finds both kinds in the look-up in two groups", async () => {
+    matchNames.mockResolvedValue([
+      {
+        text: "Royal Melbourne Hospital",
+        status: "suggest",
+        pickId: "001F",
+        cands: [
+          {
+            id: "001F",
+            name: "ROYAL MELBOURNE HOSPITAL (VIC)",
+            type: "Healthcare Facility",
+            country: "AU",
+            city: "Melbourne",
+            isFacility: true,
+            alreadyMember: false
+          }
+        ]
+      },
+      {
+        text: "Elizabeth Mount",
+        status: "many",
+        pickId: null,
+        cands: [
+          {
+            id: "001S",
+            name: "Dr Elizabeth Mount",
+            country: "SG",
+            hospitals: "Gleneagles",
+            alreadyMember: false
+          },
+          {
+            id: "001G",
+            name: "MOUNT ELIZABETH HOSPITAL",
+            country: "SG",
+            isFacility: true,
+            alreadyMember: false
+          }
+        ]
+      },
+      { text: "Siti", status: "none", pickId: null, cands: [] }
+    ]);
+    searchSurgeons.mockResolvedValue({
+      hits: [{ id: "001H", name: "Dr Siti Mount", type: "Physician" }],
+      facilities: [
+        { id: "001I", name: "MOUNT ALVERNIA HOSPITAL", isFacility: true }
+      ],
+      outside: 0,
+      heldBack: 0,
+      scope: "SG"
+    });
+    const el = await openImport();
+    const area = q(el, "textarea");
+    area.value = "a\nb\nc";
+    area.dispatchEvent(new CustomEvent("input"));
+    await flush();
+    click(el, "Check names");
+    await flush();
+    // a facility picked for a line: its chip beside the name, and no hospitals
+    expect(q(el, ".fchip").textContent).toBe("Facility");
+    // the line that fits a surgeon and a facility lists both, each marked
+    const labels = [...el.shadowRoot.querySelectorAll("select option")].map(
+      (o) => o.textContent
+    );
+    expect(labels.some((l) => l.includes("(facility)"))).toBe(true);
+    expect(labels.some((l) => l.includes("Dr Elizabeth Mount"))).toBe(true);
+    // the look-up searches both kinds and shows them in two groups
+    click(el, "None of these? Look up");
+    await flush();
+    const box = [...el.shadowRoot.querySelectorAll("input.search")].find(
+      (i) => i.placeholder === "Look the surgeon or facility up"
+    );
+    box.value = "mount";
+    box.dispatchEvent(new CustomEvent("input"));
+    await flush(350);
+    expect(
+      [...el.shadowRoot.querySelectorAll(".inlinepop .grp")].map((g) =>
+        g.textContent.trim()
+      )
+    ).toEqual(["Surgeons", "Healthcare facilities"]);
+    // picking the facility fills the row with it
+    el.shadowRoot.querySelectorAll(".inlinepop .opt")[1].click();
+    await flush();
+    expect(text(el)).toContain("MOUNT ALVERNIA HOSPITAL");
   });
 
   it("gives an existing member no action, and a Skip button with a working Undo to the others", async () => {

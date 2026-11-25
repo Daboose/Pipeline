@@ -3,10 +3,10 @@
   <fullName>Surgeon_Physician_Or_Consultant</fullName>
   <active>true</active>
   <description
-  >Pipeline: a campaign member must be a real surgeon: an Account of record type Physician or Emerging Consultant (not staging, demo or clinic contacts).</description>
+  >Pipeline: a campaign member must be a real surgeon (record type Physician or Emerging Consultant) or a Healthcare Facility, never staging, demo or clinic contacts.</description>
   <errorConditionFormula
-  >OR(ISBLANK(Surgeon__c), AND(Surgeon__r.RecordType.DeveloperName &lt;&gt; 'Physician', Surgeon__r.RecordType.DeveloperName &lt;&gt; 'Emerging_Consultant'))</errorConditionFormula>
+  >OR(ISBLANK(Surgeon__c), AND(Surgeon__r.RecordType.DeveloperName &lt;&gt; 'Physician', Surgeon__r.RecordType.DeveloperName &lt;&gt; 'Emerging_Consultant', Surgeon__r.RecordType.DeveloperName &lt;&gt; 'Healthcare_Facility'))</errorConditionFormula>
   <errorDisplayField>Surgeon__c</errorDisplayField>
   <errorMessage
-  >Choose a surgeon: an account of record type Physician or Emerging Consultant.</errorMessage>
+  >Choose a surgeon (Physician or Emerging Consultant) or a Healthcare Facility.</errorMessage>
 </ValidationRule>
