@@ -13,6 +13,7 @@ import {
   ratingRank,
   valueByRating,
   rosaValue,
+  showRatingValues,
   toUsd,
   usdAmount,
   RATING_KEYS
@@ -431,20 +432,26 @@ export default class PipelineCampaignMembers extends LightningElement {
             : `rplate ${key === "NONE" ? "none" : key.charAt(0) + key.slice(1).toLowerCase()}`
       };
     };
-    const chips = [chip("total", "Value / year", v.total, "tot")].concat(
-      RATING_KEYS.map((k) =>
-        chip(
-          k,
-          k === "NONE" ? "Not rated" : k.charAt(0) + k.slice(1).toLowerCase(),
-          v[k],
-          ""
+    // Value / year and the rating chips: not shown when every deal in the campaign is a ROSA deal (Robert, 2026-11-25)
+    const rated = showRatingValues(this.members);
+    const chips = rated
+      ? [chip("total", "Value / year", v.total, "tot")].concat(
+          RATING_KEYS.map((k) =>
+            chip(
+              k,
+              k === "NONE"
+                ? "Not rated"
+                : k.charAt(0) + k.slice(1).toLowerCase(),
+              v[k],
+              ""
+            )
+          )
         )
-      )
-    );
+      : [];
     // the ROSA value, apart from the surgeons' values by a thin line, shown only when the campaign has ROSA deals (Robert, 2026-11-25)
     const rosa = rosaValue(this.members);
     if (rosa.hasRosa) {
-      chips.push({ key: "sep", isSep: true });
+      if (rated) chips.push({ key: "sep", isSep: true });
       chips.push(chip("rosa", "ROSA value", rosa.total, "rosa"));
     }
     return chips;

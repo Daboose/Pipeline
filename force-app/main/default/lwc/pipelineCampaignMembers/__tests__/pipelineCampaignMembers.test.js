@@ -424,6 +424,28 @@ describe("c-pipeline-campaign-members", () => {
     expect(surgeons.textContent).toContain("2");
   });
 
+  it("shows only the ROSA value box, with no Value / year, rating chips or line, when every deal in the campaign is a ROSA deal", async () => {
+    const onlyRosa = [
+      {
+        memberId: "mf",
+        accountId: "f1",
+        name: "Royal Southern Hospital",
+        isFacility: true,
+        ratings: [],
+        deals: [
+          deal({ id: "r1", kind: "rosa", value: 690000, currencyCode: "SGD" })
+        ]
+      }
+    ];
+    const el = make({ valueRow: true, members: onlyRosa });
+    await flush();
+    const chips = [...el.shadowRoot.querySelectorAll(".vrow > .vchip")];
+    expect(chips).toHaveLength(1);
+    expect(chips[0].className).toContain("rosa");
+    expect(el.shadowRoot.querySelector(".vchip.tot")).toBeNull();
+    expect(el.shadowRoot.querySelector(".vsep")).toBeNull();
+  });
+
   it("starts in local currencies, reads the Salesforce rates the first time USD is chosen, and shows one dollar amount", async () => {
     currencyRates.mockReset();
     currencyRates.mockResolvedValue({

@@ -13,6 +13,7 @@ import {
   memberTiles,
   valueByRating,
   rosaValue,
+  showRatingValues,
   toUsd,
   usdAmount,
   rowDone,
@@ -336,5 +337,22 @@ describe("valueByRating and toUsd", () => {
     ]);
     expect(r.hasRosa).toBe(true);
     expect(r.total).toEqual({ AUD: 700000, NZD: 500 });
+  });
+});
+
+describe("showRatingValues", () => {
+  it("hides the value by rating only when every deal is a ROSA deal", () => {
+    const rosa = { kind: "rosa", value: 1, currencyCode: "AUD" };
+    const opp = { kind: "opp", value: 1, currencyCode: "AUD" };
+    const risk = { kind: "risk", value: 1, currencyCode: "AUD" };
+    expect(showRatingValues([{ isFacility: true, deals: [rosa, rosa] }])).toBe(
+      false
+    );
+    expect(
+      showRatingValues([{ isFacility: true, deals: [rosa] }, { deals: [opp] }])
+    ).toBe(true);
+    expect(showRatingValues([{ deals: [risk] }])).toBe(true);
+    expect(showRatingValues([{ deals: [] }, { deals: [] }])).toBe(true);
+    expect(showRatingValues(null)).toBe(true);
   });
 });

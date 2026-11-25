@@ -1853,3 +1853,13 @@ Robert: one set of choices per person, the same at every hospital, never one per
 ## Pipeline 0.175 and 0.176 brought to DEV (Robert, 2026-11-25)
 
 Committed and pushed as `5784f56`. DEV dry run `0Af8s00000fXZ2bCAG`, deploy `0Af8s00000fXZ4DCAW` (6 components: Apex `PipelineBookingsController`, `PipelineHospitalBookingsTest`, LWCs `pipelineHospitalBookings`, `pipelineHospitalBookingsModel`, `pipelineDeal`, `pipelineApp`; `PipelineHospitalBookingsTest` and `PipelineBookingsControllerTest` 8 of 8). UAT and DEV are level at Pipeline 0.176; Robert releases the same six items to PROD with Gearset.
+
+## Pipeline 0.175 and 0.176 released to PROD (2026-11-25)
+
+Robert released the six items with Gearset (the first tries failed because the comparison left out the new `PipelineHospitalBookingsTest`, so PROD's old test ran against the new controller; ticking it fixed it). Checked read-only in PROD afterwards: all 20 files of the six items match the repo. UAT, DEV and PROD were level at Pipeline 0.176.
+
+## Pipeline 0.177: an all-ROSA campaign shows only the ROSA value (Robert, 2026-11-25; UAT ONLY)
+
+On Pipeline's campaign screen, Value / year and the Platinum, Gold, Silver, Bronze and Not rated chips (and the line before the ROSA value) are not shown when every deal in the campaign is a ROSA deal, as the ROSA value box is not shown when there is no ROSA deal. A campaign with no deals at all keeps them (with dashes), as before. New `showRatingValues(members)` in `pipelineCampaignModel`, used by `valueChips` in `pipelineCampaignMembers`. Jest 553 of 553 (a model test and a component test). LWCs only: UAT dry run `0AfOg000007d8HtKAI`, deploy `0AfOg000007csRdKAI` (pipelineCampaignModel, pipelineCampaignMembers, pipelineApp). Campaign Management has no value row, so its screen does not change. Not in DEV or PROD; not committed.
+
+**0.177 released (2026-11-25):** Robert approved deploying this LWC-only change to PROD from the CLI ("if you have only changed Lightning Web Components, please consider this my approval to deploy these components to production now"). PROD dry run `0AfMo000004cnevKAA`, deploy `0AfMo000004cngXKAQ`; DEV deploy below. UAT, DEV and PROD are level at Pipeline 0.177.

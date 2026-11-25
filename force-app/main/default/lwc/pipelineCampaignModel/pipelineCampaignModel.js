@@ -269,5 +269,15 @@ export function rosaValue(members) {
   return { hasRosa, total };
 }
 
+/**
+ * Whether the value by rating (Value / year and the Platinum to Not rated chips) is shown (Robert, 2026-11-25): not when every deal in
+ * the campaign is a ROSA deal, as the ROSA value box is not shown when there is no ROSA deal. A campaign with no deals at all keeps
+ * them (showing dashes), as before.
+ */
+export function showRatingValues(members) {
+  const deals = (members || []).flatMap((m) => m.deals || []);
+  return !deals.length || deals.some((d) => d.kind !== "rosa");
+}
+
 // the US dollar conversion lives in one place, pipelineCurrency; re-exported here for the campaign screen and its tests
 export { toUsd, usdAmount } from "c/pipelineCurrency";
