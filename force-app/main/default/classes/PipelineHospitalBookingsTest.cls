@@ -157,9 +157,9 @@ private class PipelineHospitalBookingsTest {
   }
 
   @IsTest
-  static void whatTheSurgeonRulesLeaveOutIsLeftOutHere() {
+  static void whatTheRulesLeaveOutIsLeftOutHere() {
     Setup s = make();
-    surgery(s, '201', 'Z02', s.hospital.Id, true, 1); // demo
+    surgery(s, '201', 'Z02', s.hospital.Id, false, 1); // demo with no usage item
     surgery(s, '201', 'A00', s.hospital.Id, false, 1); // no usage item
     surgery(s, '201', 'A00', s.hospital.Id, true, 13); // before the window
     surgery(s, '201', 'A00', s.hospital.Id, true, 0); // this month is not a whole month
@@ -174,6 +174,33 @@ private class PipelineHospitalBookingsTest {
     System.assertEquals(0, h.types[0].booked);
     System.assertEquals(0, h.types[0].months[11]);
     System.assertEquals(0, h.types[0].months[0]);
+    System.assertEquals(0, h.lines.size());
+  }
+
+  @IsTest
+  static void linesGiveSurgeonBrandTypeAndCaseTypeAndDemosWithItemsCount() {
+    Setup s = make();
+    surgery(s, '201', 'A00', s.hospital.Id, true, 1);
+    surgery(s, '201', 'A00', s.hospital.Id, true, 1); // the same line: adds up
+    surgery(s, '201', 'A01', s.hospital.Id, true, 2); // revision: its own line
+    surgery(s, '202', 'Z02', s.hospital.Id, true, 3); // demo with a usage item: counts, as Demo
+    flush();
+    PipelineBookingsController.HospitalBookings h = PipelineBookingsController.getHospitalBookings(
+      s.deal.Id
+    );
+    System.assertEquals(4, h.booked, 'A demo with a usage item counts');
+    System.assertEquals(3, h.lines.size());
+    Map<String, PipelineBookingsController.HospitalLine> byKey = new Map<String, PipelineBookingsController.HospitalLine>();
+    for (PipelineBookingsController.HospitalLine l : h.lines) {
+      System.assertEquals(s.surgeon.Id, l.surgeonId);
+      System.assertEquals('Test Surgeon', l.surgeon);
+      System.assertNotEquals(null, l.brand);
+      System.assertEquals(12, l.months.size());
+      byKey.put(l.anatomy + ' ' + l.procedure, l);
+    }
+    System.assertEquals(2, byKey.get('Hip Primary').months[11]);
+    System.assertEquals(1, byKey.get('Hip Revision').months[10]);
+    System.assertEquals(1, byKey.get('Knee Demo').months[9]);
   }
 
   @IsTest

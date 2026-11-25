@@ -204,6 +204,8 @@ export default class PipelineDeal extends LightningElement {
   @api total = 0;
   @api isManager = false;
   @api viewerId = "";
+  /** The person's saved MyCase Bookings choice for ROSA deals ({ view, types, procs }), passed on to the hospital's bookings. */
+  @api hospBook = null;
 
   draft = {};
   draftNames = {}; // the names of records picked in this edit, by field
@@ -243,6 +245,12 @@ export default class PipelineDeal extends LightningElement {
     return !this.hospitalCasesOpen;
   }
   /** A usage was added, changed or deleted on the Usages screen: the screen is told, so the lists read the ratings again. */
+  /** The hospital's bookings view or chips changed: passed up so the app keeps it in the person's settings. */
+  handleHospBook(event) {
+    this.dispatchEvent(
+      new CustomEvent("hospbookchange", { detail: event.detail })
+    );
+  }
   handleUsagesChanged() {
     this.dispatchEvent(new CustomEvent("usageschanged"));
   }

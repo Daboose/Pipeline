@@ -13,7 +13,9 @@
  *
  * Rules (Robert, 2026-11-02 and 2026-11-03): a surgery counts when it has already happened and has at least one usage item;
  * demo and non-billable surgeries (Procedure Z02) are left out; Type A01 is a revision, anything else primary; the anatomy
- * comes from Case__c.Surgery_Type__c (201 Hip, 202 Knee, 205 Shoulder / Elbow, 209 CMFT).
+ * comes from Case__c.Surgery_Type__c (201 Hip, 202 Knee, 205 Shoulder / Elbow, 209 CMFT). The hospital's bookings on a ROSA deal
+ * (getHospitalBookings, called by pipelineHospitalBookings) follow the same rules except that demos with usage items count, under
+ * their own Demo chip (Robert, 2026-11-25).
  */
 public with sharing class PipelineBookingsController {
   /** One hospital for a type of surgery: its own surgeries by month. A row with no id holds surgeries with no hospital recorded. */
@@ -305,7 +307,31 @@ public with sharing class PipelineBookingsController {
     public Integer booked = 0;
   }
 
-  /** What the hospital chart needs: the hospital, the 12 whole months and the four types' counts (always all four, in order). */
+  /**
+   * One line of the hospital's cases (Robert, 2026-11-25): the cases of one surgeon, one brand, one type of surgery and one case Type
+   * (Primary, Revision or Demo), by month. The screen adds these lines up for every view and switches them on and off with its chips
+   * and filters, so the server sends them once.
+   */
+  public class HospitalLine {
+    /** The surgeon's Account id; empty when the case has no surgeon recorded. */
+    @AuraEnabled
+    public Id surgeonId;
+    @AuraEnabled
+    public String surgeon;
+    /** The case's Brand (its label). */
+    @AuraEnabled
+    public String brand;
+    /** Hip, Knee, Shoulder or CMFT. */
+    @AuraEnabled
+    public String anatomy;
+    /** Primary, Revision or Demo (the case's Type, Case__c.Procedure__c). */
+    @AuraEnabled
+    public String procedure;
+    @AuraEnabled
+    public List<Integer> months = new List<Integer>();
+  }
+
+  /** What the hospital chart needs: the hospital, the 12 whole months, the four types' counts (always all four, in order) and the lines. */
   public class HospitalBookings {
     @AuraEnabled
     public Id hospitalId;
@@ -323,19 +349,37 @@ public with sharing class PipelineBookingsController {
     public Integer booked = 0;
     @AuraEnabled
     public List<HospitalType> types = new List<HospitalType>();
+    /** Every surgeon, brand, type and case Type with cases, for the Surgeon Total and Surgeon / Brand views and the chips. */
+    @AuraEnabled
+    public List<HospitalLine> lines = new List<HospitalLine>();
+  }
+
+  private static final String NO_SURGEON = 'No surgeon recorded';
+  private static final String NO_BRAND = 'No brand recorded';
+
+  /** Case__c.Procedure__c to the word on the chip: A00 Primary, A01 Revision, Z02 Demo (Demo/Non-Billable); anything else Primary. */
+  private static String procedureName(String code) {
+    if (code == 'A01') {
+      return 'Revision';
+    }
+    if (code == 'Z02') {
+      return 'Demo';
+    }
+    return 'Primary';
   }
 
   /**
    * ROSA deals (Robert, 2026-11-19): the MyCase bookings seen from the hospital's side. For the deal's Healthcare Facility, the
    * surgeries of the last 12 whole months (a rolling window that leaves out the current month), by month and by type of surgery
-   * (Hip, Knee, Shoulder, CMFT), primary and revision together: it is cases booked. The same counting rules as the surgeon's
-   * panel (see the class header): the surgery has happened, has at least one usage item, is not a Z02 demo, and the anatomy comes
-   * from Case__c.Surgery_Type__c. A deal with no hospital returns no hospital; a hospital with no surgeries returns zeros and
-   * hasBookings false. No error either way.
+   * (Hip, Knee, Shoulder, CMFT), primary and revision together: it is cases booked. A case counts when the surgery has happened and
+   * has at least one usage item (a case with none is a booking whose surgery did not go ahead); the anatomy comes from
+   * Case__c.Surgery_Type__c. Demos (Z02) with usage items count too (Robert, 2026-11-25: the screen has a Demo chip), unlike the
+   * surgeon's panel. Also sends the lines by surgeon, brand, type and case Type (see HospitalLine). A deal with no hospital returns
+   * no hospital; a hospital with no surgeries returns zeros and hasBookings false. No error either way.
    *
    * Who calls it: the pipelineHospitalBookings component (the MyCase Bookings screen of a ROSA deal) and its test class.
-   * What it touches: reads SalesRisks__c (the deal's hospital), Account (the name), Case__c and myCase_Usage_Item__c, in the
-   * signed-in person's own access (user mode). Changes nothing.
+   * What it touches: reads SalesRisks__c (the deal's hospital), Account (the hospital's and surgeons' names), Case__c and
+   * myCase_Usage_Item__c, in the signed-in person's own access (user mode). Changes nothing.
    */
   @AuraEnabled
   public static HospitalBookings getHospitalBookings(Id dealId) {
@@ -363,26 +407,71 @@ public with sharing class PipelineBookingsController {
     }
     out.hospitalId = d[0].Healthcare_Facility__c;
     out.hospitalName = d[0].Healthcare_Facility__r?.Name;
+    Map<String, HospitalLine> lines = new Map<String, HospitalLine>();
     for (
-      Counted k : countedAtHospital(out.hospitalId, out.windowStart, thisMonth)
+      HospitalCase k : countedAtHospital(
+        out.hospitalId,
+        out.windowStart,
+        thisMonth
+      )
     ) {
       HospitalType t = byAnatomy.get(k.anatomy);
       t.months[k.month] = t.months[k.month] + 1;
       t.booked++;
       out.booked++;
+      String key =
+        k.surgeonId +
+        '|' +
+        k.surgeon +
+        '|' +
+        k.brand +
+        '|' +
+        k.anatomy +
+        '|' +
+        k.procedure;
+      HospitalLine line = lines.get(key);
+      if (line == null) {
+        line = new HospitalLine();
+        line.surgeonId = k.surgeonId;
+        line.surgeon = k.surgeon;
+        line.brand = k.brand;
+        line.anatomy = t.name;
+        line.procedure = k.procedure;
+        line.months = zeros();
+        lines.put(key, line);
+        out.lines.add(line);
+      }
+      line.months[k.month] = line.months[k.month] + 1;
     }
     out.hasBookings = out.booked > 0;
     return out;
   }
 
-  /** The hospital's counted surgeries from `start` up to (not including) `endExclusive`: the surgeon rules, by facility. */
-  private static List<Counted> countedAtHospital(
+  /** One counted case at the hospital. */
+  private class HospitalCase {
+    String anatomy;
+    Integer month;
+    Id surgeonId;
+    String surgeon;
+    String brand;
+    String procedure;
+  }
+
+  /** The hospital's counted surgeries from `start` up to (not including) `endExclusive`: happened, with at least one usage item. */
+  private static List<HospitalCase> countedAtHospital(
     Id hospital,
     Date start,
     Date endExclusive
   ) {
     List<Case__c> cases = [
-      SELECT Id, Surgery_Date__c, Surgery_Type__c, Procedure__c
+      SELECT
+        Id,
+        Surgery_Date__c,
+        Surgery_Type__c,
+        Procedure__c,
+        toLabel(Brand__c),
+        Physician__c,
+        Physician__r.Name
       FROM Case__c
       WHERE
         Healthcare_Facility__c = :hospital
@@ -392,7 +481,7 @@ public with sharing class PipelineBookingsController {
       WITH USER_MODE
       LIMIT 20000
     ];
-    List<Counted> out = new List<Counted>();
+    List<HospitalCase> out = new List<HospitalCase>();
     if (cases.isEmpty()) {
       return out;
     }
@@ -410,16 +499,23 @@ public with sharing class PipelineBookingsController {
       withItems.add((Id) ar.get('c'));
     }
     for (Case__c c : cases) {
-      if (!withItems.contains(c.Id) || c.Procedure__c == 'Z02') {
+      if (!withItems.contains(c.Id)) {
         continue;
       }
-      Counted k = new Counted();
+      HospitalCase k = new HospitalCase();
       k.anatomy = c.Surgery_Type__c;
-      k.revision = c.Procedure__c == 'A01' && c.Surgery_Type__c != '209';
       k.month =
         (c.Surgery_Date__c.year() - start.year()) * 12 +
         c.Surgery_Date__c.month() -
         start.month();
+      k.surgeonId = c.Physician__c;
+      k.surgeon = c.Physician__c == null
+        ? NO_SURGEON
+        : (String.isBlank(c.Physician__r?.Name)
+            ? NO_SURGEON
+            : c.Physician__r.Name);
+      k.brand = String.isBlank(c.Brand__c) ? NO_BRAND : c.Brand__c;
+      k.procedure = procedureName(c.Procedure__c);
       out.add(k);
     }
     return out;

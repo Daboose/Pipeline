@@ -49,7 +49,7 @@ function stableJson(value) {
  * Usages, Surgeries and Chatter, saved filters); 0.10 follows the final mockup: a filter bar with chips and a Change
  * selection panel with Apply, in place of the always-visible Choose Your Data panel.
  */
-const PIPELINE_VERSION = "0.174";
+const PIPELINE_VERSION = "0.176";
 
 /** The colours a person can choose for the headings (Robert, 2026-11-02); the look of each is in pipelineApp.css. */
 const HEAD_COLOURS = [
@@ -96,6 +96,21 @@ function errorText(e) {
   );
 }
 
+/** A saved MyCase Bookings choice for a ROSA deal, tidied: { view, types, procs }, or null when there is nothing usable. */
+function cleanHospBook(h) {
+  if (!h || typeof h !== "object") return null;
+  const words = (list) => {
+    return Array.isArray(list) ? list.filter((x) => typeof x === "string") : [];
+  };
+  return {
+    view: ["hospital", "surgeon", "brand"].includes(h.view)
+      ? h.view
+      : "hospital",
+    types: words(h.types),
+    procs: words(h.procs)
+  };
+}
+
 /**
  * Pipeline: the shell of the tool. A sales manager can look at their team, any team, or no team (everything sharing
  * allows); a sales rep sees only their own deals (decided on the server from the Teams, never here). It loads the deals,
@@ -140,6 +155,7 @@ export default class PipelineApp extends LightningElement {
     widths: {},
     campHidden: null, // the campaign list's columns the person turned off (null until they choose; Robert, 2026-11-19)
     campWidths: null, // the campaign list's column widths the person dragged to ({} for the standard ones; null until they choose; Robert, 2026-11-20)
+    hospBook: null, // a ROSA deal's MyCase Bookings: { view, types, procs } (the view and the chips switched off), the same at every hospital; null until they choose (Robert, 2026-11-25)
     ui: {},
     last: null
   };
@@ -389,6 +405,7 @@ export default class PipelineApp extends LightningElement {
           ? s.campHidden.filter((x) => typeof x === "string")
           : null,
         campWidths: cleanWidths(s.campWidths),
+        hospBook: cleanHospBook(s.hospBook),
         ui: s.ui && typeof s.ui === "object" ? s.ui : {},
         last: s.last && typeof s.last === "object" ? s.last : null
       };
@@ -1154,6 +1171,11 @@ export default class PipelineApp extends LightningElement {
   /** The campaign list's Columns picker was used: the columns turned off are kept in the person's settings. */
   handleCampaignColumns(event) {
     this.settings = { ...this.settings, campHidden: event.detail.hidden };
+    this.persist();
+  }
+  /** The MyCase Bookings view or chips of a ROSA deal were changed: kept in the person's settings, the same for every hospital. */
+  handleHospBookChange(event) {
+    this.settings = { ...this.settings, hospBook: cleanHospBook(event.detail) };
     this.persist();
   }
   /** The campaign list's column widths were dragged or reset: kept in the person's settings ({} means the standard widths). */

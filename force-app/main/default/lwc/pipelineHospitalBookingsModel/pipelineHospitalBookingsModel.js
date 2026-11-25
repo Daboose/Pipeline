@@ -189,3 +189,339 @@ export function tipFor(types, startIso, monthIndex, typeName) {
     total: `Month total: ${total}`
   };
 }
+
+/* ---------- The views, chips and filters (Robert, 2026-11-25; mockup docs/mockups/pipeline_bookings_surgeon_view_v4.html) ----------
+ * Apex also sends `lines`: the cases of one surgeon, brand, type of surgery and case Type (Primary, Revision, Demo) by month. Every view
+ * is worked out from them here. A filter `f` says what is switched off: { types: [], procs: [], surgeons: [], brands: [] } (type names,
+ * case Types, surgeon keys, brand names). The surgeon and brand filters apply only to the Surgeon / Brand view. */
+
+/** The slider's three views. */
+export const VIEWS = [
+  { value: "hospital", label: "Hospital Total" },
+  { value: "surgeon", label: "Surgeon Total" },
+  { value: "brand", label: "Surgeon / Brand" }
+];
+
+/** The case Types, in the order of their chips (Case__c.Procedure__c: A00, A01, Z02). */
+export const PROCS = ["Primary", "Revision", "Demo"];
+
+/** An empty filter: everything switched on. */
+export function emptyFilter() {
+  return { types: [], procs: [], surgeons: [], brands: [] };
+}
+
+/** A surgeon's key: their id, or the name when the case has no surgeon recorded. */
+const surgeonKey = (l) => l.surgeonId || "none:" + l.surgeon;
+const pad12 = (a) => Array.from({ length: 12 }, (_, i) => (a && a[i]) || 0);
+const typeIndex = (name) => TYPES.findIndex((t) => t.name === name);
+
+/** The lines from what Apex sent, with 12 months each, their key and total. */
+export function linesOf(data) {
+  return ((data && data.lines) || []).map((l) => {
+    const months = pad12(l.months);
+    return {
+      ...l,
+      months,
+      skey: surgeonKey(l),
+      brand: l.brand || "",
+      total: sum(months)
+    };
+  });
+}
+
+const typeOn = (f, name) => !(f.types || []).includes(name);
+const procOn = (f, name) => !(f.procs || []).includes(name);
+/** Does a line pass the chips (and, when `named` is true, the surgeon and brand filters too)? */
+export function passes(l, f, named) {
+  if (!typeOn(f, l.anatomy) || !procOn(f, l.procedure)) return false;
+  if (!named) return true;
+  return (
+    !(f.surgeons || []).includes(l.skey) && !(f.brands || []).includes(l.brand)
+  );
+}
+
+/**
+ * The two rows of chips. A type's number counts its cases of the case Types switched on; a case Type's number counts its cases of the
+ * types switched on (each row is counted through the other row's chips).
+ */
+export function chipsOf(lines, f) {
+  const typeChips = TYPES.map((t) => {
+    const booked = sum(
+      lines
+        .filter((l) => l.anatomy === t.name && procOn(f, l.procedure))
+        .map((l) => l.total)
+    );
+    const on = typeOn(f, t.name);
+    return {
+      key: t.name,
+      label: t.label,
+      booked,
+      on,
+      pressed: on ? "true" : "false",
+      cls: on ? "lg" : "lg off",
+      style: "--c:" + t.colour
+    };
+  });
+  const procChips = PROCS.map((p) => {
+    const booked = sum(
+      lines
+        .filter((l) => l.procedure === p && typeOn(f, l.anatomy))
+        .map((l) => l.total)
+    );
+    const on = procOn(f, p);
+    return {
+      key: p,
+      label: p,
+      booked,
+      on,
+      pressed: on ? "true" : "false",
+      cls: on ? "lg" : "lg off",
+      style: "--c:var(--indigo)"
+    };
+  });
+  return { types: typeChips, procs: procChips };
+}
+
+/** The four types for the hospital chart from the lines that pass the chips (a type switched off is all zeros). */
+export function chartTypes(lines, f) {
+  return TYPES.map((t) => {
+    const months = Array.from({ length: 12 }, () => 0);
+    lines
+      .filter((l) => l.anatomy === t.name && passes(l, f, false))
+      .forEach((l) =>
+        l.months.forEach((v, i) => {
+          months[i] += v;
+        })
+      );
+    return { ...t, months, booked: sum(months) };
+  });
+}
+
+/** The big number: the cases shown in the view (the Surgeon / Brand view also follows its surgeon and brand filters). */
+export function grandTotal(lines, f, view) {
+  return sum(
+    lines.filter((l) => passes(l, f, view === "brand")).map((l) => l.total)
+  );
+}
+
+/** The shading of a number in the tables: stronger for bigger numbers, in the theme's indigo. */
+function shade(v, max) {
+  if (!v) return "";
+  const p = Math.round(12 + (60 * v) / Math.max(max, 1));
+  return `background:color-mix(in srgb, var(--indigo) ${p}%, transparent)`;
+}
+const casesWord = (n) => `${n} ${n === 1 ? "case" : "cases"}`;
+
+/** The types a list of lines covers, as "Hip 30 · Knee 103" (in the type order, only the types with cases). */
+function typesText(lines) {
+  return TYPES.map((t) => {
+    const n = sum(
+      lines.filter((l) => l.anatomy === t.name).map((l) => l.total)
+    );
+    return n ? `${t.label} ${n}` : "";
+  })
+    .filter(Boolean)
+    .join(" · ");
+}
+
+/** The foot row: each month's cases and the grand total of the rows shown. */
+function footOf(shown) {
+  const months = Array.from({ length: 12 }, (_, i) =>
+    sum(shown.map((l) => l.months[i]))
+  );
+  return {
+    cells: months.map((v, i) => ({ key: "t" + i, v })),
+    total: sum(months)
+  };
+}
+
+/**
+ * Surgeon Total: the grid of numbers (Robert chose option C). A row per surgeon (busiest first) with the types they did, a number per
+ * month shaded by size, and their total; a Hospital total row at the foot. Each number carries the words of its tooltip.
+ */
+export function surgeonGrid(lines, f, startIso) {
+  const titles = monthTitles(startIso);
+  const shown = lines.filter((l) => passes(l, f, false));
+  const bySurgeon = new Map();
+  shown.forEach((l) => {
+    if (!bySurgeon.has(l.skey))
+      bySurgeon.set(l.skey, { key: l.skey, name: l.surgeon, lines: [] });
+    bySurgeon.get(l.skey).lines.push(l);
+  });
+  const groups = [...bySurgeon.values()].map((g) => ({
+    ...g,
+    months: Array.from({ length: 12 }, (_, i) =>
+      sum(g.lines.map((l) => l.months[i]))
+    )
+  }));
+  const max = Math.max(0, ...groups.flatMap((g) => g.months));
+  const rows = groups
+    .map((g) => ({
+      key: g.key,
+      name: g.name,
+      sub: typesText(g.lines),
+      total: sum(g.months),
+      cells: g.months.map((v, i) => ({
+        key: g.key + i,
+        v,
+        cls: v ? "num" : "num zero",
+        style: shade(v, max),
+        tip: v
+          ? [g.name, titles[i]].concat(
+              TYPES.map((t) => {
+                const n = sum(
+                  g.lines
+                    .filter((l) => l.anatomy === t.name)
+                    .map((l) => l.months[i])
+                );
+                return n ? `${t.label}: ${n}` : "";
+              }).filter(Boolean)
+            )
+          : null
+      }))
+    }))
+    .sort((a, b) => b.total - a.total || a.name.localeCompare(b.name));
+  return { rows, foot: footOf(shown) };
+}
+
+/**
+ * Surgeon / Brand: a table with a row per brand under each surgeon (the case's Brand, with the colour of its type; a brand used for two
+ * types is two rows), a number per month and a total; the surgeon's name only on their first row; a Hospital total row at the foot.
+ * Follows the chips and the surgeon and brand filters.
+ */
+export function brandTable(lines, f, startIso) {
+  const titles = monthTitles(startIso);
+  const shown = lines.filter((l) => passes(l, f, true));
+  const bySurgeon = new Map();
+  shown.forEach((l) => {
+    if (!bySurgeon.has(l.skey))
+      bySurgeon.set(l.skey, {
+        key: l.skey,
+        name: l.surgeon,
+        rows: new Map()
+      });
+    const g = bySurgeon.get(l.skey);
+    const k = l.brand + "|" + l.anatomy;
+    if (!g.rows.has(k))
+      g.rows.set(k, {
+        brand: l.brand,
+        anatomy: l.anatomy,
+        months: Array.from({ length: 12 }, () => 0)
+      });
+    l.months.forEach((v, i) => {
+      g.rows.get(k).months[i] += v;
+    });
+  });
+  const groups = [...bySurgeon.values()]
+    .map((g) => {
+      const rows = [...g.rows.values()]
+        .map((r) => ({ ...r, total: sum(r.months) }))
+        .sort((a, b) => b.total - a.total || a.brand.localeCompare(b.brand));
+      return { ...g, rows, total: sum(rows.map((r) => r.total)) };
+    })
+    .sort((a, b) => b.total - a.total || a.name.localeCompare(b.name));
+  const max = Math.max(
+    0,
+    ...groups.flatMap((g) => g.rows.flatMap((r) => r.months))
+  );
+  const rows = [];
+  groups.forEach((g) => {
+    g.rows.forEach((r, j) => {
+      const t = TYPES[typeIndex(r.anatomy)] || TYPES[0];
+      rows.push({
+        key: g.key + "|" + r.brand + "|" + r.anatomy,
+        first: j === 0,
+        cls: j === 0 ? "first" : "",
+        span: g.rows.length,
+        name: g.name,
+        sub: casesWord(g.total),
+        brand: r.brand,
+        swatch: "background:" + t.colour,
+        total: r.total,
+        cells: r.months.map((v, i) => ({
+          key: g.key + r.brand + r.anatomy + i,
+          v,
+          cls: v ? "num" : "num zero",
+          style: shade(v, max),
+          tip: v
+            ? [g.name, `${r.brand} (${t.label})`, `${titles[i]}: ${v}`]
+            : null
+        }))
+      });
+    });
+  });
+  return { rows, foot: footOf(shown) };
+}
+
+/**
+ * The list in a column's filter: every surgeon (busiest first) or every brand (A to Z, with the colours of the types it was used for) at
+ * this hospital, whatever the chips say, narrowed by the search words. `off` is the list of what is switched off.
+ */
+export function filterItems(lines, kind, off, query) {
+  const q = String(query || "")
+    .trim()
+    .toLowerCase();
+  let items;
+  if (kind === "surgeon") {
+    const m = new Map();
+    lines.forEach((l) => {
+      if (!m.has(l.skey))
+        m.set(l.skey, { value: l.skey, label: l.surgeon, n: 0 });
+      m.get(l.skey).n += l.total;
+    });
+    items = [...m.values()]
+      .sort((a, b) => b.n - a.n || a.label.localeCompare(b.label))
+      .map((x) => ({ value: x.value, label: x.label, swatches: [] }));
+  } else {
+    const m = new Map();
+    lines.forEach((l) => {
+      if (!m.has(l.brand)) m.set(l.brand, new Set());
+      m.get(l.brand).add(l.anatomy);
+    });
+    items = [...m.keys()]
+      .sort((a, b) => a.localeCompare(b))
+      .map((b) => ({
+        value: b,
+        label: b,
+        swatches: TYPES.filter((t) => m.get(b).has(t.name)).map((t) => ({
+          key: t.name,
+          style: "background:" + t.colour
+        }))
+      }));
+  }
+  return items
+    .filter((x) => !q || x.label.toLowerCase().includes(q))
+    .map((x) => {
+      const on = !(off || []).includes(x.value);
+      return {
+        ...x,
+        on,
+        cls: on ? "fi" : "fi off",
+        pressed: on ? "true" : "false"
+      };
+    });
+}
+
+/** How many of the switched-off values are at this hospital (so a filter left over from another hospital does not show as on). */
+export function activeCount(lines, kind, off) {
+  const here = new Set(
+    lines.map((l) => (kind === "surgeon" ? l.skey : l.brand))
+  );
+  return (off || []).filter((v) => here.has(v)).length;
+}
+
+/** Ticking "Select all": when any of the listed items is off, all of them go on; otherwise all of them go off. */
+export function toggleAll(off, items) {
+  const values = items.map((x) => x.value);
+  const anyOff = items.some((x) => !x.on);
+  return anyOff
+    ? (off || []).filter((v) => !values.includes(v))
+    : [...new Set([...(off || []), ...values])];
+}
+
+/** Adds the value if it is missing, takes it out if it is there. */
+export function flip(list, value) {
+  return (list || []).includes(value)
+    ? list.filter((x) => x !== value)
+    : [...(list || []), value];
+}

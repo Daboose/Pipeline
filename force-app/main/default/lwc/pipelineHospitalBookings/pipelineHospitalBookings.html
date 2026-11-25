@@ -1,5 +1,5 @@
 <template>
-  <section class="wrap">
+  <section class="wrap" onkeydown={handleKey}>
     <div class="none" lwc:if={loading}>Reading the bookings…</div>
     <div class="none" lwc:if={error}>{error}</div>
     <div class="none" lwc:if={noHospital}>This deal has no hospital.</div>
@@ -8,19 +8,72 @@
     <template lwc:if={hasChart}>
       <div class="ph">
         <h2>MyCase bookings</h2>
+        <c-pipeline-segmented
+          class="viewseg"
+          heading="View"
+          label="View"
+          options={viewOptions}
+          value={view}
+          onchange={handleView}
+        ></c-pipeline-segmented>
         <span class="win">{hospitalText} &middot; {windowLabel}</span>
         <span class="sp"></span>
-        <span class="big">{grand}</span>
-        <span class="bigl">cases in the last 12 months</span>
+        <span class="bigg"
+          ><span class="big">{grand}</span
+          ><span class="bigl">cases in the last 12 months</span></span
+        >
       </div>
       <div class="legend">
-        <template for:each={legend} for:item="l">
-          <span class="lg" key={l.key}
-            ><i style={l.style}></i>{l.label} <b>{l.booked}</b></span
+        <template for:each={chips.types} for:item="c">
+          <button
+            type="button"
+            key={c.key}
+            class={c.cls}
+            style={c.style}
+            aria-pressed={c.pressed}
+            data-kind="type"
+            data-key={c.key}
+            onclick={handleChip}
           >
+            <span class="tick"
+              ><svg
+                width="12"
+                height="12"
+                viewBox="0 0 12 12"
+                aria-hidden="true"
+              >
+                <path d="M2.5 6.2l2.3 2.3 4.7-5"></path></svg
+            ></span>
+            {c.label} <b>{c.booked}</b>
+          </button>
+        </template>
+        <span class="lgap"></span>
+        <template for:each={chips.procs} for:item="c">
+          <button
+            type="button"
+            key={c.key}
+            class={c.cls}
+            style={c.style}
+            aria-pressed={c.pressed}
+            data-kind="proc"
+            data-key={c.key}
+            onclick={handleChip}
+          >
+            <span class="tick"
+              ><svg
+                width="12"
+                height="12"
+                viewBox="0 0 12 12"
+                aria-hidden="true"
+              >
+                <path d="M2.5 6.2l2.3 2.3 4.7-5"></path></svg
+            ></span>
+            {c.label} <b>{c.booked}</b>
+          </button>
         </template>
       </div>
-      <div class="box">
+
+      <div class="box chart" lwc:if={isHospital}>
         <svg
           viewBox={chart.viewBox}
           role="img"
@@ -56,9 +109,203 @@
             </g>
           </template>
         </svg>
-        <div class="tip" lwc:if={tip.on} style={tip.style}>
-          <b>{tip.month}</b><br />{tip.line}<br />{tip.total}
+      </div>
+
+      <div class="box table" lwc:if={isSurgeon}>
+        <table class="grid">
+          <thead>
+            <tr>
+              <th class="lft">Surgeon</th>
+              <template for:each={months} for:item="m">
+                <th key={m.key}>{m.label}</th>
+              </template>
+              <th>Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            <template for:each={grid.rows} for:item="r">
+              <tr key={r.key}>
+                <td class="lft">
+                  <b>{r.name}</b><span class="sub">{r.sub}</span>
+                </td>
+                <template for:each={r.cells} for:item="c">
+                  <td key={c.key} class="n">
+                    <span
+                      class={c.cls}
+                      style={c.style}
+                      data-tip={c.tipText}
+                      onmousemove={handleCellMove}
+                      onmouseleave={handleLeave}
+                      >{c.v}</span
+                    >
+                  </td>
+                </template>
+                <td class="t">{r.total}</td>
+              </tr>
+            </template>
+            <tr class="sum">
+              <td class="lft">Hospital total</td>
+              <template for:each={grid.foot.cells} for:item="c">
+                <td key={c.key}>{c.v}</td>
+              </template>
+              <td class="t">{grid.foot.total}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="box table" lwc:if={isBrand}>
+        <table class="grid">
+          <thead>
+            <tr>
+              <th class="lft">
+                <span class="fh"
+                  >Surgeon<button
+                    type="button"
+                    class={surgeonFilterCls}
+                    data-kind="surgeon"
+                    title={surgeonFilterTitle}
+                    aria-label={surgeonFilterTitle}
+                    onclick={openFilter}
+                  >
+                    <svg
+                      width="13"
+                      height="13"
+                      viewBox="0 0 24 24"
+                      aria-hidden="true"
+                    >
+                      <path d="M3 4h18l-7 8.5V19l-4 2v-8.5z"></path>
+                    </svg></button
+                ></span>
+              </th>
+              <th class="lft">
+                <span class="fh"
+                  >Brand<button
+                    type="button"
+                    class={brandFilterCls}
+                    data-kind="brand"
+                    title={brandFilterTitle}
+                    aria-label={brandFilterTitle}
+                    onclick={openFilter}
+                  >
+                    <svg
+                      width="13"
+                      height="13"
+                      viewBox="0 0 24 24"
+                      aria-hidden="true"
+                    >
+                      <path d="M3 4h18l-7 8.5V19l-4 2v-8.5z"></path>
+                    </svg></button
+                ></span>
+              </th>
+              <template for:each={months} for:item="m">
+                <th key={m.key}>{m.label}</th>
+              </template>
+              <th>Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            <template for:each={table.rows} for:item="r">
+              <tr key={r.key} class={r.cls}>
+                <td class="lft sg" lwc:if={r.first} rowspan={r.span}>
+                  <b>{r.name}</b><span class="sub">{r.sub}</span>
+                </td>
+                <td class="lft br"><i style={r.swatch}></i>{r.brand}</td>
+                <template for:each={r.cells} for:item="c">
+                  <td key={c.key} class="n">
+                    <span
+                      class={c.cls}
+                      style={c.style}
+                      data-tip={c.tipText}
+                      onmousemove={handleCellMove}
+                      onmouseleave={handleLeave}
+                      >{c.v}</span
+                    >
+                  </td>
+                </template>
+                <td class="t">{r.total}</td>
+              </tr>
+            </template>
+            <tr class="sum">
+              <td class="lft" colspan="2">Hospital total</td>
+              <template for:each={table.foot.cells} for:item="c">
+                <td key={c.key}>{c.v}</td>
+              </template>
+              <td class="t">{table.foot.total}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <template lwc:if={pop}>
+        <div class="fcatch" onclick={closeFilter}></div>
+        <div class={popCls} style={pop.style}>
+          <div>
+            <div class="fin">
+              <div class="ft">{popTitle}</div>
+              <div class="sbox">
+                <input
+                  type="text"
+                  class="in"
+                  placeholder={popPlaceholder}
+                  value={pop.query}
+                  oninput={handleSearch}
+                />
+                <button
+                  type="button"
+                  class="xcirc sclear"
+                  lwc:if={pop.query}
+                  aria-label="Clear the search"
+                  onclick={clearSearch}
+                ></button>
+              </div>
+              <div class="flist">
+                <button type="button" class={allCls} onclick={handleAll}>
+                  <span class="tk"
+                    ><svg
+                      width="12"
+                      height="12"
+                      viewBox="0 0 12 12"
+                      aria-hidden="true"
+                    >
+                      <path d="M2.5 6.2l2.3 2.3 4.7-5"></path></svg
+                  ></span>
+                  <span class="lbl">{allLabel}</span>
+                </button>
+                <template for:each={popItems} for:item="x">
+                  <button
+                    type="button"
+                    key={x.value}
+                    class={x.cls}
+                    aria-pressed={x.pressed}
+                    data-value={x.value}
+                    onclick={handlePick}
+                  >
+                    <span class="tk"
+                      ><svg
+                        width="12"
+                        height="12"
+                        viewBox="0 0 12 12"
+                        aria-hidden="true"
+                      >
+                        <path d="M2.5 6.2l2.3 2.3 4.7-5"></path></svg
+                    ></span>
+                    <template for:each={x.swatches} for:item="s">
+                      <i key={s.key} style={s.style}></i>
+                    </template>
+                    <span class="lbl">{x.label}</span>
+                  </button>
+                </template>
+              </div>
+            </div>
+          </div>
         </div>
+      </template>
+
+      <div class="tip" lwc:if={tip.on} style={tip.style}>
+        <template for:each={tip.lines} for:item="l">
+          <div key={l.key} class={l.cls}>{l.text}</div>
+        </template>
       </div>
     </template>
   </section>

@@ -1,0 +1,1767 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>
+      Pipeline mockup: MyCase Bookings by surgeon and brand, version 4
+    </title>
+    <style>
+      :root,
+      [data-theme="light"] {
+        --page: #e9edf4;
+        --bg: #f4f6fa;
+        --panel: #ffffff;
+        --panel2: #eef2fa;
+        --line: #d5dcea;
+        --edge: #b3bfd6;
+        --text: #1b2640;
+        --muted: #5d6b85;
+        --head: #db2777;
+        --indigo: #4f46e5;
+        --hip: #2563eb;
+        --knee: #0d9488;
+        --shoulder: #7c3aed;
+        --cmft: #ea580c;
+        --grid: rgba(27, 38, 64, 0.09);
+        --cell: 79, 70, 229;
+      }
+      [data-theme="dark"] {
+        --page: #0e1623;
+        --bg: #141e2e;
+        --panel: #1a2740;
+        --panel2: #20304f;
+        --line: #2f4163;
+        --edge: #5b6f93;
+        --text: #e8edf5;
+        --muted: #8b9bb0;
+        --head: #f472b6;
+        --indigo: #6366f1;
+        --hip: #2f80ed;
+        --knee: #14b8a6;
+        --shoulder: #a78bfa;
+        --cmft: #fb923c;
+        --grid: rgba(232, 237, 245, 0.08);
+        --cell: 99, 102, 241;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        height: 100%;
+      }
+      body {
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        background: var(--page);
+        color: var(--text);
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial,
+          sans-serif;
+        font-size: 15px;
+      }
+      .sfnav {
+        flex: none;
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        padding: 8px 16px;
+        background: #0b1220;
+        color: #cfd8e6;
+        border-bottom: 1px solid #22314d;
+      }
+      .sfnav .app {
+        font-weight: 700;
+        letter-spacing: 0.06em;
+      }
+      .sfnav .app b {
+        color: #fdb827;
+      }
+      .sfnav .tab {
+        opacity: 0.75;
+      }
+      .sfnav .tab.on {
+        opacity: 1;
+        border-bottom: 2px solid #6366f1;
+        padding-bottom: 2px;
+      }
+      .sp {
+        flex: 1;
+      }
+      .btn {
+        height: 32px;
+        padding: 0 16px;
+        border: 0;
+        border-radius: 999px;
+        background: #6366f1;
+        color: #fff;
+        font: inherit;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+      }
+      .btn.slate {
+        background: #475569;
+      }
+      .btn.slate.on {
+        background: #6366f1;
+      }
+      .about {
+        flex: none;
+        margin: 10px 16px 0;
+        padding: 10px 16px;
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        line-height: 1.5;
+      }
+      .about summary {
+        cursor: pointer;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        color: var(--head);
+      }
+      .about p,
+      .about ul {
+        margin: 6px 0;
+      }
+      .tools {
+        flex: none;
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 10px 16px;
+      }
+      .tools .lab {
+        color: var(--muted);
+        font-weight: 700;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin: 0 4px 0 12px;
+      }
+      .tools .lab:first-child {
+        margin-left: 0;
+      }
+      /* the deal flyout */
+      .fly {
+        flex: 1;
+        min-height: 0;
+        margin: 0 16px 16px;
+        display: flex;
+        flex-direction: column;
+        background: var(--bg);
+        border: 1px solid var(--edge);
+        border-left: 3px solid var(--indigo);
+        border-radius: 12px;
+        overflow: hidden;
+      }
+      .fhead {
+        flex: none;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 16px;
+        border-bottom: 1px solid var(--line);
+      }
+      .fhead .name {
+        font-size: 18px;
+        font-weight: 700;
+      }
+      .nav {
+        height: 30px;
+        padding: 0 16px;
+        border: 0;
+        border-radius: 999px;
+        background: #475569;
+        color: #fff;
+        font: inherit;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+      }
+      .nav.on {
+        background: var(--indigo);
+      }
+      .nav i {
+        font-style: normal;
+        display: inline-block;
+        min-width: 18px;
+        margin-left: 6px;
+        padding: 1px 6px;
+        border-radius: 999px;
+        background: #1e293b;
+      }
+      .rb {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        border: 1px solid var(--edge);
+        background: var(--panel);
+        color: var(--text);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .cnt {
+        color: var(--muted);
+        font-size: 13px;
+        margin: 0 4px;
+      }
+      .body {
+        flex: 1;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        padding: 12px 16px 16px;
+      }
+      .ph {
+        flex: none;
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 6px 16px;
+      }
+      h2 {
+        margin: 0;
+        font-size: 18px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--head);
+        font-weight: 700;
+      }
+      .win {
+        color: var(--muted);
+      }
+      .big {
+        font-size: 34px;
+        font-weight: 700;
+        line-height: 1;
+      }
+      .bigl {
+        color: var(--muted);
+      }
+      /* the one-pill slider, as pipelineSegmented */
+      .seg {
+        display: inline-flex;
+        align-items: stretch;
+        border-radius: 999px;
+        background: var(--panel);
+        border: 1px solid var(--edge);
+      }
+      .seg .slbl {
+        display: inline-flex;
+        align-items: center;
+        padding: 0 16px 0 18px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        color: var(--muted);
+      }
+      .seg .choices {
+        position: relative;
+        display: flex;
+        align-items: center;
+        margin: -1px -1px -1px 0;
+        padding: 3px;
+        border-radius: 999px;
+        background: var(--panel2);
+        border: 1px solid var(--edge);
+      }
+      .seg .hl {
+        position: absolute;
+        top: 3px;
+        height: 28px;
+        border-radius: 999px;
+        background: var(--indigo);
+        box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35);
+        transition:
+          left 0.55s cubic-bezier(0.3, 1.35, 0.5, 1),
+          width 0.55s cubic-bezier(0.3, 1.35, 0.5, 1);
+      }
+      .seg .opt {
+        position: relative;
+        z-index: 1;
+        height: 28px;
+        padding: 0 16px;
+        border: 0;
+        border-radius: 999px;
+        background: transparent;
+        color: var(--muted);
+        font: inherit;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        cursor: pointer;
+        transition: color 0.25s;
+      }
+      .seg .opt.on {
+        color: #fff;
+      }
+      /* type chips that switch on and off */
+      .legend {
+        flex: none;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+      .lg {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        height: 36px;
+        padding: 0 16px 0 10px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: var(--panel);
+        color: var(--text);
+        font: inherit;
+        font-size: 16px;
+        cursor: pointer;
+        transition: opacity 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .lgap {
+        width: 24px;
+      }
+      .lg b {
+        font-size: 18px;
+      }
+      .lg .tick {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        border: 2px solid var(--c);
+        background: var(--c);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .lg .tick svg {
+        transition: opacity 0.3s;
+      }
+      .lg.off {
+        opacity: 0.5;
+      }
+      .lg.off .tick {
+        background: transparent;
+      }
+      .lg.off .tick svg {
+        opacity: 0;
+      }
+      .box {
+        flex: 1;
+        min-height: 0;
+        position: relative;
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 8px;
+        overflow: hidden;
+      }
+      .box.scroll {
+        overflow-y: auto;
+      }
+      svg text {
+        fill: var(--muted);
+        font-size: 13px;
+      }
+      svg text.tot {
+        fill: var(--text);
+        font-weight: 700;
+        font-size: 14px;
+      }
+      svg text.nm {
+        fill: var(--text);
+        font-weight: 700;
+        font-size: 15px;
+      }
+      svg text.nt {
+        fill: var(--text);
+        font-weight: 700;
+        font-size: 22px;
+      }
+      svg line.gl {
+        stroke: var(--grid);
+      }
+      svg rect.seg2:hover {
+        filter: brightness(1.15);
+      }
+      .tip {
+        position: absolute;
+        z-index: 5;
+        pointer-events: none;
+        padding: 8px 12px;
+        border-radius: 10px;
+        background: #0b1220;
+        color: #fff;
+        font-size: 14px;
+        line-height: 1.45;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+        display: none;
+        white-space: nowrap;
+      }
+      /* option C: a grid of numbers */
+      table.grid {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        font-size: 16px;
+      }
+      .grid th {
+        position: sticky;
+        top: 0;
+        background: var(--panel);
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 700;
+        padding: 8px 9px;
+        text-align: center;
+        border-bottom: 1px solid var(--line);
+        z-index: 1;
+      }
+      .grid th:first-child,
+      .grid td:first-child {
+        text-align: left;
+        white-space: nowrap;
+      }
+      .grid td {
+        padding: 8px 9px;
+        text-align: center;
+        border-bottom: 1px solid var(--line);
+      }
+      .grid td.n {
+        font-variant-numeric: tabular-nums;
+      }
+      .grid td.n span {
+        display: inline-block;
+        min-width: 40px;
+        padding: 4px 6px;
+        border-radius: 8px;
+      }
+      .grid td.t {
+        font-weight: 700;
+        font-size: 18px;
+      }
+      .grid tr.sum td {
+        font-weight: 700;
+        border-top: 2px solid var(--edge);
+        border-bottom: 0;
+      }
+      .grid td .types {
+        display: block;
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 400;
+      }
+      .zero {
+        color: var(--muted);
+        opacity: 0.45;
+      }
+      .slegend {
+        flex: none;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px 14px;
+        color: var(--text);
+        font-size: 14px;
+      }
+      .slegend span {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .slegend i {
+        width: 14px;
+        height: 14px;
+        border-radius: 4px;
+      }
+      .grid tr.first td {
+        border-top: 3px solid var(--head);
+      }
+      .grid tbody tr.first:first-child td {
+        border-top: 0;
+      }
+      .grid td.sg {
+        vertical-align: top;
+        border-bottom: 0;
+      }
+      .grid td.br {
+        text-align: left;
+        white-space: nowrap;
+      }
+      .grid td.br i {
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        border-radius: 3px;
+        margin-right: 8px;
+      }
+      .grid td.br,
+      .grid th.br {
+        text-align: left;
+      }
+      /* column filters (Surgeon / Brand view) */
+      .fh {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .fbtn {
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        border: 1px solid var(--edge);
+        background: var(--panel2);
+        color: var(--muted);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        padding: 0;
+        transition:
+          background 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+          color 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .fbtn:hover {
+        color: var(--text);
+      }
+      .fbtn.act {
+        background: var(--indigo);
+        border-color: var(--indigo);
+        color: #fff;
+      }
+      .fpop {
+        position: fixed;
+        z-index: 20;
+        width: 300px;
+        display: grid;
+        grid-template-rows: 0fr;
+        opacity: 0;
+        transition:
+          grid-template-rows 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+          opacity 0.3s;
+      }
+      .fpop.on {
+        grid-template-rows: 1fr;
+        opacity: 1;
+      }
+      .fpop > div {
+        overflow: hidden;
+        min-height: 0;
+      }
+      .fin {
+        background: var(--panel);
+        border: 1px solid var(--edge);
+        border-top: 3px solid var(--indigo);
+        border-radius: 12px;
+        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+        padding: 12px;
+      }
+      .fin .ft {
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        color: var(--muted);
+        margin-bottom: 8px;
+      }
+      .sbox {
+        position: relative;
+        margin-bottom: 8px;
+      }
+      .sbox input {
+        width: 100%;
+        height: 36px;
+        border-radius: 999px;
+        border: 1px solid var(--edge);
+        background: var(--panel2);
+        color: var(--text);
+        font: inherit;
+        padding: 0 40px 0 14px;
+      }
+      .xcirc {
+        position: absolute;
+        right: 8px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        border: 0;
+        background: var(--muted);
+        cursor: pointer;
+        padding: 0;
+      }
+      .xcirc::before,
+      .xcirc::after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 10px;
+        height: 2px;
+        background: var(--panel);
+        border-radius: 1px;
+      }
+      .xcirc::before {
+        transform: translate(-50%, -50%) rotate(45deg);
+      }
+      .xcirc::after {
+        transform: translate(-50%, -50%) rotate(-45deg);
+      }
+      .flist {
+        max-height: 300px;
+        overflow-y: auto;
+      }
+      .fi {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+        padding: 7px 8px;
+        border: 0;
+        border-radius: 8px;
+        background: transparent;
+        color: var(--text);
+        font: inherit;
+        text-align: left;
+        cursor: pointer;
+      }
+      .fi:hover {
+        background: var(--panel2);
+      }
+      .fi.all {
+        font-weight: 700;
+        border-bottom: 1px solid var(--line);
+        border-radius: 8px 8px 0 0;
+        margin-bottom: 4px;
+      }
+      .fi .tk {
+        flex: none;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        border: 2px solid var(--indigo);
+        background: var(--indigo);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .fi.off .tk {
+        background: transparent;
+      }
+      .fi.off .tk svg {
+        opacity: 0;
+      }
+      .fi.off .lbl {
+        opacity: 0.5;
+      }
+      .fi.part .tk {
+        background: transparent;
+      }
+      .fi.part .tk svg {
+        display: none;
+      }
+      .fi.part .tk::after {
+        content: "";
+        width: 10px;
+        height: 2px;
+        background: var(--indigo);
+        border-radius: 1px;
+      }
+      .fi i {
+        width: 12px;
+        height: 12px;
+        border-radius: 3px;
+        flex: none;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .fpop {
+          transition: none;
+        }
+      }
+      .hide {
+        display: none !important;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="sfnav">
+      <span class="app"><b>PIPE</b>LINE</span
+      ><span class="tab on">Pipeline</span
+      ><span class="tab">Sales Campaigns</span><span class="sp"></span>
+      <button class="btn" type="button" id="full">Full screen</button>
+    </div>
+    <details class="about" open>
+      <summary>ABOUT THIS MOCKUP</summary>
+      <p>
+        <b>What it shows:</b> the <b>MyCase Bookings</b> screen of a ROSA deal
+        (a hospital), with a slider beside the heading to change the graph:
+        <b>Hospital Total</b> (today's graph) and <b>Surgeon Total</b> (the same
+        cases split by the surgeon who did them, month by month). The
+        <b>Hip, Knee, Shoulder and CMFT</b> chips now switch on and off and
+        change whichever graph is showing; the big number on the right counts
+        only the types switched on. <b>Surgeon Total</b> is the grid of numbers
+        Robert chose (option C of version 1): a row per surgeon, a column per
+        month, a Hospital total row. The third view, <b>Surgeon / Brand</b>, is
+        a table: each surgeon down the left, the brands they used beside them
+        (the case's Brand, with the colour of its type), a column per month and
+        a Total; a Hospital total row at the foot. Invented data.
+      </p>
+      <b>Try it:</b>
+      <ul>
+        <li>
+          Press <b>Demo</b>, <b>Revision</b> or <b>Primary</b> (the second group
+          of chips, the case's Type) to take those cases out of every view; each
+          chip's number counts the cases of the types switched on in the other
+          group. Every view counts only surgeries that went ahead: a case with
+          no usage items is left out, a demo too.
+        </li>
+        <li>
+          Slide between <b>Hospital Total</b>, <b>Surgeon Total</b> and
+          <b>Surgeon / Brand</b>.
+        </li>
+        <li>
+          On <b>Surgeon / Brand</b>, press the round <b>filter</b> button beside
+          <b>Surgeon</b> or <b>Brand</b>: untick names to hide them (the search
+          box narrows the list). The button turns solid indigo while anything is
+          hidden; the table, the Hospital total row and the big number count
+          only what is shown. The filter stays when the Hip, Knee, Shoulder and
+          CMFT chips change and when sliding to another view and back.
+        </li>
+        <li>
+          On <b>Surgeon / Brand</b>, switch Knee off: the knee brands leave the
+          table and the totals change. Hover a number to see the surgeon, brand
+          and month.
+        </li>
+        <li>
+          Press <b>Shoulder</b> and <b>CMFT</b> to switch them off: the bars,
+          numbers and the total change. Press again to switch them back on.
+        </li>
+        <li>Hover over a number to see its detail.</li>
+      </ul>
+      <b>Not shown yet:</b> a hospital with many surgeons (how many to show
+      before the rest go under "Others"), whether the slider and the chips are
+      remembered next time, light mode is drawn but not checked.
+    </details>
+    <div class="tools">
+      <span class="lab">Theme</span>
+      <button class="btn slate on" type="button" data-theme-set="dark">
+        Dark
+      </button>
+      <button class="btn slate" type="button" data-theme-set="light">
+        Light
+      </button>
+    </div>
+    <div class="fly">
+      <div class="fhead">
+        <span class="name" id="hname"></span><span class="sp"></span>
+        <button class="nav" type="button">ROSA</button>
+        <button class="nav on" type="button">MYCASE BOOKINGS</button>
+        <button class="nav" type="button">CAMPAIGNS<i>1</i></button>
+        <button class="rb" type="button" aria-label="Previous">&#8249;</button>
+        <span class="cnt">2 of 9</span>
+        <button class="rb" type="button" aria-label="Next">&#8250;</button>
+        <button class="rb" type="button" aria-label="Close">&#10005;</button>
+      </div>
+      <div class="body">
+        <div class="ph">
+          <h2>MyCase bookings</h2>
+          <div class="seg" role="group" aria-label="Graph">
+            <span class="slbl">VIEW</span>
+            <div class="choices" id="choices">
+              <div class="hl" id="hl"></div>
+              <button class="opt on" type="button" data-view="hospital">
+                HOSPITAL TOTAL
+              </button>
+              <button class="opt" type="button" data-view="surgeon">
+                SURGEON TOTAL
+              </button>
+              <button class="opt" type="button" data-view="brand">
+                SURGEON / BRAND
+              </button>
+            </div>
+          </div>
+          <span class="win" id="win"></span><span class="sp"></span>
+          <span class="big" id="big"></span
+          ><span class="bigl">cases in the last 12 months</span>
+        </div>
+        <div class="legend" id="legend"></div>
+        <div class="slegend hide" id="slegend"></div>
+        <div class="box" id="box"></div>
+      </div>
+    </div>
+    <div class="tip" id="tip"></div>
+    <script>
+      const DATA = {
+        hospital: "ROYAL SOUTHERN HOSPITAL",
+        surgeons: [
+          {
+            name: "Dr Anna Whitfield",
+            m: [
+              [1, 9, 0, 0],
+              [1, 13, 0, 0],
+              [0, 4, 0, 0],
+              [1, 6, 0, 0],
+              [0, 0, 0, 0],
+              [0, 6, 0, 0],
+              [2, 9, 0, 0],
+              [1, 10, 0, 0],
+              [0, 4, 0, 0],
+              [0, 12, 0, 0],
+              [0, 15, 0, 0],
+              [0, 8, 0, 0]
+            ],
+            b: [
+              {
+                brand: "PERSONA",
+                t: 1,
+                p: 0,
+                m: [8, 10, 4, 4, 0, 5, 7, 5, 3, 6, 11, 5]
+              },
+              {
+                brand: "AVENIR COMPLETE",
+                t: 0,
+                p: 0,
+                m: [1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0]
+              },
+              {
+                brand: "PERSONA REVISION",
+                t: 1,
+                p: 0,
+                m: [1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 0, 0]
+              },
+              {
+                brand: "PERSONA REVISION",
+                t: 1,
+                p: 1,
+                m: [0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1]
+              },
+              {
+                brand: "PERSONA",
+                t: 1,
+                p: 2,
+                m: [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+              },
+              {
+                brand: "ROSA KNEE",
+                t: 1,
+                p: 0,
+                m: [0, 0, 0, 1, 0, 0, 1, 2, 0, 1, 4, 2]
+              },
+              {
+                brand: "G7",
+                t: 0,
+                p: 0,
+                m: [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0]
+              },
+              {
+                brand: "CABLE PRODUCTS",
+                t: 0,
+                p: 0,
+                m: [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0]
+              },
+              {
+                brand: "PERSONA",
+                t: 1,
+                p: 1,
+                m: [0, 0, 0, 0, 0, 0, 0, 1, 0, 3, 0, 0]
+              },
+              {
+                brand: "ROSA KNEE",
+                t: 1,
+                p: 2,
+                m: [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0]
+              },
+              {
+                brand: "PERSONA REVISION",
+                t: 1,
+                p: 2,
+                m: [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0]
+              }
+            ]
+          },
+          {
+            name: "Dr Tom Okafor",
+            m: [
+              [4, 6, 1, 0],
+              [3, 7, 0, 0],
+              [1, 4, 1, 0],
+              [6, 10, 1, 0],
+              [3, 11, 1, 0],
+              [5, 10, 1, 0],
+              [3, 8, 0, 0],
+              [1, 1, 0, 0],
+              [2, 4, 1, 0],
+              [2, 10, 0, 0],
+              [2, 17, 0, 0],
+              [0, 0, 1, 0]
+            ],
+            b: [
+              {
+                brand: "PERSONA",
+                t: 1,
+                p: 0,
+                m: [4, 7, 4, 8, 10, 8, 5, 1, 3, 5, 13, 0]
+              },
+              {
+                brand: "CABLE PRODUCTS",
+                t: 0,
+                p: 0,
+                m: [1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0]
+              },
+              {
+                brand: "COMPREHENSIVE",
+                t: 2,
+                p: 0,
+                m: [1, 0, 1, 1, 1, 1, 0, 0, 1, 0, 0, 1]
+              },
+              {
+                brand: "G7",
+                t: 0,
+                p: 0,
+                m: [1, 1, 1, 2, 1, 2, 1, 0, 0, 1, 0, 0]
+              },
+              {
+                brand: "AVENIR COMPLETE",
+                t: 0,
+                p: 0,
+                m: [2, 1, 0, 4, 2, 2, 1, 0, 2, 1, 2, 0]
+              },
+              {
+                brand: "PERSONA",
+                t: 1,
+                p: 1,
+                m: [1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0]
+              },
+              {
+                brand: "PERSONA REVISION",
+                t: 1,
+                p: 0,
+                m: [1, 0, 0, 0, 1, 1, 0, 0, 0, 2, 0, 0]
+              },
+              {
+                brand: "AVENIR COMPLETE",
+                t: 0,
+                p: 1,
+                m: [0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0]
+              },
+              {
+                brand: "ROSA KNEE",
+                t: 1,
+                p: 0,
+                m: [0, 0, 0, 1, 0, 0, 3, 0, 0, 2, 3, 0]
+              },
+              {
+                brand: "PERSONA",
+                t: 1,
+                p: 2,
+                m: [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0]
+              },
+              {
+                brand: "PERSONA REVISION",
+                t: 1,
+                p: 1,
+                m: [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0]
+              }
+            ]
+          },
+          {
+            name: "Dr Priya Raman",
+            m: [
+              [2, 5, 0, 0],
+              [1, 8, 0, 0],
+              [1, 0, 0, 0],
+              [2, 10, 0, 0],
+              [1, 4, 0, 0],
+              [2, 3, 0, 0],
+              [0, 4, 0, 0],
+              [1, 5, 0, 0],
+              [2, 5, 0, 0],
+              [3, 9, 0, 0],
+              [2, 3, 0, 0],
+              [2, 5, 0, 0]
+            ],
+            b: [
+              {
+                brand: "PERSONA",
+                t: 1,
+                p: 1,
+                m: [2, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0]
+              },
+              {
+                brand: "PERSONA",
+                t: 1,
+                p: 0,
+                m: [2, 5, 0, 5, 2, 2, 4, 1, 5, 7, 2, 4]
+              },
+              {
+                brand: "AVENIR COMPLETE",
+                t: 0,
+                p: 0,
+                m: [2, 0, 1, 1, 1, 1, 0, 1, 2, 2, 1, 1]
+              },
+              {
+                brand: "PERSONA",
+                t: 1,
+                p: 2,
+                m: [1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0]
+              },
+              {
+                brand: "CABLE PRODUCTS",
+                t: 0,
+                p: 0,
+                m: [0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0]
+              },
+              {
+                brand: "PERSONA REVISION",
+                t: 1,
+                p: 0,
+                m: [0, 1, 0, 2, 0, 1, 0, 1, 0, 0, 0, 1]
+              },
+              {
+                brand: "ROSA KNEE",
+                t: 1,
+                p: 0,
+                m: [0, 1, 0, 2, 1, 0, 0, 1, 0, 2, 1, 0]
+              },
+              {
+                brand: "G7",
+                t: 0,
+                p: 0,
+                m: [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1]
+              }
+            ]
+          },
+          {
+            name: "Dr Luke Brennan",
+            m: [
+              [0, 9, 0, 0],
+              [0, 6, 0, 0],
+              [0, 2, 0, 0],
+              [0, 4, 0, 0],
+              [0, 8, 0, 0],
+              [0, 9, 0, 0],
+              [0, 6, 0, 0],
+              [0, 8, 0, 0],
+              [0, 5, 0, 0],
+              [0, 5, 0, 0],
+              [0, 3, 0, 0],
+              [0, 9, 0, 0]
+            ],
+            b: [
+              {
+                brand: "PERSONA",
+                t: 1,
+                p: 0,
+                m: [9, 2, 1, 4, 6, 8, 3, 6, 5, 4, 3, 6]
+              },
+              {
+                brand: "PERSONA",
+                t: 1,
+                p: 1,
+                m: [0, 2, 0, 0, 0, 0, 2, 1, 0, 0, 0, 0]
+              },
+              {
+                brand: "PERSONA REVISION",
+                t: 1,
+                p: 2,
+                m: [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+              },
+              {
+                brand: "PERSONA REVISION",
+                t: 1,
+                p: 0,
+                m: [0, 1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 2]
+              },
+              {
+                brand: "ROSA KNEE",
+                t: 1,
+                p: 0,
+                m: [0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 1]
+              },
+              {
+                brand: "PERSONA",
+                t: 1,
+                p: 2,
+                m: [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0]
+              }
+            ]
+          },
+          {
+            name: "Dr Sofia Marsh",
+            m: [
+              [1, 0, 0, 0],
+              [1, 0, 0, 0],
+              [0, 0, 0, 0],
+              [1, 0, 0, 0],
+              [1, 0, 0, 0],
+              [1, 0, 0, 0],
+              [1, 0, 0, 0],
+              [1, 0, 0, 0],
+              [1, 0, 0, 0],
+              [0, 0, 0, 0],
+              [1, 0, 0, 0],
+              [1, 0, 0, 0]
+            ],
+            b: [
+              {
+                brand: "CABLE PRODUCTS",
+                t: 0,
+                p: 1,
+                m: [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+              },
+              {
+                brand: "AVENIR COMPLETE",
+                t: 0,
+                p: 0,
+                m: [0, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1]
+              },
+              {
+                brand: "G7",
+                t: 0,
+                p: 0,
+                m: [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0]
+              },
+              {
+                brand: "CABLE PRODUCTS",
+                t: 0,
+                p: 0,
+                m: [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0]
+              }
+            ]
+          },
+          {
+            name: "Dr Ben Hartley",
+            m: [
+              [0, 1, 0, 0],
+              [0, 0, 0, 0],
+              [0, 0, 0, 0],
+              [0, 0, 0, 0],
+              [0, 0, 0, 0],
+              [0, 0, 0, 0],
+              [0, 1, 0, 0],
+              [0, 0, 1, 0],
+              [0, 0, 0, 0],
+              [0, 0, 0, 0],
+              [0, 0, 1, 0],
+              [0, 0, 0, 0]
+            ],
+            b: [
+              {
+                brand: "PERSONA",
+                t: 1,
+                p: 0,
+                m: [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0]
+              },
+              {
+                brand: "COMPREHENSIVE",
+                t: 2,
+                p: 0,
+                m: [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0]
+              }
+            ]
+          },
+          {
+            name: "Dr Grace Lin",
+            m: [
+              [0, 0, 0, 0],
+              [0, 0, 0, 0],
+              [0, 0, 0, 0],
+              [0, 0, 0, 0],
+              [0, 0, 0, 0],
+              [0, 0, 0, 0],
+              [0, 0, 0, 1],
+              [0, 0, 0, 0],
+              [0, 0, 0, 0],
+              [0, 0, 0, 0],
+              [0, 0, 0, 0],
+              [0, 0, 0, 0]
+            ],
+            b: [
+              {
+                brand: "RIBFIX",
+                t: 3,
+                p: 0,
+                m: [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0]
+              }
+            ]
+          }
+        ]
+      };
+      const MONTHS = [
+        "Nov 25",
+        "Dec",
+        "Jan 26",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Oct"
+      ];
+      const LONG = [
+        "November 2025",
+        "December 2025",
+        "January 2026",
+        "February 2026",
+        "March 2026",
+        "April 2026",
+        "May 2026",
+        "June 2026",
+        "July 2026",
+        "August 2026",
+        "September 2026",
+        "October 2026"
+      ];
+      const TYPES = [
+        { key: "Hip", c: "var(--hip)" },
+        { key: "Knee", c: "var(--knee)" },
+        { key: "Shoulder", c: "var(--shoulder)" },
+        { key: "CMFT", c: "var(--cmft)" }
+      ];
+      const PROCS = ["Primary", "Revision", "Demo"];
+      // each surgeon's month-by-type counts and brand rows, with the switched-off Primary / Revision / Demo left out
+      function rebuild() {
+        DATA.surgeons.forEach((s) => {
+          s.m = MONTHS.map(() => [0, 0, 0, 0]);
+          const merged = new Map();
+          s.b.forEach((r) => {
+            if (!state.pon[r.p]) return;
+            r.m.forEach((v, i) => (s.m[i][r.t] += v));
+            const k = r.brand + "|" + r.t;
+            if (!merged.has(k))
+              merged.set(k, { brand: r.brand, t: r.t, m: MONTHS.map(() => 0) });
+            r.m.forEach((v, i) => (merged.get(k).m[i] += v));
+          });
+          s.bm = [...merged.values()];
+        });
+      }
+      const procTotal = (p) =>
+        DATA.surgeons.reduce(
+          (a, s) =>
+            a +
+            s.b
+              .filter((r) => r.p === p && state.on[r.t])
+              .reduce((b, r) => b + r.m.reduce((x, y) => x + y, 0), 0),
+          0
+        );
+      const SURG_COL = [
+        "#f472b6",
+        "#60a5fa",
+        "#34d399",
+        "#fbbf24",
+        "#c084fc",
+        "#f87171",
+        "#22d3ee",
+        "#a3e635"
+      ];
+      const state = {
+        view: "hospital",
+        opt: "C",
+        on: [true, true, true, true],
+        pon: [true, true, true],
+        exS: new Set(),
+        exB: new Set()
+      };
+      const $ = (id) => document.getElementById(id);
+      document.getElementById("hname").textContent = DATA.hospital;
+      $("win").textContent =
+        "at " + DATA.hospital + " · November 2025 to October 2026";
+
+      // the counts with the switched-off types left out
+      const cnt = (s, m) =>
+        s.m[m].reduce((a, v, t) => a + (state.on[t] ? v : 0), 0);
+      const sTotal = (s) => s.m.reduce((a, _, m) => a + cnt(s, m), 0);
+      const hosp = (m, t) => DATA.surgeons.reduce((a, s) => a + s.m[m][t], 0);
+      const typeTotal = (t) =>
+        DATA.surgeons.reduce(
+          (a, s) => a + s.m.reduce((b, mm) => b + mm[t], 0),
+          0
+        );
+
+      function legend() {
+        $("legend").innerHTML =
+          TYPES.map(
+            (t, i) =>
+              `<button type="button" class="lg${state.on[i] ? "" : " off"}" data-t="${i}" style="--c:${t.c}" aria-pressed="${state.on[i]}">` +
+              `<span class="tick"><svg width="12" height="12" viewBox="0 0 12 12"><path d="M2.5 6.2l2.3 2.3 4.7-5" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span>` +
+              `${t.key} <b>${typeTotal(i)}</b></button>`
+          ).join("") +
+          `<span class="lgap"></span>` +
+          PROCS.map(
+            (p, i) =>
+              `<button type="button" class="lg${state.pon[i] ? "" : " off"}" data-p="${i}" style="--c:var(--indigo)" aria-pressed="${state.pon[i]}">` +
+              `<span class="tick"><svg width="12" height="12" viewBox="0 0 12 12"><path d="M2.5 6.2l2.3 2.3 4.7-5" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span>` +
+              `${p} <b>${procTotal(i)}</b></button>`
+          ).join("");
+      }
+      $("legend").addEventListener("click", (e) => {
+        const b = e.target.closest(".lg");
+        if (!b) return;
+        if (b.dataset.p !== undefined)
+          state.pon[+b.dataset.p] = !state.pon[+b.dataset.p];
+        else state.on[+b.dataset.t] = !state.on[+b.dataset.t];
+        render();
+      });
+
+      function placeHl(animate) {
+        const on = document.querySelector(".seg .opt.on");
+        const hl = $("hl");
+        if (!animate) hl.style.transition = "none";
+        hl.style.left = on.offsetLeft + "px";
+        hl.style.width = on.offsetWidth + "px";
+        if (!animate) {
+          hl.offsetWidth;
+          hl.style.transition = "";
+        }
+      }
+      $("choices").addEventListener("click", (e) => {
+        const b = e.target.closest(".opt");
+        if (!b) return;
+        document
+          .querySelectorAll(".seg .opt")
+          .forEach((o) => o.classList.toggle("on", o === b));
+        state.view = b.dataset.view;
+        if (state.view !== "brand") closePop();
+        placeHl(true);
+        render();
+      });
+      document.querySelectorAll("[data-opt]").forEach((b) =>
+        b.addEventListener("click", () => {
+          state.opt = b.dataset.opt;
+          document
+            .querySelectorAll("[data-opt]")
+            .forEach((o) => o.classList.toggle("on", o === b));
+          if (state.view !== "surgeon")
+            document.querySelector('[data-view="surgeon"]').click();
+          else render();
+        })
+      );
+      document.querySelectorAll("[data-theme-set]").forEach((b) =>
+        b.addEventListener("click", () => {
+          document.documentElement.dataset.theme = b.dataset.themeSet;
+          document
+            .querySelectorAll("[data-theme-set]")
+            .forEach((o) => o.classList.toggle("on", o === b));
+        })
+      );
+      $("full").addEventListener("click", () =>
+        document.documentElement.requestFullscreen?.()
+      );
+
+      // tooltip
+      const tip = $("tip");
+      document.addEventListener("mousemove", (e) => {
+        const el = e.target.closest("[data-tip]");
+        if (!el) {
+          tip.style.display = "none";
+          return;
+        }
+        tip.innerHTML = el.dataset.tip;
+        tip.style.display = "block";
+        const w = tip.offsetWidth;
+        tip.style.left =
+          Math.min(e.clientX + 14, window.innerWidth - w - 8) + "px";
+        tip.style.top = Math.max(e.clientY - tip.offsetHeight - 10, 4) + "px";
+      });
+      const esc = (s) =>
+        String(s).replace(/[&<>"]/g, (c) => "&#" + c.charCodeAt(0) + ";");
+      const typeLines = (vals) =>
+        TYPES.map((t, i) =>
+          state.on[i] && vals[i] ? `${t.key}: ${vals[i]}` : ""
+        )
+          .filter(Boolean)
+          .join("<br>");
+
+      function niceMax(v) {
+        if (v <= 5) return 5;
+        const step = v <= 10 ? 2 : v <= 25 ? 5 : v <= 60 ? 10 : 20;
+        return Math.ceil(v / step) * step;
+      }
+      function ticks(max) {
+        const step =
+          max <= 5 ? 1 : max <= 10 ? 2 : max <= 25 ? 5 : max <= 60 ? 10 : 20;
+        const out = [];
+        for (let v = 0; v <= max; v += step) out.push(v);
+        return out;
+      }
+
+      // one stacked bar per month; parts = list of {v, c, tip}
+      function barChart(w, h, months) {
+        const L = 40,
+          R = 12,
+          T = 26,
+          B = 28;
+        const max = niceMax(
+          Math.max(1, ...months.map((p) => p.reduce((a, x) => a + x.v, 0)))
+        );
+        const cw = (w - L - R) / 12;
+        const bw = Math.min(72, cw * 0.48);
+        const y = (v) => T + (h - T - B) * (1 - v / max);
+        let s = "";
+        ticks(max).forEach((v) => {
+          s += `<line class="gl" x1="${L}" x2="${w - R}" y1="${y(v)}" y2="${y(v)}"/><text x="${L - 8}" y="${y(v) + 4}" text-anchor="end">${v}</text>`;
+        });
+        months.forEach((parts, m) => {
+          const cx = L + cw * m + cw / 2;
+          let acc = 0;
+          parts.forEach((p) => {
+            if (!p.v) return;
+            const y0 = y(acc + p.v);
+            s += `<rect class="seg2" x="${cx - bw / 2}" y="${y0}" width="${bw}" height="${y(acc) - y0}" fill="${p.c}" data-tip="${esc(p.tip)}"/>`;
+            acc += p.v;
+          });
+          s += `<text class="tot" x="${cx}" y="${y(acc) - 7}" text-anchor="middle">${acc}</text>`;
+          s += `<text x="${cx}" y="${h - 8}" text-anchor="middle">${MONTHS[m]}</text>`;
+        });
+        return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">${s}</svg>`;
+      }
+
+      function hospitalView(w, h) {
+        const months = MONTHS.map((_, m) => {
+          const tot = TYPES.reduce(
+            (a, _, t) => a + (state.on[t] ? hosp(m, t) : 0),
+            0
+          );
+          return TYPES.map((t, i) => ({
+            v: state.on[i] ? hosp(m, i) : 0,
+            c: t.c,
+            tip: `<b>${LONG[m]}</b><br>${t.key}: ${hosp(m, i)} cases<br>All shown: ${tot}`
+          }));
+        });
+        return barChart(w, h, months);
+      }
+
+      function sorted() {
+        return DATA.surgeons
+          .map((s) => ({ s, t: sTotal(s) }))
+          .filter((x) => x.t > 0)
+          .sort((a, b) => b.t - a.t)
+          .map((x) => x.s);
+      }
+
+      // A: one row per surgeon, the same scale for every row
+      function optionA(w, h) {
+        const list = sorted();
+        const NAMEW = 250,
+          R = 12,
+          B = 26;
+        const rowH = Math.max(
+          86,
+          Math.floor((h - B) / Math.max(1, list.length))
+        );
+        const H = rowH * list.length + B;
+        const max = Math.max(
+          1,
+          ...list.flatMap((s) => MONTHS.map((_, m) => cnt(s, m)))
+        );
+        const cw = (w - NAMEW - R) / 12;
+        const bw = Math.min(56, cw * 0.48);
+        let s = "";
+        list.forEach((sg, r) => {
+          const top = r * rowH;
+          const base = top + rowH - 8;
+          const plotH = rowH - 30;
+          const yy = (v) => base - (plotH * v) / max;
+          if (r)
+            s += `<line class="gl" x1="0" x2="${w}" y1="${top}" y2="${top}" style="stroke:var(--line)"/>`;
+          const tt = TYPES.map((t, i) =>
+            state.on[i] ? sg.m.reduce((a, mm) => a + mm[i], 0) : 0
+          );
+          s += `<text class="nm" x="4" y="${top + 26}">${esc(sg.name)}</text>`;
+          s += `<text class="nt" x="4" y="${top + 54}">${sTotal(sg)}</text>`;
+          s += `<text x="${4 + 16 * String(sTotal(sg)).length + 10}" y="${top + 53}">${TYPES.map(
+            (t, i) => (tt[i] ? t.key + " " + tt[i] : "")
+          )
+            .filter(Boolean)
+            .join(" · ")}</text>`;
+          s += `<line class="gl" x1="${NAMEW}" x2="${w - R}" y1="${base}" y2="${base}"/>`;
+          MONTHS.forEach((_, m) => {
+            const cx = NAMEW + cw * m + cw / 2;
+            let acc = 0;
+            TYPES.forEach((t, i) => {
+              const v = state.on[i] ? sg.m[m][i] : 0;
+              if (!v) return;
+              const y0 = yy(acc + v);
+              s += `<rect class="seg2" x="${cx - bw / 2}" y="${y0}" width="${bw}" height="${yy(acc) - y0}" fill="${t.c}" data-tip="${esc(`<b>${esc(sg.name)}</b><br>${LONG[m]}<br>${typeLines(sg.m[m])}<br>Total: ${cnt(sg, m)}`)}"/>`;
+              acc += v;
+            });
+            if (acc)
+              s += `<text class="tot" x="${cx}" y="${yy(acc) - 5}" text-anchor="middle" style="font-size:13px">${acc}</text>`;
+          });
+        });
+        MONTHS.forEach((mn, m) => {
+          s += `<text x="${NAMEW + cw * m + cw / 2}" y="${H - 8}" text-anchor="middle">${mn}</text>`;
+        });
+        return `<svg width="${w}" height="${H}" viewBox="0 0 ${w} ${H}">${s}</svg>`;
+      }
+
+      // B: one bar per month, coloured by surgeon
+      function optionB(w, h) {
+        const list = sorted();
+        $("slegend").innerHTML = list
+          .map(
+            (s, i) =>
+              `<span><i style="background:${SURG_COL[i % SURG_COL.length]}"></i>${esc(s.name)} <b>${sTotal(s)}</b></span>`
+          )
+          .join("");
+        const months = MONTHS.map((_, m) =>
+          list.map((sg, i) => ({
+            v: cnt(sg, m),
+            c: SURG_COL[i % SURG_COL.length],
+            tip: `<b>${esc(sg.name)}</b><br>${LONG[m]}<br>${typeLines(sg.m[m])}<br>Total: ${cnt(sg, m)}`
+          }))
+        );
+        return barChart(w, h, months);
+      }
+
+      // C: a grid of numbers, shaded by size
+      function optionC() {
+        const list = sorted();
+        const max = Math.max(
+          1,
+          ...list.flatMap((s) => MONTHS.map((_, m) => cnt(s, m)))
+        );
+        const cell = (v, tipHtml) =>
+          `<td class="n"><span ${v ? `style="background:rgba(var(--cell),${(0.12 + (0.6 * v) / max).toFixed(2)})" data-tip="${esc(tipHtml)}"` : 'class="zero"'}>${v}</span></td>`;
+        let rows = list
+          .map((sg) => {
+            const tt = TYPES.map((t, i) =>
+              state.on[i] ? sg.m.reduce((a, mm) => a + mm[i], 0) : 0
+            );
+            return (
+              `<tr><td><b>${esc(sg.name)}</b><span class="types">${TYPES.map(
+                (t, i) => (tt[i] ? t.key + " " + tt[i] : "")
+              )
+                .filter(Boolean)
+                .join(" · ")}</span></td>` +
+              MONTHS.map((_, m) =>
+                cell(
+                  cnt(sg, m),
+                  `<b>${esc(sg.name)}</b><br>${LONG[m]}<br>${typeLines(sg.m[m])}`
+                )
+              ).join("") +
+              `<td class="t">${sTotal(sg)}</td></tr>`
+            );
+          })
+          .join("");
+        const colTot = MONTHS.map((_, m) =>
+          list.reduce((a, s) => a + cnt(s, m), 0)
+        );
+        rows += `<tr class="sum"><td>Hospital total</td>${colTot.map((v) => `<td>${v}</td>`).join("")}<td class="t">${colTot.reduce((a, b) => a + b, 0)}</td></tr>`;
+        return `<table class="grid"><thead><tr><th>Surgeon</th>${MONTHS.map((m) => `<th>${m}</th>`).join("")}<th>Total</th></tr></thead><tbody>${rows}</tbody></table>`;
+      }
+
+      // Surgeon / Brand: a table, a row per brand under each surgeon
+      function optionBrand() {
+        const list = DATA.surgeons
+          .filter((sg) => !state.exS.has(sg.name))
+          .map((sg) => {
+            const rows = sg.bm
+              .filter((r) => state.on[r.t] && !state.exB.has(r.brand))
+              .map((r) => ({ ...r, tot: r.m.reduce((a, v) => a + v, 0) }))
+              .filter((r) => r.tot > 0)
+              .sort((a, b) => b.tot - a.tot || a.brand.localeCompare(b.brand));
+            return { sg, rows, tot: rows.reduce((a, r) => a + r.tot, 0) };
+          })
+          .filter((x) => x.tot > 0)
+          .sort((a, b) => b.tot - a.tot);
+        const max = Math.max(
+          1,
+          ...list.flatMap((x) => x.rows.flatMap((r) => r.m))
+        );
+        let body = "";
+        list.forEach((x) => {
+          x.rows.forEach((r, i) => {
+            const T = TYPES[r.t];
+            body +=
+              `<tr class="${i ? "" : "first"}">` +
+              (i
+                ? ""
+                : `<td class="sg" rowspan="${x.rows.length}"><b>${esc(x.sg.name)}</b><span class="types">${x.tot} case${x.tot === 1 ? "" : "s"}</span></td>`) +
+              `<td class="br"><i style="background:${T.c}"></i>${esc(r.brand)}</td>` +
+              r.m
+                .map(
+                  (v, m) =>
+                    `<td class="n"><span ${v ? `style="background:rgba(var(--cell),${(0.12 + (0.6 * v) / max).toFixed(2)})" data-tip="${esc(`<b>${esc(x.sg.name)}</b><br>${esc(r.brand)} (${T.key})<br>${LONG[m]}: ${v}`)}"` : 'class="zero"'}>${v}</span></td>`
+                )
+                .join("") +
+              `<td class="t">${r.tot}</td></tr>`;
+          });
+        });
+        const colTot = MONTHS.map((_, m) =>
+          list.reduce((a, x) => a + x.rows.reduce((b, r) => b + r.m[m], 0), 0)
+        );
+        body += `<tr class="sum"><td colspan="2">Hospital total</td>${colTot.map((v) => `<td>${v}</td>`).join("")}<td class="t">${colTot.reduce((a, b) => a + b, 0)}</td></tr>`;
+        return `<table class="grid"><thead><tr><th><span class="fh">Surgeon${fbtn("s")}</span></th><th class="br"><span class="fh">Brand${fbtn("b")}</span></th>${MONTHS.map((m) => `<th>${m}</th>`).join("")}<th>Total</th></tr></thead><tbody>${body}</tbody></table>`;
+      }
+
+      // the filter button in a column heading; filled when something is hidden
+      const FUNNEL =
+        '<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M3 4h18l-7 8.5V19l-4 2v-8.5z"/></svg>';
+      const TICK =
+        '<svg width="12" height="12" viewBox="0 0 12 12"><path d="M2.5 6.2l2.3 2.3 4.7-5" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      function fbtn(k) {
+        const ex = k === "s" ? state.exS : state.exB;
+        const n = ex.size;
+        const what = k === "s" ? "surgeon" : "brand";
+        return `<button type="button" class="fbtn${n ? " act" : ""}" data-f="${k}" title="${n ? n + " " + what + (n > 1 ? "s" : "") + " hidden: press to change" : "Filter " + what + "s"}">${FUNNEL}</button>`;
+      }
+      const fp = { k: null, q: "", el: null };
+      function allItems(k) {
+        if (k === "s")
+          return DATA.surgeons
+            .map((s) => ({ v: s.name, n: sTotal(s) }))
+            .sort((a, b) => b.n - a.n)
+            .map((x) => ({ v: x.v }));
+        const seen = new Map();
+        DATA.surgeons.forEach((s) =>
+          s.b.forEach((r) => {
+            if (!seen.has(r.brand)) seen.set(r.brand, new Set());
+            seen.get(r.brand).add(r.t);
+          })
+        );
+        return [...seen.keys()].sort().map((v) => ({ v, t: [...seen.get(v)] }));
+      }
+      function drawPop() {
+        const ex = fp.k === "s" ? state.exS : state.exB;
+        const q = fp.q.trim().toLowerCase();
+        const items = allItems(fp.k).filter(
+          (x) => !q || x.v.toLowerCase().includes(q)
+        );
+        const shownOff = items.filter((x) => ex.has(x.v)).length;
+        const allCls =
+          shownOff === 0 ? "" : shownOff === items.length ? " off" : " part";
+        fp.el.querySelector(".flist").innerHTML =
+          `<button type="button" class="fi all${allCls}" data-all="1"><span class="tk">${TICK}</span><span class="lbl">Select all${q ? " shown" : ""}</span></button>` +
+          items
+            .map(
+              (x) =>
+                `<button type="button" class="fi${ex.has(x.v) ? " off" : ""}" data-v="${esc(x.v)}"><span class="tk">${TICK}</span>${(x.t || []).map((tt) => `<i style="background:${TYPES[tt].c}"></i>`).join("")}<span class="lbl">${esc(x.v)}</span></button>`
+            )
+            .join("");
+        fp.el.querySelector(".xcirc").classList.toggle("hide", !fp.q);
+      }
+      function openPop(k, btn) {
+        closePop(true);
+        fp.k = k;
+        fp.q = "";
+        const el = document.createElement("div");
+        el.className = "fpop";
+        el.innerHTML = `<div><div class="fin"><div class="ft">${k === "s" ? "SURGEONS" : "BRANDS"}</div><div class="sbox"><input type="text" placeholder="Search ${k === "s" ? "surgeons" : "brands"}"><button type="button" class="xcirc hide" aria-label="Clear"></button></div><div class="flist"></div></div></div>`;
+        const r = btn.getBoundingClientRect();
+        el.style.left = Math.min(r.left - 10, window.innerWidth - 316) + "px";
+        el.style.top = r.bottom + 8 + "px";
+        document.body.appendChild(el);
+        fp.el = el;
+        drawPop();
+        const input = el.querySelector("input");
+        input.addEventListener("input", () => {
+          fp.q = input.value;
+          drawPop();
+        });
+        el.querySelector(".xcirc").addEventListener("click", () => {
+          input.value = "";
+          fp.q = "";
+          drawPop();
+          input.focus();
+        });
+        el.querySelector(".flist").addEventListener("click", (e) => {
+          const b = e.target.closest(".fi");
+          if (!b) return;
+          const ex = fp.k === "s" ? state.exS : state.exB;
+          if (b.dataset.all) {
+            const q = fp.q.trim().toLowerCase();
+            const items = allItems(fp.k).filter(
+              (x) => !q || x.v.toLowerCase().includes(q)
+            );
+            const anyOff = items.some((x) => ex.has(x.v));
+            items.forEach((x) => (anyOff ? ex.delete(x.v) : ex.add(x.v)));
+          } else if (ex.has(b.dataset.v)) ex.delete(b.dataset.v);
+          else ex.add(b.dataset.v);
+          drawPop();
+          render();
+        });
+        el.addEventListener("click", (e) => e.stopPropagation());
+        setTimeout(() => el.classList.add("on"), 30);
+      }
+      function closePop(now) {
+        const el = fp.el;
+        if (!el) return;
+        fp.el = null;
+        fp.k = null;
+        if (now) return el.remove();
+        el.classList.remove("on");
+        setTimeout(() => el.remove(), 450);
+      }
+      document.addEventListener("click", (e) => {
+        const b = e.target.closest(".fbtn");
+        if (b) {
+          if (fp.k === b.dataset.f) closePop();
+          else openPop(b.dataset.f, b);
+          return;
+        }
+        if (fp.el && !fp.el.contains(e.target)) closePop();
+      });
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") closePop();
+      });
+
+      function render() {
+        rebuild();
+        legend();
+        const all =
+          state.view === "brand"
+            ? DATA.surgeons
+                .filter((s) => !state.exS.has(s.name))
+                .reduce(
+                  (a, s) =>
+                    a +
+                    s.bm
+                      .filter((r) => state.on[r.t] && !state.exB.has(r.brand))
+                      .reduce((b, r) => b + r.m.reduce((x, y) => x + y, 0), 0),
+                  0
+                )
+            : DATA.surgeons.reduce((a, s) => a + sTotal(s), 0);
+        $("big").textContent = all;
+        const box = $("box");
+        const showSL = state.view === "surgeon" && state.opt === "B";
+        $("slegend").classList.toggle("hide", !showSL);
+        const w = box.clientWidth - 16;
+        const h = box.clientHeight - 16;
+        box.classList.toggle(
+          "scroll",
+          (state.view === "surgeon" && state.opt !== "B") ||
+            state.view === "brand"
+        );
+        if (state.view === "hospital") box.innerHTML = hospitalView(w, h);
+        else if (state.view === "brand") box.innerHTML = optionBrand();
+        else if (state.opt === "A") box.innerHTML = optionA(w - 6, h);
+        else if (state.opt === "B") box.innerHTML = optionB(w, h);
+        else box.innerHTML = optionC();
+        if (showSL) {
+          const h2 = box.clientHeight - 16;
+          if (h2 !== h) box.innerHTML = optionB(w, h2);
+        }
+      }
+      window.addEventListener("resize", render);
+      requestAnimationFrame(() => {
+        placeHl(false);
+        render();
+      });
+      document
+        .querySelector(".about")
+        .addEventListener("toggle", () => render());
+    </script>
+  </body>
+</html>
