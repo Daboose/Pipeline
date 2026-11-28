@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
-    <fullName>ROSA_Question__c</fullName>
-    <description>The question from the question set. Read-only.</description>
+    <fullName>ROSA_Set_Question__c</fullName>
+    <description>The ROSA Question this answer is for. Read-only.</description>
     <inlineHelpText>The question being answered.</inlineHelpText>
     <label>Question</label>
     <deleteConstraint>SetNull</deleteConstraint>
-    <referenceTo>Question__c</referenceTo>
-    <relationshipLabel>ROSA Credentialing Answers</relationshipLabel>
-    <relationshipName>ROSA_Credentialing_Answers</relationshipName>
+    <referenceTo>ROSA_Question__c</referenceTo>
+    <relationshipLabel>ROSA Deal Surgeon Q&amp;A</relationshipLabel>
+    <relationshipName>ROSA_Answers</relationshipName>
     <required>false</required>
     <type>Lookup</type>
 </CustomField>

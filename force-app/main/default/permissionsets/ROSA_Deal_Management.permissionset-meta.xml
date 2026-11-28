@@ -20,42 +20,37 @@
     </customPermissions>
     <fieldPermissions>
         <editable>false</editable>
-        <field>Event_Category__c.Active__c</field>
+        <field>ROSA_Question_Set__c.ROSA_Active__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
-        <field>Event_Category__c.ROSA_Pathway__c</field>
+        <field>ROSA_Question_Set__c.ROSA_Pathway__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
-        <field>Event_Category__c.ROSA_Usage__c</field>
+        <field>ROSA_Question__c.ROSA_Active__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
-        <field>Question__c.Active__c</field>
+        <field>ROSA_Question__c.ROSA_Display_Order__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
-        <field>Question__c.Answer_Required__c</field>
+        <field>ROSA_Question__c.ROSA_Required__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
-        <field>Question__c.Answer_Type__c</field>
+        <field>ROSA_Credentialing_Answer__c.ROSA_Set_Question__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
-        <field>Question__c.Display_Order__c</field>
-        <readable>true</readable>
-    </fieldPermissions>
-    <fieldPermissions>
-        <editable>false</editable>
-        <field>Question__c.Question_Text_2__c</field>
+        <field>Robotics_Surgeons__c.ROSA_Question_Set_Used__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
@@ -116,11 +111,6 @@
     <fieldPermissions>
         <editable>false</editable>
         <field>ROSA_Credentialing_Answer__c.ROSA_Question_Text__c</field>
-        <readable>true</readable>
-    </fieldPermissions>
-    <fieldPermissions>
-        <editable>false</editable>
-        <field>ROSA_Credentialing_Answer__c.ROSA_Question__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
@@ -251,11 +241,6 @@
     <fieldPermissions>
         <editable>true</editable>
         <field>Robotics_Surgeons__c.ROSA_Pathway__c</field>
-        <readable>true</readable>
-    </fieldPermissions>
-    <fieldPermissions>
-        <editable>false</editable>
-        <field>Robotics_Surgeons__c.ROSA_Question_Set__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
@@ -796,7 +781,7 @@
         <allowEdit>false</allowEdit>
         <allowRead>true</allowRead>
         <modifyAllRecords>false</modifyAllRecords>
-        <object>Event_Category__c</object>
+        <object>ROSA_Question_Set__c</object>
         <viewAllRecords>false</viewAllRecords>
     </objectPermissions>
     <objectPermissions>
@@ -805,13 +790,17 @@
         <allowEdit>false</allowEdit>
         <allowRead>true</allowRead>
         <modifyAllRecords>false</modifyAllRecords>
-        <object>Question__c</object>
+        <object>ROSA_Question__c</object>
         <viewAllRecords>false</viewAllRecords>
     </objectPermissions>
     <recordTypeVisibilities>
         <recordType>Robotics__c.ROSA_Deal_Checklist</recordType>
         <visible>true</visible>
     </recordTypeVisibilities>
+    <tabSettings>
+        <tab>ROSA_Question_Set__c</tab>
+        <visibility>Visible</visibility>
+    </tabSettings>
     <tabSettings>
         <tab>ROSA_Price__c</tab>
         <visibility>Visible</visibility>

@@ -49,20 +49,19 @@ private class ROSADealControllerTest {
   @IsTest
   static void readsAndSavesADeal() {
     System.runAs(new User(Id = UserInfo.getUserId())) {
-      Event_Category__c qs = new Event_Category__c(
+      ROSA_Question_Set__c qs = new ROSA_Question_Set__c(
         Name = 'Test set',
-        Active__c = true,
-        ROSA_Usage__c = 'ROSA Credentialing',
+        ROSA_Active__c = true,
         ROSA_Pathway__c = 'Shoulder'
       );
       insert qs;
-      insert new Question__c(
-        Event_Category__c = qs.Id,
-        Question_Text_2__c = 'Q one',
-        Answer_Type__c = 'Yes/No',
-        Answer_Required__c = true,
-        Active__c = true,
-        Display_Order__c = 10
+      insert new ROSA_Question__c(
+        ROSA_Question_Set__c = qs.Id,
+        ROSA_Question_Text__c = 'Q one',
+        ROSA_Answer_Type__c = 'Yes/No',
+        ROSA_Required__c = true,
+        ROSA_Active__c = true,
+        ROSA_Display_Order__c = 10
       );
       SalesRisks__c d = new SalesRisks__c(
         RecordTypeId = rt(SalesRisks__c.SObjectType, 'AUROSA')

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>ROSA_Question_Set_Used__c</fullName>
+    <description
+  >The ROSA Question Set used for this surgeon's Q&amp;A. Filled automatically with the newest active set for the pathway; its questions become the answers.</description>
+    <inlineHelpText>Filled automatically from the pathway.</inlineHelpText>
+    <label>Question set</label>
+    <deleteConstraint>SetNull</deleteConstraint>
+    <referenceTo>ROSA_Question_Set__c</referenceTo>
+    <relationshipLabel>ROSA Deal Surgeons</relationshipLabel>
+    <relationshipName>ROSA_Deal_Surgeons</relationshipName>
+    <required>false</required>
+    <type>Lookup</type>
+</CustomField>

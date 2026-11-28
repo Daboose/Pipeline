@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>ROSA_Active__c</fullName>
+    <defaultValue>true</defaultValue>
+    <description
+  >Only active questions are given to surgeons put into credentialing from now on.</description>
+    <inlineHelpText
+  >Untick to stop giving this question to new surgeons.</inlineHelpText>
+    <label>Active</label>
+    <type>Checkbox</type>
+</CustomField>

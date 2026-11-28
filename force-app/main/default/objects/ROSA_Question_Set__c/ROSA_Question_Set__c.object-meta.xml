@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
+    <deploymentStatus>Deployed</deploymentStatus>
+    <description
+  >ROSA Shoulder POC: a set of credentialing questions for one pathway (Shoulder, Hip, Knee), kept by marketing. The active set for a surgeon's pathway becomes their Q&amp;A. ROSA's own; not shared with APAC Events.</description>
+    <enableActivities>false</enableActivities>
+    <enableBulkApi>true</enableBulkApi>
+    <enableFeeds>false</enableFeeds>
+    <enableHistory>true</enableHistory>
+    <enableReports>true</enableReports>
+    <enableSearch>true</enableSearch>
+    <enableSharing>true</enableSharing>
+    <enableStreamingApi>true</enableStreamingApi>
+    <label>ROSA Question Set</label>
+    <nameField>
+        <label>Question Set Name</label>
+        <type>Text</type>
+    </nameField>
+    <pluralLabel>ROSA Question Sets</pluralLabel>
+    <searchLayouts />
+    <sharingModel>ReadWrite</sharingModel>
+    <visibility>Public</visibility>
+</CustomObject>
