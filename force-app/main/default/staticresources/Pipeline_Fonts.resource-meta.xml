@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<StaticResource xmlns="http://soap.sforce.com/2006/04/metadata">
-  <cacheControl>Public</cacheControl>
-  <contentType>application/zip</contentType>
-  <description
-  >Pipeline: the Roboto Condensed font (one variable file, weights 100 to 900, in the web format) and its SIL Open Font License. Loaded by the PipelineApp page for the figures in the campaign value chips.</description>
-</StaticResource>

@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
-  <apiVersion>68.0</apiVersion>
-  <description
-  >Pipeline: the New Deal screen of the facility flyout. Makes a ROSA deal for a healthcare facility with no deal, from the campaign list, and puts it into that campaign.</description>
-  <isExposed>false</isExposed>
-</LightningComponentBundle>

@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
-  <apiVersion>68.0</apiVersion>
-  <description
-  >Pipeline: a flyout showing one surgeon's usages (the Usage Card), opened from the rating plate of a surgeon with no deal in the campaign list.</description>
-  <isExposed>false</isExposed>
-</LightningComponentBundle>

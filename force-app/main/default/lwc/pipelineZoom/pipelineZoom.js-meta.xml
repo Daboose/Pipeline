@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
-  <apiVersion>68.0</apiVersion>
-  <description
-  >Pipeline: shared helper for Zoom (the saved 100 to 60 percent screen size). Holds the steps, cleans a saved value and converts between drawn and own-unit sizes. No screen of its own.</description>
-  <isExposed>false</isExposed>
-</LightningComponentBundle>

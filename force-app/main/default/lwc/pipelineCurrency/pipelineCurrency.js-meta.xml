@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
-  <apiVersion>68.0</apiVersion>
-  <description
-  >Pipeline: shared helper for the LOCAL or USD choice. Turns amounts into US dollars with the exchange rates held in Salesforce (read by PipelineCampaignController.currencyRates); holds no rate of its own and no screen.</description>
-  <isExposed>false</isExposed>
-</LightningComponentBundle>
