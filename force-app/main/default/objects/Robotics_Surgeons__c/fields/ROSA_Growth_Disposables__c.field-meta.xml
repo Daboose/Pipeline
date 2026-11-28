@@ -2,9 +2,9 @@
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>ROSA_Growth_Disposables__c</fullName>
     <description
-  >Growth cases per joint times that joint's ROSA disposables price. Calculated automatically: growth cases per joint (ZB with ROSA minus ZB now) times the price table for the deal's country and currency. Read-only.</description>
+  >Consumable growth times the joint's ROSA disposables price: every case with ROSA where the supplier with ROSA is ZB (each ROSA case uses the consumables). Calculated automatically from the deal's country and currency. Read-only.</description>
     <inlineHelpText
-  >Calculated automatically: growth cases per joint (ZB with ROSA minus ZB now) times the price table for the deal's country and currency. Read-only.</inlineHelpText>
+  >Calculated automatically: cases with ROSA where the supplier with ROSA is ZB, per joint, times the disposables price for the deal's country and currency. Read-only.</inlineHelpText>
     <label>Disposables growth $</label>
     <precision>16</precision>
     <required>false</required>

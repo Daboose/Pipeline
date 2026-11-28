@@ -328,6 +328,7 @@
                           ><td key={c.k} class="num">{c.text}</td></template
                         >
                         <td class={r.growthCls}>{r.growth}</td>
+                        <td class={r.consCls}>{r.cons}</td>
                         <td class={r.gvalCls}>{r.gval}</td>
                         <td class="num">
                           {r.qa} <span class="no">{r.no}</span>
@@ -1159,39 +1160,12 @@
           <template lwc:if={isChatter}>
             <h2>Chatter</h2>
             <p class="lead">The deal's feed, without leaving the deal.</p>
-            <div class="card">
-              <div class="post">
-                <textarea
-                  class="in"
-                  placeholder="Share an update…"
-                  value={feedText}
-                  oninput={handleFeedText}
-                ></textarea>
-                <button
-                  type="button"
-                  class="btn"
-                  disabled={cannotPost}
-                  onclick={handlePost}
-                >
-                  Post
-                </button>
-              </div>
-              <template lwc:if={hasFeed}>
-                <template for:each={feed} for:item="p">
-                  <div key={p.id} class="m">
-                    <b>{p.who}</b> <span class="sub">{p.when}</span>
-                    <div class="txt">{p.text}</div>
-                    <template for:each={p.replies} for:item="r">
-                      <div key={r.id} class="reply">
-                        <b>{r.who}</b> <span class="sub">{r.when}</span>
-                        <div class="txt">{r.text}</div>
-                      </div>
-                    </template>
-                  </div>
-                </template>
-              </template>
-              <p lwc:else class="sub">No posts yet.</p>
-            </div>
+            <c-pipeline-chatter
+              class="chat"
+              record-id={dealId}
+              no-heading
+              onposted={handleChatterPosted}
+            ></c-pipeline-chatter>
           </template>
         </main>
 

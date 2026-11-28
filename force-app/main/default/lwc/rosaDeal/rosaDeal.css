@@ -2,6 +2,10 @@
 
 /* colours: light and dark, from the approved mockup (AAA Design: deeper green and red fills in dark mode) */
 .root[data-theme="light"] {
+  /* for Pipeline's Chatter panel and its @mention list (Robert, 2026-11-28) */
+  --ppanel: #ffffff;
+  --shadow: 0 12px 32px rgba(15, 23, 42, 0.18);
+  --pipe: #b7791f;
   --goodfill: #1e9e57;
   --badfill: #dc2626;
   --slate: #475569;
@@ -33,6 +37,10 @@
   --scheme: light;
 }
 .root[data-theme="dark"] {
+  /* for Pipeline's Chatter panel and its @mention list (Robert, 2026-11-28) */
+  --ppanel: #1e2a44;
+  --shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+  --pipe: #fdb827;
   --goodfill: #15803d;
   --badfill: #b91c1c;
   --slate: #475569;
@@ -697,6 +705,11 @@ th.sortable {
 }
 .m:last-child {
   border-bottom: 0;
+}
+/* a gap between the person's name and the date on a Chatter post or reply (Robert, 2026-11-28) */
+.m > b + .sub,
+.reply > b + .sub {
+  margin-left: 10px;
 }
 .txt {
   white-space: pre-wrap;

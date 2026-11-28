@@ -421,6 +421,36 @@ private class ROSADealControllerTest {
     System.assertEquals(0, ROSADealController.surgeonBooked(null).lines.size());
   }
 
+  /** A person without the ROSA permissions gets a plain message, not Salesforce's field error. */
+  @IsTest
+  static void aPersonWithoutROSAPermissionsGetsAPlainMessage() {
+    Profile p = [SELECT Id FROM Profile WHERE Name = 'Standard User' LIMIT 1];
+    User u = new User(
+      Alias = 'norosa',
+      Email = 'norosa@example.com',
+      EmailEncodingKey = 'UTF-8',
+      LastName = 'NoRosa',
+      LanguageLocaleKey = 'en_US',
+      LocaleSidKey = 'en_AU',
+      ProfileId = p.Id,
+      TimeZoneSidKey = 'Australia/Sydney',
+      UserName = 'norosa' + System.currentTimeMillis() + '@example.com'
+    );
+    insert u;
+    String msg;
+    System.runAs(u) {
+      if (ROSADealController.canOpen()) {
+        return; // this org's Standard User can read the ROSA fields; nothing to check
+      }
+      try {
+        ROSADealController.getDeal(null);
+      } catch (AuraHandledException e) {
+        msg = e.getMessage();
+      }
+    }
+    System.assertEquals(ROSADealController.NO_ACCESS, msg);
+  }
+
   /** A surgeon added in error is deleted, with their credentialing answers; the deal's surgeon count follows. */
   @IsTest
   static void deletesASurgeon() {

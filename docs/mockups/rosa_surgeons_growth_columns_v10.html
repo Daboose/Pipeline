@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Surgeons and Growth Columns</title>
+    <style>
+      [data-theme="light"] {
+        --page: #e9edf4;
+        --bg: #f4f6fa;
+        --panel: #fff;
+        --panel2: #eef2fa;
+        --line: #d5dcea;
+        --edge: #b3bfd6;
+        --text: #1b2640;
+        --muted: #5d6b85;
+        --indigo: #4f46e5;
+        --good: #1e9e57;
+        --bad: #b91c1c;
+        --champ: #7c3aed;
+        --new: #fef3c7;
+        --newtx: #92400e;
+      }
+      [data-theme="dark"] {
+        --page: #0e1623;
+        --bg: #141e2e;
+        --panel: #1a2740;
+        --panel2: #20304f;
+        --line: #2f4163;
+        --edge: #5b6f93;
+        --text: #e8edf5;
+        --muted: #8b9bb0;
+        --indigo: #6366f1;
+        --good: #34d399;
+        --bad: #f87171;
+        --champ: #7c3aed;
+        --new: rgba(253, 184, 39, 0.14);
+        --newtx: #fdb827;
+      }
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+      }
+      body {
+        background: var(--page);
+        color: var(--text);
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial,
+          sans-serif;
+        font-size: 15px;
+      }
+      .mock {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 50;
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        padding: 8px 16px;
+        background: #111827;
+        color: #e5e7eb;
+        font-size: 13px;
+      }
+      .mock b {
+        margin-right: 6px;
+      }
+      .mock button {
+        background: #374151;
+        color: #fff;
+        border: 0;
+        border-radius: 999px;
+        padding: 5px 12px;
+        cursor: pointer;
+        font-size: 12px;
+      }
+      .mock button.on {
+        background: #6366f1;
+      }
+      .about {
+        position: fixed;
+        left: 50%;
+        top: 40px;
+        transform: translateX(-50%);
+        z-index: 60;
+        width: min(760px, 92vw);
+        background: var(--panel);
+        border: 1px solid var(--edge);
+        border-radius: 14px;
+        box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45);
+        padding: 20px 24px;
+        line-height: 1.5;
+      }
+      .about h3 {
+        margin: 0 0 8px;
+      }
+      .about ul {
+        margin: 6px 0 10px;
+        padding-left: 20px;
+      }
+      .btn {
+        height: 36px;
+        padding: 0 18px;
+        border-radius: 999px;
+        border: 0;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        font-size: 12px;
+        text-transform: uppercase;
+        cursor: pointer;
+        background: var(--indigo);
+        color: #fff;
+      }
+      .btn.sl {
+        background: #475569;
+      }
+      .root {
+        zoom: 0.8;
+        padding: 24px 28px 80px;
+        background: var(--bg);
+        min-height: 100vh;
+      }
+      h2 {
+        margin: 0 0 6px;
+        font-size: 22px;
+      }
+      .lead {
+        color: var(--muted);
+        margin: 0 0 14px;
+      }
+      .card {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 18px 20px;
+      }
+      .ch {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+      }
+      .ch h3 {
+        margin: 0;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 15px;
+      }
+      th {
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+        text-align: center;
+        padding: 9px 8px;
+        border-bottom: 1px solid var(--line);
+      }
+      th.l,
+      td.l {
+        text-align: left;
+      }
+      td {
+        padding: 9px 8px;
+        text-align: center;
+        border-bottom: 1px solid var(--line);
+      }
+      td.plus {
+        color: var(--good);
+        font-weight: 700;
+      }
+      td.minus {
+        color: var(--bad);
+        font-weight: 700;
+      }
+      .new {
+        background: var(--new);
+      }
+      th.new {
+        color: var(--newtx);
+      }
+      .tag {
+        display: inline-flex;
+        align-items: center;
+        height: 22px;
+        padding: 0 10px;
+        margin-left: 10px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        background: var(--champ);
+        color: #fff;
+        vertical-align: middle;
+      }
+      .cred {
+        display: inline-flex;
+        align-items: center;
+        height: 24px;
+        padding: 0 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 600;
+        background: var(--panel2);
+      }
+      .cred.ok {
+        background: #166534;
+        color: #fff;
+      }
+      .note {
+        color: var(--muted);
+        font-size: 13px;
+        margin: 12px 0 0;
+      }
+      .sum {
+        font-weight: 700;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="root" id="root"></div>
+    <div class="mock">
+      <b>Mockup v10.1: implant growth and consumable growth</b
+      ><button data-about="1">About this mockup</button
+      ><span style="flex: 1"></span
+      ><button data-theme-set="dark" class="on">Dark</button
+      ><button data-theme-set="light">Light</button
+      ><span style="opacity: 0.7">Invented data</span>
+    </div>
+    <script>
+      const P = { TSA: { imp: 6000, dis: 750 } };
+      const S = [
+        {
+          n: "Dr Ben Treffene",
+          champ: 1,
+          now: ["ZB", 20],
+          rosa: ["ZB", 30],
+          qa: "4/4",
+          cred: ["Credentialed 12 Mar 2027", "ok"],
+          wave: "1"
+        },
+        {
+          n: "Dr Edward Graham",
+          now: ["Stryker", 20],
+          rosa: ["ZB", 30],
+          qa: "4/4",
+          cred: ["Course booked 3 Feb 2027", ""],
+          wave: "2"
+        },
+        {
+          n: "Dr Gary Nielsen",
+          now: ["J&J", 14],
+          rosa: ["J&J", 14],
+          qa: "2/4",
+          cred: ["Not started", ""],
+          wave: "–"
+        },
+        {
+          n: "Dr Richard Verheul",
+          now: ["ZB", 1],
+          rosa: ["ZB", 10],
+          qa: "0/4",
+          cred: ["Not started", ""],
+          wave: "–"
+        }
+      ];
+      const fmt = (v) => "AUD " + v.toLocaleString("en-AU");
+      function row(s) {
+        const zbNow = s.now[0] === "ZB" ? s.now[1] : 0,
+          zbRosa = s.rosa[0] === "ZB" ? s.rosa[1] : 0;
+        const ig = zbRosa - zbNow,
+          cg = zbRosa;
+        const $ = ig * P.TSA.imp + cg * P.TSA.dis;
+        return { ...s, ig, cg, $ };
+      }
+      function render() {
+        const rows = S.map(row);
+        const t = (k) => rows.reduce((a, r) => a + r[k], 0);
+        document.getElementById("root").innerHTML =
+          `<h2>Surgeons and Growth</h2><p class="lead">Cases a year, now → with ROSA. Click a surgeon to open their details, volumes, Q&amp;A and credentialing.</p>
+<div class="card"><div class="ch"><h3>Surgeons</h3><button class="btn">Add surgeon</button></div>
+<table><thead><tr><th class="l">Surgeon</th><th>TSA/RSA</th><th>Implant growth</th><th>Consumable growth</th><th>Growth $</th><th>Q&amp;A</th><th>Credentialing</th><th>Wave</th></tr></thead><tbody>
+${rows.map((r) => `<tr><td class="l"><b>${r.n}</b>${r.champ ? '<span class="tag">Champion</span>' : ""}</td><td>${r.now[0]} ${r.now[1]} → ${r.rosa[0]} ${r.rosa[1]}</td><td class="${r.ig < 0 ? "minus" : "plus"}">${r.ig > 0 ? "+" : ""}${r.ig}</td><td class="${r.cg ? "plus" : ""}">${r.cg ? "+" : ""}${r.cg}</td><td class="plus">${fmt(r.$)}</td><td>${r.qa}</td><td><span class="cred ${r.cred[1]}">${r.cred[0]}</span></td><td>${r.wave}</td></tr>`).join("")}
+</tbody></table>
+<p class="note">Growth $ per procedure calculated at: AU · AUD: TSA/RSA 6,000 + 750 (implant growth × implant price + consumable growth × consumables price).</p></div>`;
+      }
+      const ABOUT = `<button class="btn sl" style="float:right" data-about="0">Close</button><h3>About this mockup</h3>
+<p>Robert (28 Nov): split the surgeons' growth into what ROSA adds in implants and what it uses in consumables.</p><ul>
+<li><b>Implant growth</b> (was "Growth"): ZB cases with ROSA minus ZB cases now, as today. Dr Edward Graham goes from Stryker 20 to ZB 30, so +30.</li>
+<li><b>Consumable growth</b> (new): every case with ROSA when the supplier with ROSA is ZB (Robert, 28 Nov), because every ROSA case uses the consumables. Dr Ben Treffene, ZB 20 to ZB 30: +30. Dr Gary Nielsen stays on J&amp;J 14 with ROSA: implant growth 0, consumable growth 0.</li>
+<li><b>Growth $</b> = implant growth × implant price + consumable growth × consumables price (Dr Ben Treffene: 10 × 6,000 + 30 × 750 = AUD 82,500). The deal's ROSA Growth $ adds these up.</li>
+<li>Q&amp;A, Credentialing and Wave are unchanged.</li></ul>
+<p>Not shown: the top tiles and each surgeon's Case Volumes Per Year stay as they are. Invented data.</p>`;
+      document.addEventListener("click", (e) => {
+        const t = e.target.closest("[data-about],[data-theme-set]");
+        if (!t) return;
+        const d = t.dataset;
+        if (d.about !== undefined) {
+          document.querySelector(".about")?.remove();
+          if (d.about === "1") {
+            const x = document.createElement("div");
+            x.className = "about";
+            x.innerHTML = ABOUT;
+            document.body.appendChild(x);
+          }
+          return;
+        }
+        document.documentElement.dataset.theme = d.themeSet;
+        document
+          .querySelectorAll("[data-theme-set]")
+          .forEach((b) => b.classList.toggle("on", b === t));
+      });
+      render();
+    </script>
+  </body>
+</html>

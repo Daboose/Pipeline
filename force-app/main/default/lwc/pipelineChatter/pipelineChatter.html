@@ -1,6 +1,6 @@
 <template>
   <section class="card">
-    <h3>Chatter</h3>
+    <h3 lwc:if={showHeading}>Chatter</h3>
     <c-pipeline-mention-box
       class="postbox"
       placeholder="Write a post. Type @ and a name to mention someone."

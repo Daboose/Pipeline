@@ -33,6 +33,12 @@ export default class PipelineChatter extends LightningElement {
   replyEmpty = true;
   pendingPrefill = "";
 
+  /** True when the page around it already has a Chatter heading (the ROSA deal screen). */
+  @api noHeading = false;
+  get showHeading() {
+    return !this.noHeading;
+  }
+
   @api
   get recordId() {
     return this._recordId;

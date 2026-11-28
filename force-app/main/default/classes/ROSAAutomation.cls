@@ -539,17 +539,22 @@ public without sharing class ROSAAutomation {
       if (s.ROSA_Champion__c && s.Surgeon_Name__r != null) {
         champions.get(s.ROSA_Deal__c).add(s.Surgeon_Name__r.Name);
       }
-      // Growth $ per surgeon: each joint's growth cases (ZB with ROSA minus ZB now; a competitor now counts as 0)
-      // times that joint's implant price, plus the same cases times its disposable price. Lost cases count negative.
+      // Growth $ per surgeon: each joint's implant growth (ZB with ROSA minus ZB now; a competitor now counts as 0) times
+      // that joint's implant price, plus its consumable growth times its disposable price. Consumable growth is every case
+      // with ROSA when the supplier with ROSA is ZB, since every ROSA case uses the consumables and the robot takes ZB
+      // implants only (Robert, 2026-11-28; a non-ZB supplier with ROSA gives 0). Lost implant cases count negative.
       SalesRisks__c di = dealInfo.get(s.ROSA_Deal__c);
       Decimal implants = 0;
       Decimal disposables = 0;
       Boolean anyPrice = false;
       for (String j : JOINTS) {
+        Decimal zbWithRosa = (String) s.get(
+            'ROSA_' + j + '_ROSA_Supplier__c'
+          ) == 'ZB'
+          ? n(s, 'ROSA_' + j + '_ROSA_Cases__c')
+          : 0;
         Decimal g =
-          ((String) s.get('ROSA_' + j + '_ROSA_Supplier__c') == 'ZB'
-            ? n(s, 'ROSA_' + j + '_ROSA_Cases__c')
-            : 0) -
+          zbWithRosa -
           ((String) s.get('ROSA_' + j + '_Current_Supplier__c') == 'ZB'
             ? n(s, 'ROSA_' + j + '_Current_Cases__c')
             : 0);
@@ -558,7 +563,7 @@ public without sharing class ROSAAutomation {
         Decimal dp = price.get(key + ' Disposable|' + di.CurrencyIsoCode);
         anyPrice = anyPrice || ip != null || dp != null;
         implants += g * (ip == null ? 0 : ip);
-        disposables += g * (dp == null ? 0 : dp);
+        disposables += zbWithRosa * (dp == null ? 0 : dp);
       }
       Robotics_Surgeons__c sg = new Robotics_Surgeons__c(
         Id = s.Id,

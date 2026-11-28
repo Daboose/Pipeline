@@ -706,15 +706,15 @@ private class ROSAAutomationTest {
         '10 cases x 5000'
       );
       System.assertEquals(
-        7500,
+        15000,
         got.ROSA_Growth_Disposables__c,
-        '10 cases x 750'
+        'consumables on all 20 ZB cases with ROSA x 750, not just the growth'
       );
-      System.assertEquals(57500, got.ROSA_Growth_Value__c, 'surgeon total');
+      System.assertEquals(65000, got.ROSA_Growth_Value__c, 'surgeon total');
       System.assertEquals(
-        172500,
+        180000,
         reload(d.Id).ROSAGrowthDollar__c,
-        '30 growth cases x 5750'
+        'implants: 30 growth cases x 5000; consumables: 40 ZB cases with ROSA x 750'
       );
       System.assertEquals(
         30,
@@ -740,9 +740,9 @@ private class ROSAAutomationTest {
       );
       Test.stopTest();
       System.assertEquals(
-        180000,
+        190000,
         reload(d.Id).ROSAGrowthDollar__c,
-        'a price change recalculates: 30 x 6000'
+        'a price change recalculates: 30 x 5000 + 40 x 1000'
       );
     }
   }

@@ -12,8 +12,6 @@ import getPrefs from "@salesforce/apex/ROSADealController.getPrefs";
 import savePrefs from "@salesforce/apex/ROSADealController.savePrefs";
 import linkOpportunity from "@salesforce/apex/ROSADealController.linkOpportunity";
 import addChecklist from "@salesforce/apex/ROSADealController.addChecklist";
-import getFeed from "@salesforce/apex/PipelineChatterController.getFeed";
-import postFeed from "@salesforce/apex/PipelineChatterController.post";
 
 /**
  * rosaDeal: the ROSA deal screen (docs/ROSA_Deal_Modal_Build_Spec.md; approved mockup docs/mockups/rosa_deal_modal_v4.html).
@@ -24,7 +22,7 @@ import postFeed from "@salesforce/apex/PipelineChatterController.post";
  * holds ROSA Deal Management (decision 2). Stage clicks may jump ahead of the checklist (decision 1).
  * Fires "close" when the person closes it, and "saved" after any change (so the caller can refresh).
  */
-export const VERSION = "ROSA Deal Manager 0.43";
+export const VERSION = "ROSA Deal Manager 0.49";
 
 const STAGES = [
   "Sales Pipeline",
@@ -191,8 +189,6 @@ export default class RosaDeal extends LightningElement {
   mcWhen = "past"; // Completed (past, with usage) or Booked (from today) on the surgeon's myCase tab
   hospBook = null; // the hospital MyCase Bookings' remembered view, chips and ROSA choice (shared with Pipeline)
   zoomPct = null; // the zoom chosen on this screen (60 to 100); null until known
-  feed = [];
-  feedText = "";
   sortKey = "name";
   sortAsc = true;
   widths = {};
@@ -614,7 +610,6 @@ export default class RosaDeal extends LightningElement {
     if (!k || (k === "implement" && !this.isWon) || !this.leaveEdit()) return;
     this.sec = k;
     this.sid = null;
-    if (k === "chatter") this.loadFeed();
   }
   handleSurgeon(event) {
     const id = event.currentTarget.dataset.sid;
@@ -871,33 +866,46 @@ export default class RosaDeal extends LightningElement {
     });
     const used = this.usedJoints.filter((j) => byJoint[j.short]);
     if (!used.length) return [];
-    const lines = used.map((j) => ({
-      k: "i" + j.k,
-      text:
-        j.short +
-        " per procedure calculated at " +
-        cur +
-        " " +
-        byJoint[j.short].imp
-    }));
+    // each line shows the working (Robert, 2026-11-28): "TSA/RSA: Implant Growth of 105 cases x AUD 6,000 = AUD 630,000"
+    const num = (x) => Number(String(x).replace(/,/g, ""));
+    const amt = (v) => money(v, cur);
+    const cases = (v) => v + (Math.abs(v) === 1 ? " case" : " cases");
+    const sumBy = (f) => this.surgeons.reduce((a, s) => a + f(s), 0);
+    const zbNow = (s, j) => {
+      return s["ROSA_" + j.k + "_Current_Supplier__c"] === "ZB"
+        ? n(s["ROSA_" + j.k + "_Current_Cases__c"])
+        : 0;
+    };
+    const zbRosa = (s, j) => {
+      return s["ROSA_" + j.k + "_ROSA_Supplier__c"] === "ZB"
+        ? n(s["ROSA_" + j.k + "_ROSA_Cases__c"])
+        : 0;
+    };
+    const lines = used.map((j) => {
+      const g = sumBy((s) => zbRosa(s, j) - zbNow(s, j));
+      const p = num(byJoint[j.short].imp);
+      return {
+        k: "i" + j.k,
+        text: `${j.short}: Implant Growth of ${cases(g)} x ${amt(p)} = ${amt(g * p)}`
+      };
+    });
     const disps = [...new Set(used.map((j) => byJoint[j.short].disp))];
-    if (disps.length === 1)
+    if (disps.length === 1) {
+      const c = used.reduce((a, j) => a + sumBy((s) => zbRosa(s, j)), 0);
+      const p = num(disps[0]);
       lines.push({
         k: "d",
-        text: "Consumables per procedure calculated at " + cur + " " + disps[0]
+        text: `Consumables: Consumable Growth of ${cases(c)} x ${amt(p)} = ${amt(c * p)}`
       });
-    else
-      used.forEach((j) =>
+    } else
+      used.forEach((j) => {
+        const c = sumBy((s) => zbRosa(s, j));
+        const p = num(byJoint[j.short].disp);
         lines.push({
           k: "d" + j.k,
-          text:
-            j.short +
-            " consumables per procedure calculated at " +
-            cur +
-            " " +
-            byJoint[j.short].disp
-        })
-      );
+          text: `${j.short} consumables: Consumable Growth of ${cases(c)} x ${amt(p)} = ${amt(c * p)}`
+        });
+      });
     return lines;
   }
   get hasPriceNotes() {
@@ -924,6 +932,17 @@ export default class RosaDeal extends LightningElement {
       0
     );
   }
+  /** Consumable growth (Robert, 2026-11-28): every case with ROSA where the supplier with ROSA is ZB; each ROSA case uses the consumables. */
+  consumablesOf(s) {
+    return JOINTS.reduce(
+      (a, j) =>
+        a +
+        (s["ROSA_" + j.k + "_ROSA_Supplier__c"] === "ZB"
+          ? n(s["ROSA_" + j.k + "_ROSA_Cases__c"])
+          : 0),
+      0
+    );
+  }
   credTag(s) {
     const st = s.ROSA_Credentialing_Status__c;
     return {
@@ -942,7 +961,8 @@ export default class RosaDeal extends LightningElement {
     this.usedJoints.forEach((j) =>
       cols.push({ key: "j" + j.k, label: j.short, cls: "num" })
     );
-    cols.push({ key: "growth", label: "Growth", cls: "num" });
+    cols.push({ key: "growth", label: "Implant growth", cls: "num" });
+    cols.push({ key: "cons", label: "Consumable growth", cls: "num" });
     cols.push({ key: "gval", label: "Growth $", cls: "num" });
     cols.push({ key: "qa", label: "Q&A", cls: "num" });
     cols.push({ key: "cred", label: "Credentialing", cls: "num" });
@@ -982,6 +1002,9 @@ export default class RosaDeal extends LightningElement {
         growth: (g > 0 ? "+" : "") + g,
         growthN: g,
         growthCls: "num " + (g < 0 ? "minus" : "plus"),
+        cons: (this.consumablesOf(s) > 0 ? "+" : "") + this.consumablesOf(s),
+        consN: this.consumablesOf(s),
+        consCls: "num " + (this.consumablesOf(s) > 0 ? "plus" : ""),
         gval: money(s.ROSA_Growth_Value__c, s.CurrencyIsoCode) || "–",
         gvalN: n(s.ROSA_Growth_Value__c),
         gvalCls: "num " + (n(s.ROSA_Growth_Value__c) > 0 ? "plus" : ""),
@@ -1019,6 +1042,7 @@ export default class RosaDeal extends LightningElement {
     const keyOf = (r) => {
       if (k === "name") return r.name.toLowerCase();
       if (k === "growth") return r.growthN;
+      if (k === "cons") return r.consN;
       if (k === "gval") return r.gvalRaw;
       if (k === "qa") return r.qaN;
       if (k === "cred") return r.credN;
@@ -2020,49 +2044,12 @@ export default class RosaDeal extends LightningElement {
   }
 
   /* ----- Chatter ----- */
-  loadFeed() {
-    getFeed({ dealId: this.dealId })
-      .then((posts) => {
-        this.feed = (posts || []).map((p) => ({
-          id: p.id,
-          who: p.who,
-          when: fmtDate(p.posted),
-          text: p.text,
-          replies: (p.replies || []).map((r) => ({
-            id: r.id,
-            who: r.who,
-            when: fmtDate(r.posted),
-            text: r.text
-          }))
-        }));
-      })
-      .catch((e) => this.flash(err(e), true));
-  }
-  get hasFeed() {
-    return this.feed.length > 0;
-  }
-  handleFeedText(event) {
-    this.feedText = event.target.value;
-  }
-  get cannotPost() {
-    return !this.feedText || !this.feedText.trim();
-  }
-  handlePost() {
-    if (this.cannotPost) return;
-    this.busy = true;
-    postFeed({
-      dealId: this.dealId,
-      segmentsJson: JSON.stringify([{ t: this.feedText.trim() }])
-    })
-      .then(() => {
-        this.feedText = "";
-        this.loadFeed();
-        this.flash("Posted.");
-      })
-      .catch((e) => this.flash(err(e), true))
-      .finally(() => {
-        this.busy = false;
-      });
+  /**
+   * Chatter (Robert, 2026-11-28): Pipeline's own Chatter panel (pipelineChatter), so posts and replies can @mention people,
+   * the same as on an implant deal; it says when something was posted, and the deal reloads nothing.
+   */
+  handleChatterPosted() {
+    this.dispatchEvent(new CustomEvent("saved"));
   }
 
   /* ----- closing ----- */

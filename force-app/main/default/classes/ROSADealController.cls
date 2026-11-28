@@ -208,8 +208,26 @@ public with sharing class ROSADealController {
     return f;
   }
 
+  /** What a person without the ROSA permissions sees instead of Salesforce's field error (Robert, 2026-11-28). */
+  @TestVisible
+  private static final String NO_ACCESS = 'Opening ROSA deals needs the ROSA Deal Management permission set. Please ask your Salesforce admin.';
+
+  /**
+   * True when the person can read what the ROSA deal screen shows: the deal's ROSA fields, the ROSA surgeons' fields and the Q&A
+   * answers. Those come with ROSA Deal Management or ROSA Credentialing Admin; a sales rep with only their profile cannot read them.
+   */
+  @TestVisible
+  private static Boolean canOpen() {
+    return Schema.SObjectType.SalesRisks__c.fields.ROSA_Sales_Rep__c.isAccessible() &&
+      Schema.SObjectType.Robotics_Surgeons__c.fields.ROSA_Pathway__c.isAccessible() &&
+      Schema.SObjectType.ROSA_Credentialing_Answer__c.isAccessible();
+  }
+
   @AuraEnabled
   public static Deal getDeal(Id dealId) {
+    if (!canOpen()) {
+      throw fail(NO_ACCESS);
+    }
     Deal out = new Deal();
     out.canEdit = canEdit();
     out.theme = theme();

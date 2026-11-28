@@ -497,13 +497,15 @@ export default class PipelineHospitalBookings extends LightningElement {
       this.closeFilter();
       return;
     }
-    const wrap = this.template.querySelector(".wrap").getBoundingClientRect();
+    const wrapEl = this.template.querySelector(".wrap");
+    const wrap = wrapEl.getBoundingClientRect();
+    const z = this.zoomOf(wrapEl) || 1;
     const b = event.currentTarget.getBoundingClientRect();
     const left = Math.max(
       0,
-      Math.min(b.left - wrap.left - 10, wrap.width - 316)
+      Math.min((b.left - wrap.left) / z - 10, wrap.width / z - 316)
     );
-    const top = b.bottom - wrap.top + 8;
+    const top = (b.bottom - wrap.top) / z + 8;
     clearTimeout(this._popTimer);
     this.pop = {
       kind,
@@ -556,17 +558,25 @@ export default class PipelineHospitalBookings extends LightningElement {
   }
 
   /* ---------- tooltips ---------- */
+  /**
+   * The screen's zoom (Robert, 2026-11-28: tooltips appeared far from the mouse at 80%): the mouse and getBoundingClientRect are in
+   * drawn pixels, but left and top are set in the page's own (unzoomed) pixels, so divide by the ratio of the two.
+   */
+  zoomOf(el) {
+    const w = el.getBoundingClientRect().width;
+    return el.offsetWidth ? w / el.offsetWidth : 1;
+  }
   placeTip(event, words) {
     const box = this.template.querySelector(".wrap");
     const tipEl = this.template.querySelector(".tip");
     const b = box.getBoundingClientRect();
+    const z = this.zoomOf(box) || 1;
     const tw = tipEl ? tipEl.offsetWidth : 0;
     const th = tipEl ? tipEl.offsetHeight : 0;
-    const left = Math.max(
-      4,
-      Math.min(event.clientX - b.left + 14, b.width - tw - 8)
-    );
-    const top = Math.max(event.clientY - b.top - th - 10, 4);
+    const x = (event.clientX - b.left) / z;
+    const y = (event.clientY - b.top) / z;
+    const left = Math.max(4, Math.min(x + 14, b.width / z - tw - 8));
+    const top = Math.max(y - th - 10, 4);
     this.tip = {
       on: true,
       style: `left:${left}px;top:${top}px`,
