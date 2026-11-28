@@ -123,6 +123,13 @@
   line-height: 1;
   color: #fff;
   background: #0f766e;
+  /* in capitals, and the text box trimmed to the capitals' height so the words sit exactly in the middle on every font
+     (Windows' Segoe UI sat them off centre; Robert, 2026-11-28) */
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-box: trim-both cap alphabetic;
 }
 .title .tag.sh {
   color: #fff;
@@ -474,14 +481,28 @@ th.sortable {
   justify-content: center;
   flex-wrap: wrap;
 }
+/* the surgeon's tabs in bold capitals like the sliders (Robert, 2026-11-28), text trimmed to cap height so it sits centred on Windows too */
 .pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 34px;
   border: 1px solid var(--pline);
   background: var(--pfield);
   color: var(--text);
   border-radius: 999px;
-  padding: 7px 15px;
-  font-size: 14px;
+  padding: 0 16px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-box: trim-both cap alphabetic;
   cursor: pointer;
+}
+.pill.brand {
+  text-transform: none;
+  letter-spacing: 0.02em;
+  font-size: 13px;
 }
 .pill.on {
   background: var(--indigo);
@@ -914,6 +935,11 @@ table.mc td.n span.zero {
 table.mc td.t {
   font-weight: 700;
 }
+/* the month columns: heading, numbers and the Total row all centred on the same line (Robert, 2026-11-28) */
+table.mc th.m,
+table.mc td.m {
+  text-align: center;
+}
 table.mc tr.sum td {
   font-weight: 700;
   border-bottom: 0;
@@ -995,4 +1021,95 @@ table.zbt td {
 .hospcase c-pipeline-hospital-bookings {
   flex: 1;
   min-height: 0;
+}
+/* the Zoom slider in the header and the ROSA / non-ROSA slider (Robert, 2026-11-28; mockup rosa_deal_rosa_zoom_v7) */
+.tools .zoomseg,
+.robotseg {
+  --seg-track: var(--panel2);
+  --seg-line: var(--edge);
+  --seg-lab: var(--panel);
+  --seg-optx: var(--muted);
+  --seg-indigo: var(--indigo);
+  --seg-muted: var(--muted);
+  --seg-shadow: rgba(0, 0, 0, 0.35);
+  --zoom-track-height: 36px;
+}
+.robotseg {
+  --seg-indigo: #7c3aed;
+}
+.mchips {
+  width: 100%;
+}
+.msp {
+  flex: 1 1 0;
+}
+/* the chips' words in the same capitals as the sliders (Robert, 2026-11-28) */
+.lg {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.lg b {
+  font-size: 13px;
+  letter-spacing: 0.02em;
+}
+
+/* Delete surgeon (Robert, 2026-11-28): bottom left of Details in Edit; an Are-you-sure box slides down from the top with a blurred scrim */
+.acts .del {
+  margin-right: 16px;
+  /* its left edge level with the card's text (Details, Surgeon), not indented by the action bar's padding (Robert, 2026-11-28) */
+  margin-left: -10px;
+}
+.acts .grow {
+  flex: 1;
+}
+.askscrim {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  background: rgba(8, 12, 20, 0.55);
+  backdrop-filter: blur(3px);
+  opacity: 0;
+  transition: opacity 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.askscrim.on {
+  opacity: 1;
+}
+.ask {
+  position: fixed;
+  left: 50%;
+  top: 22%;
+  z-index: 21;
+  width: min(480px, 90vw);
+  padding: 20px 24px;
+  border-radius: 14px;
+  background: var(--panel);
+  color: var(--text);
+  border: 1px solid var(--edge);
+  border-top: 3px solid var(--badfill);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+  transform: translate(-50%, -105vh);
+  transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.ask.on {
+  transform: translate(-50%, 0);
+}
+.ask h3 {
+  margin: 0 0 8px;
+}
+.ask p {
+  margin: 0 0 18px;
+  line-height: 1.45;
+}
+.askb {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ask,
+  .askscrim {
+    transition: none;
+  }
 }

@@ -278,7 +278,7 @@ private class ROSADealControllerTest {
       ),
       new Case__c(
         Physician__c = surgeon.Id,
-        Surgery_Date__c = Date.today().toStartOfMonth().addMonths(-12),
+        Surgery_Date__c = Date.today().toStartOfMonth().addMonths(-11),
         Surgery_Type__c = '201',
         Procedure__c = 'A01'
       )
@@ -301,6 +301,13 @@ private class ROSADealControllerTest {
     for (myCase_Usage__c sh : sheets) {
       items.add(new myCase_Usage_Item__c(Usage_Sheet_ID__c = sh.Id));
     }
+    // the first shoulder case also used the ROSA robotic unit drape: a ROSA case
+    items.add(
+      new myCase_Usage_Item__c(
+        Usage_Sheet_ID__c = sheets[0].Id,
+        SAP_Material_Number__c = '20-8020-080-00'
+      )
+    );
     insert items;
     Test.startTest();
     ROSADealController.Bookings b = ROSADealController.surgeonBookings(
@@ -308,7 +315,7 @@ private class ROSADealControllerTest {
     );
     Test.stopTest();
     System.assertEquals(
-      Date.today().toStartOfMonth().addMonths(-12),
+      Date.today().toStartOfMonth().addMonths(-11),
       b.windowStart
     );
     Integer total = 0;
@@ -319,9 +326,23 @@ private class ROSADealControllerTest {
         n += v;
       }
       total += n;
-      byKey.put(l.anatomy + '|' + l.procedure, n);
+      byKey.put(
+        l.anatomy + '|' + l.procedure,
+        (byKey.containsKey(l.anatomy + '|' + l.procedure)
+          ? byKey.get(l.anatomy + '|' + l.procedure)
+          : 0) + n
+      );
     }
     System.assertEquals(4, total, 'The case without usage items is left out');
+    Integer rosaCases = 0;
+    for (ROSADealController.BookingLine l : b.lines) {
+      if (l.rosa) {
+        for (Integer v : l.months) {
+          rosaCases += v;
+        }
+      }
+    }
+    System.assertEquals(1, rosaCases, 'one case had the drape');
     System.assertEquals(2, byKey.get('Shoulder|Primary'));
     System.assertEquals(1, byKey.get('Knee|Demo'));
     System.assertEquals(1, byKey.get('Hip|Revision'));
@@ -329,6 +350,110 @@ private class ROSADealControllerTest {
       0,
       ROSADealController.surgeonBookings(null).lines.size()
     );
+  }
+
+  /** BOOKED: the surgeon's bookings from today at every hospital, no usage needed, ROSA from the Technology, cancelled left out. */
+  @IsTest
+  static void surgeonBookedCountsBookingsFromToday() {
+    Account surgeon = new Account(
+      FirstName = 'Booked',
+      LastName = 'Surgeon',
+      PersonMailingCountry = 'Australia',
+      PersonMailingCountryCode = 'AU',
+      PersonMailingState = 'New South Wales',
+      PersonMailingStateCode = 'NSW',
+      RecordTypeId = Account.SObjectType.getDescribe()
+        .getRecordTypeInfosByDeveloperName()
+        .get('Physician')
+        .getRecordTypeId()
+    );
+    insert surgeon;
+    Date later = Date.today().toStartOfMonth().addMonths(1).addDays(4);
+    insert new List<Case__c>{
+      new Case__c(
+        Physician__c = surgeon.Id,
+        Surgery_Date__c = later,
+        Surgery_Type__c = '205',
+        Procedure__c = 'A00',
+        Technology__c = '4'
+      ),
+      new Case__c(
+        Physician__c = surgeon.Id,
+        Surgery_Date__c = later,
+        Surgery_Type__c = '202',
+        Procedure__c = 'A01'
+      ),
+      new Case__c(
+        Physician__c = surgeon.Id,
+        Surgery_Date__c = later,
+        Surgery_Type__c = '202',
+        Procedure__c = 'A00',
+        Status__c = 'C'
+      ),
+      new Case__c(
+        Physician__c = surgeon.Id,
+        Surgery_Date__c = Date.today().addDays(-3),
+        Surgery_Type__c = '202',
+        Procedure__c = 'A00'
+      )
+    };
+    Test.startTest();
+    ROSADealController.Bookings b = ROSADealController.surgeonBooked(
+      surgeon.Id
+    );
+    Test.stopTest();
+    System.assertEquals(Date.today(), b.windowStart);
+    Integer total = 0;
+    Integer rosa = 0;
+    for (ROSADealController.BookingLine l : b.lines) {
+      total += l.months[1];
+      if (l.rosa) {
+        rosa += l.months[1];
+        System.assertEquals('Shoulder', l.anatomy);
+      }
+    }
+    System.assertEquals(
+      2,
+      total,
+      'The cancelled and the past ones are left out'
+    );
+    System.assertEquals(1, rosa);
+    System.assertEquals(0, ROSADealController.surgeonBooked(null).lines.size());
+  }
+
+  /** A surgeon added in error is deleted, with their credentialing answers; the deal's surgeon count follows. */
+  @IsTest
+  static void deletesASurgeon() {
+    System.runAs(new User(Id = UserInfo.getUserId())) {
+      SalesRisks__c d = new SalesRisks__c(
+        RecordTypeId = rt(SalesRisks__c.SObjectType, 'AUROSA')
+      );
+      insert d;
+      Account a = surgeon('Delta');
+      Test.startTest();
+      Id sid = ROSADealController.addSurgeon(
+        d.Id,
+        new Map<String, Object>{ 'Surgeon_Name__c' => a.Id }
+      );
+      ROSADealController.deleteSurgeon(sid);
+      Test.stopTest();
+      System.assertEquals(
+        0,
+        [SELECT COUNT() FROM Robotics_Surgeons__c WHERE Id = :sid]
+      );
+      System.assertEquals(
+        0,
+        ROSADealController.getDeal(d.Id).surgeons.size(),
+        'the deal has no surgeons left'
+      );
+      Boolean refused = false;
+      try {
+        ROSADealController.deleteSurgeon(null);
+      } catch (AuraHandledException e) {
+        refused = true;
+      }
+      System.assert(refused, 'nothing to delete is refused');
+    }
   }
 
   /** An older ROSA deal with no checklist gets one from Add checklist; a second press is refused. */
@@ -363,5 +488,44 @@ private class ROSADealControllerTest {
       }
       System.assert(refused, 'only one checklist');
     }
+  }
+
+  /** The screen's remembered choices are kept in the person's Pipeline settings, beside whatever Pipeline keeps there. */
+  @IsTest
+  static void remembersChoicesBesidePipelineSettings() {
+    PipelineUserSettings.save(
+      PipelineUserSettings.PIPELINE_FIELD,
+      '{"theme":"light"}',
+      AccessLevel.SYSTEM_MODE
+    );
+    ROSADealController.savePrefs(
+      '{"rosaDeal":{"zoom":70},"hospBook":{"view":"brand","robot":"rosa"},"other":1}'
+    );
+    Map<String, Object> got = (Map<String, Object>) JSON.deserializeUntyped(
+      ROSADealController.getPrefs()
+    );
+    System.assert(
+      got.containsKey('rosaDeal') && got.containsKey('hospBook'),
+      'both kept'
+    );
+    System.assert(!got.containsKey('other'), 'only its own keys');
+    Map<String, Object> all = (Map<String, Object>) JSON.deserializeUntyped(
+      PipelineUserSettings.read(
+        PipelineUserSettings.PIPELINE_FIELD,
+        AccessLevel.SYSTEM_MODE
+      )
+    );
+    System.assertEquals(
+      'light',
+      all.get('theme'),
+      'Pipeline settings untouched'
+    );
+    Boolean refused = false;
+    try {
+      ROSADealController.savePrefs('not json');
+    } catch (AuraHandledException e) {
+      refused = true;
+    }
+    System.assert(refused, 'bad JSON refused');
   }
 }

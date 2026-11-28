@@ -26,7 +26,7 @@ ROSA has its own question bank (ROSA Question Set, ROSA Question); it uses nothi
 | Custom permission          | 1           |
 | Custom tab                 | 2           |
 | Lightning page             | 4           |
-| Global value set           | 1           |
+| Global Picklist Value Set  | 1           |
 | Page layout                | 3           |
 | Lightning web component    | 10          |
 | List view                  | 2           |
@@ -224,7 +224,7 @@ ROSA has its own question bank (ROSA Question Set, ROSA Question); it uses nothi
 | 172  | Lightning page             | ROSA_Credentialing_Answer_Record_Page                         |                   |                    |
 | 173  | Lightning page             | ROSA_Deal_Record_Page                                         |                   |                    |
 | 174  | Lightning page             | ROSA_Surgeon_Record_Page                                      |                   |                    |
-| 175  | Global value set           | ROSA_Supplier                                                 |                   |                    |
+| 175  | Global Picklist Value Set  | ROSA_Supplier                                                 |                   |                    |
 | 176  | Page layout                | ROSA_Credentialing_Answer__c-ROSA Credentialing Answer Layout |                   |                    |
 | 177  | Page layout                | ROSA_Price__c-ROSA Price Layout                               |                   |                    |
 | 178  | Page layout                | Robotics_Surgeons__c-Robotics Surgeons Layout                 |                   |                    |

@@ -55,14 +55,14 @@ export function windowText(startIso, endIso) {
   return `${MONTH_NAMES[a.m - 1]} ${a.y} to ${MONTH_NAMES[b.m - 1]} ${b.y}`;
 }
 
-/** The 12 month labels: short month names, with the two-digit year on the first and on every January ("Nov 25", Dec, "Jan 26"). */
+/** The 12 month labels: short month names, each with its two-digit year ("Nov 25", "Dec 25", "Jan 26"; Robert, 2026-11-28). */
 export function monthLabels(startIso) {
   const a = ym(startIso);
   return Array.from({ length: 12 }, (_, i) => {
     const idx = (a.m - 1 + i) % 12;
     const year = a.y + Math.floor((a.m - 1 + i) / 12);
     const short = MONTH_NAMES[idx].slice(0, 3);
-    return i === 0 || idx === 0 ? `${short} ${String(year).slice(2)}` : short;
+    return `${short} ${String(year).slice(2)}`;
   });
 }
 

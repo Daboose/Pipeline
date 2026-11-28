@@ -1,0 +1,884 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Completed and Future Bookings</title>
+    <style>
+      [data-theme="light"] {
+        --page: #e9edf4;
+        --bg: #f4f6fa;
+        --panel: #fff;
+        --panel2: #eef2fa;
+        --line: #d5dcea;
+        --edge: #b3bfd6;
+        --text: #1b2640;
+        --muted: #5d6b85;
+        --indigo: #4f46e5;
+        --good: #1e9e57;
+        --pinkbg: #fdf2f8;
+        --pinktx: #9d174d;
+        --pinkline: #fbcfe8;
+        --head: #db2777;
+        --cell: 79, 70, 229;
+        --hip: #2563eb;
+        --knee: #0d9488;
+        --shoulder: #7c3aed;
+        --cmft: #d97706;
+        --seglab: #fff;
+        --segtrack: #e3e8f4;
+      }
+      [data-theme="dark"] {
+        --page: #0e1623;
+        --bg: #141e2e;
+        --panel: #1a2740;
+        --panel2: #20304f;
+        --line: #2f4163;
+        --edge: #5b6f93;
+        --text: #e8edf5;
+        --muted: #8b9bb0;
+        --indigo: #6366f1;
+        --good: #34d399;
+        --pinkbg: rgba(244, 114, 182, 0.12);
+        --pinktx: #f9a8d4;
+        --pinkline: rgba(244, 114, 182, 0.35);
+        --head: #f472b6;
+        --cell: 129, 140, 248;
+        --hip: #2f80ed;
+        --knee: #14b8a6;
+        --shoulder: #a78bfa;
+        --cmft: #f59e0b;
+        --seglab: #1a2740;
+        --segtrack: #20304f;
+      }
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+      }
+      body {
+        background: var(--page);
+        color: var(--text);
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial,
+          sans-serif;
+        font-size: 15px;
+      }
+      button {
+        font-family: inherit;
+      }
+      /* mockup bar */
+      .mock {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 50;
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        flex-wrap: wrap;
+        padding: 8px 16px;
+        background: #111827;
+        color: #e5e7eb;
+        font-size: 13px;
+      }
+      .mock b {
+        margin-right: 6px;
+      }
+      .mock button {
+        background: #374151;
+        color: #fff;
+        border: 0;
+        border-radius: 999px;
+        padding: 5px 12px;
+        cursor: pointer;
+        font-size: 12px;
+      }
+      .mock button.on {
+        background: #6366f1;
+      }
+      .about {
+        position: fixed;
+        left: 50%;
+        top: 40px;
+        transform: translateX(-50%);
+        z-index: 60;
+        width: min(760px, 92vw);
+        background: var(--panel);
+        border: 1px solid var(--edge);
+        border-radius: 14px;
+        box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45);
+        padding: 20px 24px;
+        line-height: 1.5;
+      }
+      .about h3 {
+        margin: 0 0 8px;
+      }
+      .about ul {
+        margin: 6px 0 10px;
+        padding-left: 20px;
+      }
+      .about .x {
+        float: right;
+      }
+      /* the screen, zoomed as one number */
+      .root {
+        zoom: var(--z, 0.8);
+        height: calc((100vh - 46px) / var(--z, 0.8));
+        display: grid;
+        grid-template-rows: auto 1fr;
+        background: var(--bg);
+      }
+      .hdr {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 12px 24px;
+        padding: 18px 24px 14px;
+        background: var(--panel);
+        border-bottom: 1px solid var(--line);
+      }
+      .title {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      .title h1 {
+        margin: 0;
+        font-size: 24px;
+        line-height: 32px;
+      }
+      .tag {
+        display: inline-flex;
+        align-items: center;
+        height: 24px;
+        padding: 0 12px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 700;
+        color: #fff;
+        background: #0f766e;
+      }
+      .tag.sh {
+        background: #7c3aed;
+      }
+      .sub {
+        color: var(--muted);
+        font-size: 14px;
+      }
+      .tools {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+      .btn {
+        height: 36px;
+        padding: 0 18px;
+        border-radius: 999px;
+        border: 0;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        font-size: 12px;
+        text-transform: uppercase;
+        cursor: pointer;
+        background: #475569;
+        color: #fff;
+      }
+      .rbtn {
+        position: relative;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        border: 0;
+        background: var(--indigo);
+        cursor: pointer;
+      }
+      .rbtn::before,
+      .rbtn::after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 16px;
+        height: 2px;
+        border-radius: 1px;
+        background: #fff;
+      }
+      .rbtn::before {
+        transform: translate(-50%, -50%) rotate(45deg);
+      }
+      .rbtn::after {
+        transform: translate(-50%, -50%) rotate(-45deg);
+      }
+      .path {
+        grid-column: 1/-1;
+        display: flex;
+        gap: 4px;
+      }
+      .st {
+        flex: 1;
+        text-align: center;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        padding: 7px 4px;
+        background: var(--panel2);
+        color: var(--muted);
+        border-radius: 4px;
+      }
+      .st.done {
+        background: color-mix(in srgb, var(--indigo) 25%, var(--panel2));
+        color: var(--text);
+      }
+      .st.cur {
+        background: var(--indigo);
+        color: #fff;
+      }
+      .kpis {
+        grid-column: 1/-1;
+        display: grid;
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+        gap: 12px;
+      }
+      .kpi {
+        background: var(--panel2);
+        border-radius: 10px;
+        padding: 10px 14px;
+      }
+      .kpi .v {
+        font-size: 22px;
+        font-weight: 700;
+      }
+      .kpi .l {
+        font-size: 12px;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+      .cstep {
+        grid-column: 1/-1;
+        display: flex;
+        justify-content: center;
+        gap: 14px;
+        font-size: 13px;
+        padding: 10px 18px;
+        border-radius: 999px;
+        background: var(--pinkbg);
+        color: var(--pinktx);
+        border: 1px solid var(--pinkline);
+      }
+      .body {
+        display: grid;
+        grid-template-columns: 260px minmax(0, 1fr);
+        min-height: 0;
+      }
+      .rail {
+        border-right: 1px solid var(--line);
+        background: var(--panel);
+        padding: 16px 12px;
+      }
+      .grp {
+        font-size: 11px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin: 16px 10px 6px;
+      }
+      .nav {
+        display: flex;
+        justify-content: space-between;
+        padding: 9px 12px;
+        border-radius: 8px;
+        cursor: pointer;
+      }
+      .nav.on {
+        background: var(--indigo);
+        color: #fff;
+      }
+      .main {
+        overflow: auto;
+        padding: 24px 28px 40px;
+        min-width: 0;
+      }
+      h2 {
+        margin: 0 0 12px;
+        font-size: 22px;
+      }
+      .card {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 18px 20px;
+      }
+      /* the zoom slider (pipelineZoomSlider look) */
+      .zs {
+        display: flex;
+        align-items: stretch;
+        border-radius: 999px;
+        background: var(--seglab);
+        border: 1px solid var(--edge);
+      }
+      .zs .slbl {
+        display: inline-flex;
+        align-items: center;
+        padding: 0 14px 0 16px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .zs .tr {
+        position: relative;
+        width: 226px;
+        height: 36px;
+        margin: -1px -1px -1px 0;
+        border-radius: 999px;
+        background: var(--segtrack);
+        border: 1px solid var(--edge);
+        cursor: pointer;
+      }
+      .zs .tk {
+        position: absolute;
+        top: 50%;
+        width: 6px;
+        height: 6px;
+        margin: -3px 0 0 -3px;
+        border-radius: 50%;
+        background: var(--muted);
+        opacity: 0.55;
+      }
+      .zs .hdl {
+        position: absolute;
+        top: 3px;
+        bottom: 3px;
+        width: 58px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 999px;
+        background: #fff;
+        color: var(--indigo);
+        font-size: 14px;
+        font-weight: 700;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+        transition: left 0.55s cubic-bezier(0.3, 1.35, 0.5, 1);
+      }
+      /* segmented sliders (VIEW and ROSA) */
+      .seg {
+        display: inline-flex;
+        align-items: stretch;
+        border-radius: 999px;
+        background: var(--seglab);
+        border: 1px solid var(--edge);
+      }
+      .seg .slbl {
+        display: inline-flex;
+        align-items: center;
+        padding: 0 14px 0 16px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        color: var(--muted);
+      }
+      .seg .ch {
+        display: flex;
+        align-items: center;
+        margin: -1px -1px -1px 0;
+        padding: 3px;
+        border-radius: 999px;
+        background: var(--segtrack);
+        border: 1px solid var(--edge);
+      }
+      .seg .opt {
+        height: 28px;
+        padding: 0 14px;
+        border: 0;
+        border-radius: 999px;
+        background: transparent;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        cursor: pointer;
+        transition:
+          background 0.3s,
+          color 0.3s;
+      }
+      .seg .opt.on {
+        background: var(--indigo);
+        color: #fff;
+        box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35);
+      }
+      .seg.rosa {
+        border-color: color-mix(in srgb, var(--shoulder) 70%, transparent);
+      }
+      .seg.rosa .ch {
+        margin: -1px;
+      }
+      .seg.rosa .opt.on {
+        background: #7c3aed;
+      }
+      .bh {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+      }
+      .bh .ttl {
+        color: var(--head);
+        font-size: 20px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+      .big {
+        display: flex;
+        align-items: baseline;
+        gap: 12px;
+        margin: 10px 0 8px;
+      }
+      .big b {
+        font-size: 34px;
+      }
+      .row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin: 0 0 12px;
+      }
+      .row .gap {
+        width: 18px;
+      }
+      .row .push {
+        flex: 1;
+      }
+      .lg {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        height: 36px;
+        padding: 0 16px 0 10px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: var(--panel);
+        color: var(--text);
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      .lg b {
+        font-size: 13px;
+      }
+      .lg .t {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: var(--c);
+        position: relative;
+      }
+      .lg .t::after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: 45%;
+        width: 5px;
+        height: 9px;
+        border: solid #fff;
+        border-width: 0 2px 2px 0;
+        transform: translate(-50%, -50%) rotate(45deg);
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+      }
+      th {
+        font-size: 13px;
+        color: var(--muted);
+        text-align: right;
+        padding: 8px 6px;
+        border-bottom: 1px solid var(--line);
+        font-weight: 700;
+      }
+      th.l,
+      td.l {
+        text-align: left;
+      }
+      td {
+        padding: 7px 6px;
+        text-align: right;
+        border-bottom: 1px solid var(--line);
+      }
+      td.sg {
+        vertical-align: top;
+        text-align: left;
+        white-space: nowrap;
+      }
+      td.sg .c {
+        display: block;
+        color: var(--muted);
+        font-size: 12px;
+        margin-top: 2px;
+      }
+      td.br i {
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        border-radius: 2px;
+        margin-right: 8px;
+        vertical-align: middle;
+      }
+      td.n span {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 30px;
+        height: 24px;
+        border-radius: 6px;
+      }
+      td.n span.z {
+        color: var(--muted);
+        opacity: 0.5;
+      }
+      td.t {
+        font-weight: 700;
+      }
+      tr.first td {
+        border-top: 3px solid var(--head);
+      }
+      .note {
+        color: var(--muted);
+        font-size: 13px;
+        margin: 4px 0 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="root" id="root"></div>
+    <div class="mock">
+      <b>Mockup v8.2: completed / booked</b>
+      <button data-about="1">About this mockup</button>
+      <button data-view="hosp" class="on">Site › myCase (hospital)</button>
+      <button data-view="surg">Surgeon's myCase tab</button>
+      <span style="flex: 1"></span>
+      <button data-theme-set="dark" class="on">Dark</button
+      ><button data-theme-set="light">Light</button>
+      <span style="opacity: 0.7">Invented data</span>
+    </div>
+    <script>
+      const PAST = [
+        "Nov 25",
+        "Dec 25",
+        "Jan 26",
+        "Feb 26",
+        "Mar 26",
+        "Apr 26",
+        "May 26",
+        "Jun 26",
+        "Jul 26",
+        "Aug 26",
+        "Sep 26",
+        "Oct 26"
+      ];
+      const FUT = [
+        "Nov 26",
+        "Dec 26",
+        "Jan 27",
+        "Feb 27",
+        "Mar 27",
+        "Apr 27",
+        "May 27",
+        "Jun 27",
+        "Jul 27",
+        "Aug 27",
+        "Sep 27",
+        "Oct 27"
+      ];
+      let MONTHS = PAST;
+      const COL = {
+        Hip: "var(--hip)",
+        Knee: "var(--knee)",
+        Shoulder: "var(--shoulder)",
+        CMFT: "var(--cmft)"
+      };
+      const row = (brand, t, p, seed, scale, share) => {
+        const m = MONTHS.map((_, k) =>
+          Math.max(
+            0,
+            Math.round(
+              scale * (0.5 + 0.5 * Math.sin(seed + k * 1.3)) +
+                ((seed * 7 + k * 3) % 3) -
+                1
+            )
+          )
+        );
+        return {
+          brand,
+          t,
+          p,
+          m,
+          r: m.map((v, k) =>
+            Math.max(
+              0,
+              Math.min(v, Math.round(v * share + ((k + seed) % 2 ? 0.4 : -0.4)))
+            )
+          )
+        };
+      };
+      const PASTDATA = [
+        {
+          sg: "Dr Alex Moreno",
+          rows: [
+            row("PERSONA", "Knee", "Primary", 1, 5, 0.6),
+            row("PERSONA REVISION", "Knee", "Revision", 2, 0.6, 0),
+            row("ROSA KNEE", "Knee", "Primary", 3, 0.8, 1)
+          ]
+        },
+        {
+          sg: "Dr Priya Nair",
+          rows: [
+            row("COMPREHENSIVE", "Shoulder", "Primary", 4, 3, 0.5),
+            row("IDENTITY", "Shoulder", "Primary", 5, 1, 0.4)
+          ]
+        },
+        {
+          sg: "Dr Tom Walsh",
+          rows: [
+            row("AVENIR COMPLETE", "Hip", "Primary", 6, 1.5, 0),
+            row("G7", "Hip", "Primary", 7, 0.8, 0),
+            row("PERSONA", "Knee", "Revision", 8, 0.6, 0.5)
+          ]
+        }
+      ];
+      // future bookings: invented, front-loaded (the further out, the fewer booked so far); ROSA from the booking's Technology
+      const FUTDATA = [
+        {
+          sg: "Dr Alex Moreno",
+          rows: [
+            row("PERSONA", "Knee", "Primary", 11, 4, 0.7),
+            row("ROSA KNEE", "Knee", "Primary", 12, 1.6, 1)
+          ]
+        },
+        {
+          sg: "Dr Priya Nair",
+          rows: [
+            row("COMPREHENSIVE", "Shoulder", "Primary", 13, 2.5, 0.6),
+            row("IDENTITY", "Shoulder", "Primary", 14, 1, 0.5)
+          ]
+        },
+        {
+          sg: "Dr Tom Walsh",
+          rows: [
+            row("AVENIR COMPLETE", "Hip", "Primary", 15, 1.4, 0),
+            row("PERSONA", "Knee", "Revision", 16, 0.8, 0.3)
+          ]
+        }
+      ].map((g) => ({
+        ...g,
+        rows: g.rows.map((r) => {
+          const f = (k) => Math.max(0, 1 - k / 10);
+          const m = r.m.map((v, k) => Math.round(v * f(k)));
+          return {
+            ...r,
+            m,
+            r: r.r.map((v, k) => Math.min(m[k], Math.round(v * f(k))))
+          };
+        })
+      }));
+      let DATA = PASTDATA;
+      const st = {
+        when: "past",
+        z: 80,
+        view: "brand",
+        rosa: "all",
+        on: { Hip: 1, Knee: 1, Shoulder: 1, CMFT: 1 },
+        pr: { Primary: 1, Revision: 1, Demo: 1 },
+        page: "hosp"
+      };
+      const pick = (r) =>
+        st.rosa === "all"
+          ? r.m
+          : st.rosa === "rosa"
+            ? r.r
+            : r.m.map((v, k) => v - r.r[k]);
+      const sum = (a) => a.reduce((x, y) => x + y, 0);
+      function zoomSlider() {
+        const steps = [60, 70, 80, 90, 100];
+        const W = 226,
+          H = 58;
+        const x = (s) => 3 + (W - 6 - H) * (steps.indexOf(s) / 4) + H / 2;
+        return `<div class="zs" title="Zoom: the whole screen, remembered for you"><span class="slbl">Zoom</span><div class="tr">${steps.map((s) => `<i class="tk" style="left:${x(s)}px" data-z="${s}"></i>`).join("")}<div class="hdl" style="left:${x(st.z) - H / 2}px">${st.z}%</div>${steps.map((s) => `<span data-z="${s}" style="position:absolute;top:0;bottom:0;left:${x(s) - 22}px;width:44px"></span>`).join("")}</div></div>`;
+      }
+      function seg(lbl, cls, opts, cur, attr) {
+        return `<div class="seg ${cls}">${lbl ? `<span class="slbl">${lbl}</span>` : ""}<span class="ch">${opts.map(([k, l]) => `<button class="opt ${cur === k ? "on" : ""}" ${attr}="${k}">${l}</button>`).join("")}</span></div>`;
+      }
+      function chips(rows) {
+        const all = rows.map((r) => ({ ...r, m: pick(r) }));
+        const c = (f) => sum(all.filter(f).map((r) => sum(r.m)));
+        return (
+          Object.keys(COL)
+            .map(
+              (t) =>
+                `<span class="lg" style="--c:${COL[t]}"><span class="t"></span>${t} <b>${c((r) => r.t === t)}</b></span>`
+            )
+            .join("") +
+          `<span class="gap"></span>` +
+          ["Primary", "Revision", "Demo"]
+            .map(
+              (p) =>
+                `<span class="lg" style="--c:var(--indigo)"><span class="t"></span>${p} <b>${c((r) => r.p === p)}</b></span>`
+            )
+            .join("")
+        );
+      }
+      function table(groups, label) {
+        let body = "";
+        const max = Math.max(
+          1,
+          ...groups.flatMap((g) => g.rows.flatMap((r) => pick(r)))
+        );
+        groups.forEach((g) => {
+          const rows = g.rows
+            .map((r) => ({ ...r, m: pick(r) }))
+            .map((r) => ({ ...r, tot: sum(r.m) }))
+            .filter((r) => r.tot > 0)
+            .sort((a, b) => b.tot - a.tot);
+          if (!rows.length) return;
+          const tot = sum(rows.map((r) => r.tot));
+          rows.forEach((r, i) => {
+            body +=
+              `<tr class="${i ? "" : "first"}">` +
+              (i
+                ? ""
+                : `<td class="sg" rowspan="${rows.length}"><b>${g.sg}</b><span class="c">${tot} cases</span></td>`) +
+              `<td class="br l"><i style="background:${COL[r.t]}"></i>${r.brand}</td>` +
+              r.m
+                .map(
+                  (v) =>
+                    `<td class="n"><span ${v ? `style="background:rgba(var(--cell),${(0.15 + (0.6 * v) / max).toFixed(2)})"` : 'class="z"'}>${v}</span></td>`
+                )
+                .join("") +
+              `<td class="t">${r.tot}</td></tr>`;
+          });
+        });
+        return `<table><thead><tr><th class="l">Surgeon</th><th class="l">Brand</th>${MONTHS.map((m) => `<th>${m}</th>`).join("")}<th>Total</th></tr></thead><tbody>${body}</tbody></table>`;
+      }
+      function render() {
+        DATA = st.when === "past" ? PASTDATA : FUTDATA;
+        MONTHS = st.when === "past" ? PAST : FUT;
+        const past = st.when === "past";
+        const whenSeg = seg(
+          "",
+          "rosa",
+          [
+            ["past", "COMPLETED"],
+            ["future", "BOOKED"]
+          ],
+          st.when,
+          "data-when"
+        );
+        const r = document.getElementById("root");
+        r.style.setProperty("--z", st.z / 100);
+        const groups = st.page === "hosp" ? DATA : [DATA[0]];
+        const total = sum(
+          groups.flatMap((g) => g.rows.map((x) => sum(pick(x))))
+        );
+        const rosaSeg = seg(
+          "",
+          "rosa",
+          [
+            ["all", "ALL"],
+            ["rosa", "ROSA ONLY"],
+            ["non", "NON-ROSA"]
+          ],
+          st.rosa,
+          "data-rosa"
+        );
+        const card =
+          st.page === "hosp"
+            ? `<div class="card"><div class="bh"><span class="ttl">MyCase Bookings</span>${seg(
+                "VIEW",
+                "",
+                [
+                  ["hosp", "HOSPITAL TOTAL"],
+                  ["surg", "SURGEON TOTAL"],
+                  ["brand", "SURGEON / BRAND"]
+                ],
+                st.view,
+                "data-v"
+              )}<span class="push" style="flex:1"></span><span class="big" style="margin:0"><b>${total}</b><span class="sub">${past ? "cases in the last 12 months" : "booked from today, next 12 months"}</span></span></div>
+    <div style="height:12px"></div>
+    <div class="row">${chips(DATA.flatMap((g) => g.rows))}<span class="push"></span>${whenSeg}${rosaSeg}</div>${table(groups)}</div>`
+            : `<h2 style="margin-bottom:4px">Dr Alex Moreno</h2><p class="sub" style="margin:0 0 14px">Consultant · Growth +30 ZB cases a year</p><div class="card"><div class="bh" style="justify-content:space-between"><div><b style="font-size:18px">myCase Bookings (${past ? "cases with usages" : "booked"})</b><p class="note">${past ? "Only cases where items were used in surgery. Planned or cancelled bookings aren't shown." : "Booked surgeries from this month on. ROSA is the booking's Technology (ROSA or ROSA+PSI). Cancelled bookings aren't shown."}</p></div><span class="sub">every hospital</span></div>
+    <div class="row" style="margin-top:12px">${chips(DATA[0].rows)}<span class="push"></span>${whenSeg}${rosaSeg}</div>${table(groups)}</div>`;
+        r.innerHTML = `<header class="hdr"><div><div class="title"><h1>SAMPLE PRIVATE HOSPITAL</h1><span class="tag sh">ROSA Hip, Knee, Shoulder</span><span class="tag">Placement</span></div><div class="sub">Australia · Deal lead Jordan Blake · Expected close Q3 2027</div></div>
+  <div class="tools">${zoomSlider()}<button class="btn">Open in Salesforce</button><button class="rbtn" title="Close"></button></div>
+  <div class="path">${["Sales Pipeline", "Surgeon Engagement", "Executive Presentation", "Negotiation", "Closed Won", "Deal Lost"].map((s, i) => `<span class="st ${i < 2 ? "done" : i === 2 ? "cur" : ""}">${s}</span>`).join("")}</div>
+  <div class="kpis">${[
+    ["3", "Surgeons"],
+    ["40", "ZB cases now"],
+    ["95", "ZB cases with ROSA"],
+    ["+55", "Growth cases"],
+    ["1 / 3", "Credentialed"],
+    ["AUD 371,250", "ROSA Growth $"]
+  ]
+    .map(
+      ([v, l]) =>
+        `<div class="kpi"><div class="v">${v}</div><div class="l">${l}</div></div>`
+    )
+    .join("")}</div>
+  <div class="cstep">Checklist · Done: <b>2. Surgeon engagement</b> · Next: 3. Deal summary complete</div></header>
+  <div class="body"><nav class="rail"><div class="grp">Deal</div><div class="nav">Overview</div><div class="nav">Surgeons and Growth<span>3</span></div>${st.page === "surg" ? `<div class="nav on" style="padding-left:24px">Dr Alex Moreno</div>` : ""}<div class="grp">Process</div><div class="nav">Checklist<span>2 of 10</span></div><div class="grp">Site</div><div class="nav">Readiness</div><div class="nav ${st.page === "hosp" ? "on" : ""}">myCase</div></nav><main class="main">${card}</main></div>`;
+        document
+          .querySelectorAll("[data-view]")
+          .forEach((b) => b.classList.toggle("on", b.dataset.view === st.page));
+      }
+      const ABOUT = `<button class="btn x" data-about="0">Close</button><h3>About this mockup</h3>
+<p>A new slider beside MyCase Bookings: <b>COMPLETED</b> (the default, as today) or <b>BOOKED</b>, purple, on the chip row just left of the All / ROSA only / Non-ROSA slider. There is no "all".</p><ul>
+<li><b>Completed:</b> the last 12 whole months, only cases with usage items; ROSA = the usage holds the ROSA robotic unit drape (20-8020-080-00 or -01). As built today.</li>
+<li><b>Booked:</b> bookings from today for 12 months (on 28 Nov the November column holds the 28th to 30th); no usage needed; ROSA = the booking's Technology is ROSA or ROSA+PSI. Cancelled bookings (SAP Surgery Status Cancelled) are left out.</li>
+<li>Everything else works the same in both: the views, the chips, the All / ROSA only / Non-ROSA slider; the months move forward (Nov 26 to Oct 27).</li>
+<li>The same slider is on the surgeon's myCase tab (bottom bar) and in Pipeline's MyCase Bookings; the choice is remembered like the others.</li></ul>
+<p><b>Try it:</b> press BOOKED, then ROSA ONLY; switch to the surgeon's tab. Invented data.</p>`;
+      document.addEventListener("click", (e) => {
+        const t = e.target.closest(
+          "[data-z],[data-when],[data-rosa],[data-v],[data-view],[data-theme-set],[data-about]"
+        );
+        if (!t) return;
+        const d = t.dataset;
+        if (d.about !== undefined) {
+          document.querySelector(".about")?.remove();
+          if (d.about === "1") {
+            const x = document.createElement("div");
+            x.className = "about";
+            x.innerHTML = ABOUT;
+            document.body.appendChild(x);
+          }
+          return;
+        }
+        if (d.z) st.z = +d.z;
+        else if (d.rosa) st.rosa = d.rosa;
+        else if (d.when) st.when = d.when;
+        else if (d.v) st.view = d.v;
+        else if (d.view) st.page = d.view;
+        else if (d.themeSet) {
+          document.documentElement.dataset.theme = d.themeSet;
+          document
+            .querySelectorAll("[data-theme-set]")
+            .forEach((b) => b.classList.toggle("on", b === t));
+        }
+        render();
+      });
+      render();
+    </script>
+  </body>
+</html>

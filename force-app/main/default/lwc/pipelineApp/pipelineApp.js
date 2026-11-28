@@ -49,7 +49,7 @@ function stableJson(value) {
  * Usages, Surgeries and Chatter, saved filters); 0.10 follows the final mockup: a filter bar with chips and a Change
  * selection panel with Apply, in place of the always-visible Choose Your Data panel.
  */
-const PIPELINE_VERSION = "0.182";
+const PIPELINE_VERSION = "0.187";
 
 /** The colours a person can choose for the headings (Robert, 2026-11-02); the look of each is in pipelineApp.css. */
 const HEAD_COLOURS = [
@@ -107,7 +107,9 @@ function cleanHospBook(h) {
       ? h.view
       : "hospital",
     types: words(h.types),
-    procs: words(h.procs)
+    procs: words(h.procs),
+    robot: ["all", "rosa", "non"].includes(h.robot) ? h.robot : "all",
+    when: h.when === "future" ? "future" : "past"
   };
 }
 
@@ -155,6 +157,7 @@ export default class PipelineApp extends LightningElement {
     widths: {},
     campHidden: null, // the campaign list's columns the person turned off (null until they choose; Robert, 2026-11-19)
     campWidths: null, // the campaign list's column widths the person dragged to ({} for the standard ones; null until they choose; Robert, 2026-11-20)
+    rosaDeal: null, // the ROSA deal screen's own choices: { zoom, types, procs, robot } (Robert, 2026-11-28); kept here so Pipeline does not drop them
     hospBook: null, // a ROSA deal's MyCase Bookings: { view, types, procs } (the view and the chips switched off), the same at every hospital; null until they choose (Robert, 2026-11-25)
     ui: {},
     last: null
@@ -406,6 +409,8 @@ export default class PipelineApp extends LightningElement {
           : null,
         campWidths: cleanWidths(s.campWidths),
         hospBook: cleanHospBook(s.hospBook),
+        rosaDeal:
+          s.rosaDeal && typeof s.rosaDeal === "object" ? s.rosaDeal : null,
         ui: s.ui && typeof s.ui === "object" ? s.ui : {},
         last: s.last && typeof s.last === "object" ? s.last : null
       };
@@ -982,6 +987,25 @@ export default class PipelineApp extends LightningElement {
   }
   handleRosaSaved() {
     this.rosaSaved = true;
+  }
+  /** What the ROSA deal screen remembers, from the person's Pipeline settings (the hospital bookings' choices are shared). */
+  get rosaPrefs() {
+    return {
+      hospBook: this.settings.hospBook,
+      rosaDeal: this.settings.rosaDeal
+    };
+  }
+  handleRosaPrefs(event) {
+    const d = event.detail || {};
+    this.settings = {
+      ...this.settings,
+      hospBook: d.hospBook ? cleanHospBook(d.hospBook) : this.settings.hospBook,
+      rosaDeal:
+        d.rosaDeal && typeof d.rosaDeal === "object"
+          ? d.rosaDeal
+          : this.settings.rosaDeal
+    };
+    this.persist();
   }
   handleRosaClose() {
     this.rosaId = "";

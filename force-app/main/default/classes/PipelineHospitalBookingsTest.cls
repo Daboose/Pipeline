@@ -91,7 +91,10 @@ private class PipelineHospitalBookingsTest {
     queuedItem.clear();
   }
 
-  /** A surgery `monthsBack` months before this month (1 is the last whole month, the last of the 12 columns); queued, flush() makes it. */
+  /**
+   * A surgery in the column `monthsBack` from the end (Robert, 2026-11-28: the 12 columns end with the current month, up to today): 1 is the
+   * first day of this month (the last column), 12 the first column, 13 before the window, 0 next month (not yet happened). Queued; flush() makes it.
+   */
   private static void surgery(
     Setup s,
     String anatomy,
@@ -100,7 +103,7 @@ private class PipelineHospitalBookingsTest {
     Boolean withItem,
     Integer monthsBack
   ) {
-    Date day = Date.today().toStartOfMonth().addMonths(-monthsBack).addDays(4);
+    Date day = Date.today().toStartOfMonth().addMonths(1 - monthsBack);
     queued.add(
       new Case__c(
         Physician__c = s.surgeon.Id,
@@ -129,10 +132,10 @@ private class PipelineHospitalBookingsTest {
     System.assertEquals(s.hospital.Id, h.hospitalId);
     System.assertEquals('Hospital A', h.hospitalName);
     System.assertEquals(
-      Date.today().toStartOfMonth().addMonths(-12),
+      Date.today().toStartOfMonth().addMonths(-11),
       h.windowStart
     );
-    System.assertEquals(Date.today().toStartOfMonth().addDays(-1), h.windowEnd);
+    System.assertEquals(Date.today(), h.windowEnd);
     System.assertEquals(true, h.hasBookings);
     System.assertEquals(5, h.booked);
     System.assertEquals(4, h.types.size(), 'Always the four types');
@@ -162,7 +165,7 @@ private class PipelineHospitalBookingsTest {
     surgery(s, '201', 'Z02', s.hospital.Id, false, 1); // demo with no usage item
     surgery(s, '201', 'A00', s.hospital.Id, false, 1); // no usage item
     surgery(s, '201', 'A00', s.hospital.Id, true, 13); // before the window
-    surgery(s, '201', 'A00', s.hospital.Id, true, 0); // this month is not a whole month
+    surgery(s, '201', 'A00', s.hospital.Id, true, 0); // next month: not yet happened
     flush();
     PipelineBookingsController.HospitalBookings h = PipelineBookingsController.getHospitalBookings(
       s.deal.Id
@@ -216,8 +219,94 @@ private class PipelineHospitalBookingsTest {
     System.assertEquals(false, h.hasBookings);
     System.assertEquals(4, h.types.size());
     System.assertEquals(
-      Date.today().toStartOfMonth().addMonths(-12),
+      Date.today().toStartOfMonth().addMonths(-11),
       h.windowStart
     );
+  }
+
+  /** BOOKED: bookings from today for 12 months, no usage needed; ROSA from the Technology; cancelled ones and past ones left out. */
+  @IsTest
+  static void bookedCountsBookingsFromTodayWithoutUsage() {
+    Setup s = make();
+    Date today = Date.today();
+    Date later = today.toStartOfMonth().addMonths(2).addDays(4);
+    List<Case__c> cases = new List<Case__c>{
+      new Case__c(
+        Physician__c = s.surgeon.Id,
+        Surgery_Date__c = today,
+        Surgery_Type__c = '202',
+        Procedure__c = 'A00',
+        Healthcare_Facility__c = s.hospital.Id,
+        Technology__c = '3'
+      ),
+      new Case__c(
+        Physician__c = s.surgeon.Id,
+        Surgery_Date__c = later,
+        Surgery_Type__c = '201',
+        Procedure__c = 'A00',
+        Healthcare_Facility__c = s.hospital.Id,
+        Technology__c = '1'
+      ),
+      new Case__c(
+        Physician__c = s.surgeon.Id,
+        Surgery_Date__c = later,
+        Surgery_Type__c = '201',
+        Procedure__c = 'A00',
+        Healthcare_Facility__c = s.hospital.Id,
+        Status__c = 'R'
+      ),
+      new Case__c(
+        Physician__c = s.surgeon.Id,
+        Surgery_Date__c = later,
+        Surgery_Type__c = '201',
+        Procedure__c = 'A00',
+        Healthcare_Facility__c = s.hospital.Id,
+        Booking_Status__c = 'C'
+      ),
+      new Case__c(
+        Physician__c = s.surgeon.Id,
+        Surgery_Date__c = today.addDays(-1),
+        Surgery_Type__c = '201',
+        Procedure__c = 'A00',
+        Healthcare_Facility__c = s.hospital.Id
+      ),
+      new Case__c(
+        Physician__c = s.surgeon.Id,
+        Surgery_Date__c = later,
+        Surgery_Type__c = '201',
+        Procedure__c = 'A00',
+        Healthcare_Facility__c = s.other.Id
+      )
+    };
+    insert cases;
+    Test.startTest();
+    PipelineBookingsController.HospitalBookings h = PipelineBookingsController.getHospitalBooked(
+      s.deal.Id
+    );
+    Test.stopTest();
+    System.assertEquals(today, h.windowStart);
+    System.assertEquals(
+      today.toStartOfMonth().addMonths(12).addDays(-1),
+      h.windowEnd
+    );
+    System.assertEquals(
+      2,
+      h.booked,
+      'Cancelled, past and other hospitals are left out'
+    );
+    System.assertEquals(
+      1,
+      h.types[1].months[0],
+      'The knee today is in the first column'
+    );
+    System.assertEquals(1, h.types[0].months[2], 'The hip is two columns on');
+    Integer rosa = 0;
+    for (PipelineBookingsController.HospitalLine l : h.lines) {
+      if (l.rosa) {
+        rosa++;
+        System.assertEquals('Knee', l.anatomy);
+      }
+    }
+    System.assertEquals(1, rosa, 'Only the ROSA technology booking is ROSA');
   }
 }

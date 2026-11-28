@@ -41,3 +41,12 @@
   gap: 6px;
   font-size: 14px;
 }
+
+/* a column layout (Details of a surgeon): space between fields, the boxes keep 24px clear of the next column (Robert, 2026-11-28) */
+.fields.tpl .f {
+  padding-right: 24px;
+}
+/* a tick box sits level with the 36px boxes beside it */
+.f > .chk {
+  margin-top: 8px;
+}

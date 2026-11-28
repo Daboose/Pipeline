@@ -17,6 +17,12 @@
           <div class="sub">{subLine}</div>
         </div>
         <div class="tools">
+          <c-pipeline-zoom-slider
+            compact
+            class="zoomseg"
+            value={zoomValue}
+            onzoomchange={handleZoom}
+          ></c-pipeline-zoom-slider>
           <button
             type="button"
             class="btn sec"
@@ -448,9 +454,17 @@
                   onfieldchange={handleField}
                 ></c-rosa-deal-fields>
                 <div lwc:if={sdetCard.editing} class={actsCls}>
+                  <button
+                    type="button"
+                    class="btn red del"
+                    onclick={handleAskDelete}
+                  >
+                    Delete surgeon
+                  </button>
                   <span lwc:if={dirty} class="warn"
                     >NOT SAVED YET. Nothing changes until you press Save.</span
                   >
+                  <span lwc:else class="grow"></span>
                   <button type="button" class="btn red" onclick={handleCancel}>
                     Cancel
                   </button>
@@ -466,7 +480,7 @@
               </div>
               <div class={svolCard.cls}>
                 <div class="ch">
-                  <h3>Volumes a year</h3>
+                  <h3>Case Volumes Per Year</h3>
                   <button
                     lwc:if={svolCard.showEdit}
                     type="button"
@@ -746,19 +760,16 @@
               </div>
             </template>
 
-            <template lwc:if={isMyCase}>
+            <template lwc:if={showMcCard}>
               <div class="card">
                 <div class="ch">
                   <div>
-                    <h3>myCase Bookings (cases with usages)</h3>
-                    <p class="sub mcnote">
-                      Only cases where items were used in surgery. Planned or
-                      cancelled bookings aren't shown.
-                    </p>
+                    <h3>{mcTitle}</h3>
+                    <p class="sub mcnote">{mcNote}</p>
                   </div>
                   <span class="sub">{mcWindow}</span>
                 </div>
-                <template lwc:if={mcHasAny}>
+                <template lwc:if={mcLoaded}>
                   <div class="mchips">
                     <template for:each={mcChips.types} for:item="c">
                       <button
@@ -791,6 +802,21 @@
                         >{c.name} <b>{c.n}</b>
                       </button>
                     </template>
+                    <span class="msp"></span>
+                    <c-pipeline-segmented
+                      class="robotseg whenseg"
+                      label="Completed or booked"
+                      options={whenOptions}
+                      value={mcWhen}
+                      onchange={handleMcWhen}
+                    ></c-pipeline-segmented>
+                    <c-pipeline-segmented
+                      class="robotseg"
+                      label="ROSA or non-ROSA cases"
+                      options={robotOptions}
+                      value={mcRobot}
+                      onchange={handleMcRobot}
+                    ></c-pipeline-segmented>
                   </div>
                   <template lwc:if={mcTable.has}>
                     <table class="mc">
@@ -799,7 +825,7 @@
                           <th class="l">Surgeon</th>
                           <th class="l">Brand</th>
                           <template for:each={mcMonths} for:item="m"
-                            ><th key={m.k}>{m.short}</th></template
+                            ><th key={m.k} class="m">{m.head}</th></template
                           >
                           <th>Total</th>
                         </tr>
@@ -817,7 +843,7 @@
                             </td>
                             <td class="br l"><i style={r.sq}></i>{r.brand}</td>
                             <template for:each={r.cells} for:item="c">
-                              <td key={c.k} class="n">
+                              <td key={c.k} class="n m">
                                 <span
                                   class={c.cls}
                                   style={c.style}
@@ -832,18 +858,18 @@
                         <tr class="sum">
                           <td class="l" colspan="2">Total</td>
                           <template for:each={mcTable.cols} for:item="c"
-                            ><td key={c.k}>{c.v}</td></template
+                            ><td key={c.k} class="m">{c.v}</td></template
                           >
                           <td class="t">{mcTable.tot}</td>
                         </tr>
                       </tbody>
                     </table>
                   </template>
-                  <p lwc:else class="sub">Nothing to show with these chips.</p>
+                  <p lwc:elseif={mcHasData} class="sub">
+                    Nothing to show with these chips.
+                  </p>
+                  <p lwc:else class="sub">{mcEmpty}</p>
                 </template>
-                <p lwc:elseif={mcLoaded} class="sub">
-                  No myCase bookings for this surgeon in the last 12 months.
-                </p>
                 <p lwc:else class="sub">Loading…</p>
               </div>
             </template>
@@ -1038,10 +1064,15 @@
 
           <!-- myCase for the hospital (Robert, 2026-11-28): Pipeline's hospital MyCase Bookings, every surgeon at the deal's hospital -->
           <template lwc:if={isHospCase}>
-            <h2>myCase</h2>
             <div class="card hospcase">
               <c-pipeline-hospital-bookings
                 record-id={dealId}
+                saved={hospBook}
+                heading="myCase Hospital Bookings"
+                deal-surgeons={dealSurgeonIds}
+                can-add={canEdit}
+                onprefschange={handleHospPrefs}
+                onaddsurgeon={handleMcAdd}
               ></c-pipeline-hospital-bookings>
             </div>
           </template>
@@ -1298,7 +1329,7 @@
             </p>
           </div>
           <div class="card">
-            <h3>Volumes a year</h3>
+            <h3>Case Volumes Per Year</h3>
             <table class="vt">
               <thead>
                 <tr class="grp">
@@ -1420,6 +1451,22 @@
             Leave anyway
           </button>
         </div>
+        <!-- Are you sure: deleting a surgeon added in error (Robert, 2026-11-28) -->
+        <template lwc:if={askDelete}>
+          <div class={askScrimCls}></div>
+          <div class={askCls} role="alertdialog" aria-label="Delete surgeon">
+            <h3>Delete {curName}?</h3>
+            <p>{deleteText}</p>
+            <div class="askb">
+              <button type="button" class="btn sec" onclick={handleKeep}>
+                Keep
+              </button>
+              <button type="button" class="btn red" onclick={handleDelete}>
+                Delete
+              </button>
+            </div>
+          </div>
+        </template>
         <div lwc:if={toast} class={toastCls} role="status">{toast}</div>
       </div>
     </template>

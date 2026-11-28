@@ -14,6 +14,10 @@ export default class RosaDealFields extends LightningElement {
   /** Optional column layout that overrides columns (used to line a field up with a table column below it). */
   @api gridTemplate;
 
+  /** With a column layout the columns touch (no gap), so each field keeps 24px of space on its right (Robert, 2026-11-28). */
+  get fieldsCls() {
+    return this.gridTemplate ? "fields tpl" : "fields";
+  }
   get gridStyle() {
     if (this.gridTemplate)
       return `grid-template-columns:${this.gridTemplate};column-gap:0`;

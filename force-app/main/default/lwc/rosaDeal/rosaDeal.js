@@ -3,9 +3,13 @@ import { getPicklistValuesByRecordType } from "lightning/uiObjectInfoApi";
 import getDeal from "@salesforce/apex/ROSADealController.getDeal";
 import saveRecord from "@salesforce/apex/ROSADealController.saveRecord";
 import addSurgeon from "@salesforce/apex/ROSADealController.addSurgeon";
+import deleteSurgeon from "@salesforce/apex/ROSADealController.deleteSurgeon";
 import saveAnswers from "@salesforce/apex/ROSADealController.saveAnswers";
 import surgeonOpportunities from "@salesforce/apex/ROSADealController.surgeonOpportunities";
 import surgeonBookings from "@salesforce/apex/ROSADealController.surgeonBookings";
+import surgeonBooked from "@salesforce/apex/ROSADealController.surgeonBooked";
+import getPrefs from "@salesforce/apex/ROSADealController.getPrefs";
+import savePrefs from "@salesforce/apex/ROSADealController.savePrefs";
 import linkOpportunity from "@salesforce/apex/ROSADealController.linkOpportunity";
 import addChecklist from "@salesforce/apex/ROSADealController.addChecklist";
 import getFeed from "@salesforce/apex/PipelineChatterController.getFeed";
@@ -20,7 +24,7 @@ import postFeed from "@salesforce/apex/PipelineChatterController.post";
  * holds ROSA Deal Management (decision 2). Stage clicks may jump ahead of the checklist (decision 1).
  * Fires "close" when the person closes it, and "saved" after any change (so the caller can refresh).
  */
-export const VERSION = "ROSA Deal Manager 0.25";
+export const VERSION = "ROSA Deal Manager 0.43";
 
 const STAGES = [
   "Sales Pipeline",
@@ -137,6 +141,19 @@ const money = (v, cur) => {
   );
 };
 
+/** The ROSA / non-ROSA choice on myCase bookings, with no heading (Robert, 2026-11-28). */
+const ROBOT_OPTIONS = [
+  { value: "all", label: "All" },
+  { value: "rosa", label: "ROSA only" },
+  { value: "non", label: "Non-ROSA" }
+];
+
+/** Completed surgeries (the default) or bookings from today (Robert, 2026-11-28); no "all". */
+const WHEN_OPTIONS = [
+  { value: "past", label: "Completed" },
+  { value: "future", label: "Booked" }
+];
+
 export default class RosaDeal extends LightningElement {
   @api dealId;
   /** Optional: the caller's theme (Pipeline passes its own); otherwise the person's saved Pipeline theme. */
@@ -145,6 +162,11 @@ export default class RosaDeal extends LightningElement {
   @api fullPage = false;
   /** The zoom of the screen that opened this one, in percent (Pipeline passes its own, e.g. 80); nothing means 100% (Robert, 2026-11-28). */
   @api zoom;
+  /**
+   * Optional: the person's remembered choices from the caller (Pipeline passes { hospBook, rosaDeal } from its own settings and keeps
+   * what this screen sends back with prefschange). Without it (the full-window page) the screen reads and saves them itself.
+   */
+  @api prefs;
 
   data; // ROSADealController.Deal
   sec = "overview";
@@ -165,6 +187,10 @@ export default class RosaDeal extends LightningElement {
   books = {}; // surgeon id => { windowStart, lines } (myCase bookings)
   mcOn = { Hip: true, Knee: true, Shoulder: true, CMFT: true };
   mcPr = { Primary: true, Revision: true, Demo: true };
+  mcRobot = "all"; // ROSA / non-ROSA on the surgeon's myCase tab
+  mcWhen = "past"; // Completed (past, with usage) or Booked (from today) on the surgeon's myCase tab
+  hospBook = null; // the hospital MyCase Bookings' remembered view, chips and ROSA choice (shared with Pipeline)
+  zoomPct = null; // the zoom chosen on this screen (60 to 100); null until known
   feed = [];
   feedText = "";
   sortKey = "name";
@@ -176,6 +202,91 @@ export default class RosaDeal extends LightningElement {
 
   connectedCallback() {
     this.load();
+    this.readPrefs();
+  }
+
+  /* ----- remembered choices (Robert, 2026-11-28: the view, chips, ROSA / non-ROSA and Zoom are remembered) ----- */
+  readPrefs() {
+    if (this.prefs) {
+      this.applyPrefs(this.prefs);
+      return;
+    }
+    getPrefs()
+      .then((json) => this.applyPrefs(JSON.parse(json || "{}")))
+      .catch(() => this.applyPrefs({}));
+  }
+  applyPrefs(p) {
+    const r = (p && p.rosaDeal) || {};
+    this.hospBook = (p && p.hospBook) || null;
+    const off = (list) => (Array.isArray(list) ? list : []);
+    const types = { Hip: true, Knee: true, Shoulder: true, CMFT: true };
+    off(r.types).forEach((t) => {
+      if (t in types) types[t] = false;
+    });
+    const procs = { Primary: true, Revision: true, Demo: true };
+    off(r.procs).forEach((x) => {
+      if (x in procs) procs[x] = false;
+    });
+    this.mcOn = types;
+    this.mcPr = procs;
+    this.mcRobot = ["all", "rosa", "non"].includes(r.robot) ? r.robot : "all";
+    this.mcWhen = r.when === "future" ? "future" : "past";
+    if (this.stab === "mycase") this.loadBooks();
+    // opened from Pipeline: Pipeline's own Zoom; on its own: the Zoom chosen here, 80% until the person chooses
+    const saved = Number(r.zoom);
+    if (this.zoom) this.zoomPct = Number(this.zoom);
+    else this.zoomPct = [60, 70, 80, 90, 100].includes(saved) ? saved : 80;
+  }
+  get rosaDealPrefs() {
+    const offOf = (m) => Object.keys(m).filter((k) => !m[k]);
+    return {
+      zoom: this.zoomPct,
+      types: offOf(this.mcOn),
+      procs: offOf(this.mcPr),
+      robot: this.mcRobot,
+      when: this.mcWhen
+    };
+  }
+  /** Keeps the choices: hands them to Pipeline when it opened the screen, else saves them (a moment after the last change). */
+  keepPrefs() {
+    const detail = { hospBook: this.hospBook, rosaDeal: this.rosaDealPrefs };
+    if (this.prefs) {
+      this.dispatchEvent(new CustomEvent("prefschange", { detail }));
+      return;
+    }
+    clearTimeout(this.prefsTimer);
+    // eslint-disable-next-line @lwc/lwc/no-async-operation
+    this.prefsTimer = setTimeout(() => {
+      savePrefs({ prefsJson: JSON.stringify(detail) }).catch(() => {
+        // a choice that cannot be kept is not worth an error on screen
+      });
+    }, 600);
+  }
+  handleZoom(event) {
+    this.zoomPct = Number(event.detail.value);
+    this.keepPrefs();
+  }
+  handleHospPrefs(event) {
+    this.hospBook = event.detail;
+    this.keepPrefs();
+  }
+  get robotOptions() {
+    return ROBOT_OPTIONS;
+  }
+  handleMcRobot(event) {
+    this.mcRobot = event.detail.value;
+    this.keepPrefs();
+  }
+  get whenOptions() {
+    return WHEN_OPTIONS;
+  }
+  get mcBooked() {
+    return this.mcWhen === "future";
+  }
+  handleMcWhen(event) {
+    this.mcWhen = event.detail.value === "future" ? "future" : "past";
+    this.keepPrefs();
+    this.loadBooks();
   }
 
   /* ----- reading ----- */
@@ -570,6 +681,11 @@ export default class RosaDeal extends LightningElement {
   handleEdit(event) {
     if (!this.leaveEdit()) return;
     this.edit = event.currentTarget.dataset.edit;
+    // editing the volumes: read the surgeon's myCase (both sets) so the panel can sit under Case Volumes Per Year
+    if (this.edit === "svol") {
+      this.loadBooks("past");
+      this.loadBooks("future");
+    }
   }
   handleCancel() {
     this.edit = null;
@@ -1064,7 +1180,11 @@ export default class RosaDeal extends LightningElement {
     ].map(([k, l]) => ({
       k,
       label: l,
-      cls: "pill" + (this.stab === k ? " on" : "")
+      // myCase keeps its brand spelling, never capitals (Robert, 2026-11-28)
+      cls:
+        "pill" +
+        (this.stab === k ? " on" : "") +
+        (k === "mycase" ? " brand" : "")
     }));
   }
   get isDetails() {
@@ -1098,7 +1218,7 @@ export default class RosaDeal extends LightningElement {
         key: "sgv",
         label: "ROSA Growth $",
         kind: "ro",
-        col: 6, // under the ZB growth column of Volumes a year (Robert, 2026-11-28)
+        col: 6, // under the ZB growth column of Case Volumes Per Year (Robert, 2026-11-28)
         good: n(s.ROSA_Growth_Value__c) > 0,
         display:
           s.ROSA_Growth_Value__c === null ||
@@ -1336,23 +1456,61 @@ export default class RosaDeal extends LightningElement {
     ];
   }
   /* ----- myCase bookings (Robert, 2026-11-28): the Surgeon / Brand table of Pipeline's hospital bookings, for one surgeon ----- */
-  loadBooks() {
+  loadBooks(whenArg) {
     const s = this.cur;
-    if (!s || !s.Surgeon_Name__c || this.books[s.Id]) return;
-    surgeonBookings({ accountId: s.Surgeon_Name__c })
+    const when = whenArg || this.mcWhen;
+    const key = s && s.Id + "|" + when;
+    if (!s || !s.Surgeon_Name__c || this.books[key]) return;
+    const read = when === "future" ? surgeonBooked : surgeonBookings;
+    read({ accountId: s.Surgeon_Name__c })
       .then((b) => {
-        this.books = { ...this.books, [s.Id]: b };
+        this.books = { ...this.books, [key]: b };
       })
       .catch((e) => this.flash(err(e), true));
   }
   get mcData() {
-    return this.books[this.sid];
+    return this.books[this.sid + "|" + this.mcWhen];
+  }
+  /**
+   * The surgeon's myCase panel is shown on the myCase tab, and also under Case Volumes Per Year while the volumes are being edited (Robert,
+   * 2026-11-28, mockup rosa_deal_add_surgeons_v9), there only when the surgeon has myCase cases, completed or booked (no myCase, as in
+   * New Zealand, shows nothing extra).
+   */
+  get showMcCard() {
+    if (this.isMyCase) return true;
+    if (!(this.isDetails && this.edit === "svol")) return false;
+    const has = (when) => {
+      const b = this.books[this.sid + "|" + when];
+      return !!(b && b.lines && b.lines.length);
+    };
+    return has("past") || has("future");
   }
   get mcLoaded() {
     return !!this.mcData;
   }
+  get mcTitle() {
+    return this.mcBooked
+      ? "myCase Bookings (booked)"
+      : "myCase Bookings (cases with usages)";
+  }
+  get mcNote() {
+    return this.mcBooked
+      ? "Booked surgeries from today on. ROSA is the booking's Technology (ROSA or ROSA+PSI). Cancelled bookings aren't shown."
+      : "Only cases where items were used in surgery. Planned or cancelled bookings aren't shown.";
+  }
+  get mcEmpty() {
+    return this.mcBooked
+      ? "No bookings for this surgeon from today."
+      : "No myCase bookings for this surgeon in the last 12 months.";
+  }
   get mcAll() {
-    return (this.mcData && this.mcData.lines) || [];
+    const all = (this.mcData && this.mcData.lines) || [];
+    if (this.mcRobot === "all") return all;
+    const want = this.mcRobot === "rosa";
+    return all.filter((l) => !!l.rosa === want);
+  }
+  get mcHasData() {
+    return ((this.mcData && this.mcData.lines) || []).length > 0;
   }
   get mcHasAny() {
     return this.mcAll.length > 0;
@@ -1366,6 +1524,9 @@ export default class RosaDeal extends LightningElement {
       return {
         k: "m" + i,
         short: MONTH_SHORT[d.getMonth()],
+        // the column heading: every month with its two-digit year, "Nov 25", "Dec 25" (Robert, 2026-11-28)
+        head:
+          MONTH_SHORT[d.getMonth()] + " " + String(d.getFullYear()).slice(2),
         long: d.toLocaleString("en-AU", { month: "long", year: "numeric" })
       };
     });
@@ -1381,6 +1542,7 @@ export default class RosaDeal extends LightningElement {
       ms[11].short +
       " " +
       ms[11].long.slice(-4) +
+      (this.mcBooked ? ", from today" : "") +
       ", every hospital"
     );
   }
@@ -1413,6 +1575,7 @@ export default class RosaDeal extends LightningElement {
     const { grp, name } = event.currentTarget.dataset;
     if (grp === "t") this.mcOn = { ...this.mcOn, [name]: !this.mcOn[name] };
     else this.mcPr = { ...this.mcPr, [name]: !this.mcPr[name] };
+    this.keepPrefs();
   }
   get mcTable() {
     const merged = new Map();
@@ -1630,6 +1793,104 @@ export default class RosaDeal extends LightningElement {
       });
   }
 
+  /* ----- adding a surgeon from the hospital's myCase (Robert, 2026-11-28, mockup rosa_deal_add_surgeons_v9) ----- */
+  /** The Account ids of the deal's surgeons, so the hospital myCase can tick them. */
+  get dealSurgeonIds() {
+    return ((this.data && this.data.surgeons) || [])
+      .map((s) => s.Surgeon_Name__c)
+      .filter((x) => x);
+  }
+  handleMcAdd(event) {
+    const { accountId, name } = event.detail || {};
+    if (!this.canEdit || !accountId) return;
+    this.busy = true;
+    addSurgeon({ dealId: this.dealId, values: { Surgeon_Name__c: accountId } })
+      .then(() => this.load(true))
+      .then(() => {
+        this.flash(name + " added to Surgeons and Growth.");
+        this.dispatchEvent(new CustomEvent("saved"));
+      })
+      .catch((e) => {
+        this.busy = false;
+        this.flash(err(e), true);
+      });
+  }
+
+  /* ----- deleting a surgeon added in error (Robert, 2026-11-28): Delete surgeon at the bottom left of Details in Edit, then Are you sure ----- */
+  askDelete = false;
+  askOn = false;
+  get askCls() {
+    return "ask" + (this.askOn ? " on" : "");
+  }
+  get askScrimCls() {
+    return "askscrim" + (this.askOn ? " on" : "");
+  }
+  /**
+   * The warning (Robert, 2026-11-28): the surgeon, plus their Q&A and their credentialing, each named only when it exists.
+   */
+  get deleteText() {
+    const s = this.cur || {};
+    const qa = this.answersOf(this.sid).length;
+    const parts = [];
+    if (qa)
+      parts.push(`their Q&A (${qa} ${qa === 1 ? "question" : "questions"})`);
+    const credFields = [
+      "ROSA_Credentialing_Status__c",
+      "ROSA_Pathway__c",
+      "ROSA_Course_Date__c",
+      "ROSA_Credentialed_Date__c",
+      "ROSA_First_Case_Date__c"
+    ];
+    if (credFields.some((f) => s[f])) parts.push("their credentialing");
+    return (
+      `You're about to delete ${this.curName}` +
+      (parts.length ? ", plus " + parts.join(" and ") : "") +
+      ". This cannot be undone. Do you wish to continue?"
+    );
+  }
+  handleAskDelete() {
+    if (!this.canEdit || !this.sid) return;
+    this.askDelete = true;
+    // put the box on the page first, then switch it on so it opens with the standard motion
+    // eslint-disable-next-line @lwc/lwc/no-async-operation
+    setTimeout(() => {
+      this.askOn = true;
+    }, 30);
+  }
+  closeAsk() {
+    this.askOn = false;
+    // eslint-disable-next-line @lwc/lwc/no-async-operation
+    setTimeout(() => {
+      this.askDelete = false;
+    }, 450);
+  }
+  handleKeep() {
+    this.closeAsk();
+  }
+  handleDelete() {
+    const id = this.sid;
+    const who = this.curName;
+    this.closeAsk();
+    this.busy = true;
+    deleteSurgeon({ surgeonId: id })
+      .then(() => {
+        this.edit = null;
+        this.draft = {};
+        this.names = {};
+        this.sid = null;
+        this.sec = "surgeons";
+        return this.load(true);
+      })
+      .then(() => {
+        this.flash(who + " deleted from this deal.");
+        this.dispatchEvent(new CustomEvent("saved"));
+      })
+      .catch((e) => {
+        this.busy = false;
+        this.flash(err(e), true);
+      });
+  }
+
   /* ----- checklist ----- */
   handleStep(event) {
     if (!this.canEdit || !this.cl) return;
@@ -1826,8 +2087,11 @@ export default class RosaDeal extends LightningElement {
     return "root" + (this.fullPage ? " full" : "");
   }
   get z() {
-    const v = Number(this.zoom);
-    return v >= 50 && v <= 100 ? v / 100 : 1;
+    const v = Number(this.zoomPct || this.zoom || 80);
+    return v >= 50 && v <= 100 ? v / 100 : 0.8;
+  }
+  get zoomValue() {
+    return Math.round(this.z * 100);
   }
   get rootStyle() {
     return "--z:" + this.z;

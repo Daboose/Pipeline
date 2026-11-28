@@ -65,6 +65,7 @@ h2 {
 .legend {
   flex: none;
   display: flex;
+  width: 100%;
   flex-wrap: wrap;
   align-items: center;
   gap: 12px;
@@ -394,5 +395,99 @@ table.grid {
   .tk,
   .fbtn {
     transition: none;
+  }
+}
+/* the ROSA / non-ROSA slider sits at the right end of the chip row (Robert, 2026-11-28) */
+.lsp {
+  flex: 1 1 0;
+}
+.robotseg {
+  --seg-track: var(--panel2);
+  --seg-line: var(--edge);
+  --seg-lab: var(--panel);
+  --seg-optx: var(--muted);
+  --seg-indigo: #7c3aed;
+  --seg-muted: var(--muted);
+  --seg-shadow: rgba(0, 0, 0, 0.35);
+}
+/* the chips' words in the same capitals as the sliders (Robert, 2026-11-28) */
+.lg {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.lg b {
+  font-size: 13px;
+  letter-spacing: 0.02em;
+}
+
+/* Completed or Booked: while the other set is read, the views dim and the sliders stay where they are (Robert, 2026-11-28) */
+.wrap .box {
+  transition: opacity 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.wrap.dim .box {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+/* the ROSA deal screen: a mark before each surgeon (Robert, 2026-11-28, mockup rosa_deal_add_surgeons_v9): a green tick when the surgeon
+   is in Surgeons and Growth, a round indigo plus (drawn with two bars, exactly centred) to add them */
+.sgw {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+.sgn {
+  min-width: 0;
+}
+.mk {
+  flex: none;
+  position: relative;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 0;
+  padding: 0;
+}
+.mk.in {
+  background: #16a34a;
+}
+.mk.in::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 45%;
+  width: 5px;
+  height: 10px;
+  border: solid #fff;
+  border-width: 0 2px 2px 0;
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+.mk.add {
+  background: var(--indigo, #6366f1);
+  cursor: pointer;
+}
+.mk.add::before,
+.mk.add::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 12px;
+  height: 2px;
+  border-radius: 1px;
+  background: #fff;
+  transform: translate(-50%, -50%);
+}
+.mk.add::after {
+  transform: translate(-50%, -50%) rotate(90deg);
+}
+.mk.none {
+  background: transparent;
+}
+@media (hover: hover) {
+  .mk.add:hover {
+    background: #a5b4fc;
   }
 }

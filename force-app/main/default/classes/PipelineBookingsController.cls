@@ -296,7 +296,7 @@ public with sharing class PipelineBookingsController {
     return out;
   }
 
-  /** One type of surgery in the hospital's chart: its cases by month (the 12 whole months, oldest first). */
+  /** One type of surgery in the hospital's chart: its cases by month (12 columns, oldest first). */
   public class HospitalType {
     /** Hip, Knee, Shoulder or CMFT. */
     @AuraEnabled
@@ -327,17 +327,20 @@ public with sharing class PipelineBookingsController {
     /** Primary, Revision or Demo (the case's Type, Case__c.Procedure__c). */
     @AuraEnabled
     public String procedure;
+    /** True when the case's usage holds the ROSA robotic unit drape, the sign the ROSA was used (Robert, 2026-11-28). */
+    @AuraEnabled
+    public Boolean rosa = false;
     @AuraEnabled
     public List<Integer> months = new List<Integer>();
   }
 
-  /** What the hospital chart needs: the hospital, the 12 whole months, the four types' counts (always all four, in order) and the lines. */
+  /** What the hospital chart needs: the hospital, the 12 months, the four types' counts (always all four, in order) and the lines. */
   public class HospitalBookings {
     @AuraEnabled
     public Id hospitalId;
     @AuraEnabled
     public String hospitalName;
-    /** The first day of the first of the 12 whole months, and the last day of the last one (the current month is not included). */
+    /** COMPLETED: the first day of the 11th month back, and today (the current month so far is the last column). BOOKED: today, and the last day of the 12th month. */
     @AuraEnabled
     public Date windowStart;
     @AuraEnabled
@@ -370,7 +373,7 @@ public with sharing class PipelineBookingsController {
 
   /**
    * ROSA deals (Robert, 2026-11-19): the MyCase bookings seen from the hospital's side. For the deal's Healthcare Facility, the
-   * surgeries of the last 12 whole months (a rolling window that leaves out the current month), by month and by type of surgery
+   * surgeries of the last 12 months up to and including today (the current month is the last column; Robert, 2026-11-28), by month and by type of surgery
    * (Hip, Knee, Shoulder, CMFT), primary and revision together: it is cases booked. A case counts when the surgery has happened and
    * has at least one usage item (a case with none is a booking whose surgery did not go ahead); the anatomy comes from
    * Case__c.Surgery_Type__c. Demos (Z02) with usage items count too (Robert, 2026-11-25: the screen has a Demo chip), unlike the
@@ -383,10 +386,26 @@ public with sharing class PipelineBookingsController {
    */
   @AuraEnabled
   public static HospitalBookings getHospitalBookings(Id dealId) {
+    return hospitalBookings(dealId, false);
+  }
+
+  /**
+   * BOOKED (Robert, 2026-11-28): the hospital's surgeries booked from today for 12 months (the first column is the current month from
+   * today on). No usage is needed; ROSA is the booking's Technology, ROSA or ROSA+PSI. Cancelled bookings (SAP Surgery Status R or C,
+   * or Booking Status C) are left out. Same shape as getHospitalBookings. Who calls it: pipelineHospitalBookings and its test.
+   * Reads Case__c and Account in the person's own access; changes nothing.
+   */
+  @AuraEnabled
+  public static HospitalBookings getHospitalBooked(Id dealId) {
+    return hospitalBookings(dealId, true);
+  }
+
+  private static HospitalBookings hospitalBookings(Id dealId, Boolean booked) {
     HospitalBookings out = new HospitalBookings();
     Date thisMonth = Date.today().toStartOfMonth();
-    out.windowStart = thisMonth.addMonths(-12);
-    out.windowEnd = thisMonth.addDays(-1);
+    // COMPLETED (Robert, 2026-11-28): the 12 months ending with this month, up to and including today (on 28 Nov 2026: Dec 2025 to 28 Nov 2026)
+    out.windowStart = booked ? Date.today() : thisMonth.addMonths(-11);
+    out.windowEnd = booked ? thisMonth.addMonths(12).addDays(-1) : Date.today();
     Map<String, HospitalType> byAnatomy = new Map<String, HospitalType>();
     for (String a : ORDER) {
       HospitalType t = new HospitalType();
@@ -409,11 +428,17 @@ public with sharing class PipelineBookingsController {
     out.hospitalName = d[0].Healthcare_Facility__r?.Name;
     Map<String, HospitalLine> lines = new Map<String, HospitalLine>();
     for (
-      HospitalCase k : countedAtHospital(
-        out.hospitalId,
-        out.windowStart,
-        thisMonth
-      )
+      HospitalCase k : booked
+        ? bookedAtHospital(
+            out.hospitalId,
+            out.windowStart,
+            thisMonth.addMonths(12)
+          )
+        : countedAtHospital(
+            out.hospitalId,
+            out.windowStart,
+            Date.today().addDays(1)
+          )
     ) {
       HospitalType t = byAnatomy.get(k.anatomy);
       t.months[k.month] = t.months[k.month] + 1;
@@ -428,7 +453,9 @@ public with sharing class PipelineBookingsController {
         '|' +
         k.anatomy +
         '|' +
-        k.procedure;
+        k.procedure +
+        '|' +
+        k.rosa;
       HospitalLine line = lines.get(key);
       if (line == null) {
         line = new HospitalLine();
@@ -437,6 +464,7 @@ public with sharing class PipelineBookingsController {
         line.brand = k.brand;
         line.anatomy = t.name;
         line.procedure = k.procedure;
+        line.rosa = k.rosa;
         line.months = zeros();
         lines.put(key, line);
         out.lines.add(line);
@@ -455,6 +483,110 @@ public with sharing class PipelineBookingsController {
     String surgeon;
     String brand;
     String procedure;
+    Boolean rosa;
+  }
+
+  /**
+   * The ROSA robotic unit drape: a case whose usage (any sheet, manual included) holds one was done with the ROSA robot, since a drape
+   * is always used with it (Robert, 2026-11-28). Used by the ROSA / non-ROSA choice on MyCase Bookings.
+   */
+  public static final Set<String> ROSA_DRAPE = new Set<String>{
+    '20-8020-080-00',
+    '20-8020-080-01'
+  };
+
+  /** Case__c.Technology__c values that mean the ROSA robot is booked: 3 ROSA, 4 ROSA+PSI (Robert, 2026-11-28). */
+  public static final Set<String> ROSA_TECHNOLOGY = new Set<String>{ '3', '4' };
+
+  /**
+   * The booking fields BOOKED reads beyond the usual ones, only those the person can read (not every profile can see Technology or
+   * Booking Status, e.g. India in UAT): a field they cannot read is simply not used, so BOOKED never fails on field access.
+   */
+  public static String bookingFields() {
+    String out = '';
+    Map<String, Schema.SObjectField> fields = Schema.SObjectType.Case__c.fields.getMap();
+    for (
+      String f : new List<String>{
+        'Status__c',
+        'Booking_Status__c',
+        'Technology__c'
+      }
+    ) {
+      if (fields.get(f).getDescribe().isAccessible()) {
+        out += ', ' + f;
+      }
+    }
+    return out;
+  }
+
+  /** A field of a case, or null when it was not read. */
+  private static Object valueOf(Case__c c, String field) {
+    return c.getPopulatedFieldsAsMap().get(field);
+  }
+
+  /** True when the booking's Technology is ROSA or ROSA+PSI. */
+  public static Boolean isRosaBooking(Case__c c) {
+    return ROSA_TECHNOLOGY.contains((String) valueOf(c, 'Technology__c'));
+  }
+
+  /** True when a booking is cancelled: SAP Surgery Status R or C (Cancelled / Canceled), or Booking Status C (Cancelled). */
+  public static Boolean isCancelled(Case__c c) {
+    String status = (String) valueOf(c, 'Status__c');
+    String booking = (String) valueOf(c, 'Booking_Status__c');
+    return status == 'R' || status == 'C' || booking == 'C';
+  }
+
+  /** The hospital's bookings from `start` (today) up to `endExclusive`, cancelled ones left out; ROSA from the Technology. */
+  private static List<HospitalCase> bookedAtHospital(
+    Id hospital,
+    Date start,
+    Date endExclusive
+  ) {
+    List<HospitalCase> out = new List<HospitalCase>();
+    Map<String, Object> binds = new Map<String, Object>{
+      'hospital' => hospital,
+      'startDate' => start,
+      'endDate' => endExclusive,
+      'types' => ORDER
+    };
+    String q =
+      'SELECT Id, Surgery_Date__c, Surgery_Type__c, Procedure__c, toLabel(Brand__c), Physician__c, Physician__r.Name' +
+      bookingFields() +
+      ' FROM Case__c WHERE Healthcare_Facility__c = :hospital AND Surgery_Date__c >= :startDate' +
+      ' AND Surgery_Date__c < :endDate AND Surgery_Type__c IN :types LIMIT 20000';
+    for (
+      Case__c c : (List<Case__c>) Database.queryWithBinds(
+        q,
+        binds,
+        AccessLevel.USER_MODE
+      )
+    ) {
+      if (isCancelled(c)) {
+        continue;
+      }
+      HospitalCase k = toCase(c, start);
+      k.rosa = isRosaBooking(c);
+      out.add(k);
+    }
+    return out;
+  }
+
+  private static HospitalCase toCase(Case__c c, Date start) {
+    HospitalCase k = new HospitalCase();
+    k.anatomy = c.Surgery_Type__c;
+    k.month =
+      (c.Surgery_Date__c.year() - start.year()) * 12 +
+      c.Surgery_Date__c.month() -
+      start.month();
+    k.surgeonId = c.Physician__c;
+    k.surgeon = c.Physician__c == null
+      ? NO_SURGEON
+      : (String.isBlank(c.Physician__r?.Name)
+          ? NO_SURGEON
+          : c.Physician__r.Name);
+    k.brand = String.isBlank(c.Brand__c) ? NO_BRAND : c.Brand__c;
+    k.procedure = procedureName(c.Procedure__c);
+    return k;
   }
 
   /** The hospital's counted surgeries from `start` up to (not including) `endExclusive`: happened, with at least one usage item. */
@@ -498,24 +630,26 @@ public with sharing class PipelineBookingsController {
     ]) {
       withItems.add((Id) ar.get('c'));
     }
+    Set<Id> withDrape = new Set<Id>();
+    for (AggregateResult ar : [
+      SELECT Usage_Sheet_ID__r.Case__c c
+      FROM myCase_Usage_Item__c
+      WHERE
+        Usage_Sheet_ID__r.Case__r.Healthcare_Facility__c = :hospital
+        AND Usage_Sheet_ID__r.Case__r.Surgery_Date__c >= :start
+        AND Usage_Sheet_ID__r.Case__r.Surgery_Date__c < :endExclusive
+        AND SAP_Material_Number__c IN :ROSA_DRAPE
+      WITH USER_MODE
+      GROUP BY Usage_Sheet_ID__r.Case__c
+    ]) {
+      withDrape.add((Id) ar.get('c'));
+    }
     for (Case__c c : cases) {
       if (!withItems.contains(c.Id)) {
         continue;
       }
-      HospitalCase k = new HospitalCase();
-      k.anatomy = c.Surgery_Type__c;
-      k.month =
-        (c.Surgery_Date__c.year() - start.year()) * 12 +
-        c.Surgery_Date__c.month() -
-        start.month();
-      k.surgeonId = c.Physician__c;
-      k.surgeon = c.Physician__c == null
-        ? NO_SURGEON
-        : (String.isBlank(c.Physician__r?.Name)
-            ? NO_SURGEON
-            : c.Physician__r.Name);
-      k.brand = String.isBlank(c.Brand__c) ? NO_BRAND : c.Brand__c;
-      k.procedure = procedureName(c.Procedure__c);
+      HospitalCase k = toCase(c, start);
+      k.rosa = withDrape.contains(c.Id);
       out.add(k);
     }
     return out;

@@ -1,9 +1,16 @@
 import { createElement } from "lwc";
 import PipelineHospitalBookings from "c/pipelineHospitalBookings";
 import getHospitalBookings from "@salesforce/apex/PipelineBookingsController.getHospitalBookings";
+import getHospitalBooked from "@salesforce/apex/PipelineBookingsController.getHospitalBooked";
 
 jest.mock(
   "@salesforce/apex/PipelineBookingsController.getHospitalBookings",
+  () => ({ default: jest.fn() }),
+  { virtual: true }
+);
+
+jest.mock(
+  "@salesforce/apex/PipelineBookingsController.getHospitalBooked",
   () => ({ default: jest.fn() }),
   { virtual: true }
 );
@@ -134,10 +141,7 @@ describe("c-pipeline-hospital-bookings", () => {
       "Demo 0"
     ]);
     expect(q(el, ".big").textContent).toBe("277");
-    expect(q(el, ".win").textContent).toContain("at Harbourview Health Campus");
-    expect(q(el, ".win").textContent).toContain(
-      "November 2025 to October 2026"
-    );
+    expect(q(el, ".win")).toBeNull(); // the hospital and the dates are not repeated (Robert, 2026-11-28)
     expect(qa(el, "text.tot").map((t) => t.textContent.trim())[0]).toBe("20");
   });
 
@@ -405,7 +409,9 @@ describe("c-pipeline-hospital-bookings", () => {
     expect(sent[sent.length - 1]).toEqual({
       view: "surgeon",
       types: ["Hip"],
-      procs: ["Demo", "Revision"]
+      procs: ["Demo", "Revision"],
+      robot: "all",
+      when: "past"
     });
     await slide(el, "brand");
     expect(sent[sent.length - 1].view).toBe("brand");
@@ -415,5 +421,94 @@ describe("c-pipeline-hospital-bookings", () => {
     q(el, '.fi[data-value="PERSONA"]').click();
     await flush();
     expect(sent).toHaveLength(before);
+  });
+
+  it("shows only ROSA cases (usage held the ROSA drape) or only non-ROSA cases when the ROSA choice says so, and remembers it", async () => {
+    const d = small();
+    d.lines = d.lines.map((l, i) => ({ ...l, rosa: i === 0 }));
+    getHospitalBookings.mockResolvedValue(d);
+    const el = createElement("c-pipeline-hospital-bookings", {
+      is: PipelineHospitalBookings
+    });
+    el.saved = { view: "brand", types: [], procs: [], robot: "rosa" };
+    el.recordId = "a1";
+    const sent = [];
+    el.addEventListener("prefschange", (e) => sent.push(e.detail));
+    document.body.appendChild(el);
+    await flush();
+    const rosaOnly = Number(q(el, ".big").textContent);
+    const first = d.lines[0].months.reduce((a, b) => a + b, 0);
+    expect(rosaOnly).toBe(first);
+    const seg = q(el, ".robotseg:not(.whenseg)");
+    seg.dispatchEvent(new CustomEvent("change", { detail: { value: "non" } }));
+    await flush();
+    expect(sent[sent.length - 1].robot).toBe("non");
+    const all = d.lines.reduce(
+      (a, l) => a + l.months.reduce((x, y) => x + y, 0),
+      0
+    );
+    expect(Number(q(el, ".big").textContent)).toBe(all - first);
+  });
+
+  it("switches between COMPLETED and BOOKED, reads each set once, keeps the sliders when a set is empty, and remembers it", async () => {
+    getHospitalBookings.mockResolvedValue(small());
+    getHospitalBooked.mockResolvedValue({
+      ...small(),
+      hasBookings: false,
+      booked: 0,
+      lines: []
+    });
+    const el = createElement("c-pipeline-hospital-bookings", {
+      is: PipelineHospitalBookings
+    });
+    el.recordId = "a9";
+    const sent = [];
+    el.addEventListener("prefschange", (e) => sent.push(e.detail));
+    document.body.appendChild(el);
+    await flush();
+    const when = q(el, ".whenseg");
+    expect(when.value).toBe("past");
+    when.dispatchEvent(
+      new CustomEvent("change", { detail: { value: "future" } })
+    );
+    await flush();
+    expect(getHospitalBooked).toHaveBeenCalledWith({ dealId: "a9" });
+    expect(sent[sent.length - 1].when).toBe("future");
+    expect(q(el, ".whenseg")).not.toBeNull();
+    expect(el.shadowRoot.textContent).toContain("No bookings at");
+    expect(q(el, ".box")).toBeNull();
+    const calls = getHospitalBookings.mock.calls.length;
+    q(el, ".whenseg").dispatchEvent(
+      new CustomEvent("change", { detail: { value: "past" } })
+    );
+    await flush();
+    expect(getHospitalBookings.mock.calls.length).toBe(calls);
+    expect(q(el, ".box")).not.toBeNull();
+  });
+
+  it("ticks the deal's surgeons and offers a plus to add the others, in Surgeon Total and Surgeon / Brand; none without a deal list", async () => {
+    getHospitalBookings.mockResolvedValue(small());
+    const el = createElement("c-pipeline-hospital-bookings", {
+      is: PipelineHospitalBookings
+    });
+    el.saved = { view: "brand", types: [], procs: [], robot: "all" };
+    el.recordId = "a7";
+    document.body.appendChild(el);
+    await flush();
+    expect(q(el, ".mk")).toBeNull();
+    el.dealSurgeons = ["001A"];
+    el.canAdd = true;
+    await flush();
+    expect(qa(el, ".mk.in")).toHaveLength(1);
+    const plus = qa(el, ".mk.add");
+    expect(plus.length).toBeGreaterThan(0);
+    const got = [];
+    el.addEventListener("addsurgeon", (e) => got.push(e.detail));
+    plus[0].click();
+    await flush();
+    expect(got[0].accountId).not.toBe("001A");
+    expect(got[0].name).toBeTruthy();
+    await slide(el, "surgeon");
+    expect(qa(el, ".mk.in")).toHaveLength(1);
   });
 });

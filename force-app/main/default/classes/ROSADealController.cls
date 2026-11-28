@@ -8,7 +8,7 @@
  * - reads SalesRisks__c (the deal and the implant deals linked to it or to a surgeon), Robotics_Surgeons__c (ROSA Deal
  *   Surgeons), ROSA_Credentialing_Answer__c (their Q&A), Robotics__c (the ROSA Checklist), Account (surgeon search), User
  *   (deal lead and sales rep search), and Case__c with myCase_Usage_Item__c (a surgeon's myCase bookings) in the signed-in
- *   person's own access (with sharing, user mode);
+ *   person's own access (with sharing, user mode); the person's own UserSettings__c record (remembered choices, system mode);
  * - saves the same records only for people who hold ROSA Deal Management or ROSA Credentialing Admin (decision 2: everyone else
  *   sees the screen read-only), and only the fields listed below; Salesforce's own rules and the ROSA automation run as usual.
  * - Link / Unlink sets an implant deal's Link_To_ROSA_Deal__c in system mode, because the deal lead often cannot edit a rep's
@@ -383,7 +383,7 @@ public with sharing class ROSADealController {
 
   // ------------------------------------------------------------------ myCase bookings (Robert, 2026-11-28)
 
-  /** One line of a surgeon's myCase bookings: one brand, type of surgery and case Type, by month (the 12 whole months, oldest first). */
+  /** One line of a surgeon's myCase bookings: one brand, type of surgery and case Type, by month (12 columns, oldest first). */
   public class BookingLine {
     @AuraEnabled
     public String brand;
@@ -393,11 +393,14 @@ public with sharing class ROSADealController {
     /** Primary, Revision or Demo (Case__c.Procedure__c A00, A01, Z02). */
     @AuraEnabled
     public String procedure;
+    /** True when the cases' usage holds the ROSA robotic unit drape (Robert, 2026-11-28). */
+    @AuraEnabled
+    public Boolean rosa = false;
     @AuraEnabled
     public List<Integer> months = new List<Integer>();
   }
 
-  /** A surgeon's myCase bookings: the first day of the 12 whole months and the lines. */
+  /** A surgeon's myCase bookings: the first day of the first column and the lines. */
   public class Bookings {
     @AuraEnabled
     public Date windowStart;
@@ -413,7 +416,93 @@ public with sharing class ROSADealController {
   };
 
   /**
-   * The surgeon's myCase cases of the last 12 whole months at every hospital, the same rule as Pipeline's hospital bookings
+   * BOOKED (Robert, 2026-11-28): the surgeon's bookings at every hospital from today for 12 months (the first column is the current
+   * month from today on). No usage is needed; ROSA is the booking's Technology (ROSA or ROSA+PSI); cancelled bookings are left out
+   * (PipelineBookingsController.isCancelled). Read in the person's own access.
+   */
+  @AuraEnabled
+  public static Bookings surgeonBooked(Id accountId) {
+    Bookings out = new Bookings();
+    Date start = Date.today();
+    Date endExclusive = start.toStartOfMonth().addMonths(12);
+    out.windowStart = start;
+    if (accountId == null) {
+      return out;
+    }
+    Set<String> types = ANATOMY.keySet();
+    Map<String, BookingLine> byKey = new Map<String, BookingLine>();
+    Map<String, Object> binds = new Map<String, Object>{
+      'surgeon' => accountId,
+      'startDate' => start,
+      'endDate' => endExclusive,
+      'types' => types
+    };
+    String q =
+      'SELECT Id, Surgery_Date__c, Surgery_Type__c, Procedure__c, toLabel(Brand__c)' +
+      PipelineBookingsController.bookingFields() +
+      ' FROM Case__c WHERE Physician__c = :surgeon AND Surgery_Date__c >= :startDate' +
+      ' AND Surgery_Date__c < :endDate AND Surgery_Type__c IN :types LIMIT 20000';
+    for (
+      Case__c c : (List<Case__c>) Database.queryWithBinds(
+        q,
+        binds,
+        AccessLevel.USER_MODE
+      )
+    ) {
+      if (PipelineBookingsController.isCancelled(c)) {
+        continue;
+      }
+      addToLine(
+        out,
+        byKey,
+        c,
+        start,
+        PipelineBookingsController.isRosaBooking(c)
+      );
+    }
+    return out;
+  }
+
+  private static void addToLine(
+    Bookings out,
+    Map<String, BookingLine> byKey,
+    Case__c c,
+    Date start,
+    Boolean rosa
+  ) {
+    String brand = String.isBlank(c.Brand__c)
+      ? 'No brand recorded'
+      : c.Brand__c;
+    String proc = 'Primary';
+    if (c.Procedure__c == 'A01') {
+      proc = 'Revision';
+    } else if (c.Procedure__c == 'Z02') {
+      proc = 'Demo';
+    }
+    String anatomy = ANATOMY.get(c.Surgery_Type__c);
+    String key = brand + '|' + anatomy + '|' + proc + '|' + rosa;
+    BookingLine line = byKey.get(key);
+    if (line == null) {
+      line = new BookingLine();
+      line.brand = brand;
+      line.anatomy = anatomy;
+      line.procedure = proc;
+      line.rosa = rosa;
+      for (Integer i = 0; i < 12; i++) {
+        line.months.add(0);
+      }
+      byKey.put(key, line);
+      out.lines.add(line);
+    }
+    Integer m =
+      (c.Surgery_Date__c.year() - start.year()) * 12 +
+      c.Surgery_Date__c.month() -
+      start.month();
+    line.months[m] = line.months[m] + 1;
+  }
+
+  /**
+   * The surgeon's myCase cases of the last 12 months up to and including today (the current month is the last column) at every hospital, the same rule as Pipeline's hospital bookings
    * (PipelineBookingsController.getHospitalBookings): a case counts when the surgery has happened and it has at least one usage
    * item; demos with usage items count, as Demo. Read in the person's own access.
    */
@@ -421,7 +510,8 @@ public with sharing class ROSADealController {
   public static Bookings surgeonBookings(Id accountId) {
     Bookings out = new Bookings();
     Date thisMonth = Date.today().toStartOfMonth();
-    Date start = thisMonth.addMonths(-12);
+    Date start = thisMonth.addMonths(-11);
+    Date endExclusive = Date.today().addDays(1); // up to and including today (Robert, 2026-11-28)
     out.windowStart = start;
     if (accountId == null) {
       return out;
@@ -438,7 +528,7 @@ public with sharing class ROSADealController {
       WHERE
         Physician__c = :accountId
         AND Surgery_Date__c >= :start
-        AND Surgery_Date__c < :thisMonth
+        AND Surgery_Date__c < :endExclusive
         AND Surgery_Type__c IN :types
       WITH USER_MODE
       LIMIT 20000
@@ -453,42 +543,33 @@ public with sharing class ROSADealController {
       WHERE
         Usage_Sheet_ID__r.Case__r.Physician__c = :accountId
         AND Usage_Sheet_ID__r.Case__r.Surgery_Date__c >= :start
-        AND Usage_Sheet_ID__r.Case__r.Surgery_Date__c < :thisMonth
+        AND Usage_Sheet_ID__r.Case__r.Surgery_Date__c < :endExclusive
       WITH USER_MODE
       GROUP BY Usage_Sheet_ID__r.Case__c
     ]) {
       withItems.add((Id) ar.get('c'));
+    }
+    Set<String> drape = PipelineBookingsController.ROSA_DRAPE;
+    Set<Id> withDrape = new Set<Id>();
+    for (AggregateResult ar : [
+      SELECT Usage_Sheet_ID__r.Case__c c
+      FROM myCase_Usage_Item__c
+      WHERE
+        Usage_Sheet_ID__r.Case__r.Physician__c = :accountId
+        AND Usage_Sheet_ID__r.Case__r.Surgery_Date__c >= :start
+        AND Usage_Sheet_ID__r.Case__r.Surgery_Date__c < :endExclusive
+        AND SAP_Material_Number__c IN :drape
+      WITH USER_MODE
+      GROUP BY Usage_Sheet_ID__r.Case__c
+    ]) {
+      withDrape.add((Id) ar.get('c'));
     }
     Map<String, BookingLine> byKey = new Map<String, BookingLine>();
     for (Case__c c : cases) {
       if (!withItems.contains(c.Id)) {
         continue;
       }
-      String brand = String.isBlank(c.Brand__c)
-        ? 'No brand recorded'
-        : c.Brand__c;
-      String proc = c.Procedure__c == 'A01'
-        ? 'Revision'
-        : c.Procedure__c == 'Z02' ? 'Demo' : 'Primary';
-      String anatomy = ANATOMY.get(c.Surgery_Type__c);
-      String key = brand + '|' + anatomy + '|' + proc;
-      BookingLine line = byKey.get(key);
-      if (line == null) {
-        line = new BookingLine();
-        line.brand = brand;
-        line.anatomy = anatomy;
-        line.procedure = proc;
-        for (Integer i = 0; i < 12; i++) {
-          line.months.add(0);
-        }
-        byKey.put(key, line);
-        out.lines.add(line);
-      }
-      Integer m =
-        (c.Surgery_Date__c.year() - start.year()) * 12 +
-        c.Surgery_Date__c.month() -
-        start.month();
-      line.months[m] = line.months[m] + 1;
+      addToLine(out, byKey, c, start, withDrape.contains(c.Id));
     }
     return out;
   }
@@ -530,6 +611,68 @@ public with sharing class ROSADealController {
       throw fail(
         'The checklist could not be added: it needs the ROSA Deal Management permission set.'
       );
+    }
+  }
+
+  // ------------------------------------------------------------------ remembered choices (Robert, 2026-11-28)
+
+  private static final Set<String> PREF_KEYS = new Set<String>{
+    'hospBook',
+    'rosaDeal'
+  };
+
+  /**
+   * The person's remembered choices for this screen, kept in their Pipeline settings (UserSettings__c.Pipeline_JSON__c) so the
+   * hospital MyCase Bookings behave the same here and in Pipeline: hospBook (view, chips switched off, ROSA / non-ROSA) and rosaDeal
+   * (zoom, and the surgeon tab's chips and ROSA / non-ROSA). Only the person's own record is read, so system mode is used for
+   * people who hold a ROSA permission set but not Pipeline User.
+   */
+  @AuraEnabled
+  public static String getPrefs() {
+    Map<String, Object> all = pipelineSettings();
+    Map<String, Object> out = new Map<String, Object>();
+    for (String k : PREF_KEYS) {
+      if (all.containsKey(k)) {
+        out.put(k, all.get(k));
+      }
+    }
+    return JSON.serialize(out);
+  }
+
+  /** Saves the screen's remembered choices into the person's Pipeline settings, leaving every other setting as it is. */
+  @AuraEnabled
+  public static void savePrefs(String prefsJson) {
+    Map<String, Object> incoming;
+    try {
+      incoming = (Map<String, Object>) JSON.deserializeUntyped(prefsJson);
+    } catch (Exception e) {
+      throw fail('The choices could not be read.');
+    }
+    Map<String, Object> all = pipelineSettings();
+    for (String k : PREF_KEYS) {
+      if (incoming.containsKey(k)) {
+        all.put(k, incoming.get(k));
+      }
+    }
+    PipelineUserSettings.save(
+      PipelineUserSettings.PIPELINE_FIELD,
+      JSON.serialize(all),
+      AccessLevel.SYSTEM_MODE
+    );
+  }
+
+  private static Map<String, Object> pipelineSettings() {
+    String raw = PipelineUserSettings.read(
+      PipelineUserSettings.PIPELINE_FIELD,
+      AccessLevel.SYSTEM_MODE
+    );
+    if (String.isBlank(raw)) {
+      return new Map<String, Object>();
+    }
+    try {
+      return (Map<String, Object>) JSON.deserializeUntyped(raw);
+    } catch (Exception e) {
+      return new Map<String, Object>();
     }
   }
 
@@ -643,6 +786,24 @@ public with sharing class ROSADealController {
       );
     }
     return s.Id;
+  }
+
+  /**
+   * Deletes a ROSA Deal Surgeon added in error (Robert, 2026-11-28: from the surgeon's Details in Edit, never from the hospital's
+   * myCase). Their credentialing answers go with them (master-detail); the deal's totals and credentialed count are recounted by
+   * ROSA_SurgeonTrigger (after delete). Needs ROSA Deal Management (delete on ROSA Surgeons) and runs in the person's own access.
+   */
+  @AuraEnabled
+  public static void deleteSurgeon(Id surgeonId) {
+    mustEdit();
+    if (surgeonId == null) {
+      throw fail('No surgeon to delete.');
+    }
+    try {
+      delete as user new Robotics_Surgeons__c(Id = surgeonId);
+    } catch (Exception e) {
+      throw fail(message(e));
+    }
   }
 
   /** Saves one credentialing answer. The value is Yes, No, a number, a date (yyyy-mm-dd) or text, by the question's type. */

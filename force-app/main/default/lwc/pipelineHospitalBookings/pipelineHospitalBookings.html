@@ -1,13 +1,12 @@
 <template>
-  <section class="wrap" onkeydown={handleKey}>
+  <section class={wrapCls} onkeydown={handleKey}>
     <div class="none" lwc:if={loading}>Reading the bookings…</div>
     <div class="none" lwc:if={error}>{error}</div>
     <div class="none" lwc:if={noHospital}>This deal has no hospital.</div>
-    <div class="none" lwc:if={noBookings}>{noBookingsText}</div>
 
     <template lwc:if={hasChart}>
       <div class="ph">
-        <h2>MyCase bookings</h2>
+        <h2>{heading}</h2>
         <c-pipeline-segmented
           class="viewseg"
           heading="View"
@@ -16,11 +15,10 @@
           value={view}
           onchange={handleView}
         ></c-pipeline-segmented>
-        <span class="win">{hospitalText} &middot; {windowLabel}</span>
         <span class="sp"></span>
         <span class="bigg"
           ><span class="big">{grand}</span
-          ><span class="bigl">cases in the last 12 months</span></span
+          ><span class="bigl">{bigText}</span></span
         >
       </div>
       <div class="legend">
@@ -71,9 +69,26 @@
             {c.label} <b>{c.booked}</b>
           </button>
         </template>
+        <span class="lsp"></span>
+        <c-pipeline-segmented
+          class="robotseg whenseg"
+          label="Completed or booked"
+          options={whenOptions}
+          value={when}
+          onchange={handleWhen}
+        ></c-pipeline-segmented>
+        <c-pipeline-segmented
+          class="robotseg"
+          label="ROSA or non-ROSA cases"
+          options={robotOptions}
+          value={robot}
+          onchange={handleRobot}
+        ></c-pipeline-segmented>
       </div>
 
-      <div class="box chart" lwc:if={isHospital}>
+      <div class="none" lwc:if={noBookings}>{noBookingsText}</div>
+
+      <div class="box chart" lwc:if={showHospital}>
         <svg
           viewBox={chart.viewBox}
           role="img"
@@ -111,7 +126,7 @@
         </svg>
       </div>
 
-      <div class="box table" lwc:if={isSurgeon}>
+      <div class="box table" lwc:if={showSurgeon}>
         <table class="grid">
           <thead>
             <tr>
@@ -126,7 +141,27 @@
             <template for:each={grid.rows} for:item="r">
               <tr key={r.key}>
                 <td class="lft">
-                  <b>{r.name}</b><span class="sub">{r.sub}</span>
+                  <div class="sgw">
+                    <span
+                      lwc:if={r.markIn}
+                      class="mk in"
+                      title="In Surgeons and Growth"
+                    ></span>
+                    <button
+                      lwc:elseif={r.markAdd}
+                      type="button"
+                      class="mk add"
+                      data-id={r.key}
+                      data-name={r.name}
+                      title="Add to Surgeons and Growth"
+                      aria-label="Add to Surgeons and Growth"
+                      onclick={handleAddSurgeon}
+                    ></button>
+                    <span lwc:elseif={hasMarks} class="mk none"></span>
+                    <span class="sgn"
+                      ><b>{r.name}</b><span class="sub">{r.sub}</span></span
+                    >
+                  </div>
                 </td>
                 <template for:each={r.cells} for:item="c">
                   <td key={c.key} class="n">
@@ -154,7 +189,7 @@
         </table>
       </div>
 
-      <div class="box table" lwc:if={isBrand}>
+      <div class="box table" lwc:if={showBrand}>
         <table class="grid">
           <thead>
             <tr>
@@ -208,7 +243,27 @@
             <template for:each={table.rows} for:item="r">
               <tr key={r.key} class={r.cls}>
                 <td class="lft sg" lwc:if={r.first} rowspan={r.span}>
-                  <b>{r.name}</b><span class="sub">{r.sub}</span>
+                  <div class="sgw">
+                    <span
+                      lwc:if={r.markIn}
+                      class="mk in"
+                      title="In Surgeons and Growth"
+                    ></span>
+                    <button
+                      lwc:elseif={r.markAdd}
+                      type="button"
+                      class="mk add"
+                      data-id={r.id}
+                      data-name={r.name}
+                      title="Add to Surgeons and Growth"
+                      aria-label="Add to Surgeons and Growth"
+                      onclick={handleAddSurgeon}
+                    ></button>
+                    <span lwc:elseif={hasMarks} class="mk none"></span>
+                    <span class="sgn"
+                      ><b>{r.name}</b><span class="sub">{r.sub}</span></span
+                    >
+                  </div>
                 </td>
                 <td class="lft br"><i style={r.swatch}></i>{r.brand}</td>
                 <template for:each={r.cells} for:item="c">

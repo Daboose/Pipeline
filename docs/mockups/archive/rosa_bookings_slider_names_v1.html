@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Bookings Slider Names</title>
+    <style>
+      [data-theme="dark"] {
+        --page: #141e2e;
+        --panel: #1a2740;
+        --panel2: #20304f;
+        --line: #2f4163;
+        --edge: #5b6f93;
+        --text: #e8edf5;
+        --muted: #8b9bb0;
+        --indigo: #6366f1;
+        --head: #f472b6;
+      }
+      [data-theme="light"] {
+        --page: #f4f6fa;
+        --panel: #fff;
+        --panel2: #eef2fa;
+        --line: #d5dcea;
+        --edge: #b3bfd6;
+        --text: #1b2640;
+        --muted: #5d6b85;
+        --indigo: #4f46e5;
+        --head: #db2777;
+      }
+      body {
+        margin: 0;
+        background: var(--page);
+        color: var(--text);
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial,
+          sans-serif;
+        font-size: 15px;
+        padding: 28px 32px 80px;
+      }
+      h1 {
+        font-size: 20px;
+        margin: 0 0 6px;
+      }
+      .sub {
+        color: var(--muted);
+        font-size: 14px;
+      }
+      .about {
+        background: var(--panel);
+        border: 1px solid var(--edge);
+        border-radius: 14px;
+        padding: 16px 20px;
+        margin: 0 0 22px;
+        max-width: 980px;
+        line-height: 1.5;
+      }
+      .opt {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 16px 20px;
+        margin: 0 0 14px;
+        display: grid;
+        grid-template-columns: 60px 1fr;
+        gap: 6px 16px;
+        align-items: center;
+      }
+      .n {
+        font-size: 22px;
+        font-weight: 700;
+        color: var(--muted);
+      }
+      .row {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        flex-wrap: wrap;
+      }
+      .ttl {
+        color: var(--head);
+        font-size: 20px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+      .seg {
+        display: inline-flex;
+        align-items: stretch;
+        border-radius: 999px;
+        background: var(--panel);
+        border: 1px solid var(--edge);
+      }
+      .seg .ch {
+        display: flex;
+        align-items: center;
+        padding: 3px;
+        border-radius: 999px;
+        background: var(--panel2);
+        margin: -1px;
+      }
+      .seg button {
+        height: 28px;
+        padding: 0 14px;
+        border: 0;
+        border-radius: 999px;
+        background: transparent;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        cursor: pointer;
+        transition:
+          background 0.3s,
+          color 0.3s;
+      }
+      .seg button.on {
+        background: var(--indigo);
+        color: #fff;
+        box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35);
+      }
+      .big {
+        margin-left: auto;
+        display: flex;
+        align-items: baseline;
+        gap: 10px;
+      }
+      .big b {
+        font-size: 30px;
+      }
+      .mock {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        padding: 8px 16px;
+        background: #111827;
+        color: #e5e7eb;
+        font-size: 13px;
+      }
+      .mock button {
+        background: #374151;
+        color: #fff;
+        border: 0;
+        border-radius: 999px;
+        padding: 5px 12px;
+        cursor: pointer;
+        font-size: 12px;
+      }
+      .mock button.on {
+        background: #6366f1;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="about">
+      <h1>About this mockup</h1>
+      <p class="sub" style="margin: 0">
+        Names for the slider beside MYCASE BOOKINGS that switches between the
+        surgeries that happened (left, the default) and the bookings still to
+        come (right). Each option shows the slider in place with the line beside
+        the big number. <b>Try it:</b> click either side of any slider to see
+        both states. Invented numbers.
+      </p>
+    </div>
+    <div id="list"></div>
+    <div class="mock">
+      <b>Bookings slider names v1</b><span style="flex: 1"></span
+      ><button data-t="dark" class="on">Dark</button
+      ><button data-t="light">Light</button>
+    </div>
+    <script>
+      const OPTS = [
+        [
+          "DONE",
+          "BOOKED",
+          "cases done in the last 12 months",
+          "bookings for the next 12 months"
+        ],
+        [
+          "COMPLETED",
+          "UPCOMING",
+          "completed cases, last 12 months",
+          "upcoming bookings, next 12 months"
+        ],
+        [
+          "PAST 12 MONTHS",
+          "NEXT 12 MONTHS",
+          "cases in the last 12 months",
+          "bookings in the next 12 months"
+        ],
+        [
+          "SURGERIES DONE",
+          "FUTURE BOOKINGS",
+          "surgeries done, last 12 months",
+          "future bookings, next 12 months"
+        ],
+        [
+          "ACTUALS",
+          "PIPELINE",
+          "actual cases, last 12 months",
+          "booked cases, next 12 months"
+        ]
+      ];
+      const st = OPTS.map(() => 0);
+      function render() {
+        document.getElementById("list").innerHTML = OPTS.map(
+          (o, i) =>
+            `<div class="opt"><span class="n">${i + 1}</span><div class="row"><span class="ttl">MyCase Bookings</span><span class="seg"><span class="ch"><button class="${st[i] ? "" : "on"}" data-i="${i}" data-s="0">${o[0]}</button><button class="${st[i] ? "on" : ""}" data-i="${i}" data-s="1">${o[1]}</button></span></span><span class="big"><b>${st[i] ? 412 : 1057}</b><span class="sub">${st[i] ? o[3] : o[2]}</span></span></div></div>`
+        ).join("");
+      }
+      document.addEventListener("click", (e) => {
+        const b = e.target.closest("[data-i]");
+        if (b) {
+          st[+b.dataset.i] = +b.dataset.s;
+          render();
+          return;
+        }
+        const t = e.target.closest("[data-t]");
+        if (t) {
+          document.documentElement.dataset.theme = t.dataset.t;
+          document
+            .querySelectorAll("[data-t]")
+            .forEach((x) => x.classList.toggle("on", x === t));
+        }
+      });
+      render();
+    </script>
+  </body>
+</html>

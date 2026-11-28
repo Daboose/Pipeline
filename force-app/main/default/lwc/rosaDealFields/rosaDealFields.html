@@ -1,5 +1,5 @@
 <template>
-  <div class="fields" style={gridStyle}>
+  <div class={fieldsCls} style={gridStyle}>
     <template for:each={shortFields} for:item="f">
       <div key={f.key} class="f" style={f.fStyle}>
         <div class="l">{f.label}</div>

@@ -1,5 +1,6 @@
 import { LightningElement, api, track } from "lwc";
 import getHospitalBookings from "@salesforce/apex/PipelineBookingsController.getHospitalBookings";
+import getHospitalBooked from "@salesforce/apex/PipelineBookingsController.getHospitalBooked";
 import {
   chartModel,
   tipFor,
@@ -38,7 +39,7 @@ const tipLines = (words) =>
 /**
  * Pipeline: the MyCase Bookings screen of a ROSA deal (Robert, 2026-11-19; views, chips and filters 2026-11-25, mockup
  * docs/mockups/pipeline_bookings_surgeon_view_v4.html). A ROSA deal is at a hospital and has no surgeon, so the bookings are the
- * hospital's, for the last 12 whole months. A VIEW slider beside the heading chooses the view:
+ * hospital's, for the last 12 months up to today (Robert, 2026-11-28: the current month is the last column). A VIEW slider beside the heading chooses the view:
  * - Hospital Total: one stacked bar per month, split into Hip, Knee, Shoulder and CMFT, each month's total above its bar.
  * - Surgeon Total: a grid of numbers, a row per surgeon (busiest first), a column per month, shaded by size, a Hospital total row.
  * - Surgeon / Brand: a table, a row per brand under each surgeon (the case's Brand, in its type's colour), a column per month; the
@@ -51,6 +52,19 @@ const tipLines = (words) =>
  * What it touches: reads the bookings with PipelineBookingsController.getHospitalBookings (the deal's Healthcare Facility, in the
  * signed-in person's own access) and changes nothing. Colours come from the app's own theme variables, so dark and light follow.
  */
+/** The ROSA / non-ROSA choice, with no heading (Robert, 2026-11-28: "ALL" under a "ROSA" heading read as all ROSA). */
+const ROBOT_OPTIONS = [
+  { value: "all", label: "All" },
+  { value: "rosa", label: "ROSA only" },
+  { value: "non", label: "Non-ROSA" }
+];
+
+/** Completed surgeries (the default) or bookings from today (Robert, 2026-11-28); no "all". */
+const WHEN_OPTIONS = [
+  { value: "past", label: "Completed" },
+  { value: "future", label: "Booked" }
+];
+
 export default class PipelineHospitalBookings extends LightningElement {
   _recordId;
   _refreshKey = 0;
@@ -61,6 +75,17 @@ export default class PipelineHospitalBookings extends LightningElement {
   view = "hospital";
   /** What is switched off: types, case Types, surgeons and brands. */
   @track f = emptyFilter();
+  /** ROSA / non-ROSA (Robert, 2026-11-28): all cases, only those whose usage holds the ROSA drape, or only those without it. */
+  robot = "all";
+  /**
+   * Completed or Booked (Robert, 2026-11-28): "past" is the last 12 months' cases with usage, up to today (ROSA = the drape on the usage);
+   * "future" is the bookings from today for 12 months (ROSA = the booking's Technology, ROSA or ROSA+PSI; cancelled ones left out).
+   */
+  when = "past";
+  /** Both reads, kept while the deal is open so switching back is instant: { past, future }. */
+  _cache = {};
+  /** True while the other set is being read after a switch (the views dim). */
+  switching = false;
   /** The open filter panel: { kind, query, on, style }, or null. */
   @track pop = null;
   /** The measured size of the chart box, so the chart fills its space. */
@@ -125,6 +150,14 @@ export default class PipelineHospitalBookings extends LightningElement {
       types: Array.isArray(value.types) ? [...value.types] : [],
       procs: Array.isArray(value.procs) ? [...value.procs] : []
     };
+    this.robot = ["all", "rosa", "non"].includes(value.robot)
+      ? value.robot
+      : "all";
+    const when = value.when === "future" ? "future" : "past";
+    if (when !== this.when) {
+      this.when = when;
+      if (this._recordId) this.load(false);
+    }
   }
   _saved = null;
 
@@ -135,9 +168,52 @@ export default class PipelineHospitalBookings extends LightningElement {
         detail: {
           view: this.view,
           types: [...this.f.types],
-          procs: [...this.f.procs]
+          procs: [...this.f.procs],
+          robot: this.robot,
+          when: this.when
         }
       })
+    );
+  }
+
+  /**
+   * Optional (the ROSA deal screen, Robert 2026-11-28, mockup rosa_deal_add_surgeons_v9): the Account ids of the surgeons already in the
+   * deal's Surgeons and Growth. When given, the Surgeon Total and Surgeon / Brand views put a green tick before those surgeons and, when
+   * `canAdd` is true, a round plus before the others; pressing it fires `addsurgeon` ({ accountId, name }) and the caller adds them.
+   * Pipeline passes nothing, so it shows no marks.
+   */
+  @api
+  get dealSurgeons() {
+    return this._dealSurgeons;
+  }
+  set dealSurgeons(value) {
+    this._dealSurgeons = Array.isArray(value) ? value : null;
+    this.adding = null;
+  }
+  _dealSurgeons = null;
+  @api canAdd = false;
+  /** The heading (shown in capitals); the ROSA deal's Site › myCase passes "myCase Hospital Bookings" (Robert, 2026-11-28). */
+  @api heading = "MyCase bookings";
+  /** The surgeon being added (its plus is hidden until the caller sends the new list). */
+  adding = null;
+
+  /** A row's mark: inDeal (the tick) or add (the plus); neither for "No surgeon recorded" or without a deal list. */
+  markOf(key) {
+    const list = this._dealSurgeons;
+    if (!list || !key || String(key).startsWith("none:")) return {};
+    if (list.includes(key)) return { markIn: true };
+    if (this.canAdd && this.adding !== key) return { markAdd: true };
+    return {};
+  }
+  get hasMarks() {
+    return !!this._dealSurgeons;
+  }
+  handleAddSurgeon(event) {
+    const { id, name } = event.currentTarget.dataset;
+    if (!id) return;
+    this.adding = id;
+    this.dispatchEvent(
+      new CustomEvent("addsurgeon", { detail: { accountId: id, name } })
     );
   }
 
@@ -152,23 +228,76 @@ export default class PipelineHospitalBookings extends LightningElement {
     this.load(false);
   }
 
-  /** A quiet read keeps what is on screen until the new data arrives. */
+  /** A quiet read keeps what is on screen until the new data arrives. A new deal or a refresh forgets both kept reads. */
   load(quiet) {
     const id = this._recordId;
     if (!id) return;
+    this._cache = {};
     this.loading = !quiet;
     this.error = "";
     if (!quiet) this.data = undefined;
-    getHospitalBookings({ dealId: id })
+    this.read(id, this.when);
+  }
+  read(id, when) {
+    const call = when === "future" ? getHospitalBooked : getHospitalBookings;
+    return call({ dealId: id })
       .then((d) => {
-        if (id === this._recordId) this.data = d;
+        if (id !== this._recordId) return;
+        this._cache = { ...this._cache, [when]: d };
+        if (when === this.when) this.data = d;
       })
       .catch((e) => {
-        if (id === this._recordId) this.error = errorText(e);
+        if (id === this._recordId && when === this.when)
+          this.error = errorText(e);
       })
       .finally(() => {
-        if (id === this._recordId) this.loading = false;
+        if (id === this._recordId && when === this.when) {
+          this.loading = false;
+          this.switching = false;
+        }
       });
+  }
+
+  /* ---------- Completed or Booked ---------- */
+  get whenOptions() {
+    return WHEN_OPTIONS;
+  }
+  get isBooked() {
+    return this.when === "future";
+  }
+  handleWhen(event) {
+    const when = event.detail.value === "future" ? "future" : "past";
+    if (when === this.when) return;
+    this.when = when;
+    this.tip = { ...this.tip, on: false };
+    this.closeFilter();
+    this.sendPrefs();
+    const kept = this._cache[when];
+    if (kept) {
+      this.data = kept;
+      return;
+    }
+    // keep the screen (and the sliders) in place and dim the views while the other set is read
+    this.switching = true;
+    this.error = "";
+    this.read(this._recordId, when);
+  }
+  get wrapCls() {
+    return this.switching ? "wrap dim" : "wrap";
+  }
+  get showHospital() {
+    return this.hasViews && this.isHospital;
+  }
+  get showSurgeon() {
+    return this.hasViews && this.isSurgeon;
+  }
+  get showBrand() {
+    return this.hasViews && this.isBrand;
+  }
+  get bigText() {
+    return this.isBooked
+      ? "booked from today, next 12 months"
+      : "cases in the last 12 months";
   }
 
   get noHospital() {
@@ -177,14 +306,20 @@ export default class PipelineHospitalBookings extends LightningElement {
   get hasHospital() {
     return !!(this.data && this.data.hospitalId && !this.error);
   }
+  /** Nothing in the chosen set: the heading and sliders stay so the other set can be chosen, with a line in place of the views. */
   get noBookings() {
     return this.hasHospital && !this.data.hasBookings;
   }
   get hasChart() {
+    return this.hasHospital;
+  }
+  get hasViews() {
     return this.hasHospital && this.data.hasBookings;
   }
   get noBookingsText() {
-    return `No MyCase bookings at ${this.data.hospitalName} in the last 12 months.`;
+    return this.isBooked
+      ? `No bookings at ${this.data.hospitalName} from today.`
+      : `No MyCase bookings at ${this.data.hospitalName} in the last 12 months.`;
   }
   get hospitalText() {
     return this.data ? "at " + this.data.hospitalName : "";
@@ -194,12 +329,27 @@ export default class PipelineHospitalBookings extends LightningElement {
   }
 
   /** The lines from Apex, worked out once per read. */
-  get lines() {
+  get allLines() {
     if (this._linesOf !== this.data) {
       this._linesOf = this.data;
       this._lines = linesOf(this.data);
     }
     return this._lines;
+  }
+  /** The lines the ROSA / non-ROSA choice lets through; every view, chip and filter works from these. */
+  get lines() {
+    const all = this.allLines;
+    if (this.robot === "all") return all;
+    const want = this.robot === "rosa";
+    return all.filter((l) => !!l.rosa === want);
+  }
+  get robotOptions() {
+    return ROBOT_OPTIONS;
+  }
+  handleRobot(event) {
+    this.robot = event.detail.value;
+    this.tip = { ...this.tip, on: false };
+    this.sendPrefs();
   }
   get viewOptions() {
     return VIEWS;
@@ -245,12 +395,26 @@ export default class PipelineHospitalBookings extends LightningElement {
     };
   }
   get grid() {
-    return this.withTips(
+    const g = this.withTips(
       surgeonGrid(this.lines, this.f, this.data.windowStart)
     );
+    return {
+      ...g,
+      rows: g.rows.map((r) => ({ ...r, ...this.markOf(r.key) }))
+    };
   }
   get table() {
-    return this.withTips(brandTable(this.lines, this.f, this.data.windowStart));
+    const tb = this.withTips(
+      brandTable(this.lines, this.f, this.data.windowStart)
+    );
+    return {
+      ...tb,
+      rows: tb.rows.map((r) => ({
+        ...r,
+        id: r.first ? String(r.key).split("|")[0] : null,
+        ...(r.first ? this.markOf(String(r.key).split("|")[0]) : {})
+      }))
+    };
   }
 
   /* ---------- the slider and the chips ---------- */

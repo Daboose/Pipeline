@@ -47,20 +47,20 @@ describe("pipelineHospitalBookingsModel", () => {
     );
   });
 
-  it("labels the 12 months with the year on the first and on every January", () => {
+  it("labels every one of the 12 months with its two-digit year", () => {
     expect(monthLabels("2025-11-01")).toEqual([
       "Nov 25",
-      "Dec",
+      "Dec 25",
       "Jan 26",
-      "Feb",
-      "Mar",
-      "Apr",
-      "May",
-      "Jun",
-      "Jul",
-      "Aug",
-      "Sep",
-      "Oct"
+      "Feb 26",
+      "Mar 26",
+      "Apr 26",
+      "May 26",
+      "Jun 26",
+      "Jul 26",
+      "Aug 26",
+      "Sep 26",
+      "Oct 26"
     ]);
     expect(monthTitles("2025-11-01")[0]).toBe("November 2025");
     expect(monthTitles("2025-11-01")[2]).toBe("January 2026");
