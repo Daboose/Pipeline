@@ -7,6 +7,6 @@
   >Ticked once every required question is answered.</inlineHelpText>
     <label>All Questions Answered</label>
     <formula
-  >NOT(ISBLANK(ROSA_Question_Set__c)) &amp;&amp; BLANKVALUE(ROSA_Questions_To_Answer__c, 0) = 0</formula>
+  >NOT(ISBLANK(ROSA_Question_Set_Used__c)) &amp;&amp; BLANKVALUE(ROSA_Questions_To_Answer__c, 0) = 0</formula>
     <type>Checkbox</type>
 </CustomField>

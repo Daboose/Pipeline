@@ -189,7 +189,7 @@ public with sharing class ROSADealController {
   private static String surgeonFields() {
     String f =
       'Id, Name, ROSA_Deal__c, Surgeon_Name__c, Surgeon_Name__r.Name, Surgeon_Name__r.FirstName, Surgeon_Name__r.LastName, ' +
-      'ROSA_Champion__c, ROSA_Career_Position__c, ROSA_Pathway__c, ROSA_Question_Set__c, ROSA_Credentialing_Status__c, ' +
+      'ROSA_Champion__c, ROSA_Career_Position__c, ROSA_Pathway__c, ROSA_Question_Set_Used__c, ROSA_Credentialing_Status__c, ' +
       'ROSA_Wave__c, ROSA_Course_Date__c, ROSA_Credentialed_Date__c, ROSA_First_Case_Date__c, ROSA_Questions_To_Answer__c, ' +
       'ROSA_Gaps__c, ROSA_Ready__c, ROSA_Credentialing_Summary__c, ROSA_Growth_Implants__c, ROSA_Growth_Disposables__c, ' +
       'ROSA_Growth_Value__c, CurrencyIsoCode';
@@ -248,7 +248,7 @@ public with sharing class ROSADealController {
       SELECT
         Id,
         ROSA_Surgeon__c,
-        ROSA_Question__r.Question_Text_2__c,
+        ROSA_Set_Question__r.ROSA_Question_Text__c,
         ROSA_Answer_Type__c,
         ROSA_Required__c,
         ROSA_Display_Order__c,
@@ -315,9 +315,9 @@ public with sharing class ROSADealController {
     Answer x = new Answer();
     x.id = a.Id;
     x.surgeonId = a.ROSA_Surgeon__c;
-    x.question = a.ROSA_Question__r == null
+    x.question = a.ROSA_Set_Question__r == null
       ? ''
-      : a.ROSA_Question__r.Question_Text_2__c;
+      : a.ROSA_Set_Question__r.ROSA_Question_Text__c;
     x.type = a.ROSA_Answer_Type__c;
     x.required = a.ROSA_Required__c;
     x.order = a.ROSA_Display_Order__c;

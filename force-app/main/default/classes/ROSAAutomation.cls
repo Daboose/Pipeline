@@ -14,7 +14,8 @@
  * - Robotics_Surgeons__c (ROSA Surgeons): fills ROSA_Deal__c from an old checklist link, the duplicate key, and the
  *   credentialing (question set from the pathway, status, Questions to answer, Gaps).
  * - ROSA_Price__c: the duplicate key. ROSA_Credentialing_Answer__c: creates one per question for a surgeon's question set,
- *   and fills Answered, Answered by and Answered date.
+ *   and fills Answered, Answered by and Answered date. Reads ROSA_Question_Set__c and ROSA_Question__c (ROSA's own question
+ *   bank, Robert 2026-11-28: nothing from APAC Events).
  * Runs without sharing: these are system-kept values (totals, keys, stage from the checklist), written whoever saves the record.
  */
 public without sharing class ROSAAutomation {
@@ -750,16 +751,15 @@ public without sharing class ROSAAutomation {
     Boolean need = false;
     for (Robotics_Surgeons__c s : surgeons) {
       need =
-        need || (s.ROSA_Pathway__c != null && s.ROSA_Question_Set__c == null);
+        need ||
+        (s.ROSA_Pathway__c != null &&
+        s.ROSA_Question_Set_Used__c == null);
     }
     if (need) {
-      for (Event_Category__c e : [
+      for (ROSA_Question_Set__c e : [
         SELECT Id, ROSA_Pathway__c
-        FROM Event_Category__c
-        WHERE
-          ROSA_Usage__c = 'ROSA Credentialing'
-          AND Active__c = TRUE
-          AND ROSA_Pathway__c != NULL
+        FROM ROSA_Question_Set__c
+        WHERE ROSA_Active__c = TRUE AND ROSA_Pathway__c != NULL
         WITH SYSTEM_MODE
         ORDER BY CreatedDate ASC
       ]) {
@@ -767,12 +767,12 @@ public without sharing class ROSAAutomation {
       }
     }
     for (Robotics_Surgeons__c s : surgeons) {
-      if (s.ROSA_Pathway__c != null && s.ROSA_Question_Set__c == null) {
-        s.ROSA_Question_Set__c = setByPathway.get(s.ROSA_Pathway__c);
+      if (s.ROSA_Pathway__c != null && s.ROSA_Question_Set_Used__c == null) {
+        s.ROSA_Question_Set_Used__c = setByPathway.get(s.ROSA_Pathway__c);
       }
       if (
         s.ROSA_Pathway__c == null &&
-        s.ROSA_Question_Set__c == null &&
+        s.ROSA_Question_Set_Used__c == null &&
         s.ROSA_Credentialing_Status__c == null &&
         s.ROSA_Course_Date__c == null &&
         s.ROSA_Credentialed_Date__c == null
@@ -831,13 +831,16 @@ public without sharing class ROSAAutomation {
       for (Robotics_Surgeons__c s : rows) {
         Robotics_Surgeons__c old = oldMap == null ? null : oldMap.get(s.Id);
         if (
-          s.ROSA_Question_Set__c != null &&
+          s.ROSA_Question_Set_Used__c != null &&
           (old == null ||
-          old.ROSA_Question_Set__c != s.ROSA_Question_Set__c)
+          old.ROSA_Question_Set_Used__c != s.ROSA_Question_Set_Used__c)
         ) {
           newSets.add(s);
         }
-        if (old == null || old.ROSA_Question_Set__c != s.ROSA_Question_Set__c) {
+        if (
+          old == null ||
+          old.ROSA_Question_Set_Used__c != s.ROSA_Question_Set_Used__c
+        ) {
           recount.add(s.Id);
         }
         if (
@@ -868,7 +871,7 @@ public without sharing class ROSAAutomation {
     Set<Id> sets = new Set<Id>();
     Set<Id> ids = new Set<Id>();
     for (Robotics_Surgeons__c s : surgeons) {
-      sets.add(s.ROSA_Question_Set__c);
+      sets.add(s.ROSA_Question_Set_Used__c);
       ids.add(s.Id);
     }
     Set<Id> hasAnswers = new Set<Id>();
@@ -881,39 +884,40 @@ public without sharing class ROSAAutomation {
     ]) {
       hasAnswers.add((Id) r.get('sid'));
     }
-    Map<Id, List<Question__c>> bySet = new Map<Id, List<Question__c>>();
-    for (Question__c q : [
+    Map<Id, List<ROSA_Question__c>> bySet = new Map<Id, List<ROSA_Question__c>>();
+    for (ROSA_Question__c q : [
       SELECT
         Id,
-        Event_Category__c,
-        Answer_Type__c,
-        Answer_Required__c,
-        Display_Order__c
-      FROM Question__c
-      WHERE Event_Category__c IN :sets AND Active__c = TRUE
+        ROSA_Question_Set__c,
+        ROSA_Answer_Type__c,
+        ROSA_Required__c,
+        ROSA_Display_Order__c
+      FROM ROSA_Question__c
+      WHERE ROSA_Question_Set__c IN :sets AND ROSA_Active__c = TRUE
       WITH SYSTEM_MODE
-      ORDER BY Display_Order__c ASC NULLS LAST, Name ASC
+      ORDER BY ROSA_Display_Order__c ASC NULLS LAST, Name ASC
     ]) {
-      if (!bySet.containsKey(q.Event_Category__c)) {
-        bySet.put(q.Event_Category__c, new List<Question__c>());
+      if (!bySet.containsKey(q.ROSA_Question_Set__c)) {
+        bySet.put(q.ROSA_Question_Set__c, new List<ROSA_Question__c>());
       }
-      bySet.get(q.Event_Category__c).add(q);
+      bySet.get(q.ROSA_Question_Set__c).add(q);
     }
     List<ROSA_Credentialing_Answer__c> answers = new List<ROSA_Credentialing_Answer__c>();
     for (Robotics_Surgeons__c s : surgeons) {
       if (
-        hasAnswers.contains(s.Id) || !bySet.containsKey(s.ROSA_Question_Set__c)
+        hasAnswers.contains(s.Id) ||
+        !bySet.containsKey(s.ROSA_Question_Set_Used__c)
       ) {
         continue;
       }
-      for (Question__c q : bySet.get(s.ROSA_Question_Set__c)) {
+      for (ROSA_Question__c q : bySet.get(s.ROSA_Question_Set_Used__c)) {
         answers.add(
           new ROSA_Credentialing_Answer__c(
             ROSA_Surgeon__c = s.Id,
-            ROSA_Question__c = q.Id,
-            ROSA_Answer_Type__c = q.Answer_Type__c,
-            ROSA_Required__c = q.Answer_Required__c,
-            ROSA_Display_Order__c = q.Display_Order__c
+            ROSA_Set_Question__c = q.Id,
+            ROSA_Answer_Type__c = q.ROSA_Answer_Type__c,
+            ROSA_Required__c = q.ROSA_Required__c,
+            ROSA_Display_Order__c = q.ROSA_Display_Order__c
           )
         );
       }
@@ -928,12 +932,12 @@ public without sharing class ROSAAutomation {
     }
     Map<Id, Robotics_Surgeons__c> updates = new Map<Id, Robotics_Surgeons__c>();
     for (Robotics_Surgeons__c s : [
-      SELECT Id, ROSA_Question_Set__c
+      SELECT Id, ROSA_Question_Set_Used__c
       FROM Robotics_Surgeons__c
       WHERE Id IN :surgeonIds
       WITH SYSTEM_MODE
     ]) {
-      Integer zero = s.ROSA_Question_Set__c == null ? null : 0;
+      Integer zero = s.ROSA_Question_Set_Used__c == null ? null : 0;
       updates.put(
         s.Id,
         new Robotics_Surgeons__c(

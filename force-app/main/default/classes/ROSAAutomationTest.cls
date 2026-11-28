@@ -114,24 +114,23 @@ private class ROSAAutomationTest {
     return s;
   }
 
-  static Event_Category__c questionSet(Integer questions) {
-    Event_Category__c e = new Event_Category__c(
+  static ROSA_Question_Set__c questionSet(Integer questions) {
+    ROSA_Question_Set__c e = new ROSA_Question_Set__c(
       Name = 'Test ROSA Shoulder Credentialing',
-      Active__c = true,
-      ROSA_Usage__c = 'ROSA Credentialing',
+      ROSA_Active__c = true,
       ROSA_Pathway__c = 'Shoulder'
     );
     insert e;
-    List<Question__c> qs = new List<Question__c>();
+    List<ROSA_Question__c> qs = new List<ROSA_Question__c>();
     for (Integer i = 1; i <= questions; i++) {
       qs.add(
-        new Question__c(
-          Event_Category__c = e.Id,
-          Question_Text_2__c = 'Question ' + i,
-          Answer_Type__c = 'Yes/No',
-          Answer_Required__c = true,
-          Active__c = true,
-          Display_Order__c = i * 10
+        new ROSA_Question__c(
+          ROSA_Question_Set__c = e.Id,
+          ROSA_Question_Text__c = 'Question ' + i,
+          ROSA_Answer_Type__c = 'Yes/No',
+          ROSA_Required__c = true,
+          ROSA_Active__c = true,
+          ROSA_Display_Order__c = i * 10
         )
       );
     }
@@ -374,7 +373,7 @@ private class ROSAAutomationTest {
         'ZB',
         40
       );
-      Event_Category__c qs = questionSet(4);
+      ROSA_Question_Set__c qs = questionSet(4);
       update new SalesRisks__c(Id = d.Id, Install_Date__c = Date.today());
       update new Robotics__c(
         Id = d.ROSA_Checklist__c,
@@ -388,7 +387,11 @@ private class ROSAAutomationTest {
       // choosing the pathway on the surgeon brings in the question set and its questions
       update new Robotics_Surgeons__c(Id = s.Id, ROSA_Pathway__c = 'Shoulder');
       Robotics_Surgeons__c got = surgeonRow(s.Id);
-      System.assertEquals(qs.Id, got.ROSA_Question_Set__c, 'T10 question set');
+      System.assertEquals(
+        qs.Id,
+        got.ROSA_Question_Set_Used__c,
+        'T10 question set'
+      );
       System.assertEquals(
         'Not started',
         got.ROSA_Credentialing_Status__c,
@@ -483,13 +486,13 @@ private class ROSAAutomationTest {
       );
 
       // T16: a fifth question only reaches surgeons put into credentialing after it was added
-      insert new Question__c(
-        Event_Category__c = qs.Id,
-        Question_Text_2__c = 'Five',
-        Answer_Type__c = 'Date',
-        Answer_Required__c = true,
-        Active__c = true,
-        Display_Order__c = 50
+      insert new ROSA_Question__c(
+        ROSA_Question_Set__c = qs.Id,
+        ROSA_Question_Text__c = 'Five',
+        ROSA_Answer_Type__c = 'Date',
+        ROSA_Required__c = true,
+        ROSA_Active__c = true,
+        ROSA_Display_Order__c = 50
       );
       Robotics_Surgeons__c s2 = addSurgeon(
         d.Id,
@@ -569,7 +572,7 @@ private class ROSAAutomationTest {
   static Robotics_Surgeons__c surgeonRow(Id id) {
     return [
       SELECT
-        ROSA_Question_Set__c,
+        ROSA_Question_Set_Used__c,
         ROSA_Credentialing_Status__c,
         ROSA_Questions_To_Answer__c,
         ROSA_Gaps__c,

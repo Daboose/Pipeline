@@ -65,7 +65,7 @@
         <layoutColumns>
             <layoutItems>
                 <behavior>Readonly</behavior>
-                <field>ROSA_Question_Set__c</field>
+                <field>ROSA_Question_Set_Used__c</field>
             </layoutItems>
             <layoutItems>
                 <behavior>Readonly</behavior>

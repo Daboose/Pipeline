@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>ROSA_Answer_Type__c</fullName>
+    <description
+  >What kind of answer the question takes: Yes/No, Date, Number or Text.</description>
+    <inlineHelpText
+  >Decides the answer box shown in the surgeon's Q&amp;A.</inlineHelpText>
+    <label>Answer type</label>
+    <required>true</required>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value><fullName>Yes/No</fullName><default>true</default><label
+        >Yes/No</label></value>
+            <value><fullName>Date</fullName><default>false</default><label
+        >Date</label></value>
+            <value><fullName>Number</fullName><default>false</default><label
+        >Number</label></value>
+            <value><fullName>Text</fullName><default>false</default><label
+        >Text</label></value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

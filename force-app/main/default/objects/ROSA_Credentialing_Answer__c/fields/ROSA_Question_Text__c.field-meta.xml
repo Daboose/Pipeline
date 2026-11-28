@@ -5,7 +5,7 @@
     <inlineHelpText>The question.</inlineHelpText>
     <label>Question text</label>
     <externalId>false</externalId>
-    <formula>ROSA_Question__r.Question_Text_2__c</formula>
+    <formula>ROSA_Set_Question__r.ROSA_Question_Text__c</formula>
     <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
     <required>false</required>
     <unique>false</unique>

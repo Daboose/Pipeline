@@ -7,7 +7,7 @@
     <label>Question</label>
     <externalId>false</externalId>
     <formula
-  >HYPERLINK("/" &amp; Id, BLANKVALUE(ROSA_Question__r.Question_Text_2__c, Name), "_self")</formula>
+  >HYPERLINK("/" &amp; Id, BLANKVALUE(ROSA_Set_Question__r.ROSA_Question_Text__c, Name), "_self")</formula>
     <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
     <required>false</required>
     <unique>false</unique>
