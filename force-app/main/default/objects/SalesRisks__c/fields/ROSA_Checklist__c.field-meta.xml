@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>ROSA_Checklist__c</fullName>
+    <description
+  >The deal's ROSA Checklist, linked automatically when the deal is created. Lets the deal page show the checklist steps.</description>
+    <inlineHelpText>Linked automatically.</inlineHelpText>
+    <label>ROSA Checklist</label>
+    <deleteConstraint>SetNull</deleteConstraint>
+    <referenceTo>Robotics__c</referenceTo>
+    <relationshipLabel>ROSA deals</relationshipLabel>
+    <relationshipName>ROSA_Deals</relationshipName>
+    <required>false</required>
+    <type>Lookup</type>
+</CustomField>

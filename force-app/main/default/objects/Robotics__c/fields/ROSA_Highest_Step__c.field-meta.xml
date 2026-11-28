@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>ROSA_Highest_Step__c</fullName>
+    <description
+  >Highest checklist step ticked: 1 to 6 for the opportunity and contract steps, 7 when any implementation step (7a to 7d) is ticked. Set by automation.</description>
+    <inlineHelpText>Set automatically from the ticked steps.</inlineHelpText>
+    <label>Highest step done</label>
+    <externalId>false</externalId>
+    <precision>2</precision>
+    <required>false</required>
+    <scale>0</scale>
+    <unique>false</unique>
+    <type>Number</type>
+</CustomField>

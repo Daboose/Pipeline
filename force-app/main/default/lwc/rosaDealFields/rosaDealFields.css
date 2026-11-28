@@ -1,0 +1,43 @@
+@import "c/rosaDealStyles";
+
+:host {
+  display: block;
+}
+.fields {
+  display: grid;
+  gap: 14px 24px;
+}
+.wide {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+  margin-top: 16px;
+}
+.f .l {
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 3px;
+}
+.f .v {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.f .v.good {
+  color: var(--good);
+}
+.f .v.long {
+  font-weight: 400;
+  line-height: 1.55;
+  white-space: pre-wrap;
+}
+.multi {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+}
+.mo {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+}

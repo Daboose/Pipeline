@@ -214,19 +214,6 @@
         }
         document.addEventListener("pipelineready", pipelineSplashReady);
         setTimeout(pipelineSplashReady, 12000);
-        // A deal row in the tool announces "pipelineopenrecord". Inside Salesforce the record is opened by Salesforce's own
-        // navigation (no new browser tab); outside Salesforce there is nothing to answer and the tool opens its own tab.
-        document.addEventListener("pipelineopenrecord", function (event) {
-          try {
-            var d = JSON.parse(event.detail || "{}");
-            if (window.sforce && sforce.one && d.recordId) {
-              sforce.one.navigateToSObject(d.recordId, "view");
-              event.preventDefault();
-            }
-          } catch (e) {
-            // not answered: the tool falls back to a new tab
-          }
-        });
         if (pipelinePhone) {
           document.getElementById("splash").classList.add("phone");
         } else {

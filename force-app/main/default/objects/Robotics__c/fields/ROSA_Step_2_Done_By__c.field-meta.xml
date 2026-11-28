@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>ROSA_Step_2_Done_By__c</fullName>
+    <description>Who ticked step 2. Set by automation; read-only.</description>
+    <inlineHelpText
+  >Set automatically to the person who ticked the step.</inlineHelpText>
+    <label>2 Done by</label>
+    <deleteConstraint>SetNull</deleteConstraint>
+    <referenceTo>User</referenceTo>
+    <relationshipLabel>ROSA checklist step 2 done</relationshipLabel>
+    <relationshipName>ROSA_Step_2_Done_By</relationshipName>
+    <required>false</required>
+    <type>Lookup</type>
+</CustomField>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>ROSA_Pathway__c</fullName>
+    <description
+  >For ROSA Credentialing categories: which ROSA pathway the questions are for. Matches the ROSA Credentialing record type. Added by the ROSA Shoulder POC.</description>
+    <inlineHelpText
+  >For a ROSA Credentialing question set: the joint it is for.</inlineHelpText>
+    <label>ROSA pathway</label>
+    <required>false</required>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Shoulder</fullName>
+                <default>false</default>
+                <label>Shoulder</label>
+            </value>
+            <value>
+                <fullName>Hip</fullName>
+                <default>false</default>
+                <label>Hip</label>
+            </value>
+            <value>
+                <fullName>Knee</fullName>
+                <default>false</default>
+                <label>Knee</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+    <type>Picklist</type>
+</CustomField>

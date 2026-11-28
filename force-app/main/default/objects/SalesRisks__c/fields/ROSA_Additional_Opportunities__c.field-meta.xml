@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>ROSA_Additional_Opportunities__c</fullName>
+    <description
+  >ROSA deal appropriateness: other opportunities at the site.</description>
+    <inlineHelpText>Other opportunities at this site.</inlineHelpText>
+    <label>Additional opportunities</label>
+    <length>5000</length>
+    <visibleLines>4</visibleLines>
+    <type>LongTextArea</type>
+</CustomField>

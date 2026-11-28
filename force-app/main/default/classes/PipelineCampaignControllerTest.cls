@@ -901,4 +901,18 @@ private class PipelineCampaignControllerTest {
       );
     }
   }
+
+  /** A ROSA deal's joints for the Deal Type column: fixed order, slashes, nothing when none is set. */
+  @IsTest
+  static void rosaJointsAreNamedInOrder() {
+    System.assertEquals(
+      'Shoulder',
+      PipelineCampaignController.rosaJoints('Shoulder')
+    );
+    System.assertEquals(
+      'Hip/Knee',
+      PipelineCampaignController.rosaJoints('Knee;Hip')
+    );
+    System.assertEquals(null, PipelineCampaignController.rosaJoints(null));
+  }
 }

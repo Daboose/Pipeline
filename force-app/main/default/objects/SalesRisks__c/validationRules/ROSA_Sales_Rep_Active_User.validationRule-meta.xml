@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>ROSA_Sales_Rep_Active_User</fullName>
+    <active>true</active>
+    <description
+  >ROSA deal: sales rep must be an active internal user (no portal users). A rule, not a lookup filter, because the object has used all 5 filtered lookups.</description>
+    <errorConditionFormula
+  >NOT(ISBLANK(ROSA_Sales_Rep__c)) &amp;&amp; (NOT(ROSA_Sales_Rep__r.IsActive) || TEXT(ROSA_Sales_Rep__r.UserType) &lt;&gt; 'Standard')</errorConditionFormula>
+    <errorDisplayField>ROSA_Sales_Rep__c</errorDisplayField>
+    <errorMessage>Choose an active Zimmer Biomet user.</errorMessage>
+</ValidationRule>

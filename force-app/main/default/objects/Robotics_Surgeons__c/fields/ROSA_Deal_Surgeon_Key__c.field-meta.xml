@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>ROSA_Deal_Surgeon_Key__c</fullName>
+    <description
+  >ROSA deal Id + surgeon Id. Set by automation; unique, so the same surgeon cannot be added to a deal twice.</description>
+    <label>Deal surgeon key</label>
+    <externalId>true</externalId>
+    <length>40</length>
+    <required>false</required>
+    <unique>true</unique>
+    <caseSensitive>false</caseSensitive>
+    <type>Text</type>
+</CustomField>

@@ -1,0 +1,106 @@
+<template>
+  <div class="fields" style={gridStyle}>
+    <template for:each={shortFields} for:item="f">
+      <div key={f.key} class="f" style={f.fStyle}>
+        <div class="l">{f.label}</div>
+        <div lwc:if={f.ro} class={f.vCls}>{f.shown}</div>
+        <input
+          lwc:if={f.isText}
+          class="in"
+          type="text"
+          data-key={f.key}
+          value={f.inputValue}
+          oninput={handleInput}
+        />
+        <input
+          lwc:if={f.isNumber}
+          class="in"
+          type="number"
+          min="0"
+          data-key={f.key}
+          value={f.inputValue}
+          oninput={handleInput}
+        />
+        <div lwc:if={f.isDate} class="dbox">
+          <input
+            class="in"
+            type="date"
+            data-key={f.key}
+            value={f.inputValue}
+            onchange={handleInput}
+          />
+          <button
+            lwc:if={f.inputValue}
+            type="button"
+            class="dclear"
+            title="Clear the date"
+            aria-label="Clear the date"
+            data-key={f.key}
+            onclick={handleDateClear}
+          ></button>
+        </div>
+        <select
+          lwc:if={f.isSelect}
+          class="in"
+          data-key={f.key}
+          onchange={handleInput}
+        >
+          <option value="">--None--</option>
+          <template for:each={f.opts} for:item="o">
+            <option key={o.key} value={o.value} selected={o.selected}>
+              {o.label}
+            </option>
+          </template>
+        </select>
+        <div lwc:if={f.isMulti} class="multi">
+          <template for:each={f.opts} for:item="o">
+            <label key={o.key} class="mo">
+              <input
+                class="chk"
+                type="checkbox"
+                data-key={f.key}
+                data-multi={f.key}
+                value={o.value}
+                checked={o.selected}
+                onchange={handleMulti}
+              />
+              <span>{o.label}</span>
+            </label>
+          </template>
+        </div>
+        <input
+          lwc:if={f.isCheck}
+          class="chk"
+          type="checkbox"
+          data-key={f.key}
+          checked={f.value}
+          onchange={handleCheck}
+        />
+        <c-rosa-deal-picker
+          lwc:if={f.isPick}
+          data-key={f.key}
+          kind={f.pickKind}
+          value-id={f.value}
+          value-name={f.valueName}
+          onpick={handlePick}
+        ></c-rosa-deal-picker>
+      </div>
+    </template>
+  </div>
+  <div lwc:if={hasWide} class="wide">
+    <template for:each={wideFields} for:item="f">
+      <div key={f.key} class="f">
+        <div class="l">{f.label}</div>
+        <div lwc:if={f.ro} class="v long">{f.shown}</div>
+        <textarea
+          lwc:if={f.isArea}
+          class="in"
+          rows={f.rows}
+          data-key={f.key}
+          value={f.inputValue}
+          oninput={handleArea}
+        ></textarea>
+      </div>
+    </template>
+  </div>
+</template>

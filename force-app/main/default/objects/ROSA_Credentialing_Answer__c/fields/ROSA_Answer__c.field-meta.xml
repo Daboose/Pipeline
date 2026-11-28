@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>ROSA_Answer__c</fullName>
+    <description
+  >The answer in one easy-to-read column, whatever the question type (Yes or No, the number, the date or the text). Blank until answered (Robert, 2026-11-27).</description>
+    <inlineHelpText>The answer given.</inlineHelpText>
+    <label>Answer</label>
+    <externalId>false</externalId>
+    <formula>CASE(ROSA_Answer_Type__c,
+  "Yes/No", TEXT(ROSA_Answer_Yes_No__c),
+  "Number", IF(ISBLANK(ROSA_Answer_Number__c), "", TEXT(ROSA_Answer_Number__c)),
+  "Date", IF(ISBLANK(ROSA_Answer_Date__c), "", TEXT(DAY(ROSA_Answer_Date__c)) &amp; "/" &amp; TEXT(MONTH(ROSA_Answer_Date__c)) &amp; "/" &amp; TEXT(YEAR(ROSA_Answer_Date__c))),
+  "Text", ROSA_Answer_Text__c,
+  "")</formula>
+    <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+    <required>false</required>
+    <unique>false</unique>
+    <type>Text</type>
+</CustomField>

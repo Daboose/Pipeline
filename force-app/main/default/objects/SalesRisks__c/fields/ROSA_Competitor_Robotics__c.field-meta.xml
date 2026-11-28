@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>ROSA_Competitor_Robotics__c</fullName>
+    <description
+  >ROSA deal appropriateness: competitor robots at the site. List to be confirmed with the product team.</description>
+    <inlineHelpText>Which competitor robots are at the site?</inlineHelpText>
+    <label>Competitor robotics on site</label>
+    <required>false</required>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>MAKO</fullName>
+                <default>false</default>
+                <label>MAKO</label>
+            </value>
+            <value>
+                <fullName>Velys</fullName>
+                <default>false</default>
+                <label>Velys</label>
+            </value>
+            <value>
+                <fullName>NAVIO/CORI</fullName>
+                <default>false</default>
+                <label>NAVIO/CORI</label>
+            </value>
+            <value>
+                <fullName>Mazor</fullName>
+                <default>false</default>
+                <label>Mazor</label>
+            </value>
+            <value>
+                <fullName>Da Vinci</fullName>
+                <default>false</default>
+                <label>Da Vinci</label>
+            </value>
+            <value>
+                <fullName>Other</fullName>
+                <default>false</default>
+                <label>Other</label>
+            </value>
+            <value>
+                <fullName>None</fullName>
+                <default>false</default>
+                <label>None</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+    <visibleLines>4</visibleLines>
+    <type>MultiselectPicklist</type>
+</CustomField>

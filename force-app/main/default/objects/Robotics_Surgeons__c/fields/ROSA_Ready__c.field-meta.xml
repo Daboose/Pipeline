@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>ROSA_Ready__c</fullName>
+    <description
+  >True when the surgeon has a question set and every required question is answered. Not a condition for credentialing (Robert, 2026-11-27).</description>
+    <inlineHelpText
+  >Ticked once every required question is answered.</inlineHelpText>
+    <label>All Questions Answered</label>
+    <formula
+  >NOT(ISBLANK(ROSA_Question_Set__c)) &amp;&amp; BLANKVALUE(ROSA_Questions_To_Answer__c, 0) = 0</formula>
+    <type>Checkbox</type>
+</CustomField>

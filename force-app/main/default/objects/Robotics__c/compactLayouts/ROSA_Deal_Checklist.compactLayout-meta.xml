@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CompactLayout xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>ROSA_Deal_Checklist</fullName>
+    <fields>Name</fields>
+    <fields>Sales_Risks__c</fields>
+    <fields>ROSA_Highest_Step__c</fields>
+    <label>ROSA Deal Checklist</label>
+</CompactLayout>

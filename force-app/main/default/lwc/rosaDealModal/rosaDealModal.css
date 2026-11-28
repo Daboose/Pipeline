@@ -1,0 +1,8 @@
+/* the screen's height is set by fit() in the JS (measured to the bottom of the window) */
+.fill {
+  height: 600px;
+}
+c-rosa-deal {
+  display: block;
+  height: 100%;
+}

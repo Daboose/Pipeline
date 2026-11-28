@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>ROSA_Step_7c_Done__c</fullName>
+    <description
+  >ROSA deal checklist step 7c. Ticking it fills the date and Done by and can move the deal's stage. Step owner: ROSA team.</description>
+    <inlineHelpText>Tick when done. Owner: ROSA team.</inlineHelpText>
+    <label>7c Surgeon credentialed</label>
+    <trackHistory>true</trackHistory>
+    <defaultValue>false</defaultValue>
+    <type>Checkbox</type>
+</CustomField>

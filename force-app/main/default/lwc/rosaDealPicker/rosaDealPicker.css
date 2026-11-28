@@ -1,0 +1,96 @@
+@import "c/rosaDealStyles";
+
+:host {
+  display: block;
+}
+.box {
+  position: relative;
+}
+.box .in {
+  border-radius: 999px;
+  padding-right: 40px;
+  /* stands out from the panel (Robert, 2026-11-28: the search box blended into the screen) */
+  background: color-mix(in srgb, var(--indigo) 12%, var(--pfield));
+  border: 1.5px solid var(--indigo2);
+}
+.box .in::placeholder {
+  color: var(--muted);
+}
+/* round clear button: a circle with a drawn cross, centred both ways (AAA Design search boxes) */
+.clear {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 0;
+  background: var(--muted);
+  cursor: pointer;
+  padding: 0;
+}
+.clear::before,
+.clear::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 11px;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--panel);
+}
+.clear::before {
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+.clear::after {
+  transform: translate(-50%, -50%) rotate(-45deg);
+}
+.hits {
+  border: 1.5px solid var(--indigo2);
+  border-radius: 10px;
+  margin-top: 6px;
+  background: var(--panel);
+  overflow: hidden;
+}
+.hit {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  width: 100%;
+  text-align: left;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  background: transparent;
+  color: var(--text);
+  padding: 9px 12px;
+  font-size: 14px;
+  cursor: pointer;
+}
+.hit:last-child {
+  border-bottom: 0;
+}
+.hit:hover {
+  background: var(--panel2);
+}
+.hs {
+  color: var(--muted);
+  font-size: 12px;
+}
+.none {
+  color: var(--muted);
+  font-size: 13px;
+  margin-top: 6px;
+}
+.chosen {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 6px 6px 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--panel2);
+  min-height: 36px;
+}

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>ROSA_Pathway__c</fullName>
+    <description
+  >The ROSA credentialing pathway for this surgeon on this deal. Choosing it adds the active question set's questions as answers below.</description>
+    <inlineHelpText
+  >Choose the joint to credential on; its questions then appear below to answer.</inlineHelpText>
+    <label>Credentialing pathway</label>
+    <trackHistory>true</trackHistory>
+    <required>false</required>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Shoulder</fullName>
+                <default>false</default>
+                <label>Shoulder</label>
+            </value>
+            <value>
+                <fullName>Hip</fullName>
+                <default>false</default>
+                <label>Hip</label>
+            </value>
+            <value>
+                <fullName>Knee</fullName>
+                <default>false</default>
+                <label>Knee</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+    <type>Picklist</type>
+</CustomField>

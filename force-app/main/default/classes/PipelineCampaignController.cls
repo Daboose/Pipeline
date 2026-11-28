@@ -209,6 +209,9 @@ public with sharing class PipelineCampaignController {
     public Boolean isClosed;
     @AuraEnabled
     public Boolean onHold;
+    /** A ROSA deal's joints from its Sales Type, in a fixed order and joined by slashes ("Hip/Knee"); empty for other deals. */
+    @AuraEnabled
+    public String rosaJoints;
   }
 
   public class CampaignDetail {
@@ -548,7 +551,8 @@ public with sharing class PipelineCampaignController {
         Deal__r.IsClosed__c,
         Deal__r.OnHold__c,
         Deal__r.RecordType.DeveloperName,
-        Deal__r.Portfolio__c
+        Deal__r.Portfolio__c,
+        Deal__r.ROSA_Sales_Type__c
       FROM Sales_Campaign_Deal__c
       WHERE Campaign__c = :campaignId
       WITH SYSTEM_MODE
@@ -639,6 +643,27 @@ public with sharing class PipelineCampaignController {
     return null;
   }
 
+  /** "Hip/Knee" from a ROSA deal's Sales Type (Robert, 2026-11-28: the campaign list says ROSA Shoulder, ROSA Hip/Knee). */
+  @TestVisible
+  private static String rosaJoints(String salesType) {
+    if (String.isBlank(salesType)) {
+      return null;
+    }
+    Set<String> picked = new Set<String>(salesType.split(';'));
+    List<String> out = new List<String>();
+    for (String j : new List<String>{ 'Hip', 'Knee', 'Shoulder', 'Brain' }) {
+      if (picked.contains(j)) {
+        out.add(j);
+      }
+    }
+    for (String j : salesType.split(';')) {
+      if (!out.contains(j)) {
+        out.add(j);
+      }
+    }
+    return String.join(out, '/');
+  }
+
   private static MemberDeal memberDeal(SalesRisks__c r) {
     MemberDeal d = new MemberDeal();
     d.id = r.Id;
@@ -650,6 +675,9 @@ public with sharing class PipelineCampaignController {
     d.kind = rt.endsWith('RISK')
       ? 'risk'
       : (rt.contains('ROSA') ? 'rosa' : 'opp');
+    if (d.kind == 'rosa') {
+      d.rosaJoints = rosaJoints(r.ROSA_Sales_Type__c);
+    }
     List<String> ports = new List<String>(
       PipelineDealCampaignController.dealPortfolios(
         r.RecordType == null ? null : r.RecordType.DeveloperName,

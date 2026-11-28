@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>ROSA_Deal__c</fullName>
+    <description
+  >The ROSA deal this surgeon belongs to. Totals on the deal add up these surgeons.</description>
+    <inlineHelpText>The ROSA deal this surgeon is part of.</inlineHelpText>
+    <label>ROSA Deal</label>
+    <deleteConstraint>SetNull</deleteConstraint>
+    <referenceTo>SalesRisks__c</referenceTo>
+    <relationshipLabel>ROSA Deal Surgeons</relationshipLabel>
+    <relationshipName>ROSA_Surgeons</relationshipName>
+    <required>false</required>
+    <type>Lookup</type>
+</CustomField>

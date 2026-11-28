@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>ROSA_Share_ZB__c</fullName>
+    <description
+  >Share of all with-ROSA cases where the supplier with ROSA is ZB. Calculated automatically from the ROSA Surgeons on this deal; read-only.</description>
+    <inlineHelpText
+  >Calculated automatically from the ROSA Surgeons on this deal; read-only.</inlineHelpText>
+    <label>With ROSA share: ZB</label>
+    <precision>4</precision>
+    <required>false</required>
+    <scale>1</scale>
+    <type>Percent</type>
+</CustomField>

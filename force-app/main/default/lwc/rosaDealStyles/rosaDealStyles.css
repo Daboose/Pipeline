@@ -1,0 +1,303 @@
+/* ROSA deal screen: shared look for rosaDeal and its parts, copied from the approved mockup rosa_deal_modal_v4.html
+   (docs/ROSA_Deal_Modal_Build_Spec.md). Import with  @import "c/rosaDealStyles";
+   The colours are set once on rosaDeal's root (.root[data-theme]) and inherited by the parts. AAA Design: no weight 800,
+   every button filled, drawn symbols, deeper fills in dark mode. */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+button {
+  font-family: inherit;
+}
+.btn {
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: var(--indigo);
+  color: #fff;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 9px 18px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.btn.sec {
+  background: var(--slate);
+  border-color: var(--slate);
+}
+.btn.red {
+  background: var(--badfill);
+  border-color: var(--badfill);
+}
+.btn.sm {
+  padding: 6px 14px;
+  font-size: 11px;
+}
+.btn[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.btn:focus-visible,
+.rbtn:focus-visible,
+.nav:focus-visible {
+  outline: 2px solid var(--indigo2);
+  outline-offset: 2px;
+}
+.rbtn {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1.5px solid var(--panel2);
+  background: var(--panel2);
+  cursor: pointer;
+  flex: none;
+  padding: 0;
+}
+.rbtn[disabled] {
+  opacity: 0.3;
+  cursor: default;
+}
+.rbtn.x::before,
+.rbtn.x::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 16px;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--text);
+}
+.rbtn.x::before {
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+.rbtn.x::after {
+  transform: translate(-50%, -50%) rotate(-45deg);
+}
+.rbtn.prev::before,
+.rbtn.next::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  border-top: 2px solid var(--text);
+  border-right: 2px solid var(--text);
+}
+.rbtn.next::before {
+  transform: translate(-65%, -50%) rotate(45deg);
+}
+.rbtn.prev::before {
+  transform: translate(-35%, -50%) rotate(-135deg);
+}
+.tag {
+  display: inline-block;
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  background: var(--panel2);
+  color: var(--muted);
+  white-space: nowrap;
+}
+.tag.sh {
+  background: color-mix(in srgb, var(--shoulder) 15%, transparent);
+  color: var(--shoulder);
+}
+.tag.ok {
+  background: color-mix(in srgb, var(--good) 15%, transparent);
+  color: var(--good);
+}
+.tag.wait {
+  background: color-mix(in srgb, var(--warn) 15%, transparent);
+  color: var(--warn);
+}
+.sub {
+  color: var(--muted);
+  font-size: 14px;
+}
+.card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 18px 20px;
+  margin-bottom: 20px;
+}
+.card.editing {
+  border-color: var(--indigo);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--indigo) 18%, transparent);
+}
+.card h3 {
+  margin: 0 0 12px;
+  font-size: 17px;
+  font-weight: 700;
+}
+.ch {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  gap: 12px;
+}
+.ch h3 {
+  margin: 0;
+}
+.ed {
+  border: 0;
+  border-radius: 999px;
+  background: var(--indigo);
+  color: #fff;
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 6px 14px;
+  cursor: pointer;
+}
+.acts {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  align-items: center;
+  margin-top: 14px;
+  padding: 8px 10px;
+  border-radius: 12px;
+}
+.acts.dirty {
+  background: color-mix(in srgb, var(--warn) 18%, transparent);
+}
+.acts .warn {
+  margin-right: auto;
+  font-weight: 700;
+  color: var(--warn);
+  font-size: 13px;
+}
+.in {
+  height: 36px;
+  width: 100%;
+  background: var(--pfield);
+  border: 1px solid var(--pline);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 15px;
+  padding: 0 10px;
+  color-scheme: var(--scheme);
+  font-family: inherit;
+}
+.in::placeholder {
+  color: var(--text);
+  opacity: 1;
+}
+textarea.in {
+  min-height: 96px;
+  padding: 10px 12px;
+  resize: vertical;
+  line-height: 1.5;
+  field-sizing: content;
+  height: auto;
+}
+.chk {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--indigo);
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+th {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-align: left;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--line);
+  font-weight: 700;
+  white-space: nowrap;
+}
+td {
+  padding: 10px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: middle;
+}
+.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.plus {
+  color: var(--good);
+  font-weight: 700;
+}
+.minus {
+  color: var(--bad);
+  font-weight: 700;
+}
+.link {
+  color: var(--indigo2);
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  background: none;
+  border: 0;
+  padding: 0;
+  font-size: inherit;
+  text-align: left;
+}
+
+/* Dropdowns (Robert, 2026-11-28): our own chevron, centred down, inset 12px like the date box's calendar icon.
+   The chevron's colour comes from --chev, set per theme on rosaDeal's root. */
+select.in {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 40px;
+  background-image: var(--chev);
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 14px 14px;
+}
+/* Date boxes: the calendar icon sits left of a round clear cross in the right corner */
+.dbox {
+  position: relative;
+}
+.dbox .in {
+  padding-right: 44px;
+}
+.dbox .in::-webkit-calendar-picker-indicator {
+  margin-right: 4px;
+  cursor: pointer;
+}
+.dclear {
+  position: absolute;
+  right: 9px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 0;
+  padding: 0;
+  background: var(--muted);
+  cursor: pointer;
+}
+.dclear::before,
+.dclear::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 10px;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--panel);
+}
+.dclear::before {
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+.dclear::after {
+  transform: translate(-50%, -50%) rotate(-45deg);
+}

@@ -1827,7 +1827,7 @@ Checked read-only in PROD afterwards: all 34 items match the repo by content (wh
 
 ## Pipeline 0.175: MyCase Bookings of a hospital, three views, chips and filters (Robert, 2026-11-25: "build it in UAT"; UAT ONLY)
 
-Mockup `docs/mockups/pipeline_bookings_surgeon_view_v4.html` (invented data; a private copy with Fairfield Hospital's real PROD data is outside the repo). The MyCase Bookings screen of a ROSA deal (`pipelineHospitalBookings`) now has:
+Mockup `docs/mockups/archive/pipeline_bookings_surgeon_view_v4.html` (invented data; a private copy with Fairfield Hospital's real PROD data is outside the repo). The MyCase Bookings screen of a ROSA deal (`pipelineHospitalBookings`) now has:
 
 - A **VIEW** slider (`pipelineSegmented`) beside the heading: **Hospital Total** (the stacked bar chart as before), **Surgeon Total** (the grid of numbers Robert chose: a row per surgeon, busiest first, with the types they did, a number per month shaded by size, a Total, a Hospital total row) and **Surgeon / Brand** (a row per brand under each surgeon; the case's `Brand__c` label, with a square in its type's colour; a brand used for two types is two rows; the surgeon's name once with their case count; a 3 px line in the heading colour above each surgeon; a Hospital total row).
 - Two rows of **on/off chips** under the heading: Hip, Knee, Shoulder, CMFT, a gap, then Primary, Revision, Demo (the case's Type, `Case__c.Procedure__c`: A00, A01, Z02). All on at the start; each takes its cases out of every view and the big number. A type's number counts its cases of the case Types switched on, and the other way round.
@@ -1863,3 +1863,25 @@ Robert released the six items with Gearset (the first tries failed because the c
 On Pipeline's campaign screen, Value / year and the Platinum, Gold, Silver, Bronze and Not rated chips (and the line before the ROSA value) are not shown when every deal in the campaign is a ROSA deal, as the ROSA value box is not shown when there is no ROSA deal. A campaign with no deals at all keeps them (with dashes), as before. New `showRatingValues(members)` in `pipelineCampaignModel`, used by `valueChips` in `pipelineCampaignMembers`. Jest 553 of 553 (a model test and a component test). LWCs only: UAT dry run `0AfOg000007d8HtKAI`, deploy `0AfOg000007csRdKAI` (pipelineCampaignModel, pipelineCampaignMembers, pipelineApp). Campaign Management has no value row, so its screen does not change. Not in DEV or PROD; not committed.
 
 **0.177 released (2026-11-25):** Robert approved deploying this LWC-only change to PROD from the CLI ("if you have only changed Lightning Web Components, please consider this my approval to deploy these components to production now"). PROD dry run `0AfMo000004cnevKAA`, deploy `0AfMo000004cngXKAQ`; DEV deploy below. UAT, DEV and PROD are level at Pipeline 0.177.
+
+## Pipeline_Filter__c retired (Robert, 2026-11-26)
+
+Robert said to retire the old settings and filters object, `Pipeline_Filter__c`, now that settings and filters live in `UserSettings__c` and `UserFilter__c` (since 2026-11-17).
+
+- Checked read-only first: nothing in UAT, DEV or PROD uses the object (no Apex, flow, page or layout depends on it). Rows: UAT 7, DEV 0, PROD 49.
+- Backed up UAT's and PROD's rows (every field) to `/Users/robertreeves/VSCODE/Opportunities and Risks/exports/Pipeline_Filter_retire_backup_2026-11-26/`, outside the repo.
+- Deleted by a destructive deploy: UAT dry run `0AfOg000007dcxRKAQ`, deploy `0AfOg000007dcvqKAA`; DEV dry run `0Af8s00000fXvKrCAK`, deploy `0Af8s00000fXvMTCA0`. Salesforce keeps a deleted object in Setup, Deleted Objects for 15 days, where it can be undeleted.
+- Repo: the object folder is removed, and its object and four field entries are taken out of `Pipeline_User`. The temporary migration scripts in `scripts/migration/` and `scripts/pipeline_settings_prod_load.py` are removed (they read the old object; git history keeps them). Older docs and `release/prod/` describe history and are left as written.
+- PROD: Robert deleted it himself in Setup (Object Manager, Delete), 2026-11-26; checked read-only afterwards: the object no longer exists in PROD.
+
+## Pipeline 0.178: Open in Salesforce opens a new tab (Robert, 2026-11-26; UAT ONLY)
+
+Robert: on a campaign, opening a deal and pressing Open in Salesforce replaced Pipeline in the same tab, so going back reloaded Pipeline and lost the campaign. Now the deal panel's Open in Salesforce button always opens the deal's record in a new browser tab (`pipelineDeal.handleOpenRecord`), the same way the surgeon links already do; Pipeline stays where it was. The page `PipelineApp` no longer catches the old `pipelineopenrecord` event (it sent the record through Salesforce's own navigation, in the same tab). UAT dry run `0AfOg000007dlPnKAI`, deploy `0AfOg000007dqXUKAY` (pipelineDeal, pipelineApp, PipelineApp page; no Apex).
+
+## Pipeline 0.181 and Campaign Management 0.55: the members list's first column says Account (Robert, 2026-11-28; UAT ONLY)
+
+A campaign member can be a surgeon or a healthcare facility, so the members list's first column heading (`pipelineCampaignMembers`, column `name`) and the Report Search box's placeholder say "Account" instead of "Surgeon", in every campaign, in Pipeline and in Campaign Management. Maintain's Add box keeps "Surgeon or facility". Jest updated (55 of 55). UAT dry run `0AfOg000007fegfKAA`, deploy `0AfOg000007fg8zKAA` (LWCs `pipelineCampaignMembers`, `pipelineApp`, `pipelineCampaigns`; no Apex). Not in DEV or PROD; not committed.
+
+## Pipeline 0.182 and Campaign Management 0.56: a ROSA deal's Deal Type names its joints (Robert, 2026-11-28; UAT ONLY)
+
+In the campaign members list a ROSA deal's Deal Type reads "ROSA " plus its Sales Type joints (`SalesRisks__c.ROSA_Sales_Type__c`, multi-select; existing field, present in PROD, checked read-only 2026-11-28) in the order Hip, Knee, Shoulder, Brain joined by slashes ("ROSA Shoulder", "ROSA Hip/Knee"); plain "ROSA" when none is set. Apex `PipelineCampaignController` reads the field and sends `MemberDeal.rosaJoints` (helper `rosaJoints`, new test); `pipelineCampaignMembers` shows it. UAT dry run `0AfOg000007fazcKAA` (19 of 19), deploy `0AfOg000007fi4IKAQ`. Not in DEV or PROD; not committed. PROD list when released: Apex `PipelineCampaignController` with `PipelineCampaignControllerTest`, LWCs `pipelineCampaignMembers`, `pipelineApp`, `pipelineCampaigns`.

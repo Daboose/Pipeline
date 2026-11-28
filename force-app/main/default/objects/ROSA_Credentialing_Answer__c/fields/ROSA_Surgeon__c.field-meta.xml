@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>ROSA_Surgeon__c</fullName>
+    <description
+  >The ROSA Surgeon this credentialing answer belongs to.</description>
+    <label>ROSA Surgeon</label>
+    <referenceTo>Robotics_Surgeons__c</referenceTo>
+    <relationshipLabel>ROSA Deal Surgeon Q&amp;A</relationshipLabel>
+    <relationshipName>ROSA_Answers</relationshipName>
+    <relationshipOrder>0</relationshipOrder>
+    <reparentableMasterDetail>false</reparentableMasterDetail>
+    <writeRequiresMasterRead>false</writeRequiresMasterRead>
+    <type>MasterDetail</type>
+</CustomField>

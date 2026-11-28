@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>ROSA_7_Needs_Closed_Won</fullName>
+    <active>true</active>
+    <description
+  >ROSA checklist: implementation steps 7a to 7d need step 6 (contract signed) first.</description>
+    <errorConditionFormula
+  >RecordType.DeveloperName = 'ROSA_Deal_Checklist' &amp;&amp; NOT(ROSA_Step_6_Done__c) &amp;&amp; (ROSA_Step_7a_Done__c || ROSA_Step_7b_Done__c || ROSA_Step_7c_Done__c || ROSA_Step_7d_Done__c)</errorConditionFormula>
+    <errorMessage
+  >Implementation steps open once the contract is signed.</errorMessage>
+</ValidationRule>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>ROSA_ZB_THA_Users__c</fullName>
+    <description
+  >ROSA Surgeons whose current THA supplier is ZB. Calculated automatically from the ROSA Surgeons on this deal; read-only.</description>
+    <inlineHelpText
+  >Calculated automatically from the ROSA Surgeons on this deal; read-only.</inlineHelpText>
+    <label>ZB THA users</label>
+    <externalId>false</externalId>
+    <precision>4</precision>
+    <required>false</required>
+    <scale>0</scale>
+    <unique>false</unique>
+    <type>Number</type>
+</CustomField>

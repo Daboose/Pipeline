@@ -664,3 +664,22 @@
 .root.nosb {
   overflow-y: hidden;
 }
+
+/* the ROSA deal screen (0.179): about 97% of the window, over a blurred, darkened page; outside the zoomed root */
+.rosaover {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(3px);
+}
+.rosabox {
+  position: absolute;
+  inset: 1.5% 1.5%;
+}
+.rosabox c-rosa-deal {
+  display: block;
+  height: 100%;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.35);
+  border-radius: 16px;
+}

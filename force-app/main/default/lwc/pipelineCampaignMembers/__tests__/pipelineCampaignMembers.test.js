@@ -109,7 +109,7 @@ describe("c-pipeline-campaign-members", () => {
     const multi = make();
     await flush();
     expect(heads(multi)).toEqual([
-      "Surgeon",
+      "Account",
       "Current Hospitals",
       "Country · City",
       "Type",
@@ -208,7 +208,7 @@ describe("c-pipeline-campaign-members", () => {
     const labels = [...el.shadowRoot.querySelectorAll(".picker .pk")].map((l) =>
       l.textContent.trim()
     );
-    expect(labels).not.toContain("Surgeon"); // the name always stays
+    expect(labels).not.toContain("Account"); // the name always stays
     expect(labels).toContain("Current Hospitals");
     expect(labels).toContain("Knee Rating");
     const box = (label) =>
@@ -222,7 +222,7 @@ describe("c-pipeline-campaign-members", () => {
     });
     await flush();
     expect(heads(el)).toEqual([
-      "Surgeon",
+      "Account",
       "Country · City",
       "Hip Rating",
       "Deal Type",

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>ROSA_Growth_Value__c</fullName>
+    <description
+  >Implant growth $ plus disposables growth $ for this surgeon. The deal's ROSA Growth $ adds these up. Calculated automatically: growth cases per joint (ZB with ROSA minus ZB now) times the price table for the deal's country and currency. Read-only.</description>
+    <inlineHelpText
+  >Calculated automatically: growth cases per joint (ZB with ROSA minus ZB now) times the price table for the deal's country and currency. Read-only.</inlineHelpText>
+    <label>Growth $</label>
+    <precision>16</precision>
+    <required>false</required>
+    <scale>2</scale>
+    <type>Currency</type>
+</CustomField>

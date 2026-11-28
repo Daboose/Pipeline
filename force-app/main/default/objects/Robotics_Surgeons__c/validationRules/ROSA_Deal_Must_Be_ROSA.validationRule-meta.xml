@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>ROSA_Deal_Must_Be_ROSA</fullName>
+    <active>true</active>
+    <description
+  >ROSA Surgeons: ROSA Deal must be a ROSA record type.</description>
+    <errorConditionFormula
+  >NOT(ISBLANK(ROSA_Deal__c)) &amp;&amp; NOT(CONTAINS(ROSA_Deal__r.RecordType.DeveloperName, 'ROSA'))</errorConditionFormula>
+    <errorDisplayField>ROSA_Deal__c</errorDisplayField>
+    <errorMessage>ROSA Deal must be a ROSA deal.</errorMessage>
+</ValidationRule>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>ROSA_Growth_Calculated__c</fullName>
+    <description
+  >Shows ROSA Growth $ read-only on the ROSA deal page once the deal has surgeons (then it is calculated from them); with no surgeons the typed-in field shows instead (Robert, 2026-11-27).</description>
+    <inlineHelpText>Calculated from the surgeons on this deal.</inlineHelpText>
+    <label>ROSA Growth $ (calculated)</label>
+    <formula>ROSAGrowthDollar__c</formula>
+    <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+    <precision>18</precision>
+    <required>false</required>
+    <scale>0</scale>
+    <type>Currency</type>
+</CustomField>

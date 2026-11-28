@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>ROSA_Course_Date__c</fullName>
+    <description
+  >Date the surgeon is booked on the ROSA credentialing course (Med Ed lab).</description>
+    <inlineHelpText
+  >The date of the credentialing course the surgeon is booked on.</inlineHelpText>
+    <label>Course date</label>
+    <trackHistory>true</trackHistory>
+    <required>false</required>
+    <type>Date</type>
+</CustomField>

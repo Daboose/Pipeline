@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>ROSA_Critical_To_Approval__c</fullName>
+    <description
+  >ROSA deal site background: what is critical to getting approval.</description>
+    <inlineHelpText
+  >What is critical to getting this deal approved?</inlineHelpText>
+    <label>Critical to approval</label>
+    <length>5000</length>
+    <visibleLines>4</visibleLines>
+    <type>LongTextArea</type>
+</CustomField>

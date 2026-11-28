@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CompactLayout xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>ROSA_Answer</fullName>
+    <fields>Name</fields>
+    <fields>ROSA_Surgeon__c</fields>
+    <fields>ROSA_Answer__c</fields>
+    <fields>ROSA_Answered_By__c</fields>
+    <label>ROSA Answer</label>
+</CompactLayout>

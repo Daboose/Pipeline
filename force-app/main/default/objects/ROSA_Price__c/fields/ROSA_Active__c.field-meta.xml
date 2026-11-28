@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>ROSA_Active__c</fullName>
+    <description
+  >Only one active price per country, item and currency. Untick to retire a price instead of deleting it.</description>
+    <inlineHelpText
+  >Untick to retire this price. Only one active price can exist per country, item and currency.</inlineHelpText>
+    <label>Active</label>
+    <defaultValue>true</defaultValue>
+    <type>Checkbox</type>
+</CustomField>

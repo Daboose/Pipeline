@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>ROSA_Step7a_Needs_Install_Date</fullName>
+    <active>true</active>
+    <description
+  >ROSA checklist: step 7a needs the Install Date on the ROSA deal.</description>
+    <errorConditionFormula
+  >RecordType.DeveloperName = 'ROSA_Deal_Checklist' &amp;&amp; ROSA_Step_7a_Done__c &amp;&amp; ISBLANK(Sales_Risks__r.Install_Date__c)</errorConditionFormula>
+    <errorDisplayField>ROSA_Step_7a_Done__c</errorDisplayField>
+    <errorMessage>Set the install date on the deal first.</errorMessage>
+</ValidationRule>

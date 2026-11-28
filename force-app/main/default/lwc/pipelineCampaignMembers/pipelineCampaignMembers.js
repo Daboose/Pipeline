@@ -40,6 +40,11 @@ const DEAL_IDS = [
 ];
 /** The Type column's words (Robert, 2026-11-25): an implant deal is an Opportunity, then Risk, then ROSA. Plain text, not a chip. */
 const KIND_WORD = { opp: "Opportunity", risk: "Risk", rosa: "ROSA" };
+/** The Deal Type words: a ROSA deal names its joints ("ROSA Shoulder", "ROSA Hip/Knee"; Robert, 2026-11-28). */
+const kindWord = (d) => {
+  if (d.kind === "rosa" && d.rosaJoints) return "ROSA " + d.rosaJoints;
+  return KIND_WORD[d.kind] || KIND_WORD.opp;
+};
 const TICK_WIDTH = 56;
 const AREA = {
   Hip: "Hip",
@@ -215,7 +220,7 @@ export default class PipelineCampaignMembers extends LightningElement {
   }
   get colDefs() {
     const defs = [
-      ["name", "Surgeon", false, 230],
+      ["name", "Account", false, 230], // a member is a surgeon or a healthcare facility, both accounts (Robert, 2026-11-28)
       ["hospitals", "Current Hospitals", false, 200],
       ["place", "Country · City", false, 150],
       ["type", "Type", false, 170]
@@ -565,7 +570,7 @@ export default class PipelineCampaignMembers extends LightningElement {
     return this.isMaintain ? "Add" : "Search";
   }
   get searchPlaceholder() {
-    return this.isMaintain ? "Surgeon or facility" : "Surgeon";
+    return this.isMaintain ? "Surgeon or facility" : "Account";
   }
   get searchAria() {
     return this.isMaintain
@@ -766,7 +771,7 @@ export default class PipelineCampaignMembers extends LightningElement {
       type: (m) => m.type,
       dealtype: (m) => {
         const d = deal(m);
-        return d ? KIND_WORD[d.kind] || KIND_WORD.opp : "";
+        return d ? kindWord(d) : "";
       },
       portfolio: (m) => (deal(m) ? AREA[deal(m).portfolio] || "" : ""),
       y1: (m) => m.y1Rep,
@@ -815,7 +820,7 @@ export default class PipelineCampaignMembers extends LightningElement {
       return { isTag: true, text: `${n} d`, tagCls: `tag ${band(n)}` };
     };
     return {
-      dealtype: { isText: true, text: KIND_WORD[d.kind] || KIND_WORD.opp },
+      dealtype: { isText: true, text: kindWord(d) },
       portfolio: {
         isText: true,
         text: AREA[d.portfolio] || d.portfolio || "–"

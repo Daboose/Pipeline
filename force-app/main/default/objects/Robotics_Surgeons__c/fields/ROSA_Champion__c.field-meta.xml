@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>ROSA_Champion__c</fullName>
+    <description
+  >Ticked for a ROSA surgeon champion on this deal. Champions' names are listed on the deal.</description>
+    <inlineHelpText
+  >Tick if this surgeon is a champion for ROSA at this site.</inlineHelpText>
+    <label>Champion</label>
+    <defaultValue>false</defaultValue>
+    <type>Checkbox</type>
+</CustomField>

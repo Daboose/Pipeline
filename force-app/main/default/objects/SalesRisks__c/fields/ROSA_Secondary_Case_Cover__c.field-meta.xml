@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>ROSA_Secondary_Case_Cover__c</fullName>
+    <description
+  >ROSA deal site background: the person giving secondary ROSA case cover.</description>
+    <inlineHelpText>Who gives secondary case cover.</inlineHelpText>
+    <label>Secondary case cover</label>
+    <deleteConstraint>SetNull</deleteConstraint>
+    <referenceTo>User</referenceTo>
+    <relationshipLabel>ROSA deals (secondary case cover)</relationshipLabel>
+    <relationshipName>ROSA_Secondary_Case_Cover</relationshipName>
+    <required>false</required>
+    <type>Lookup</type>
+</CustomField>

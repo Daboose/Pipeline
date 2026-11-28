@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>ROSA_PKA_Current_Cases__c</fullName>
+    <description
+  >PKA cases a year the surgeon does at this site today.</description>
+    <inlineHelpText
+  >How many PKA cases a year the surgeon does at this site today.</inlineHelpText>
+    <label>PKA current cases a year</label>
+    <externalId>false</externalId>
+    <precision>5</precision>
+    <required>false</required>
+    <scale>0</scale>
+    <unique>false</unique>
+    <type>Number</type>
+</CustomField>

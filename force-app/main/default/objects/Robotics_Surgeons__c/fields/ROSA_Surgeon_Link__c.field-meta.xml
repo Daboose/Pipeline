@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>ROSA_Surgeon_Link__c</fullName>
+    <description
+  >The surgeon's name as a link that opens this ROSA Surgeon record (the Surgeon Name field opens the surgeon's account instead). Used as the first column of the deal's ROSA Surgeons list.</description>
+    <inlineHelpText>Opens this ROSA Surgeon record.</inlineHelpText>
+    <label>ROSA Surgeon</label>
+    <externalId>false</externalId>
+    <formula
+  >HYPERLINK("/" &amp; Id, IF(ISBLANK(Surgeon_Name__c), Name, IF(Surgeon_Name__r.IsPersonAccount, TRIM(Surgeon_Name__r.FirstName &amp; " " &amp; Surgeon_Name__r.LastName), Surgeon_Name__r.Name)), "_self")</formula>
+    <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+    <required>false</required>
+    <unique>false</unique>
+    <type>Text</type>
+</CustomField>

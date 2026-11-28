@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>ROSA_With_ROSA_ZB_TKA__c</fullName>
+    <description
+  >TKA cases a year with ROSA where the supplier with ROSA is ZB. Calculated automatically from the ROSA Surgeons on this deal; read-only.</description>
+    <inlineHelpText
+  >Calculated automatically from the ROSA Surgeons on this deal; read-only.</inlineHelpText>
+    <label>With ROSA ZB TKA cases</label>
+    <externalId>false</externalId>
+    <precision>6</precision>
+    <required>false</required>
+    <scale>0</scale>
+    <unique>false</unique>
+    <type>Number</type>
+</CustomField>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomTab xmlns="http://soap.sforce.com/2006/04/metadata">
+    <customObject>true</customObject>
+    <description
+  >ROSA Prices: average selling price per case per country, item and currency (ROSA Shoulder POC; marketing).</description>
+    <motif>Custom17: Credit Card</motif>
+</CustomTab>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>ROSA_Step3_Needs_Surgeon</fullName>
+    <active>true</active>
+    <description
+  >ROSA checklist: step 3 needs at least one ROSA Surgeon on the deal.</description>
+    <errorConditionFormula
+  >RecordType.DeveloperName = 'ROSA_Deal_Checklist' &amp;&amp; ROSA_Step_3_Done__c &amp;&amp; BLANKVALUE(Sales_Risks__r.ROSA_Surgeon_Count__c, 0) &lt; 1</errorConditionFormula>
+    <errorDisplayField>ROSA_Step_3_Done__c</errorDisplayField>
+    <errorMessage
+  >Add at least one ROSA surgeon before completing the deal summary.</errorMessage>
+</ValidationRule>

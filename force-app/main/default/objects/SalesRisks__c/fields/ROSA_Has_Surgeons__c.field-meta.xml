@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>ROSA_Has_Surgeons__c</fullName>
+    <description
+  >True when the ROSA deal has at least one ROSA Deal Surgeon. Decides whether the deal page shows ROSA Growth $ as typed in or as calculated.</description>
+    <inlineHelpText
+  >Ticked when the deal has ROSA Deal Surgeons.</inlineHelpText>
+    <label>Has ROSA surgeons</label>
+    <formula>BLANKVALUE(ROSA_Surgeon_Count__c, 0) > 0</formula>
+    <type>Checkbox</type>
+</CustomField>

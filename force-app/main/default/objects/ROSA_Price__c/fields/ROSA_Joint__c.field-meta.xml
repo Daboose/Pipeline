@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>ROSA_Joint__c</fullName>
+    <description
+  >What the price is for: a joint's average implant price per case, or that joint's ROSA disposables (drapes and so on) per case (Robert, 2026-11-27).</description>
+    <inlineHelpText
+  >Choose the joint or the ROSA disposable this price is for.</inlineHelpText>
+    <label>Item</label>
+    <required>false</required>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>TKA</fullName>
+                <default>false</default>
+                <label>TKA</label>
+            </value>
+            <value>
+                <fullName>PKA</fullName>
+                <default>false</default>
+                <label>PKA</label>
+            </value>
+            <value>
+                <fullName>THA</fullName>
+                <default>false</default>
+                <label>THA</label>
+            </value>
+            <value>
+                <fullName>TSA/RSA</fullName>
+                <default>false</default>
+                <label>TSA/RSA</label>
+            </value>
+            <value>
+                <fullName>TKA Disposable</fullName>
+                <default>false</default>
+                <label>TKA Disposable</label>
+            </value>
+            <value>
+                <fullName>PKA Disposable</fullName>
+                <default>false</default>
+                <label>PKA Disposable</label>
+            </value>
+            <value>
+                <fullName>THA Disposable</fullName>
+                <default>false</default>
+                <label>THA Disposable</label>
+            </value>
+            <value>
+                <fullName>TSA/RSA Disposable</fullName>
+                <default>false</default>
+                <label>TSA/RSA Disposable</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+    <type>Picklist</type>
+</CustomField>

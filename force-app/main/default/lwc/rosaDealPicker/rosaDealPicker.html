@@ -1,0 +1,44 @@
+<template>
+  <template lwc:if={hasValue}>
+    <div class="chosen">
+      <b>{valueName}</b>
+      <button type="button" class="btn sec sm" onclick={handleChange}>
+        Change
+      </button>
+    </div>
+  </template>
+  <template lwc:else>
+    <div class="box">
+      <input
+        class="in"
+        type="text"
+        value={term}
+        placeholder={placeholder}
+        oninput={handleInput}
+        autocomplete="off"
+      />
+      <button
+        lwc:if={hasTerm}
+        type="button"
+        class="clear"
+        title="Clear"
+        aria-label="Clear"
+        onclick={handleClear}
+      ></button>
+    </div>
+    <div lwc:if={showHits} class="hits">
+      <template for:each={hits} for:item="h">
+        <button
+          type="button"
+          key={h.id}
+          data-id={h.id}
+          class="hit"
+          onclick={handlePick}
+        >
+          <b>{h.name}</b><span class="hs">{h.sub}</span>
+        </button>
+      </template>
+    </div>
+    <div lwc:if={showNone} class="none">No matches</div>
+  </template>
+</template>

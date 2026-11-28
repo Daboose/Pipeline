@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<QuickAction xmlns="http://soap.sforce.com/2006/04/metadata">
+    <description
+  >ROSA deal screen: opens the ROSA deal in a near full-screen pop-up (surgeons, growth, checklist, Q&amp;A, credentialing, readiness, Chatter).</description>
+    <label>Open ROSA deal</label>
+    <lightningWebComponent>rosaDealAction</lightningWebComponent>
+    <optionsCreateFeedItem>false</optionsCreateFeedItem>
+    <type>LightningWebComponent</type>
+</QuickAction>

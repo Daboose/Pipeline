@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomPermission xmlns="http://soap.sforce.com/2006/04/metadata">
+  <description
+  >ROSA: lets a person change a ROSA deal on the ROSA deal screen (cards, stage, checklist, surgeons, answers, linked opportunities). Without it the screen is read-only. Granted by ROSA Deal Management and ROSA Credentialing Admin.</description>
+  <isLicensed>false</isLicensed>
+  <label>ROSA: Edit Deals</label>
+</CustomPermission>

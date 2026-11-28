@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>ROSA_Growth_Implants__c</fullName>
+    <description
+  >Growth cases per joint times that joint's average implant price. Calculated automatically: growth cases per joint (ZB with ROSA minus ZB now) times the price table for the deal's country and currency. Read-only.</description>
+    <inlineHelpText
+  >Calculated automatically: growth cases per joint (ZB with ROSA minus ZB now) times the price table for the deal's country and currency. Read-only.</inlineHelpText>
+    <label>Implant growth $</label>
+    <precision>16</precision>
+    <required>false</required>
+    <scale>2</scale>
+    <type>Currency</type>
+</CustomField>

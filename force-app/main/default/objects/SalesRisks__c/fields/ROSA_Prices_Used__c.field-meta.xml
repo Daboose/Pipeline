@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>ROSA_Prices_Used__c</fullName>
+    <description
+  >The country, currency and per-case prices (implant + disposables per joint) that ROSA Growth $ was worked out from. Set automatically; read-only (Robert, 2026-11-27).</description>
+    <inlineHelpText
+  >The prices ROSA Growth $ was worked out from (implant + disposables per case).</inlineHelpText>
+    <label>Prices used</label>
+    <externalId>false</externalId>
+    <length>255</length>
+    <required>false</required>
+    <unique>false</unique>
+    <type>Text</type>
+</CustomField>

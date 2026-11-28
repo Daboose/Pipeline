@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Robotics_Surgeon__c</fullName>
+    <description
+  >Old link to the Robotics (now ROSA Checklist) record, kept for records made before the ROSA Shoulder POC. Changed from master-detail to an optional lookup; new surgeons use ROSA Deal.</description>
+    <label>ROSA Checklist (old)</label>
+    <deleteConstraint>SetNull</deleteConstraint>
+    <referenceTo>Robotics__c</referenceTo>
+    <relationshipLabel>ROSA Surgeons</relationshipLabel>
+    <relationshipName>RoboticsSurgeons</relationshipName>
+    <required>false</required>
+    <type>Lookup</type>
+</CustomField>

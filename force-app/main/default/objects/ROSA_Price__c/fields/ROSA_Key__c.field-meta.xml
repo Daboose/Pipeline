@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>ROSA_Key__c</fullName>
+    <description
+  >Country + Item + Currency while Active, blank when inactive. Set by automation; unique, so two active prices for the same thing cannot exist.</description>
+    <label>Key</label>
+    <externalId>false</externalId>
+    <length>80</length>
+    <required>false</required>
+    <unique>true</unique>
+    <caseSensitive>false</caseSensitive>
+    <type>Text</type>
+</CustomField>

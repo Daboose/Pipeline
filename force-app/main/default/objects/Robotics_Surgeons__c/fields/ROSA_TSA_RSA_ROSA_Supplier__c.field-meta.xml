@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>ROSA_TSA_RSA_ROSA_Supplier__c</fullName>
+    <description
+  >Supplier of the surgeon's TSA/RSA cases if ROSA were at the site.</description>
+    <inlineHelpText
+  >Who would supply this surgeon's TSA/RSA implants with ROSA.</inlineHelpText>
+    <label>TSA/RSA supplier with ROSA</label>
+    <required>false</required>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetName>ROSA_Supplier</valueSetName>
+    </valueSet>
+    <type>Picklist</type>
+</CustomField>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>ROSA_Step_3_Date__c</fullName>
+    <description
+  >Date step 3 was done. Filled with today when the step is ticked, if blank; can be changed.</description>
+    <inlineHelpText
+  >Filled with today when you tick the step; change it if it was done on another day.</inlineHelpText>
+    <label>3 Date</label>
+    <trackHistory>true</trackHistory>
+    <required>false</required>
+    <type>Date</type>
+</CustomField>

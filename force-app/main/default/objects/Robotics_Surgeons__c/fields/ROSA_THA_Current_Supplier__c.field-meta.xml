@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>ROSA_THA_Current_Supplier__c</fullName>
+    <description>Supplier of the surgeon's THA cases today.</description>
+    <inlineHelpText
+  >Who supplies this surgeon's THA implants today.</inlineHelpText>
+    <label>THA current supplier</label>
+    <required>false</required>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetName>ROSA_Supplier</valueSetName>
+    </valueSet>
+    <type>Picklist</type>
+</CustomField>

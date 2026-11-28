@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>ROSA_Identified_Risks__c</fullName>
+    <description
+  >ROSA deal appropriateness: risks identified for the deal.</description>
+    <inlineHelpText>Risks identified for this deal.</inlineHelpText>
+    <label>Identified risks</label>
+    <length>5000</length>
+    <visibleLines>4</visibleLines>
+    <type>LongTextArea</type>
+</CustomField>

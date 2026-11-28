@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>ROSA_Question_Link__c</fullName>
+    <description
+  >The question's wording as a link that opens this answer, so it can be answered (Robert, 2026-11-27). First column of the Answers list.</description>
+    <inlineHelpText>Click to open and answer this question.</inlineHelpText>
+    <label>Question</label>
+    <externalId>false</externalId>
+    <formula
+  >HYPERLINK("/" &amp; Id, BLANKVALUE(ROSA_Question__r.Question_Text_2__c, Name), "_self")</formula>
+    <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+    <required>false</required>
+    <unique>false</unique>
+    <type>Text</type>
+</CustomField>

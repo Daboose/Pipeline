@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+  <apiVersion>68.0</apiVersion>
+  <description
+  >ROSA deal screen: a card's fields, read-only until Edit, then inputs by type (text, number, date, dropdown read live from Salesforce, multi-select, tick, long text that grows, person or record search).</description>
+  <isExposed>false</isExposed>
+</LightningComponentBundle>

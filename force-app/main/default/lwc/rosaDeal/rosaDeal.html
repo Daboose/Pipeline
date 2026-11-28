@@ -1,0 +1,1432 @@
+<template>
+  <div class={rootCls} data-theme={themeName} style={rootStyle}>
+    <div lwc:if={error} class="fail">
+      <p>{error}</p>
+      <button type="button" class="btn sec" onclick={handleLeave}>Close</button>
+    </div>
+
+    <template lwc:if={ready}>
+      <!-- header: always visible -->
+      <header class="hdr">
+        <div>
+          <div class="title">
+            <h1>{dealName}</h1>
+            <span class="tag sh">{salesTag}</span>
+            <span lwc:if={typeTag} class="tag">{typeTag}</span>
+          </div>
+          <div class="sub">{subLine}</div>
+        </div>
+        <div class="tools">
+          <button
+            type="button"
+            class="btn sec"
+            title="Opens the standard Salesforce record in a new tab"
+            onclick={handleOpenSalesforce}
+          >
+            Open in Salesforce
+          </button>
+          <button
+            type="button"
+            class="rbtn x"
+            title="Close"
+            aria-label="Close"
+            onclick={handleClose}
+          ></button>
+        </div>
+        <div class="path">
+          <template for:each={stages} for:item="s">
+            <button
+              type="button"
+              key={s.name}
+              class={s.cls}
+              title={s.title}
+              data-stage={s.name}
+              onclick={handleStage}
+            >
+              {s.name}
+            </button>
+          </template>
+        </div>
+        <div class="kpis">
+          <div class="kpi">
+            <div class="v">{totals.count}</div>
+            <div class="l">Surgeons</div>
+          </div>
+          <div class="kpi">
+            <div class="v">{totals.now}</div>
+            <div class="l">ZB cases now</div>
+          </div>
+          <div class="kpi">
+            <div class="v">{totals.ros}</div>
+            <div class="l">ZB cases with ROSA</div>
+          </div>
+          <div class="kpi">
+            <div class={totals.growthCls}>{totals.growth}</div>
+            <div class="l">Growth cases</div>
+          </div>
+          <div class="kpi">
+            <div class="v">{totals.cred}</div>
+            <div class="l">Credentialed</div>
+          </div>
+          <div class="kpi">
+            <div class="v">{totals.dollars}</div>
+            <div class="l">ROSA GROWTH $</div>
+          </div>
+        </div>
+        <button
+          lwc:if={hasChecklist}
+          type="button"
+          class="cstep"
+          title="Open the checklist"
+          onclick={handleOpenChecklist}
+        >
+          <span>Checklist</span>
+          <span class="segs">
+            <template for:each={segs} for:item="g"
+              ><i key={g.k} class={g.cls}></i
+            ></template>
+          </span>
+          <span>Done: <b>{lastDone}</b></span>
+          <span lwc:if={nextStep} class="nx">Next: {nextStep}</span>
+        </button>
+        <button
+          lwc:else
+          type="button"
+          class="cstep missing"
+          title="Open the checklist to add one"
+          onclick={handleOpenChecklist}
+        >
+          <span>Add checklist</span>
+        </button>
+      </header>
+
+      <div class="body">
+        <!-- left menu -->
+        <nav class="rail">
+          <div class="grp">Deal</div>
+          <button
+            type="button"
+            class={navOverview}
+            data-sec="overview"
+            onclick={handleNav}
+          >
+            Overview
+          </button>
+          <button
+            type="button"
+            class={navSurgeons}
+            data-sec="surgeons"
+            onclick={handleNav}
+          >
+            Surgeons and Growth<span class="n">{totals.count}</span>
+          </button>
+          <template for:each={railSurgeons} for:item="s">
+            <button
+              type="button"
+              key={s.id}
+              class={s.cls}
+              data-sid={s.id}
+              onclick={handleSurgeon}
+            >
+              <span class="sgn"><span class={s.dot}></span>{s.name}</span>
+            </button>
+          </template>
+          <div class="grp">Process</div>
+          <button
+            type="button"
+            class={navChecklist}
+            data-sec="checklist"
+            onclick={handleNav}
+          >
+            Checklist<span class="n">{checklistCount}</span>
+          </button>
+          <button
+            type="button"
+            class={navImplement}
+            data-sec="implement"
+            onclick={handleNav}
+          >
+            Implementation<span class="n">{implementNote}</span>
+          </button>
+          <div class="grp">Site</div>
+          <button
+            type="button"
+            class={navReady}
+            data-sec="ready"
+            onclick={handleNav}
+          >
+            Readiness
+          </button>
+          <button
+            type="button"
+            class={navHospCase}
+            data-sec="hospcase"
+            onclick={handleNav}
+          >
+            myCase
+          </button>
+          <div class="grp">Activity</div>
+          <button
+            type="button"
+            class={navChatter}
+            data-sec="chatter"
+            onclick={handleNav}
+          >
+            Chatter
+          </button>
+          <div class="ver">{version}<br />Written by Robert Reeves</div>
+        </nav>
+
+        <main class={mainCls}>
+          <!-- Overview -->
+          <template lwc:if={isOverview}>
+            <h2>Overview</h2>
+            <p class="lead">
+              The deal at a glance. Press Edit to change it here, no need to
+              open Salesforce.
+            </p>
+            <div class={ovCard.cls}>
+              <div class="ch">
+                <h3>Deal</h3>
+                <button
+                  lwc:if={ovCard.showEdit}
+                  type="button"
+                  class="ed"
+                  data-edit="ov"
+                  onclick={handleEdit}
+                >
+                  Edit
+                </button>
+              </div>
+              <c-rosa-deal-fields
+                fields={ovFields}
+                editing={ovCard.editing}
+                columns="4"
+                onfieldchange={handleField}
+              ></c-rosa-deal-fields>
+              <div lwc:if={ovCard.editing} class={actsCls}>
+                <span lwc:if={dirty} class="warn"
+                  >NOT SAVED YET. Nothing changes until you press Save.</span
+                >
+                <button type="button" class="btn red" onclick={handleCancel}>
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  class="btn"
+                  data-save="ov"
+                  onclick={handleSave}
+                >
+                  Save
+                </button>
+              </div>
+            </div>
+            <div class="grid2">
+              <div class="card click" onclick={handleOpenChecklist}>
+                <h3>Checklist</h3>
+                <div class="pair">
+                  <div class="f">
+                    <div class="l">Current step</div>
+                    <div class="v">{lastDone}</div>
+                  </div>
+                  <div class="f">
+                    <div class="l">Checklist next step</div>
+                    <div class="v">{nextStep}</div>
+                  </div>
+                </div>
+                <p class="sub">{doneCount} of 10 done · Open the checklist</p>
+              </div>
+              <div class="card">
+                <h3>Opportunities linked to this ROSA deal</h3>
+                <template lwc:if={hasLinked}>
+                  <template for:each={linkedOpps} for:item="o">
+                    <div key={o.id} class="opl">
+                      <button
+                        type="button"
+                        class="link"
+                        data-id={o.id}
+                        onclick={handleOpenRecord}
+                      >
+                        {o.name}
+                      </button>
+                      <span>{o.kind}</span>
+                      <span class="sub">· {o.who} · {o.stage} · {o.value}</span>
+                    </div>
+                  </template>
+                </template>
+                <p lwc:else class="sub">
+                  None yet. Link one from a surgeon's Opportunities.
+                </p>
+              </div>
+            </div>
+          </template>
+
+          <!-- Surgeons and growth -->
+          <template lwc:if={isSurgeons}>
+            <h2>Surgeons and Growth</h2>
+            <p class="lead">
+              Cases a year, now → with ROSA. Joint and Wave columns only show
+              once someone has data in them. Click a surgeon to open their
+              details, volumes, Q&amp;A and credentialing.
+            </p>
+            <div class="card">
+              <div class="ch">
+                <h3>Surgeons</h3>
+                <button
+                  lwc:if={canEdit}
+                  type="button"
+                  class="btn"
+                  onclick={handleAdd}
+                >
+                  Add surgeon
+                </button>
+              </div>
+              <template lwc:if={hasSurgeons}>
+                <table class="stbl">
+                  <thead>
+                    <tr>
+                      <template for:each={columns} for:item="c">
+                        <th
+                          key={c.key}
+                          class={c.thCls}
+                          style={c.style}
+                          data-key={c.key}
+                          onclick={handleSort}
+                        >
+                          {c.label} <span class="arw">{c.arrow}</span>
+                          <span
+                            class="grip"
+                            data-key={c.key}
+                            onmousedown={handleResizeStart}
+                            ondblclick={handleResizeReset}
+                          ></span>
+                        </th>
+                      </template>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <template for:each={surgeonRows} for:item="r">
+                      <tr
+                        key={r.id}
+                        class="click"
+                        data-sid={r.id}
+                        onclick={handleSurgeon}
+                      >
+                        <td>
+                          <b>{r.name}</b>
+                          <span lwc:if={r.champ} class="tag champ"
+                            >Champion</span
+                          >
+                        </td>
+                        <template for:each={r.cells} for:item="c"
+                          ><td key={c.k} class="num">{c.text}</td></template
+                        >
+                        <td class={r.growthCls}>{r.growth}</td>
+                        <td class={r.gvalCls}>{r.gval}</td>
+                        <td class="num">
+                          {r.qa} <span class="no">{r.no}</span>
+                        </td>
+                        <td class="num">
+                          <span class={r.cred.cls}>{r.cred.text}</span>
+                        </td>
+                        <td lwc:if={usedWave} class="num">{r.wave}</td>
+                      </tr>
+                    </template>
+                  </tbody>
+                </table>
+                <div lwc:if={hasPriceNotes} class="pnotes">
+                  <template for:each={priceNotes} for:item="p"
+                    ><p key={p.k} class="sub note">{p.text}</p></template
+                  >
+                </div>
+              </template>
+              <p lwc:else class="sub">No surgeons yet.</p>
+            </div>
+            <div class="grid2">
+              <div class="card">
+                <h3>ZB users by joint</h3>
+                <table class="zbt">
+                  <thead>
+                    <tr>
+                      <th>Procedure</th>
+                      <th class="num">Current state</th>
+                      <th class="num">Future state</th>
+                      <th class="num">Growth</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <template for:each={zbUsers} for:item="z">
+                      <tr key={z.k}>
+                        <td>{z.label}</td>
+                        <td class="num"><b>{z.now}</b> {z.nowWord}</td>
+                        <td class="num"><b>{z.ros}</b> {z.rosWord}</td>
+                        <td class="num">
+                          <b class={z.growthCls}>{z.growth}</b> cases
+                        </td>
+                      </tr>
+                    </template>
+                  </tbody>
+                </table>
+              </div>
+              <div class="card">
+                <h3>Share of cases with ROSA</h3>
+                <template for:each={shares} for:item="s">
+                  <div key={s.label} class="share">
+                    <span>{s.label}</span>
+                    <div class="bar"><i style={s.style}></i></div>
+                    <span class="num">{s.pct}</span>
+                  </div>
+                </template>
+              </div>
+            </div>
+          </template>
+
+          <!-- one surgeon -->
+          <template lwc:if={isSurgeon}>
+            <div class="shead">
+              <div>
+                <h2>
+                  {curName}
+                  <span lwc:if={curChamp} class="tag champ">Champion</span>
+                </h2>
+                <div class="sub">{curSub}</div>
+              </div>
+              <div class="tabs">
+                <template for:each={tabs} for:item="t">
+                  <button
+                    type="button"
+                    key={t.k}
+                    class={t.cls}
+                    data-stab={t.k}
+                    onclick={handleTab}
+                  >
+                    {t.label}
+                  </button>
+                </template>
+              </div>
+              <div class="tools">
+                <button
+                  type="button"
+                  class="rbtn prev"
+                  title="Previous surgeon"
+                  aria-label="Previous surgeon"
+                  data-sid={prevId}
+                  disabled={noPrev}
+                  onclick={handleSurgeon}
+                ></button>
+                <span class="sub">{curOf}</span>
+                <button
+                  type="button"
+                  class="rbtn next"
+                  title="Next surgeon"
+                  aria-label="Next surgeon"
+                  data-sid={nextId}
+                  disabled={noNext}
+                  onclick={handleSurgeon}
+                ></button>
+              </div>
+            </div>
+
+            <template lwc:if={isDetails}>
+              <div class={sdetCard.cls}>
+                <div class="ch">
+                  <h3>Details</h3>
+                  <button
+                    lwc:if={sdetCard.showEdit}
+                    type="button"
+                    class="ed"
+                    data-edit="sdet"
+                    onclick={handleEdit}
+                  >
+                    Edit
+                  </button>
+                </div>
+                <c-rosa-deal-fields
+                  fields={sdetFields}
+                  editing={sdetCard.editing}
+                  grid-template="22% repeat(5, minmax(0, 1fr))"
+                  onfieldchange={handleField}
+                ></c-rosa-deal-fields>
+                <div lwc:if={sdetCard.editing} class={actsCls}>
+                  <span lwc:if={dirty} class="warn"
+                    >NOT SAVED YET. Nothing changes until you press Save.</span
+                  >
+                  <button type="button" class="btn red" onclick={handleCancel}>
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    class="btn"
+                    data-save="sdet"
+                    onclick={handleSave}
+                  >
+                    Save
+                  </button>
+                </div>
+              </div>
+              <div class={svolCard.cls}>
+                <div class="ch">
+                  <h3>Volumes a year</h3>
+                  <button
+                    lwc:if={svolCard.showEdit}
+                    type="button"
+                    class="ed"
+                    data-edit="svol"
+                    onclick={handleEdit}
+                  >
+                    Edit
+                  </button>
+                </div>
+                <table class="vt">
+                  <thead>
+                    <tr class="grp">
+                      <th class="blank"></th>
+                      <th colspan="2">Now</th>
+                      <th colspan="2">With ROSA</th>
+                      <th class="blank"></th>
+                    </tr>
+                    <tr>
+                      <th>Joint</th>
+                      <th>Supplier</th>
+                      <th>Cases</th>
+                      <th>Supplier</th>
+                      <th>Cases</th>
+                      <th>ZB growth</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <template for:each={curVolRows} for:item="v">
+                      <tr key={v.k}>
+                        <td><b>{v.label}</b></td>
+                        <template lwc:if={v.editing}>
+                          <td>
+                            <select
+                              class="in"
+                              data-key={v.cs.key}
+                              onchange={handleVol}
+                            >
+                              <option value="">--None--</option>
+                              <template for:each={v.cs.opts} for:item="o"
+                                ><option
+                                  key={o.okey}
+                                  value={o.value}
+                                  selected={o.selected}
+                                >
+                                  {o.label}
+                                </option></template
+                              >
+                            </select>
+                          </td>
+                          <td>
+                            <input
+                              class="in"
+                              type="number"
+                              min="0"
+                              data-key={v.cc.key}
+                              value={v.cc.value}
+                              oninput={handleVol}
+                            />
+                          </td>
+                          <td>
+                            <select
+                              class="in"
+                              data-key={v.rs.key}
+                              onchange={handleVol}
+                            >
+                              <option value="">--None--</option>
+                              <template for:each={v.rs.opts} for:item="o"
+                                ><option
+                                  key={o.okey}
+                                  value={o.value}
+                                  selected={o.selected}
+                                >
+                                  {o.label}
+                                </option></template
+                              >
+                            </select>
+                          </td>
+                          <td>
+                            <input
+                              class="in"
+                              type="number"
+                              min="0"
+                              data-key={v.rc.key}
+                              value={v.rc.value}
+                              oninput={handleVol}
+                            />
+                          </td>
+                        </template>
+                        <template lwc:else>
+                          <td>{v.csText}</td>
+                          <td>{v.ccText}</td>
+                          <td>{v.rsText}</td>
+                          <td>{v.rcText}</td>
+                        </template>
+                        <td class={v.growthCls}>{v.growth}</td>
+                      </tr>
+                    </template>
+                  </tbody>
+                </table>
+                <p class="sub note">
+                  Growth counts ZB cases only. Supplier with ROSA can differ
+                  (revision cases).
+                </p>
+                <div lwc:if={svolCard.editing} class={actsCls}>
+                  <span lwc:if={dirty} class="warn"
+                    >NOT SAVED YET. Nothing changes until you press Save.</span
+                  >
+                  <button type="button" class="btn red" onclick={handleCancel}>
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    class="btn"
+                    data-save="svol"
+                    onclick={handleSave}
+                  >
+                    Save
+                  </button>
+                </div>
+              </div>
+            </template>
+
+            <template lwc:if={isQa}>
+              <div class="card">
+                <div class="ch">
+                  <h3>Q&amp;A</h3>
+                  <div class="sumrow">
+                    <span
+                      ><b>{qaSummary.answered}</b> of {qaSummary.total}
+                      answered</span
+                    >
+                    <span
+                      ><b class={gapsCls}>{qaSummary.gaps}</b> gaps (No)</span
+                    >
+                  </div>
+                </div>
+                <template lwc:if={hasQa}>
+                  <template for:each={qaRows} for:item="q">
+                    <div key={q.id} class="qa">
+                      <span class="qno">{q.no}</span>
+                      <span>{q.question}</span>
+                      <span>
+                        <span lwc:if={q.isYesNo} class="yn">
+                          <button
+                            type="button"
+                            class={q.yesCls}
+                            data-id={q.id}
+                            data-v="Yes"
+                            disabled={q.disabled}
+                            onclick={handleYesNo}
+                          >
+                            Yes
+                          </button>
+                          <button
+                            type="button"
+                            class={q.noCls}
+                            data-id={q.id}
+                            data-v="No"
+                            disabled={q.disabled}
+                            onclick={handleYesNo}
+                          >
+                            No
+                          </button>
+                        </span>
+                        <input
+                          lwc:if={q.isNumber}
+                          class="in"
+                          type="number"
+                          data-id={q.id}
+                          value={q.value}
+                          disabled={q.disabled}
+                          onchange={handleAnswerInput}
+                        />
+                        <div lwc:if={q.isDate} class="dbox">
+                          <input
+                            class="in"
+                            type="date"
+                            data-id={q.id}
+                            value={q.value}
+                            disabled={q.disabled}
+                            onchange={handleAnswerInput}
+                          />
+                          <button
+                            lwc:if={q.clearable}
+                            type="button"
+                            class="dclear"
+                            title="Clear the date"
+                            aria-label="Clear the date"
+                            data-id={q.id}
+                            onclick={handleAnswerClear}
+                          ></button>
+                        </div>
+                        <input
+                          lwc:if={q.isText}
+                          class="in"
+                          type="text"
+                          data-id={q.id}
+                          value={q.value}
+                          disabled={q.disabled}
+                          onchange={handleAnswerInput}
+                        />
+                      </span>
+                      <span class={q.byCls}>{q.by}</span>
+                    </div>
+                  </template>
+                  <div lwc:if={qaDirty} class="acts dirty">
+                    <span class="warn"
+                      >NOT SAVED YET. You have unsaved changes
+                      ({qaChangeCount}).</span
+                    >
+                    <button
+                      type="button"
+                      class="btn red"
+                      onclick={handleQaCancel}
+                    >
+                      Cancel
+                    </button>
+                    <button type="button" class="btn" onclick={handleQaSave}>
+                      Save now
+                    </button>
+                  </div>
+                  <p class="sub note">
+                    Choose your answers, then press Save now. Questions come
+                    from marketing's question set for the surgeon's
+                    credentialing pathway.
+                  </p>
+                </template>
+                <p lwc:else class="sub">
+                  No questions yet. Choose a credentialing pathway
+                  (Credentialing tab) and its questions appear here.
+                </p>
+              </div>
+            </template>
+
+            <template lwc:if={isCred}>
+              <div class={scredCard.cls}>
+                <div class="ch">
+                  <h3>Credentialing</h3>
+                  <button
+                    lwc:if={scredCard.showEdit}
+                    type="button"
+                    class="ed"
+                    data-edit="scred"
+                    onclick={handleEdit}
+                  >
+                    Edit
+                  </button>
+                </div>
+                <div class="track">
+                  <template for:each={track} for:item="t"
+                    ><span key={t.t} class={t.cls}>{t.t}</span></template
+                  >
+                </div>
+                <c-rosa-deal-fields
+                  fields={scredFields}
+                  editing={scredCard.editing}
+                  columns="3"
+                  onfieldchange={handleField}
+                ></c-rosa-deal-fields>
+                <div lwc:if={scredCard.editing} class={actsCls}>
+                  <span lwc:if={dirty} class="warn"
+                    >NOT SAVED YET. Nothing changes until you press Save.</span
+                  >
+                  <button type="button" class="btn red" onclick={handleCancel}>
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    class="btn"
+                    data-save="scred"
+                    onclick={handleSave}
+                  >
+                    Save
+                  </button>
+                </div>
+              </div>
+            </template>
+
+            <template lwc:if={isMyCase}>
+              <div class="card">
+                <div class="ch">
+                  <div>
+                    <h3>myCase Bookings (cases with usages)</h3>
+                    <p class="sub mcnote">
+                      Only cases where items were used in surgery. Planned or
+                      cancelled bookings aren't shown.
+                    </p>
+                  </div>
+                  <span class="sub">{mcWindow}</span>
+                </div>
+                <template lwc:if={mcHasAny}>
+                  <div class="mchips">
+                    <template for:each={mcChips.types} for:item="c">
+                      <button
+                        key={c.k}
+                        type="button"
+                        class={c.cls}
+                        style={c.style}
+                        data-grp={c.grp}
+                        data-name={c.name}
+                        aria-pressed={c.on}
+                        onclick={handleMcChip}
+                      >
+                        <span class="tick"><span class="tk"></span></span
+                        >{c.name} <b>{c.n}</b>
+                      </button>
+                    </template>
+                    <span class="mgap"></span>
+                    <template for:each={mcChips.procs} for:item="c">
+                      <button
+                        key={c.k}
+                        type="button"
+                        class={c.cls}
+                        style={c.style}
+                        data-grp={c.grp}
+                        data-name={c.name}
+                        aria-pressed={c.on}
+                        onclick={handleMcChip}
+                      >
+                        <span class="tick"><span class="tk"></span></span
+                        >{c.name} <b>{c.n}</b>
+                      </button>
+                    </template>
+                  </div>
+                  <template lwc:if={mcTable.has}>
+                    <table class="mc">
+                      <thead>
+                        <tr>
+                          <th class="l">Surgeon</th>
+                          <th class="l">Brand</th>
+                          <template for:each={mcMonths} for:item="m"
+                            ><th key={m.k}>{m.short}</th></template
+                          >
+                          <th>Total</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <template for:each={mcTable.rows} for:item="r">
+                          <tr key={r.k}>
+                            <td
+                              lwc:if={r.first}
+                              class="sg l"
+                              rowspan={mcTable.span}
+                            >
+                              <b>{curName}</b
+                              ><span class="c">{mcTable.casesText}</span>
+                            </td>
+                            <td class="br l"><i style={r.sq}></i>{r.brand}</td>
+                            <template for:each={r.cells} for:item="c">
+                              <td key={c.k} class="n">
+                                <span
+                                  class={c.cls}
+                                  style={c.style}
+                                  title={c.tip}
+                                  >{c.v}</span
+                                >
+                              </td>
+                            </template>
+                            <td class="t">{r.tot}</td>
+                          </tr>
+                        </template>
+                        <tr class="sum">
+                          <td class="l" colspan="2">Total</td>
+                          <template for:each={mcTable.cols} for:item="c"
+                            ><td key={c.k}>{c.v}</td></template
+                          >
+                          <td class="t">{mcTable.tot}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </template>
+                  <p lwc:else class="sub">Nothing to show with these chips.</p>
+                </template>
+                <p lwc:elseif={mcLoaded} class="sub">
+                  No myCase bookings for this surgeon in the last 12 months.
+                </p>
+                <p lwc:else class="sub">Loading…</p>
+              </div>
+            </template>
+
+            <template lwc:if={isOpps}>
+              <div class="card">
+                <div class="ch">
+                  <h3>{curName}'s opportunities</h3>
+                  <span class="sub"
+                    >Implant opportunities where this surgeon is the Primary
+                    HCP</span
+                  >
+                </div>
+                <template lwc:if={hasOpps}>
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Opportunity</th>
+                        <th>Type</th>
+                        <th>Stage</th>
+                        <th class="num">Value / year</th>
+                        <th class="num">ROSA deal</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <template for:each={oppRows} for:item="o">
+                        <tr key={o.id}>
+                          <td>
+                            <button
+                              type="button"
+                              class="link"
+                              data-id={o.id}
+                              onclick={handleOpenRecord}
+                            >
+                              {o.name}
+                            </button>
+                          </td>
+                          <td>{o.kind}</td>
+                          <td>{o.stage}</td>
+                          <td class="num">{o.value}</td>
+                          <td class="num">
+                            <template lwc:if={o.linked}>
+                              <span class="linked">Linked</span>
+                              <button
+                                lwc:if={canEdit}
+                                type="button"
+                                class="btn red sm"
+                                data-id={o.id}
+                                data-link="0"
+                                onclick={handleLink}
+                              >
+                                Unlink
+                              </button>
+                            </template>
+                            <template lwc:else>
+                              <span lwc:if={o.other} class="sub"
+                                >Linked to another ROSA deal
+                              </span>
+                              <button
+                                lwc:if={canEdit}
+                                type="button"
+                                class="btn sm"
+                                data-id={o.id}
+                                data-link="1"
+                                onclick={handleLink}
+                              >
+                                Link
+                              </button>
+                            </template>
+                          </td>
+                        </tr>
+                      </template>
+                    </tbody>
+                  </table>
+                </template>
+                <p lwc:elseif={oppsLoaded} class="sub">
+                  No implant opportunities for this surgeon yet.
+                </p>
+                <p lwc:else class="sub">Loading…</p>
+                <p class="sub note">
+                  Link sets the opportunity's Link to ROSA Deal to this deal.
+                  One ROSA deal can have many linked opportunities.
+                </p>
+              </div>
+            </template>
+          </template>
+
+          <!-- Checklist -->
+          <template lwc:if={isChecklist}>
+            <h2>Checklist</h2>
+            <p class="lead">
+              Ticking a step moves the stage forward. Steps 1 to 6 go in order.
+            </p>
+            <template lwc:if={hasChecklist}>
+              <div class="grid3">
+                <template for:each={phases} for:item="p">
+                  <div key={p.phase} class="card">
+                    <h3 class="ph">
+                      {p.phase}<span class="sub">{p.count}</span>
+                    </h3>
+                    <template for:each={p.steps} for:item="s">
+                      <div key={s.k} class={s.rowCls}>
+                        <button
+                          type="button"
+                          class={s.boxCls}
+                          title={s.title}
+                          aria-label={s.title}
+                          data-step={s.k}
+                          onclick={handleStep}
+                        ></button>
+                        <div>
+                          <b>{s.label}</b>
+                          <div class="meta">{s.meta}</div>
+                        </div>
+                      </div>
+                    </template>
+                  </div>
+                </template>
+              </div>
+            </template>
+            <div lwc:else class="card nocl">
+              <p class="warnline">
+                A checklist is required for all deals. This deal does not have
+                one yet.
+              </p>
+              <button
+                lwc:if={canEdit}
+                type="button"
+                class="btn"
+                onclick={handleAddChecklist}
+              >
+                Add checklist
+              </button>
+            </div>
+          </template>
+
+          <!-- Implementation -->
+          <template lwc:if={isImplement}>
+            <h2>Implementation</h2>
+            <p class="lead">
+              Install, instruments, credentialing and first cases. The stage
+              stays Closed Won.
+            </p>
+            <div class="grid2">
+              <div class="card">
+                <h3>Steps 7a to 7d</h3>
+                <template for:each={implSteps} for:item="s">
+                  <div key={s.k} class={s.rowCls}>
+                    <button
+                      type="button"
+                      class={s.boxCls}
+                      title={s.title}
+                      aria-label={s.title}
+                      data-step={s.k}
+                      onclick={handleStep}
+                    ></button>
+                    <div>
+                      <b>{s.label}</b>
+                      <div class="meta">{s.meta}</div>
+                    </div>
+                  </div>
+                </template>
+              </div>
+              <div class="card">
+                <h3>Credentialing by surgeon</h3>
+                <table>
+                  <tbody>
+                    <template for:each={credBySurgeon} for:item="c">
+                      <tr
+                        key={c.id}
+                        class="click"
+                        data-sid={c.id}
+                        data-go="cred"
+                        onclick={handleSurgeon}
+                      >
+                        <td><b>{c.name}</b></td>
+                        <td>{c.wave}</td>
+                        <td class="num">
+                          <span class={c.cred.cls}>{c.cred.text}</span>
+                        </td>
+                      </tr>
+                    </template>
+                  </tbody>
+                </table>
+                <p class="sub note">
+                  7c ticks itself when every surgeon with a pathway is
+                  credentialed.
+                </p>
+              </div>
+            </div>
+          </template>
+
+          <!-- myCase for the hospital (Robert, 2026-11-28): Pipeline's hospital MyCase Bookings, every surgeon at the deal's hospital -->
+          <template lwc:if={isHospCase}>
+            <h2>myCase</h2>
+            <div class="card hospcase">
+              <c-pipeline-hospital-bookings
+                record-id={dealId}
+              ></c-pipeline-hospital-bookings>
+            </div>
+          </template>
+
+          <!-- Readiness -->
+          <template lwc:if={isReady}>
+            <h2>Readiness</h2>
+            <p class="lead">Is the site ready for ROSA?</p>
+            <div class={siteCard.cls}>
+              <div class="ch">
+                <h3>Site Background</h3>
+                <button
+                  lwc:if={siteCard.showEdit}
+                  type="button"
+                  class="ed"
+                  data-edit="site"
+                  onclick={handleEdit}
+                >
+                  Edit
+                </button>
+              </div>
+              <c-rosa-deal-fields
+                fields={siteFields}
+                editing={siteCard.editing}
+                columns="4"
+                onfieldchange={handleField}
+              ></c-rosa-deal-fields>
+              <div lwc:if={siteCard.editing} class={actsCls}>
+                <span lwc:if={dirty} class="warn"
+                  >NOT SAVED YET. Nothing changes until you press Save.</span
+                >
+                <button type="button" class="btn red" onclick={handleCancel}>
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  class="btn"
+                  data-save="site"
+                  onclick={handleSave}
+                >
+                  Save
+                </button>
+              </div>
+            </div>
+            <div class={apCard.cls}>
+              <div class="ch">
+                <h3>Appropriateness</h3>
+                <button
+                  lwc:if={apCard.showEdit}
+                  type="button"
+                  class="ed"
+                  data-edit="ap"
+                  onclick={handleEdit}
+                >
+                  Edit
+                </button>
+              </div>
+              <c-rosa-deal-fields
+                fields={apFields}
+                editing={apCard.editing}
+                columns="4"
+                onfieldchange={handleField}
+              ></c-rosa-deal-fields>
+              <div lwc:if={apCard.editing} class={actsCls}>
+                <span lwc:if={dirty} class="warn"
+                  >NOT SAVED YET. Nothing changes until you press Save.</span
+                >
+                <button type="button" class="btn red" onclick={handleCancel}>
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  class="btn"
+                  data-save="ap"
+                  onclick={handleSave}
+                >
+                  Save
+                </button>
+              </div>
+            </div>
+          </template>
+
+          <!-- Chatter -->
+          <template lwc:if={isChatter}>
+            <h2>Chatter</h2>
+            <p class="lead">The deal's feed, without leaving the deal.</p>
+            <div class="card">
+              <div class="post">
+                <textarea
+                  class="in"
+                  placeholder="Share an update…"
+                  value={feedText}
+                  oninput={handleFeedText}
+                ></textarea>
+                <button
+                  type="button"
+                  class="btn"
+                  disabled={cannotPost}
+                  onclick={handlePost}
+                >
+                  Post
+                </button>
+              </div>
+              <template lwc:if={hasFeed}>
+                <template for:each={feed} for:item="p">
+                  <div key={p.id} class="m">
+                    <b>{p.who}</b> <span class="sub">{p.when}</span>
+                    <div class="txt">{p.text}</div>
+                    <template for:each={p.replies} for:item="r">
+                      <div key={r.id} class="reply">
+                        <b>{r.who}</b> <span class="sub">{r.when}</span>
+                        <div class="txt">{r.text}</div>
+                      </div>
+                    </template>
+                  </div>
+                </template>
+              </template>
+              <p lwc:else class="sub">No posts yet.</p>
+            </div>
+          </template>
+        </main>
+
+        <!-- Add surgeon: covers the whole content area -->
+        <aside
+          lwc:if={adding}
+          class="drawer"
+          role="dialog"
+          aria-label="Add surgeon"
+        >
+          <div class="ch">
+            <div>
+              <h2>Add surgeon</h2>
+              <div class="sub">to {dealName}</div>
+            </div>
+            <button
+              type="button"
+              class="rbtn x"
+              title="Close"
+              aria-label="Close"
+              onclick={handleAddClose}
+            ></button>
+          </div>
+          <div class="card">
+            <h3>Surgeon</h3>
+            <c-rosa-deal-picker
+              kind="surgeon"
+              value-id={add.Surgeon_Name__c}
+              value-name={add.pickName}
+              placeholder="Search surgeons by name"
+              onpick={handleAddPick}
+            ></c-rosa-deal-picker>
+            <div class="fgrid c3">
+              <div class="f">
+                <div class="l">Career position</div>
+                <select
+                  class="in"
+                  data-key="ROSA_Career_Position__c"
+                  onchange={handleAddField}
+                >
+                  <option value="">--None--</option>
+                  <template for:each={addCareerOpts} for:item="o"
+                    ><option key={o.okey} value={o.value} selected={o.selected}>
+                      {o.label}
+                    </option></template
+                  >
+                </select>
+              </div>
+              <div class="f">
+                <div class="l">Champion</div>
+                <input
+                  class="chk"
+                  type="checkbox"
+                  data-key="ROSA_Champion__c"
+                  checked={add.ROSA_Champion__c}
+                  onchange={handleAddField}
+                />
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <h3>Credentialing</h3>
+            <div class="fgrid c4">
+              <div class="f">
+                <div class="l">Pathway</div>
+                <select
+                  class="in"
+                  data-key="ROSA_Pathway__c"
+                  onchange={handleAddField}
+                >
+                  <option value="">--None--</option>
+                  <template for:each={addPathwayOpts} for:item="o"
+                    ><option key={o.okey} value={o.value} selected={o.selected}>
+                      {o.label}
+                    </option></template
+                  >
+                </select>
+              </div>
+              <div class="f">
+                <div class="l">Status</div>
+                <select
+                  class="in"
+                  data-key="ROSA_Credentialing_Status__c"
+                  onchange={handleAddField}
+                >
+                  <option value="">--None--</option>
+                  <template for:each={addStatusOpts} for:item="o"
+                    ><option key={o.okey} value={o.value} selected={o.selected}>
+                      {o.label}
+                    </option></template
+                  >
+                </select>
+              </div>
+              <div class="f">
+                <div class="l">Course date (Med Ed lab)</div>
+                <div class="dbox">
+                  <input
+                    class="in"
+                    type="date"
+                    data-key="ROSA_Course_Date__c"
+                    value={add.ROSA_Course_Date__c}
+                    onchange={handleAddField}
+                  />
+                  <button
+                    lwc:if={add.ROSA_Course_Date__c}
+                    type="button"
+                    class="dclear"
+                    title="Clear the date"
+                    aria-label="Clear the date"
+                    data-key="ROSA_Course_Date__c"
+                    onclick={handleAddClear}
+                  ></button>
+                </div>
+              </div>
+              <div class="f">
+                <div class="l">Wave (once Booked)</div>
+                <select
+                  class="in"
+                  data-key="ROSA_Wave__c"
+                  disabled={addWaveOff}
+                  title="A wave once Booked, Attended or Credentialed"
+                  onchange={handleAddField}
+                >
+                  <option value="">--None--</option>
+                  <template for:each={addWaveOpts} for:item="o"
+                    ><option key={o.okey} value={o.value} selected={o.selected}>
+                      {o.label}
+                    </option></template
+                  >
+                </select>
+              </div>
+            </div>
+            <p class="sub note">
+              The pathway's questions are added to Q&amp;A automatically.
+            </p>
+          </div>
+          <div class="card">
+            <h3>Volumes a year</h3>
+            <table class="vt">
+              <thead>
+                <tr class="grp">
+                  <th class="blank"></th>
+                  <th colspan="2">Now</th>
+                  <th colspan="2">With ROSA</th>
+                  <th class="blank"></th>
+                </tr>
+                <tr>
+                  <th>Joint</th>
+                  <th>Supplier</th>
+                  <th>Cases</th>
+                  <th>Supplier</th>
+                  <th>Cases</th>
+                  <th>ZB growth</th>
+                </tr>
+              </thead>
+              <tbody>
+                <template for:each={addVolRows} for:item="v">
+                  <tr key={v.k}>
+                    <td><b>{v.label}</b></td>
+                    <td>
+                      <select
+                        class="in"
+                        data-key={v.cs.key}
+                        onchange={handleAddVol}
+                      >
+                        <option value="">--None--</option>
+                        <template for:each={v.cs.opts} for:item="o"
+                          ><option
+                            key={o.okey}
+                            value={o.value}
+                            selected={o.selected}
+                          >
+                            {o.label}
+                          </option></template
+                        >
+                      </select>
+                    </td>
+                    <td>
+                      <input
+                        class="in"
+                        type="number"
+                        min="0"
+                        data-key={v.cc.key}
+                        value={v.cc.value}
+                        oninput={handleAddVol}
+                      />
+                    </td>
+                    <td>
+                      <select
+                        class="in"
+                        data-key={v.rs.key}
+                        onchange={handleAddVol}
+                      >
+                        <option value="">--None--</option>
+                        <template for:each={v.rs.opts} for:item="o"
+                          ><option
+                            key={o.okey}
+                            value={o.value}
+                            selected={o.selected}
+                          >
+                            {o.label}
+                          </option></template
+                        >
+                      </select>
+                    </td>
+                    <td>
+                      <input
+                        class="in"
+                        type="number"
+                        min="0"
+                        data-key={v.rc.key}
+                        value={v.rc.value}
+                        oninput={handleAddVol}
+                      />
+                    </td>
+                    <td class={v.growthCls}>{v.growth}</td>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
+          </div>
+          <div class="acts">
+            <span lwc:if={addBlocked} class="warn"
+              >Pick a surgeon to save.</span
+            >
+            <button type="button" class="btn red" onclick={handleAddClose}>
+              Cancel
+            </button>
+            <button
+              type="button"
+              class="btn sec"
+              data-again="1"
+              disabled={addBlocked}
+              title="Pick a surgeon first"
+              onclick={handleAddSave}
+            >
+              Save and add another
+            </button>
+            <button
+              type="button"
+              class="btn"
+              data-again="0"
+              disabled={addBlocked}
+              onclick={handleAddSave}
+            >
+              Save
+            </button>
+          </div>
+        </aside>
+
+        <div lwc:if={confirmLeave} class="leave">
+          <span>NOT SAVED YET. Leave without saving your changes?</span>
+          <button type="button" class="btn sec" onclick={handleStay}>
+            Stay here
+          </button>
+          <button type="button" class="btn red" onclick={handleLeave}>
+            Leave anyway
+          </button>
+        </div>
+        <div lwc:if={toast} class={toastCls} role="status">{toast}</div>
+      </div>
+    </template>
+
+    <div lwc:if={busy} class="pleasewait" role="status">
+      <div class="spin"></div>
+      <span>Please wait</span>
+    </div>
+  </div>
+</template>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+  <apiVersion>68.0</apiVersion>
+  <description
+  >ROSA deal screen: a search box that picks a person (active, non-portal users only), a surgeon or a hospital, with a round clear button; the choice shows with Change.</description>
+  <isExposed>false</isExposed>
+</LightningComponentBundle>

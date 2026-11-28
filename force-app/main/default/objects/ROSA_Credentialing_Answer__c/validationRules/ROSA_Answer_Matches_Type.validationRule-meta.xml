@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>ROSA_Answer_Matches_Type</fullName>
+    <active>true</active>
+    <description
+  >ROSA answers: only the field for the answer type may be filled.</description>
+    <errorConditionFormula
+  >(NOT(ISBLANK(TEXT(ROSA_Answer_Yes_No__c))) &amp;&amp; ROSA_Answer_Type__c &lt;&gt; 'Yes/No') || (NOT(ISBLANK(ROSA_Answer_Number__c)) &amp;&amp; ROSA_Answer_Type__c &lt;&gt; 'Number') || (NOT(ISBLANK(ROSA_Answer_Date__c)) &amp;&amp; ROSA_Answer_Type__c &lt;&gt; 'Date') || (NOT(ISBLANK(ROSA_Answer_Text__c)) &amp;&amp; ROSA_Answer_Type__c &lt;&gt; 'Text')</errorConditionFormula>
+    <errorMessage
+  >Fill in only the answer field for this question's answer type.</errorMessage>
+</ValidationRule>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>ROSA_Steps_In_Order</fullName>
+    <active>true</active>
+    <description
+  >ROSA checklist: steps 1 to 6 are done in order (Robert, 2026-11-26). Implementation steps 7a to 7d can be done in any order.</description>
+    <errorConditionFormula
+  >RecordType.DeveloperName = 'ROSA_Deal_Checklist' &amp;&amp; ((ROSA_Step_2_Done__c &amp;&amp; NOT(ROSA_Step_1_Done__c)) || (ROSA_Step_3_Done__c &amp;&amp; NOT(ROSA_Step_2_Done__c)) || (ROSA_Step_4_Done__c &amp;&amp; NOT(ROSA_Step_3_Done__c)) || (ROSA_Step_5_Done__c &amp;&amp; NOT(ROSA_Step_4_Done__c)) || (ROSA_Step_6_Done__c &amp;&amp; NOT(ROSA_Step_5_Done__c)))</errorConditionFormula>
+    <errorMessage>Complete the earlier steps first.</errorMessage>
+</ValidationRule>

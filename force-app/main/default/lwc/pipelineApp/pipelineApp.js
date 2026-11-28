@@ -49,7 +49,7 @@ function stableJson(value) {
  * Usages, Surgeries and Chatter, saved filters); 0.10 follows the final mockup: a filter bar with chips and a Change
  * selection panel with Apply, in place of the always-visible Choose Your Data panel.
  */
-const PIPELINE_VERSION = "0.177";
+const PIPELINE_VERSION = "0.182";
 
 /** The colours a person can choose for the headings (Robert, 2026-11-02); the look of each is in pipelineApp.css. */
 const HEAD_COLOURS = [
@@ -973,7 +973,30 @@ export default class PipelineApp extends LightningElement {
   get flyTotal() {
     return this.flyIds.length;
   }
+  /* ----- the ROSA deal screen: a ROSA deal opens rosaDeal over the page instead of the deal flyout (0.179) ----- */
+  rosaId = "";
+  rosaSaved = false;
+  openRosa(id) {
+    this.rosaSaved = false;
+    this.rosaId = id;
+  }
+  handleRosaSaved() {
+    this.rosaSaved = true;
+  }
+  handleRosaClose() {
+    this.rosaId = "";
+    if (this.rosaSaved) {
+      this.rosaSaved = false;
+      this.loadDeals(true);
+      if (this.linkedCampaignId) this.loadCampaign(true);
+    }
+  }
   handleDealOpen(event) {
+    const asked = this.allDeals.find((d) => d.id === event.detail.id);
+    if (asked && asked.kind === "rosa") {
+      this.openRosa(asked.id);
+      return;
+    }
     clearTimeout(this.flyTimer);
     this.flyLeaving = undefined;
     this.flyFromCampaign = false;
@@ -1007,6 +1030,11 @@ export default class PipelineApp extends LightningElement {
     const have = new Set(deals.map((d) => d.id));
     if (!have.has(id)) {
       this.error = "That deal could not be opened.";
+      return;
+    }
+    const rosa = deals.find((d) => d.id === id && d.kind === "rosa");
+    if (rosa) {
+      this.openRosa(id);
       return;
     }
     clearTimeout(this.flyTimer);

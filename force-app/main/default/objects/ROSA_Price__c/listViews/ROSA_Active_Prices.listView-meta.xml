@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ListView xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>ROSA_Active_Prices</fullName>
+    <columns>NAME</columns>
+    <columns>ROSA_Country__c</columns>
+    <columns>ROSA_Joint__c</columns>
+    <columns>ROSA_Price__c</columns>
+    <columns>CURRENCY_ISO_CODE</columns>
+    <filterScope>Everything</filterScope>
+    <filters>
+        <field>ROSA_Active__c</field>
+        <operation>equals</operation>
+        <value>1</value>
+    </filters>
+    <label>Active prices</label>
+</ListView>

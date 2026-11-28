@@ -383,4 +383,16 @@
       <div class="busybox">Please wait…</div>
     </div>
   </div>
+  <!-- A ROSA deal opens the ROSA deal screen (docs/ROSA_Deal_Modal_Build_Spec.md), outside the zoomed page so it fills the window -->
+  <div lwc:if={rosaId} class="rosaover" role="dialog" aria-label="ROSA deal">
+    <div class="rosabox">
+      <c-rosa-deal
+        deal-id={rosaId}
+        theme={theme}
+        zoom={settings.zoom}
+        onclose={handleRosaClose}
+        onsaved={handleRosaSaved}
+      ></c-rosa-deal>
+    </div>
+  </div>
 </template>

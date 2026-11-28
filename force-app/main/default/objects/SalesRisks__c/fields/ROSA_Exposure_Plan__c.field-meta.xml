@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>ROSA_Exposure_Plan__c</fullName>
+    <description
+  >ROSA deal site background: the training and exposure plan.</description>
+    <inlineHelpText>The plan for training and exposure.</inlineHelpText>
+    <label>Exposure plan</label>
+    <length>5000</length>
+    <visibleLines>4</visibleLines>
+    <type>LongTextArea</type>
+</CustomField>

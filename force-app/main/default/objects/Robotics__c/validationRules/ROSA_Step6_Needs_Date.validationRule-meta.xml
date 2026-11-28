@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>ROSA_Step6_Needs_Date</fullName>
+    <active>true</active>
+    <description
+  >ROSA checklist: step 6 (contract signed) needs its date. The date fills itself when the step is first ticked.</description>
+    <errorConditionFormula
+  >RecordType.DeveloperName = 'ROSA_Deal_Checklist' &amp;&amp; ROSA_Step_6_Done__c &amp;&amp; ISBLANK(ROSA_Step_6_Date__c) &amp;&amp; NOT(ISCHANGED(ROSA_Step_6_Done__c)) &amp;&amp; NOT(ISNEW())</errorConditionFormula>
+    <errorDisplayField>ROSA_Step_6_Date__c</errorDisplayField>
+    <errorMessage>Enter the date the contract was signed.</errorMessage>
+</ValidationRule>

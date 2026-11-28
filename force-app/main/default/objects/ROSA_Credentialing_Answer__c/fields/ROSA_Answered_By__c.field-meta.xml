@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>ROSA_Answered_By__c</fullName>
+    <description>Who last answered. Set automatically; read-only.</description>
+    <inlineHelpText>Set automatically.</inlineHelpText>
+    <label>Answered by</label>
+    <trackHistory>true</trackHistory>
+    <deleteConstraint>SetNull</deleteConstraint>
+    <referenceTo>User</referenceTo>
+    <relationshipLabel>ROSA Credentialing Answers</relationshipLabel>
+    <relationshipName>ROSA_Credentialing_Answers</relationshipName>
+    <required>false</required>
+    <type>Lookup</type>
+</CustomField>

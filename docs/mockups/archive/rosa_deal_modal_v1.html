@@ -1,0 +1,1219 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ROSA Deal Modal</title>
+    <style>
+      [data-theme="light"] {
+        --page: #e9edf4;
+        --bg: #f4f6fa;
+        --panel: #fff;
+        --panel2: #eef2fa;
+        --line: #d5dcea;
+        --edge: #b3bfd6;
+        --text: #1b2640;
+        --muted: #5d6b85;
+        --indigo: #4f46e5;
+        --indigo2: #4f46e5;
+        --pfield: #fff;
+        --pline: #c9d2e3;
+        --good: #1e9e57;
+        --warn: #d97706;
+        --bad: #dc2626;
+        --shoulder: #7c3aed;
+        --knee: #0d9488;
+        --hip: #2563eb;
+        --scrim: rgba(15, 23, 42, 0.45);
+        --scheme: light;
+      }
+      [data-theme="dark"] {
+        --page: #0e1623;
+        --bg: #141e2e;
+        --panel: #1a2740;
+        --panel2: #20304f;
+        --line: #2f4163;
+        --edge: #5b6f93;
+        --text: #e8edf5;
+        --muted: #8b9bb0;
+        --indigo: #6366f1;
+        --indigo2: #a5b4fc;
+        --pfield: #141e2e;
+        --pline: #3a4e74;
+        --good: #34d399;
+        --warn: #fbbf24;
+        --bad: #f87171;
+        --shoulder: #a78bfa;
+        --knee: #14b8a6;
+        --hip: #2f80ed;
+        --scrim: rgba(0, 0, 0, 0.6);
+        --scheme: dark;
+      }
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--page);
+        color: var(--text);
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial,
+          sans-serif;
+        font-size: 15px;
+      }
+      button {
+        font-family: inherit;
+      }
+      /* mockup controls (not part of the design) */
+      .mock {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 50;
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        flex-wrap: wrap;
+        padding: 8px 16px;
+        background: #111827;
+        color: #e5e7eb;
+        font-size: 13px;
+      }
+      .mock b {
+        margin-right: 6px;
+      }
+      .mock button {
+        background: #374151;
+        color: #fff;
+        border: 0;
+        border-radius: 999px;
+        padding: 5px 12px;
+        cursor: pointer;
+        font-size: 12px;
+      }
+      .mock button.on {
+        background: #6366f1;
+      }
+      /* fake Salesforce page behind the modal */
+      .sf {
+        padding: 16px;
+        filter: saturate(0.6);
+      }
+      .sf .bar {
+        height: 44px;
+        background: #fff;
+        border-radius: 6px;
+        margin-bottom: 12px;
+        opacity: 0.8;
+      }
+      .sf .row {
+        display: flex;
+        gap: 12px;
+      }
+      .sf .blk {
+        flex: 1;
+        height: 520px;
+        background: #fff;
+        border-radius: 6px;
+        opacity: 0.7;
+      }
+      [data-theme="dark"] .sf .bar,
+      [data-theme="dark"] .sf .blk {
+        background: #22304a;
+      }
+      .scrim {
+        position: fixed;
+        inset: 0;
+        background: var(--scrim);
+        backdrop-filter: blur(3px);
+      }
+      /* the modal */
+      .modal {
+        position: fixed;
+        inset: 1.5vh 1.5vw;
+        background: var(--bg);
+        border-radius: 16px;
+        box-shadow: 0 30px 80px rgba(0, 0, 0, 0.35);
+        display: grid;
+        grid-template-rows: auto 1fr;
+        overflow: hidden;
+      }
+      .hdr {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 12px 24px;
+        padding: 18px 24px 14px;
+        background: var(--panel);
+        border-bottom: 1px solid var(--line);
+      }
+      .title {
+        display: flex;
+        align-items: baseline;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      .title h1 {
+        margin: 0;
+        font-size: 24px;
+      }
+      .sub {
+        color: var(--muted);
+        font-size: 14px;
+      }
+      .tag {
+        display: inline-block;
+        border-radius: 999px;
+        padding: 3px 10px;
+        font-size: 12px;
+        font-weight: 700;
+        background: var(--panel2);
+        color: var(--muted);
+      }
+      .tag.sh {
+        background: color-mix(in srgb, var(--shoulder) 15%, transparent);
+        color: var(--shoulder);
+      }
+      .tag.ok {
+        background: color-mix(in srgb, var(--good) 15%, transparent);
+        color: var(--good);
+      }
+      .tag.wait {
+        background: color-mix(in srgb, var(--warn) 15%, transparent);
+        color: var(--warn);
+      }
+      .tools {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+      .rbtn {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        border: 1.5px solid var(--edge);
+        background: transparent;
+        color: var(--text);
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+      }
+      .btn {
+        border: 1px solid transparent;
+        border-radius: 999px;
+        background: var(--indigo);
+        color: #fff;
+        font-weight: 700;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        padding: 9px 18px;
+        cursor: pointer;
+      }
+      .btn.sec {
+        background: transparent;
+        border-color: var(--indigo2);
+        color: var(--indigo2);
+      }
+      /* stage path: compact, fixed stages */
+      .path {
+        grid-column: 1/-1;
+        display: flex;
+        gap: 4px;
+      }
+      .path span {
+        flex: 1;
+        text-align: center;
+        font-size: 12px;
+        font-weight: 700;
+        padding: 7px 4px;
+        background: var(--panel2);
+        color: var(--muted);
+        border-radius: 6px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .path span.done {
+        background: color-mix(in srgb, var(--indigo) 18%, transparent);
+        color: var(--indigo2);
+      }
+      .path span.cur {
+        background: var(--indigo);
+        color: #fff;
+      }
+      .path span.lost {
+        flex: 0.7;
+      }
+      .kpis {
+        grid-column: 1/-1;
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 12px;
+      }
+      .kpi {
+        background: var(--panel2);
+        border-radius: 10px;
+        padding: 10px 14px;
+      }
+      .kpi .v {
+        font-size: 22px;
+        font-weight: 800;
+      }
+      .kpi .l {
+        font-size: 12px;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+      /* body: rail + main */
+      .body {
+        display: grid;
+        grid-template-columns: 260px 1fr;
+        min-height: 0;
+      }
+      .rail {
+        border-right: 1px solid var(--line);
+        background: var(--panel);
+        overflow: auto;
+        padding: 16px 12px;
+      }
+      .rail .grp {
+        font-size: 11px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin: 16px 10px 6px;
+      }
+      .nav {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        width: 100%;
+        text-align: left;
+        border: 0;
+        background: transparent;
+        color: var(--text);
+        padding: 9px 12px;
+        border-radius: 10px;
+        cursor: pointer;
+        font-size: 15px;
+      }
+      .nav:hover {
+        background: var(--panel2);
+      }
+      .nav.on {
+        background: var(--indigo);
+        color: #fff;
+      }
+      .nav.sg {
+        padding-left: 24px;
+        font-size: 14px;
+      }
+      .nav .n {
+        font-size: 12px;
+        opacity: 0.8;
+      }
+      .nav.off {
+        opacity: 0.45;
+        cursor: default;
+      }
+      .dot {
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        flex: none;
+        background: var(--edge);
+      }
+      .dot.ok {
+        background: var(--good);
+      }
+      .dot.wait {
+        background: var(--warn);
+      }
+      .main {
+        overflow: auto;
+        padding: 24px 28px 90px;
+      }
+      .crumb {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--muted);
+        font-size: 14px;
+        margin-bottom: 14px;
+      }
+      .crumb a {
+        color: var(--indigo2);
+        cursor: pointer;
+        text-decoration: none;
+        font-weight: 600;
+      }
+      h2 {
+        margin: 0 0 4px;
+        font-size: 22px;
+      }
+      .lead {
+        color: var(--muted);
+        margin: 0 0 18px;
+      }
+      .card {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 18px 20px;
+        margin-bottom: 20px;
+      }
+      .card h3 {
+        margin: 0 0 12px;
+        font-size: 17px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      th {
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+        text-align: left;
+        padding: 8px 10px;
+        border-bottom: 1px solid var(--line);
+        font-weight: 700;
+        white-space: nowrap;
+      }
+      td {
+        padding: 11px 10px;
+        border-bottom: 1px solid var(--line);
+        vertical-align: middle;
+      }
+      td.num,
+      th.num {
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+      }
+      tr.click {
+        cursor: pointer;
+      }
+      tr.click:hover td {
+        background: var(--panel2);
+      }
+      .plus {
+        color: var(--good);
+        font-weight: 700;
+      }
+      .grid2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+      }
+      .grid3 {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+      }
+      .fields {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 14px 24px;
+      }
+      .f .l {
+        font-size: 12px;
+        color: var(--muted);
+        margin-bottom: 3px;
+      }
+      .f .v {
+        font-weight: 600;
+      }
+      select.in,
+      input.in {
+        height: 36px;
+        background: var(--pfield);
+        border: 1px solid var(--pline);
+        border-radius: 8px;
+        color: var(--text);
+        font-size: 15px;
+        padding: 0 10px;
+        color-scheme: var(--scheme);
+      }
+      input.in.num {
+        width: 90px;
+        text-align: right;
+      }
+      /* surgeon detail */
+      .shead {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 18px;
+      }
+      .avatar {
+        width: 52px;
+        height: 52px;
+        border-radius: 50%;
+        background: var(--panel2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 18px;
+        color: var(--indigo2);
+      }
+      .tabs {
+        display: flex;
+        gap: 6px;
+        margin-bottom: 18px;
+      }
+      .pill {
+        border: 1px solid var(--pline);
+        background: var(--pfield);
+        color: var(--text);
+        border-radius: 999px;
+        padding: 7px 15px;
+        font-size: 14px;
+        cursor: pointer;
+      }
+      .pill.on {
+        background: var(--indigo);
+        border-color: var(--indigo);
+        color: #fff;
+      }
+      .q {
+        display: grid;
+        grid-template-columns: 28px 1fr 210px;
+        gap: 14px;
+        align-items: center;
+        padding: 14px 0;
+        border-bottom: 1px solid var(--line);
+      }
+      .q:last-child {
+        border-bottom: 0;
+      }
+      .q .no {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: var(--panel2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--muted);
+      }
+      .q .by {
+        font-size: 12px;
+        color: var(--muted);
+        text-align: right;
+      }
+      .tog {
+        display: inline-flex;
+        border: 1px solid var(--pline);
+        border-radius: 999px;
+        overflow: hidden;
+      }
+      .tog button {
+        border: 0;
+        background: transparent;
+        color: var(--text);
+        padding: 7px 14px;
+        cursor: pointer;
+        font-size: 13px;
+      }
+      .tog button.on {
+        background: var(--good);
+        color: #fff;
+      }
+      .bar {
+        height: 10px;
+        border-radius: 99px;
+        background: var(--panel2);
+        overflow: hidden;
+      }
+      .bar i {
+        display: block;
+        height: 100%;
+        background: var(--good);
+      }
+      /* checklist */
+      .phase h3 {
+        display: flex;
+        justify-content: space-between;
+      }
+      .step {
+        display: grid;
+        grid-template-columns: 26px 1fr;
+        gap: 10px;
+        padding: 12px 0;
+        border-bottom: 1px solid var(--line);
+      }
+      .step:last-child {
+        border-bottom: 0;
+      }
+      .box {
+        width: 22px;
+        height: 22px;
+        border-radius: 6px;
+        border: 2px solid var(--edge);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: #fff;
+        font-size: 13px;
+      }
+      .box.on {
+        background: var(--good);
+        border-color: var(--good);
+      }
+      .step .meta {
+        font-size: 12px;
+        color: var(--muted);
+        margin-top: 2px;
+      }
+      .note {
+        font-size: 13px;
+        color: var(--muted);
+        border-left: 3px solid var(--indigo);
+        padding: 6px 12px;
+        margin: 0 0 18px;
+        background: var(--panel);
+      }
+      .chat .m {
+        padding: 12px 0;
+        border-bottom: 1px solid var(--line);
+      }
+      .chat .m b {
+        font-size: 14px;
+      }
+      .chat .m .t {
+        font-size: 12px;
+        color: var(--muted);
+      }
+      /* marketing list */
+      .list {
+        position: fixed;
+        inset: 0;
+        overflow: auto;
+        padding: 28px 32px 90px;
+        background: var(--bg);
+      }
+      .filters {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin: 14px 0 18px;
+      }
+      @media (max-width: 900px) {
+        .modal {
+          inset: 0;
+          border-radius: 0;
+        }
+        .body {
+          grid-template-columns: 1fr;
+          grid-template-rows: auto 1fr;
+        }
+        .rail {
+          display: flex;
+          overflow-x: auto;
+          gap: 6px;
+          padding: 8px;
+          border-right: 0;
+          border-bottom: 1px solid var(--line);
+        }
+        .rail .grp,
+        .nav.sg {
+          display: none;
+        }
+        .nav {
+          white-space: nowrap;
+          width: auto;
+        }
+        .hdr {
+          padding: 12px 16px;
+        }
+        .title h1 {
+          font-size: 19px;
+        }
+        .sub,
+        .hdr .btn.sec,
+        .title .tag {
+          display: none;
+        }
+        .kpis {
+          grid-template-columns: repeat(3, 1fr);
+          gap: 6px;
+        }
+        .kpi {
+          padding: 6px 8px;
+        }
+        .kpi .v {
+          font-size: 16px;
+        }
+        .kpi .l {
+          font-size: 9px;
+        }
+        .kpi:nth-child(2),
+        .kpi:nth-child(3) {
+          display: none;
+        }
+        .path span {
+          display: none;
+        }
+        .path span.cur {
+          display: block;
+        }
+        .card {
+          overflow-x: auto;
+        }
+        .mock {
+          font-size: 11px;
+        }
+        .fields,
+        .grid2,
+        .grid3 {
+          grid-template-columns: 1fr;
+        }
+        .main {
+          padding: 16px 16px 90px;
+        }
+        .q {
+          grid-template-columns: 28px 1fr;
+        }
+        .q .by {
+          grid-column: 2;
+          text-align: left;
+        }
+        .list {
+          padding: 16px 16px 90px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <div class="mock">
+      <b>Mockup</b>
+      <button data-screen="modal" class="on">Single deal (modal)</button>
+      <button data-screen="list">Marketing: many deals</button>
+      <span style="flex: 1"></span>
+      <button data-theme-set="light" class="on">Light</button
+      ><button data-theme-set="dark">Dark</button>
+      <span style="opacity: 0.7">Sample data only</span>
+    </div>
+    <script>
+      const STAGES = [
+        "Sales Pipeline",
+        "Surgeon Engagement",
+        "Executive Presentation",
+        "Negotiation",
+        "Closed Won"
+      ];
+      const JOINTS = [
+        ["TKA", "Knee"],
+        ["PKA", "Partial knee"],
+        ["THA", "Hip"],
+        ["TSA_RSA", "Shoulder (TSA/RSA)"]
+      ];
+      const SUP = ["ZB", "J&J", "Stryker", "Smith & Nephew", "Other"];
+      const PRICE = { TKA: 0, PKA: 0, THA: 0, TSA_RSA: 0 };
+      const QUESTIONS = [
+        "Confirm the surgeon does 30+ Zimmer Biomet shoulder cases a year.",
+        "Confirm the surgeon has used Signature 2.0 planning.",
+        "Confirm the surgeon has had the ROSA Shoulder demo and slide deck walk-through.",
+        "Confirm the surgeon has access to a ROSA Shoulder unit."
+      ];
+      const mk = (cur, ros) =>
+        Object.fromEntries(
+          JOINTS.map(([k], i) => [
+            k,
+            { cs: cur[i][0], cc: cur[i][1], rs: ros[i][0], rc: ros[i][1] }
+          ])
+        );
+      const deal = {
+        name: "Sample Private Hospital",
+        country: "Australia",
+        type: "Capital Sale",
+        sales: "Shoulder",
+        lead: "Jordan Blake",
+        stage: 2,
+        close: "30 Jun 2027",
+        install: "",
+        surgeons: [
+          {
+            id: 1,
+            name: "Dr Emma Hart",
+            pos: "Consultant",
+            champ: true,
+            implant: "IMP-10482",
+            vol: mk(
+              [
+                ["ZB", 120],
+                ["ZB", 20],
+                ["Stryker", 60],
+                ["ZB", 45]
+              ],
+              [
+                ["ZB", 150],
+                ["ZB", 30],
+                ["ZB", 70],
+                ["ZB", 80]
+              ]
+            ),
+            ans: [true, true, true, null],
+            who: ["Jordan Blake", "Jordan Blake", "Sam Ortiz", null],
+            cred: "",
+            pathway: "Shoulder"
+          },
+          {
+            id: 2,
+            name: "Dr Sam Lee",
+            pos: "Consultant",
+            champ: false,
+            implant: "",
+            vol: mk(
+              [
+                ["J&J", 90],
+                ["", 0],
+                ["J&J", 40],
+                ["Stryker", 30]
+              ],
+              [
+                ["ZB", 90],
+                ["", 0],
+                ["J&J", 40],
+                ["ZB", 55]
+              ]
+            ),
+            ans: [null, null, null, null],
+            who: [null, null, null, null],
+            cred: "",
+            pathway: "Shoulder"
+          },
+          {
+            id: 3,
+            name: "Dr Priya Nair",
+            pos: "Consultant",
+            champ: true,
+            implant: "IMP-10511",
+            vol: mk(
+              [
+                ["ZB", 60],
+                ["ZB", 15],
+                ["ZB", 80],
+                ["ZB", 70]
+              ],
+              [
+                ["ZB", 70],
+                ["ZB", 20],
+                ["ZB", 95],
+                ["ZB", 110]
+              ]
+            ),
+            ans: [true, true, true, true],
+            who: ["Sam Ortiz", "Sam Ortiz", "Sam Ortiz", "Sam Ortiz"],
+            cred: "14 Feb 2027",
+            pathway: "Shoulder"
+          },
+          {
+            id: 4,
+            name: "Dr Tom Walsh",
+            pos: "Fellow",
+            champ: false,
+            implant: "",
+            vol: mk(
+              [
+                ["Smith & Nephew", 40],
+                ["", 0],
+                ["", 0],
+                ["Other", 20]
+              ],
+              [
+                ["ZB", 35],
+                ["", 0],
+                ["", 0],
+                ["ZB", 30]
+              ]
+            ),
+            ans: [true, null, null, null],
+            who: ["Jordan Blake", null, null, null],
+            cred: "",
+            pathway: "Shoulder"
+          }
+        ],
+        steps: {
+          1: ["12 Sep 2026", "Jordan Blake"],
+          2: ["03 Oct 2026", "Jordan Blake"],
+          3: ["21 Oct 2026", "Jordan Blake"],
+          4: ["09 Nov 2026", "Alex Kim"]
+        },
+        chat: [
+          [
+            "Jordan Blake",
+            "Exec presentation booked for 2 Dec with the CEO and DoN.",
+            "2 days ago"
+          ],
+          [
+            "Sam Ortiz",
+            "Dr Nair finished the Med Ed lab. Credentialed.",
+            "5 days ago"
+          ],
+          [
+            "Alex Kim",
+            "Commercial review approved, 3-year capital.",
+            "18 days ago"
+          ]
+        ]
+      };
+      const STEPS = [
+        [
+          "Opportunity",
+          [
+            [1, "Engage surgeon"],
+            [2, "Validate with deal lead"],
+            [3, "Deal summary complete"]
+          ]
+        ],
+        [
+          "Contract",
+          [
+            [4, "Commercial assessment and governance"],
+            [5, "Proposal and negotiation"],
+            [6, "Contract signed"]
+          ]
+        ],
+        [
+          "Implement",
+          [
+            ["7a", "Install date communicated"],
+            ["7b", "Instruments delivered"],
+            ["7c", "Surgeon credentialed"],
+            ["7d", "First cases done"]
+          ]
+        ]
+      ];
+      let view = {
+        screen: "modal",
+        sec: "surgeons",
+        sid: null,
+        stab: "volumes"
+      };
+      const zb = (s, side) =>
+        JOINTS.reduce(
+          (a, [k]) =>
+            a +
+            (s.vol[k][side + "s"] === "ZB" ? +s.vol[k][side + "c"] || 0 : 0),
+          0
+        );
+      const growth = (s) => zb(s, "r") - zb(s, "c");
+      const answered = (s) => s.ans.filter((a) => a === true).length;
+      const ready = (s) => answered(s) === QUESTIONS.length;
+      const credTag = (s) =>
+        s.cred
+          ? '<span class="tag ok">Credentialed</span>'
+          : ready(s)
+            ? '<span class="tag wait">Ready for lab</span>'
+            : `<span class="tag">${answered(s)} of ${QUESTIONS.length} answered</span>`;
+      const dotCls = (s) => (s.cred ? "ok" : ready(s) ? "wait" : "");
+      const tot = () => ({
+        n: deal.surgeons.length,
+        cur: deal.surgeons.reduce((a, s) => a + zb(s, "c"), 0),
+        ros: deal.surgeons.reduce((a, s) => a + zb(s, "r"), 0),
+        cred: deal.surgeons.filter((s) => s.cred).length
+      });
+      const ini = (n) =>
+        n
+          .replace("Dr ", "")
+          .split(" ")
+          .map((x) => x[0])
+          .join("");
+      function header() {
+        const t = tot();
+        return `<div class="hdr">
+  <div><div class="title"><h1>${deal.name}</h1><span class="tag sh">ROSA ${deal.sales}</span><span class="tag">${deal.type}</span></div>
+  <div class="sub">${deal.country} · Deal lead ${deal.lead} · Expected close ${deal.close}</div></div>
+  <div class="tools"><button class="btn sec" title="Opens the standard Salesforce record in a new tab">Open in Salesforce</button><button class="rbtn" title="Close">✕</button></div>
+  <div class="path">${STAGES.map((s, i) => `<span class="${i < deal.stage ? "done" : i === deal.stage ? "cur" : ""}">${s}</span>`).join("")}<span class="lost">Deal Lost</span></div>
+  <div class="kpis">
+   <div class="kpi"><div class="v">${t.n}</div><div class="l">Surgeons</div></div>
+   <div class="kpi"><div class="v">${t.cur}</div><div class="l">ZB cases now</div></div>
+   <div class="kpi"><div class="v">${t.ros}</div><div class="l">ZB cases with ROSA</div></div>
+   <div class="kpi"><div class="v plus">+${t.ros - t.cur}</div><div class="l">Growth cases</div></div>
+   <div class="kpi"><div class="v">${t.cred} / ${t.n}</div><div class="l">Credentialed</div></div>
+  </div></div>`;
+      }
+      function rail() {
+        const nav = (k, l, n, off) =>
+          `<button class="nav ${view.sec === k && !view.sid ? "on" : ""} ${off ? "off" : ""}" data-sec="${off ? "" : k}">${l}${n !== undefined ? `<span class="n">${n}</span>` : ""}</button>`;
+        return `<nav class="rail">
+  <div class="grp">Deal</div>${nav("overview", "Overview")}${nav("surgeons", "Surgeons and growth", deal.surgeons.length)}
+  ${deal.surgeons.map((s) => `<button class="nav sg ${view.sid === s.id ? "on" : ""}" data-sid="${s.id}"><span style="display:flex;gap:8px;align-items:center"><span class="dot ${dotCls(s)}"></span>${s.name}</span></button>`).join("")}
+  <div class="grp">Process</div>${nav("checklist", "Checklist", Object.keys(deal.steps).length + " of 10")}${nav("implement", "Implementation", deal.stage >= 4 ? "" : "at Closed Won", deal.stage < 4)}
+  <div class="grp">Site</div>${nav("site", "Site background")}${nav("approp", "Appropriateness")}
+  <div class="grp">Activity</div>${nav("chatter", "Chatter", deal.chat.length)}
+ </nav>`;
+      }
+      function secSurgeons() {
+        return `<h2>Surgeons and growth</h2><p class="lead">Click a surgeon to edit volumes and credentialing. Totals above update as you type.</p>
+ <div class="card"><table><thead><tr><th>Surgeon</th><th>Role</th>${JOINTS.map(([k, l]) => `<th class="num">${k === "TSA_RSA" ? "TSA/RSA" : k} now → ROSA</th>`).join("")}<th class="num">Growth</th><th>Credentialing</th></tr></thead>
+ <tbody>${deal.surgeons
+   .map(
+     (
+       s
+     ) => `<tr class="click" data-sid="${s.id}"><td><b>${s.name}</b>${s.champ ? ' <span class="tag sh">Champion</span>' : ""}</td><td>${s.pos}</td>
+ ${JOINTS.map(([k]) => {
+   const v = s.vol[k];
+   return `<td class="num">${v.cc || "–"} → ${v.rc || "–"}</td>`;
+ }).join("")}
+ <td class="num plus">+${growth(s)}</td><td>${credTag(s)}</td></tr>`
+   )
+   .join("")}</tbody></table>
+ <div style="margin-top:14px"><button class="btn sec">+ Add surgeon</button></div></div>
+ <div class="grid2">
+  <div class="card"><h3>ZB users by joint</h3><table><tbody>${JOINTS.map(([k, l]) => `<tr><td>${l}</td><td class="num"><b>${deal.surgeons.filter((s) => s.vol[k].cs === "ZB").length}</b> now</td><td class="num"><b>${deal.surgeons.filter((s) => s.vol[k].rs === "ZB").length}</b> with ROSA</td></tr>`).join("")}</tbody></table></div>
+  <div class="card"><h3>Share of cases with ROSA</h3>${SUP.map((sp) => {
+    let all = 0,
+      me = 0;
+    deal.surgeons.forEach((s) =>
+      JOINTS.forEach(([k]) => {
+        const v = s.vol[k];
+        all += +v.rc || 0;
+        if (v.rs === sp) me += +v.rc || 0;
+      })
+    );
+    const p = all ? Math.round((me * 100) / all) : 0;
+    return `<div style="display:grid;grid-template-columns:130px 1fr 44px;gap:10px;align-items:center;margin:8px 0"><span>${sp}</span><div class="bar"><i style="width:${p}%;${sp === "ZB" ? "" : "background:var(--edge)"}"></i></div><span class="num" style="text-align:right">${p}%</span></div>`;
+  }).join("")}</div>
+ </div>`;
+      }
+      function secSurgeon() {
+        const i = deal.surgeons.findIndex((s) => s.id === view.sid),
+          s = deal.surgeons[i],
+          prev = deal.surgeons[i - 1],
+          next = deal.surgeons[i + 1];
+        const tab = (k, l) =>
+          `<button class="pill ${view.stab === k ? "on" : ""}" data-stab="${k}">${l}</button>`;
+        let body = "";
+        if (view.stab === "volumes") {
+          body = `<div class="card"><h3>Volumes a year</h3><table><thead><tr><th>Joint</th><th>Supplier now</th><th class="num">Cases now</th><th>Supplier with ROSA</th><th class="num">Cases with ROSA</th><th class="num">ZB growth</th></tr></thead><tbody>
+  ${JOINTS.map(([k, l]) => {
+    const v = s.vol[k];
+    const g =
+      (v.rs === "ZB" ? +v.rc || 0 : 0) - (v.cs === "ZB" ? +v.cc || 0 : 0);
+    const sel = (f) =>
+      `<select class="in" data-vol="${k}.${f}"><option value=""></option>${SUP.map((x) => `<option ${v[f] === x ? "selected" : ""}>${x}</option>`).join("")}</select>`;
+    return `<tr><td><b>${l}</b></td><td>${sel("cs")}</td><td class="num"><input class="in num" type="number" min="0" value="${v.cc || ""}" data-vol="${k}.cc"></td><td>${sel("rs")}</td><td class="num"><input class="in num" type="number" min="0" value="${v.rc || ""}" data-vol="${k}.rc"></td><td class="num ${g > 0 ? "plus" : ""}">${g > 0 ? "+" : ""}${g}</td></tr>`;
+  }).join("")}
+  </tbody></table><p class="sub" style="margin:12px 0 0">Saves as you go. Growth counts ZB cases only. Supplier with ROSA can differ (revision cases).</p></div>`;
+        } else if (view.stab === "cred") {
+          const a = answered(s);
+          body = `<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><h3 style="margin:0">ROSA Shoulder credentialing</h3>${credTag(s)}</div>
+  <div class="bar" style="margin:10px 0 4px"><i style="width:${(a * 100) / QUESTIONS.length}%"></i></div><div class="sub">${a} of ${QUESTIONS.length} required questions confirmed</div>
+  ${QUESTIONS.map((q, n) => `<div class="q"><span class="no">${n + 1}</span><span>${q}</span><span style="display:flex;flex-direction:column;align-items:flex-end;gap:4px"><span class="tog"><button class="${s.ans[n] === true ? "on" : ""}" data-ans="${n}">Confirmed</button></span><span class="by">${s.ans[n] ? `by ${s.who[n]}` : "Not answered"}</span></span></div>`).join("")}
+  </div>
+  <div class="card"><h3>Med Ed lab</h3><div class="fields"><div class="f"><div class="l">Credentialed date</div><input class="in" type="date" ${ready(s) ? "" : "disabled title='Confirm all questions first'"} value="" data-cred></div><div class="f"><div class="l">First case date</div><input class="in" type="date"></div><div class="f"><div class="l">Pathway</div><div class="v">${s.pathway}</div></div></div></div>`;
+        } else {
+          body = `<div class="card"><h3>Details</h3><div class="fields"><div class="f"><div class="l">Role</div><div class="v">${s.pos}</div></div><div class="f"><div class="l">Champion</div><div class="v">${s.champ ? "Yes" : "No"}</div></div><div class="f"><div class="l">Implant deal</div><div class="v">${s.implant ? `<a style="color:var(--indigo2)">${s.implant}</a>` : "None linked"}</div></div></div></div>`;
+        }
+        return `<div class="crumb"><a data-sec="surgeons">Surgeons and growth</a> › <span>${s.name}</span></div>
+ <div class="shead"><div style="display:flex;gap:14px;align-items:center"><div class="avatar">${ini(s.name)}</div><div><h2>${s.name} ${s.champ ? '<span class="tag sh">Champion</span>' : ""}</h2><div class="sub">${s.pos} · Growth <b class="plus">+${growth(s)}</b> ZB cases a year</div></div></div>
+ <div class="tools"><button class="rbtn" ${prev ? `data-sid="${prev.id}" title="${prev.name}"` : "disabled style='opacity:.3'"}>‹</button><span class="sub">${i + 1} of ${deal.surgeons.length}</span><button class="rbtn" ${next ? `data-sid="${next.id}" title="${next.name}"` : "disabled style='opacity:.3'"}>›</button></div></div>
+ <div class="tabs">${tab("volumes", "Volumes")}${tab("cred", "Credentialing")}${tab("details", "Details")}</div>${body}`;
+      }
+      function secChecklist() {
+        return `<h2>Checklist</h2><p class="lead">Ticking a step moves the stage forward. Steps 1 to 6 go in order.</p>
+ <div class="grid3">${STEPS.map(
+   ([
+     ph,
+     st
+   ]) => `<div class="card phase"><h3>${ph}<span class="sub">${st.filter(([n]) => deal.steps[n]).length}/${st.length}</span></h3>
+ ${st
+   .map(([n, l]) => {
+     const d = deal.steps[n];
+     const lock = String(n).startsWith("7") && deal.stage < 4;
+     return `<div class="step" style="${lock ? "opacity:.45" : ""}"><span class="box ${d ? "on" : ""}" data-step="${lock ? "" : n}">${d ? "✓" : ""}</span><div><b>${n}. ${l}</b><div class="meta">${d ? `${d[0]} · ${d[1]}` : lock ? "Opens at Closed Won" : "Not done"}</div></div></div>`;
+   })
+   .join("")}</div>`
+ ).join("")}</div>`;
+      }
+      function secOverview() {
+        const f = (l, v) =>
+          `<div class="f"><div class="l">${l}</div><div class="v">${v || "–"}</div></div>`;
+        return `<h2>Overview</h2><p class="lead">The deal at a glance. Edit in place.</p>
+ <div class="card"><div class="fields">${f("Hospital", deal.name)}${f("Primary HCP", "Dr Emma Hart")}${f("ROSA deal lead", deal.lead)}${f("Deal type", deal.type)}${f("Sales type", deal.sales)}${f("Stage", STAGES[deal.stage])}${f("Expected close", deal.close)}${f("Install date", deal.install)}${f("ROSA growth $", "$1,250,000")}${f("Priority", "High")}${f("State priority", "1")}${f("Currency", "AUD")}</div></div>
+ <div class="grid2"><div class="card"><h3>Next step</h3><p style="margin:0">5. Proposal and negotiation</p><p class="sub">Owner: deal lead, Commercial, Legal</p></div><div class="card"><h3>Implant deals linked</h3><p style="margin:0">IMP-10482 Dr Emma Hart · IMP-10511 Dr Priya Nair</p></div></div>`;
+      }
+      function secSite() {
+        const f = (l, v) =>
+          `<div class="f"><div class="l">${l}</div><div class="v">${v}</div></div>`;
+        return `<h2>Site background</h2><p class="lead">Case support and training on site.</p><div class="card"><div class="fields">${f("Rep ROSA trained", "Yes")}${f("Rep suitable for case cover", "Yes")}${f("Primary case cover", "Chris Wong")}${f("Secondary case cover", "Dana Fox")}${f("Additional case support", "No")}${f("Trainee surgeons", "3")}${f("Fellows", "1")}</div></div>
+ <div class="grid2"><div class="card"><h3>Exposure plan</h3><p class="sub" style="margin:0">Lab day for all four surgeons, then two observed cases each.</p></div><div class="card"><h3>Critical to approval</h3><p class="sub" style="margin:0">Capital committee sign-off in Q2.</p></div></div>`;
+      }
+      function secApprop() {
+        const f = (l, v) =>
+          `<div class="f"><div class="l">${l}</div><div class="v">${v}</div></div>`;
+        return `<h2>Appropriateness</h2><p class="lead">From the product guide checklist.</p><div class="card"><div class="fields">${f("Site already has ROSA", "No")}${f("Current utilisation", "N/A")}${f("Additional unit required", "N/A")}${f("Competitor robotics on site", "MAKO")}</div></div>
+ <div class="grid2"><div class="card"><h3>Additional opportunities</h3><p class="sub" style="margin:0">Hip conversion with Dr Lee next year.</p></div><div class="card"><h3>Identified risks</h3><p class="sub" style="margin:0">MAKO contract renewal due mid-2027.</p></div></div>`;
+      }
+      function secImplement() {
+        const ph = STEPS[2];
+        return `<h2>Implementation</h2><p class="lead">Install, instruments, credentialing and first cases. The stage stays Closed Won.</p>
+ <div class="grid2"><div class="card phase"><h3>Steps 7a to 7d</h3>${ph[1]
+   .map(([n, l]) => {
+     const d = deal.steps[n];
+     return `<div class="step"><span class="box ${d ? "on" : ""}" data-step="${n}">${d ? "✓" : ""}</span><div><b>${n}. ${l}</b><div class="meta">${d ? `${d[0]} · ${d[1]}` : "Not done"}</div></div></div>`;
+   })
+   .join("")}</div>
+ <div class="card"><h3>Credentialing by surgeon</h3><table><tbody>${deal.surgeons.map((s) => `<tr class="click" data-sid="${s.id}"><td><b>${s.name}</b></td><td>${credTag(s)}</td></tr>`).join("")}</tbody></table><p class="sub">7c ticks itself when every surgeon is credentialed.</p></div></div>`;
+      }
+      function secChatter() {
+        return `<h2>Chatter</h2><p class="lead">The deal's feed, without leaving the deal.</p><div class="card chat"><input class="in" style="width:100%;margin-bottom:8px" placeholder="Share an update…">${deal.chat.map(([w, t, d]) => `<div class="m"><b>${w}</b> <span class="t">${d}</span><div>${t}</div></div>`).join("")}</div>`;
+      }
+      function modal() {
+        let m = view.sid
+          ? secSurgeon()
+          : (
+              {
+                surgeons: secSurgeons,
+                checklist: secChecklist,
+                overview: secOverview,
+                site: secSite,
+                approp: secApprop,
+                implement: secImplement,
+                chatter: secChatter
+              }[view.sec] || secSurgeons
+            )();
+        return `<div class="sf"><div class="bar"></div><div class="bar" style="height:70px"></div><div class="row"><div class="blk"></div><div class="blk" style="flex:.6"></div></div></div><div class="scrim"></div>
+ <div class="modal" role="dialog" aria-label="ROSA deal">${header()}<div class="body">${rail()}<main class="main">${m}</main></div></div>`;
+      }
+      function list() {
+        const rows = [
+          [
+            "Sample Private Hospital",
+            "Australia",
+            "Shoulder",
+            "Executive Presentation",
+            4,
+            "+115",
+            "1/4"
+          ],
+          [
+            "North Shore Sample",
+            "Australia",
+            "Knee",
+            "Negotiation",
+            6,
+            "+240",
+            "0/6"
+          ],
+          [
+            "Harbour Sample Clinic",
+            "New Zealand",
+            "Shoulder",
+            "Surgeon Engagement",
+            2,
+            "+40",
+            "0/2"
+          ],
+          [
+            "Central Sample Hospital",
+            "India",
+            "Knee, Hip",
+            "Closed Won",
+            5,
+            "+310",
+            "3/5"
+          ],
+          [
+            "Bay Sample Medical",
+            "Singapore",
+            "Knee",
+            "Sales Pipeline",
+            1,
+            "+25",
+            "0/1"
+          ]
+        ];
+        return `<div class="list"><h2>ROSA deals</h2><p class="lead">For marketing and the ROSA team: every ROSA deal in one list. Click a deal to open the same modal.</p>
+ <div class="filters"><select class="in"><option>All countries</option></select><select class="in"><option>All stages</option></select><select class="in"><option>All platforms</option></select><button class="pill on">Open</button><button class="pill">Closed</button><span style="flex:1"></span><input class="in" placeholder="Search deals or surgeons"></div>
+ <div class="card"><table><thead><tr><th>Hospital</th><th>Country</th><th>Platform</th><th>Stage</th><th class="num">Surgeons</th><th class="num">Growth cases</th><th class="num">Credentialed</th></tr></thead><tbody>
+ ${rows.map((r) => `<tr class="click" data-open="1"><td><b>${r[0]}</b></td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td class="num">${r[4]}</td><td class="num plus">${r[5]}</td><td class="num">${r[6]}</td></tr>`).join("")}</tbody></table></div>
+ <div class="grid3"><div class="card"><h3>Waiting on credentialing</h3><p class="sub" style="margin:0">9 surgeons have questions unanswered</p></div><div class="card"><h3>Ready for Med Ed lab</h3><p class="sub" style="margin:0">2 surgeons</p></div><div class="card"><h3>Installs next 90 days</h3><p class="sub" style="margin:0">1 deal</p></div></div></div>`;
+      }
+      const app = document.getElementById("app");
+      function render() {
+        app.innerHTML = view.screen === "list" ? list() : modal();
+        document
+          .querySelectorAll("[data-screen]")
+          .forEach((b) =>
+            b.classList.toggle("on", b.dataset.screen === view.screen)
+          );
+      }
+      document.addEventListener("click", (e) => {
+        const t = e.target.closest(
+          "[data-sec],[data-sid],[data-stab],[data-ans],[data-step],[data-screen],[data-theme-set],[data-open]"
+        );
+        if (!t) return;
+        const d = t.dataset;
+        if (d.screen) {
+          view.screen = d.screen;
+        } else if (d.themeSet) {
+          document.documentElement.dataset.theme = d.themeSet;
+          document
+            .querySelectorAll("[data-theme-set]")
+            .forEach((b) => b.classList.toggle("on", b === t));
+          return;
+        } else if (d.open) {
+          view = {
+            screen: "modal",
+            sec: "surgeons",
+            sid: null,
+            stab: "volumes"
+          };
+        } else if (d.sid) {
+          view.sid = +d.sid;
+        } else if (d.sec) {
+          view.sec = d.sec;
+          view.sid = null;
+        } else if (d.stab) {
+          view.stab = d.stab;
+        } else if (d.ans !== undefined) {
+          const s = deal.surgeons.find((x) => x.id === view.sid),
+            n = +d.ans;
+          s.ans[n] = s.ans[n] ? null : true;
+          s.who[n] = s.ans[n] ? "you, just now" : null;
+        } else if (d.step) {
+          const n = d.step;
+          if (deal.steps[n]) delete deal.steps[n];
+          else deal.steps[n] = ["today", "you"];
+          const hi = Math.max(
+            0,
+            ...Object.keys(deal.steps)
+              .filter((k) => !k.startsWith("7"))
+              .map(Number)
+          );
+          deal.stage =
+            hi >= 6 ? 4 : hi === 5 ? 3 : hi === 4 ? 2 : hi >= 1 ? 1 : 0;
+        } else return;
+        render();
+      });
+      document.addEventListener("change", (e) => {
+        const t = e.target;
+        if (t.dataset.vol) {
+          const [k, f] = t.dataset.vol.split(".");
+          const s = deal.surgeons.find((x) => x.id === view.sid);
+          s.vol[k][f] = f.endsWith("c") ? +t.value : t.value;
+          render();
+        }
+      });
+      render();
+    </script>
+  </body>
+</html>

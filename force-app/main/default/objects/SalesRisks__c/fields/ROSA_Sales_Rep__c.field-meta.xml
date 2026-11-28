@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>ROSA_Sales_Rep__c</fullName>
+    <description
+  >The sales rep for this ROSA deal: the rep on the SAP partner functions of the cases that will follow. Not the record owner, which can be the State Manager.</description>
+    <inlineHelpText
+  >The sales rep who will be on the cases at this site (not necessarily the owner).</inlineHelpText>
+    <label>Sales Rep</label>
+    <deleteConstraint>SetNull</deleteConstraint>
+    <referenceTo>User</referenceTo>
+    <relationshipLabel>ROSA deals (sales rep)</relationshipLabel>
+    <relationshipName>ROSA_Sales_Rep</relationshipName>
+    <required>false</required>
+    <type>Lookup</type>
+</CustomField>

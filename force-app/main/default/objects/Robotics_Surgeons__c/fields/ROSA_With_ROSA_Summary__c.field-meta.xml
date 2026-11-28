@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>ROSA_With_ROSA_Summary__c</fullName>
+    <description
+  >Each joint's cases a year with ROSA and supplier in one line, e.g. TKA 100 ZB. For the ROSA Surgeons list on the deal.</description>
+    <inlineHelpText
+  >Each joint's cases a year with ROSA and supplier in one line, e.g. TKA 100 ZB.</inlineHelpText>
+    <label>Cases with ROSA</label>
+    <externalId>false</externalId>
+    <formula
+  >IF(LEN(IF(BLANKVALUE(ROSA_TKA_ROSA_Cases__c, 0) &gt; 0, "TKA " &amp; TEXT(ROSA_TKA_ROSA_Cases__c) &amp; IF(ISBLANK(TEXT(ROSA_TKA_ROSA_Supplier__c)), "", " " &amp; TEXT(ROSA_TKA_ROSA_Supplier__c)) &amp; ", ", "") &amp; IF(BLANKVALUE(ROSA_PKA_ROSA_Cases__c, 0) &gt; 0, "PKA " &amp; TEXT(ROSA_PKA_ROSA_Cases__c) &amp; IF(ISBLANK(TEXT(ROSA_PKA_ROSA_Supplier__c)), "", " " &amp; TEXT(ROSA_PKA_ROSA_Supplier__c)) &amp; ", ", "") &amp; IF(BLANKVALUE(ROSA_THA_ROSA_Cases__c, 0) &gt; 0, "THA " &amp; TEXT(ROSA_THA_ROSA_Cases__c) &amp; IF(ISBLANK(TEXT(ROSA_THA_ROSA_Supplier__c)), "", " " &amp; TEXT(ROSA_THA_ROSA_Supplier__c)) &amp; ", ", "") &amp; IF(BLANKVALUE(ROSA_TSA_RSA_ROSA_Cases__c, 0) &gt; 0, "TSA/RSA " &amp; TEXT(ROSA_TSA_RSA_ROSA_Cases__c) &amp; IF(ISBLANK(TEXT(ROSA_TSA_RSA_ROSA_Supplier__c)), "", " " &amp; TEXT(ROSA_TSA_RSA_ROSA_Supplier__c)) &amp; ", ", "")) &gt; 0, LEFT(IF(BLANKVALUE(ROSA_TKA_ROSA_Cases__c, 0) &gt; 0, "TKA " &amp; TEXT(ROSA_TKA_ROSA_Cases__c) &amp; IF(ISBLANK(TEXT(ROSA_TKA_ROSA_Supplier__c)), "", " " &amp; TEXT(ROSA_TKA_ROSA_Supplier__c)) &amp; ", ", "") &amp; IF(BLANKVALUE(ROSA_PKA_ROSA_Cases__c, 0) &gt; 0, "PKA " &amp; TEXT(ROSA_PKA_ROSA_Cases__c) &amp; IF(ISBLANK(TEXT(ROSA_PKA_ROSA_Supplier__c)), "", " " &amp; TEXT(ROSA_PKA_ROSA_Supplier__c)) &amp; ", ", "") &amp; IF(BLANKVALUE(ROSA_THA_ROSA_Cases__c, 0) &gt; 0, "THA " &amp; TEXT(ROSA_THA_ROSA_Cases__c) &amp; IF(ISBLANK(TEXT(ROSA_THA_ROSA_Supplier__c)), "", " " &amp; TEXT(ROSA_THA_ROSA_Supplier__c)) &amp; ", ", "") &amp; IF(BLANKVALUE(ROSA_TSA_RSA_ROSA_Cases__c, 0) &gt; 0, "TSA/RSA " &amp; TEXT(ROSA_TSA_RSA_ROSA_Cases__c) &amp; IF(ISBLANK(TEXT(ROSA_TSA_RSA_ROSA_Supplier__c)), "", " " &amp; TEXT(ROSA_TSA_RSA_ROSA_Supplier__c)) &amp; ", ", ""), LEN(IF(BLANKVALUE(ROSA_TKA_ROSA_Cases__c, 0) &gt; 0, "TKA " &amp; TEXT(ROSA_TKA_ROSA_Cases__c) &amp; IF(ISBLANK(TEXT(ROSA_TKA_ROSA_Supplier__c)), "", " " &amp; TEXT(ROSA_TKA_ROSA_Supplier__c)) &amp; ", ", "") &amp; IF(BLANKVALUE(ROSA_PKA_ROSA_Cases__c, 0) &gt; 0, "PKA " &amp; TEXT(ROSA_PKA_ROSA_Cases__c) &amp; IF(ISBLANK(TEXT(ROSA_PKA_ROSA_Supplier__c)), "", " " &amp; TEXT(ROSA_PKA_ROSA_Supplier__c)) &amp; ", ", "") &amp; IF(BLANKVALUE(ROSA_THA_ROSA_Cases__c, 0) &gt; 0, "THA " &amp; TEXT(ROSA_THA_ROSA_Cases__c) &amp; IF(ISBLANK(TEXT(ROSA_THA_ROSA_Supplier__c)), "", " " &amp; TEXT(ROSA_THA_ROSA_Supplier__c)) &amp; ", ", "") &amp; IF(BLANKVALUE(ROSA_TSA_RSA_ROSA_Cases__c, 0) &gt; 0, "TSA/RSA " &amp; TEXT(ROSA_TSA_RSA_ROSA_Cases__c) &amp; IF(ISBLANK(TEXT(ROSA_TSA_RSA_ROSA_Supplier__c)), "", " " &amp; TEXT(ROSA_TSA_RSA_ROSA_Supplier__c)) &amp; ", ", "")) - 2), '')</formula>
+    <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+    <required>false</required>
+    <unique>false</unique>
+    <type>Text</type>
+</CustomField>

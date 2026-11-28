@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<GlobalValueSet xmlns="http://soap.sforce.com/2006/04/metadata">
+    <customValue>
+        <fullName>ZB</fullName>
+        <default>false</default>
+        <label>ZB</label>
+    </customValue>
+    <customValue>
+        <fullName>J&amp;J</fullName>
+        <default>false</default>
+        <label>J&amp;J</label>
+    </customValue>
+    <customValue>
+        <fullName>Stryker</fullName>
+        <default>false</default>
+        <label>Stryker</label>
+    </customValue>
+    <customValue>
+        <fullName>Smith &amp; Nephew</fullName>
+        <default>false</default>
+        <label>Smith &amp; Nephew</label>
+    </customValue>
+    <customValue>
+        <fullName>Other</fullName>
+        <default>false</default>
+        <label>Other</label>
+    </customValue>
+    <description
+  >Implant suppliers for ROSA Surgeons volumes (current and with ROSA). ROSA Shoulder POC.</description>
+    <masterLabel>ROSA Supplier</masterLabel>
+    <sorted>false</sorted>
+</GlobalValueSet>

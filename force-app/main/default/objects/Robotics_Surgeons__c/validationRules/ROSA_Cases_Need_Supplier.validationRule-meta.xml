@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>ROSA_Cases_Need_Supplier</fullName>
+    <active>true</active>
+    <description
+  >ROSA Surgeons: any cases number above 0 needs its supplier.</description>
+    <errorConditionFormula
+  >(BLANKVALUE(ROSA_TKA_Current_Cases__c, 0) &gt; 0 &amp;&amp; ISBLANK(TEXT(ROSA_TKA_Current_Supplier__c))) || (BLANKVALUE(ROSA_TKA_ROSA_Cases__c, 0) &gt; 0 &amp;&amp; ISBLANK(TEXT(ROSA_TKA_ROSA_Supplier__c))) || (BLANKVALUE(ROSA_PKA_Current_Cases__c, 0) &gt; 0 &amp;&amp; ISBLANK(TEXT(ROSA_PKA_Current_Supplier__c))) || (BLANKVALUE(ROSA_PKA_ROSA_Cases__c, 0) &gt; 0 &amp;&amp; ISBLANK(TEXT(ROSA_PKA_ROSA_Supplier__c))) || (BLANKVALUE(ROSA_THA_Current_Cases__c, 0) &gt; 0 &amp;&amp; ISBLANK(TEXT(ROSA_THA_Current_Supplier__c))) || (BLANKVALUE(ROSA_THA_ROSA_Cases__c, 0) &gt; 0 &amp;&amp; ISBLANK(TEXT(ROSA_THA_ROSA_Supplier__c))) || (BLANKVALUE(ROSA_TSA_RSA_Current_Cases__c, 0) &gt; 0 &amp;&amp; ISBLANK(TEXT(ROSA_TSA_RSA_Current_Supplier__c))) || (BLANKVALUE(ROSA_TSA_RSA_ROSA_Cases__c, 0) &gt; 0 &amp;&amp; ISBLANK(TEXT(ROSA_TSA_RSA_ROSA_Supplier__c)))</errorConditionFormula>
+    <errorMessage
+  >Choose a supplier for every joint that has cases.</errorMessage>
+</ValidationRule>

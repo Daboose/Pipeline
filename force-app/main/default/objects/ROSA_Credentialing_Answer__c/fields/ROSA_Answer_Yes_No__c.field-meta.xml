@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>ROSA_Answer_Yes_No__c</fullName>
+    <description
+  >The answer for a Yes/No question. Blank means not answered yet; Yes and No are both answers (Robert, 2026-11-27; replaced a tick box).</description>
+    <inlineHelpText>Choose Yes or No.</inlineHelpText>
+    <label>Yes / No</label>
+    <trackHistory>true</trackHistory>
+    <required>false</required>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Yes</fullName>
+                <default>false</default>
+                <label>Yes</label>
+            </value>
+            <value>
+                <fullName>No</fullName>
+                <default>false</default>
+                <label>No</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+    <type>Picklist</type>
+</CustomField>

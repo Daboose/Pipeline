@@ -5,6 +5,10 @@
     <enabled>true</enabled>
   </classAccesses>
   <classAccesses>
+    <apexClass>ROSADealController</apexClass>
+    <enabled>true</enabled>
+  </classAccesses>
+  <classAccesses>
     <apexClass>PipelineSurgeonController</apexClass>
     <enabled>true</enabled>
   </classAccesses>
@@ -75,15 +79,6 @@
     <viewAllRecords>false</viewAllRecords>
   </objectPermissions>
   <objectPermissions>
-    <allowCreate>true</allowCreate>
-    <allowDelete>true</allowDelete>
-    <allowEdit>true</allowEdit>
-    <allowRead>true</allowRead>
-    <modifyAllRecords>false</modifyAllRecords>
-    <object>Pipeline_Filter__c</object>
-    <viewAllRecords>false</viewAllRecords>
-  </objectPermissions>
-  <objectPermissions>
     <allowCreate>false</allowCreate>
     <allowDelete>false</allowDelete>
     <allowEdit>false</allowEdit>
@@ -136,26 +131,6 @@
   </fieldPermissions>
   <fieldPermissions>
     <editable>true</editable>
-    <field>Pipeline_Filter__c.Filter_Json__c</field>
-    <readable>true</readable>
-  </fieldPermissions>
-  <fieldPermissions>
-    <editable>true</editable>
-    <field>Pipeline_Filter__c.Is_Default__c</field>
-    <readable>true</readable>
-  </fieldPermissions>
-  <fieldPermissions>
-    <editable>true</editable>
-    <field>Pipeline_Filter__c.Is_User_Settings__c</field>
-    <readable>true</readable>
-  </fieldPermissions>
-  <fieldPermissions>
-    <editable>true</editable>
-    <field>Pipeline_Filter__c.Settings_Json__c</field>
-    <readable>true</readable>
-  </fieldPermissions>
-  <fieldPermissions>
-    <editable>true</editable>
     <field>SalesRisks__c.Expected_Closing_Year__c</field>
     <readable>true</readable>
   </fieldPermissions>
@@ -199,6 +174,10 @@
     <field>Sales_Campaign__c.Description__c</field>
     <readable>true</readable>
   </fieldPermissions>
+  <pageAccesses>
+    <apexPage>ROSADeal</apexPage>
+    <enabled>true</enabled>
+  </pageAccesses>
   <pageAccesses>
     <apexPage>PipelineApp</apexPage>
     <enabled>true</enabled>

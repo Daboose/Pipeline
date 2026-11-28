@@ -842,19 +842,12 @@ export default class PipelineDeal extends LightningElement {
     this.pending = "";
     this.dispatchEvent(new CustomEvent(action));
   }
+  /** Opens the deal's record in a new browser tab, so Pipeline stays where it was in this one (Robert, 2026-11-26). */
   handleOpenRecord() {
-    const e = new CustomEvent("pipelineopenrecord", {
-      detail: JSON.stringify({ recordId: this.recordId }),
-      bubbles: true,
-      composed: true,
-      cancelable: true
-    });
-    if (this.dispatchEvent(e)) {
-      window.open(
-        "/lightning/r/SalesRisks__c/" + this.recordId + "/view",
-        "_blank",
-        "noopener"
-      );
-    }
+    window.open(
+      "/lightning/r/SalesRisks__c/" + this.recordId + "/view",
+      "_blank",
+      "noopener"
+    );
   }
 }

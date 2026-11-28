@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>ROSA_TKA_ROSA_Cases__c</fullName>
+    <description
+  >TKA cases a year the surgeon would do at this site with ROSA.</description>
+    <inlineHelpText
+  >How many TKA cases a year the surgeon would do with ROSA.</inlineHelpText>
+    <label>TKA cases a year with ROSA</label>
+    <externalId>false</externalId>
+    <precision>5</precision>
+    <required>false</required>
+    <scale>0</scale>
+    <unique>false</unique>
+    <type>Number</type>
+</CustomField>

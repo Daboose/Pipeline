@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>ROSA_Growth_TKA_Cases__c</fullName>
+    <description
+  >TKA growth cases: with ROSA ZB cases minus current ZB cases (Robert, 2026-11-27). Calculated automatically from the ROSA Surgeons on this deal; read-only.</description>
+    <inlineHelpText
+  >Calculated automatically from the ROSA Surgeons on this deal; read-only.</inlineHelpText>
+    <label>TKA growth cases</label>
+    <externalId>false</externalId>
+    <precision>6</precision>
+    <required>false</required>
+    <scale>0</scale>
+    <unique>false</unique>
+    <type>Number</type>
+</CustomField>
