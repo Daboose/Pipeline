@@ -33,8 +33,6 @@
         <name>CompactLayout</name>
     </types>
     <types>
-        <members>Event_Category__c.ROSA_Pathway__c</members>
-        <members>Event_Category__c.ROSA_Usage__c</members>
         <members>ROSA_Credentialing_Answer__c.ROSA_Answer_Date__c</members>
         <members>ROSA_Credentialing_Answer__c.ROSA_Answer_Number__c</members>
         <members>ROSA_Credentialing_Answer__c.ROSA_Answer_Text__c</members>
@@ -47,14 +45,22 @@
         <members>ROSA_Credentialing_Answer__c.ROSA_Is_Answered__c</members>
         <members>ROSA_Credentialing_Answer__c.ROSA_Question_Link__c</members>
         <members>ROSA_Credentialing_Answer__c.ROSA_Question_Text__c</members>
-        <members>ROSA_Credentialing_Answer__c.ROSA_Question__c</members>
         <members>ROSA_Credentialing_Answer__c.ROSA_Required__c</members>
+        <members>ROSA_Credentialing_Answer__c.ROSA_Set_Question__c</members>
         <members>ROSA_Credentialing_Answer__c.ROSA_Surgeon__c</members>
         <members>ROSA_Price__c.ROSA_Active__c</members>
         <members>ROSA_Price__c.ROSA_Country__c</members>
         <members>ROSA_Price__c.ROSA_Joint__c</members>
         <members>ROSA_Price__c.ROSA_Key__c</members>
         <members>ROSA_Price__c.ROSA_Price__c</members>
+        <members>ROSA_Question_Set__c.ROSA_Active__c</members>
+        <members>ROSA_Question_Set__c.ROSA_Pathway__c</members>
+        <members>ROSA_Question__c.ROSA_Active__c</members>
+        <members>ROSA_Question__c.ROSA_Answer_Type__c</members>
+        <members>ROSA_Question__c.ROSA_Display_Order__c</members>
+        <members>ROSA_Question__c.ROSA_Question_Set__c</members>
+        <members>ROSA_Question__c.ROSA_Question_Text__c</members>
+        <members>ROSA_Question__c.ROSA_Required__c</members>
         <members>Robotics_Surgeons__c.ROSA_Career_Position__c</members>
         <members>Robotics_Surgeons__c.ROSA_Champion__c</members>
         <members>Robotics_Surgeons__c.ROSA_Course_Date__c</members>
@@ -74,7 +80,7 @@
         <members>Robotics_Surgeons__c.ROSA_PKA_ROSA_Cases__c</members>
         <members>Robotics_Surgeons__c.ROSA_PKA_ROSA_Supplier__c</members>
         <members>Robotics_Surgeons__c.ROSA_Pathway__c</members>
-        <members>Robotics_Surgeons__c.ROSA_Question_Set__c</members>
+        <members>Robotics_Surgeons__c.ROSA_Question_Set_Used__c</members>
         <members>Robotics_Surgeons__c.ROSA_Questions_To_Answer__c</members>
         <members>Robotics_Surgeons__c.ROSA_Ready__c</members>
         <members>Robotics_Surgeons__c.ROSA_Surgeon_Link__c</members>
@@ -176,8 +182,11 @@
     <types>
         <members>ROSA_Credentialing_Answer__c</members>
         <members>ROSA_Price__c</members>
+        <members>ROSA_Question_Set__c</members>
+        <members>ROSA_Question__c</members>
         <members>Robotics_Surgeons__c</members>
         <members>Robotics__c</members>
+        <members>SalesRisks__c</members>
         <name>CustomObject</name>
     </types>
     <types>
@@ -186,6 +195,7 @@
     </types>
     <types>
         <members>ROSA_Price__c</members>
+        <members>ROSA_Question_Set__c</members>
         <name>CustomTab</name>
     </types>
     <types>
